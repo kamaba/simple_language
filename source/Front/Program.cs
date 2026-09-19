@@ -13,19 +13,28 @@ namespace SimpleLanguage
 #if DEBUG
             if( args.Length == 0 )
             {
-                args = new string[5];
-                args[0] = "c";
+                args = new string[6];
+                args[0] = "compile";
                 args[1] = "-e";
                 args[2] = "ir";
                 args[3] = "-p";
                 args[4] = "F:\\project\\lang\\simple_language\\source\\Front\\Lib\\Core\\Core";
+                args[5] = "--no-banner";
             }
 #endif
 
-            CommandInputArgs inputArgs = new CommandInputArgs(args);
-            if (CommandExecutor.Execute(inputArgs))
+            var inputArgs = new CommandInputArgs(args);
+            try
             {
-                return;
+                _ = CommandExecutor.Execute(inputArgs);
+            }
+            catch (Exception ex)
+            {
+                Console.Out.Flush();
+                Console.Error.WriteLine("=== UNHANDLED EXCEPTION ===");
+                Console.Error.WriteLine(ex.ToString());
+                Console.Error.Flush();
+                Environment.ExitCode = 42;
             }
         }
     }

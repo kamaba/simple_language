@@ -1,0 +1,14 @@
+Project
+{
+    _main_()
+    {
+        MysqlTest.fun()
+        MysqlApiTest.fun()
+    }
+    CompileBefore()
+    {
+    }
+    CompileAfter()
+    {
+    }
+}

@@ -1,0 +1,205 @@
+{
+  "project":
+  {
+    "name": "Render",
+    "desc": "Render library - scene/math helpers, meshes, materials, camera/light, render pipeline (Float32-based, backed by Math lib)",
+    "mainVersion": 0,
+    "subVersion": 1,
+    "buildVersion": 0,
+    "buildSubVersion": 0
+  },
+  "source": {
+    "root": "."
+  },
+  "systemCalls":
+  [
+    // Render.sl / Shader.sl / Texture.sl -> SystemCallExternalFunction("Render.xxx", ...)
+    // 由具体渲染后端（OpenGL/Vulkan/D3D11…）注册实现
+  ],
+  "compile": {
+    "optimize": false,
+    "target": "x64",
+    "debug": true,
+    "isUseForceSemiColonInLineEnd": true,
+    "isForceUseClassKey": false,
+    "isSupportDoublePlus": false,
+    "requireSameNumericTypes": false
+  },
+  "compileFiles": {
+    "files": [
+      // ── 基础数学桥接（依赖 Math 库的 Float32 系列 + Mathf + Quaternion）──
+      { "path": "Vector.sl",         "group": "render", "tag": "math",    "ignore": false, "priority": 0 },
+      { "path": "Matrix.sl",         "group": "render", "tag": "math",    "ignore": false, "priority": 0 },
+      { "path": "Color.sl",          "group": "render", "tag": "core",    "ignore": false, "priority": 0 },
+
+      // ── 几何 / 变换 ───────────────────────────────────
+      { "path": "Transform.sl",      "group": "render", "tag": "core",    "ignore": false, "priority": 0 },
+      { "path": "Bounds.sl",         "group": "render", "tag": "geom",    "ignore": false, "priority": 0 },
+      { "path": "Ray.sl",            "group": "render", "tag": "geom",    "ignore": false, "priority": 0 },
+      { "path": "Plane.sl",          "group": "render", "tag": "geom",    "ignore": false, "priority": 0 },
+
+      // ── 渲染资源 ─────────────────────────────────────
+      { "path": "Vertex.sl",         "group": "render", "tag": "res",     "ignore": false, "priority": 0 },
+      { "path": "Mesh.sl",           "group": "render", "tag": "res",     "ignore": false, "priority": 0 },
+      { "path": "Material.sl",       "group": "render", "tag": "res",     "ignore": false, "priority": 0 },
+      { "path": "Texture.sl",        "group": "render", "tag": "res",     "ignore": false, "priority": 0 },
+      { "path": "Shader.sl",         "group": "render", "tag": "res",     "ignore": false, "priority": 0 },
+
+      // ── 组件 / 系统 ──────────────────────────────────
+      { "path": "Behaviour.sl",      "group": "render", "tag": "comp",    "ignore": false, "priority": 0 },
+      { "path": "UIBehaviour.sl",    "group": "render", "tag": "comp",    "ignore": false, "priority": 0 },
+      { "path": "RectTransform.sl",  "group": "render", "tag": "comp",    "ignore": false, "priority": 0 },
+      { "path": "Renderer.sl",       "group": "render", "tag": "comp",    "ignore": false, "priority": 0 },
+      { "path": "Render.sl",         "group": "render", "tag": "system",  "ignore": false, "priority": 0 },
+      { "path": "Config.sl",         "group": "render", "tag": "system",  "ignore": false, "priority": 0 },
+
+      // ── 相机与光源 ───────────────────────────────────
+      { "path": "Camera/Camera.sl",  "group": "render", "tag": "camera",  "ignore": false, "priority": 0 },
+      { "path": "Camera/Light.sl",   "group": "render", "tag": "camera",  "ignore": false, "priority": 0 },
+
+      // ── 可编程渲染管线（DX12 / Vulkan 风格，HLSL Shader）──
+      // 顺序即依赖顺序：资源 -> Shader -> 状态/绑定 -> 命令/队列 -> 设备/平台 -> 上下文 -> Pass -> 管线
+      { "path": "Pipeline/GpuResource.sl",        "group": "render", "tag": "pipeline", "ignore": false, "priority": 0 },
+      { "path": "Pipeline/GpuTexture.sl",         "group": "render", "tag": "pipeline", "ignore": false, "priority": 0 },
+      { "path": "Pipeline/Hlsl.sl",               "group": "render", "tag": "pipeline", "ignore": false, "priority": 0 },
+      { "path": "Pipeline/HlslLibrary.sl",        "group": "render", "tag": "pipeline", "ignore": false, "priority": 0 },
+      { "path": "Pipeline/PipelineState.sl",      "group": "render", "tag": "pipeline", "ignore": false, "priority": 0 },
+      { "path": "Pipeline/RootSignature.sl",      "group": "render", "tag": "pipeline", "ignore": false, "priority": 0 },
+      { "path": "Pipeline/RenderTarget.sl",       "group": "render", "tag": "pipeline", "ignore": false, "priority": 0 },
+      { "path": "Pipeline/CommandBuffer.sl",      "group": "render", "tag": "pipeline", "ignore": false, "priority": 0 },
+      { "path": "Pipeline/CommandQueue.sl",       "group": "render", "tag": "pipeline", "ignore": false, "priority": 0 },
+      { "path": "Pipeline/GfxBackend.sl",         "group": "render", "tag": "pipeline", "ignore": false, "priority": 0 },
+      { "path": "Pipeline/PlatformWindow.sl",     "group": "render", "tag": "pipeline", "ignore": false, "priority": 0 },
+      { "path": "Pipeline/GfxDevice.sl",          "group": "render", "tag": "pipeline", "ignore": false, "priority": 0 },
+      { "path": "Pipeline/ScriptableRenderContext.sl", "group": "render", "tag": "pipeline", "ignore": false, "priority": 0 },
+      { "path": "Pipeline/RenderPass.sl",         "group": "render", "tag": "pipeline", "ignore": false, "priority": 0 },
+      { "path": "Pipeline/RenderPipeline.sl",     "group": "render", "tag": "pipeline", "ignore": false, "priority": 0 },
+      { "path": "Pipeline/UniversalRenderPipeline.sl", "group": "render", "tag": "pipeline", "ignore": false, "priority": 0 },
+      { "path": "Pipeline/PipelineDemo.sl", "group": "render", "tag": "pipeline", "ignore": false, "priority": 0 }
+    ]
+  },
+  "compileFilter": {
+    "isAllGroup": true,
+    "isAllTag": true
+  },
+  "global": {
+    "imports": [
+      "Std.Console"
+    ],
+    "replace": {
+      "DEBUG": "true"
+    }
+  },
+  "data": {
+    "defaultResolutionWidth": 1280,
+    "defaultResolutionHeight": 720
+  },
+  "references": [
+    { "path": "../Core", "name": "Core" },
+    { "path": "../Math",  "name": "Math" },
+    { "path": "../Std",   "name": "Std" }
+  ],
+  "struct": [
+    { "namespace": "Render", "children": [
+      { "class": "Vector" },
+      { "class": "MatrixUtil" },
+      { "class": "Color" },
+      { "class": "Transform" },
+      { "class": "Bounds" },
+      { "class": "Ray" },
+      { "class": "Plane" },
+      { "class": "Vertex" },
+      { "class": "Mesh" },
+      { "class": "Material" },
+      { "class": "Texture" },
+      { "class": "Shader" },
+      { "class": "Behaviour" },
+      { "class": "UIBehaviour" },
+      { "class": "RectTransform" },
+      { "class": "Renderer" },
+      { "class": "Render" },
+      { "class": "Config" },
+      { "class": "Camera" },
+      { "class": "Light" },
+
+      { "class": "GpuResource" },
+      { "class": "GpuBuffer" },
+      { "class": "VertexBuffer" },
+      { "class": "IndexBuffer" },
+      { "class": "ConstantBuffer" },
+      { "class": "GpuUtil" },
+      { "class": "GpuTexture" },
+      { "class": "SamplerDesc" },
+      { "class": "GpuTextureView" },
+      { "class": "Sampler" },
+      { "class": "HlslShader" },
+      { "class": "ShaderModule" },
+      { "class": "ShaderParameter" },
+      { "class": "HlslLibrary" },
+      { "class": "BlendState" },
+      { "class": "RasterizerState" },
+      { "class": "DepthStencilState" },
+      { "class": "VertexInputLayout" },
+      { "class": "GraphicsPipelineState" },
+      { "class": "ComputePipelineState" },
+      { "class": "RootParameter" },
+      { "class": "RootSignature" },
+      { "class": "DescriptorHeap" },
+      { "class": "DescriptorSet" },
+      { "class": "CommandBuffer" },
+      { "class": "CommandBufferPool" },
+      { "class": "CommandAllocator" },
+      { "class": "CommandList" },
+      { "class": "Fence" },
+      { "class": "CommandQueue" },
+      { "class": "SwapChain" },
+      { "class": "RenderTextureDescriptor" },
+      { "class": "RenderTargetIdentifier" },
+      { "class": "RenderTargetBinding" },
+      { "class": "RenderTargetPool" },
+      { "class": "GfxDeviceDescriptor" },
+      { "class": "GfxCapabilities" },
+      { "class": "GfxBackend" },
+      { "class": "GfxDevice" },
+      { "class": "PlatformWindow" },
+      { "class": "Win32Window" },
+      { "class": "X11Window" },
+      { "class": "MobileWindow" },
+      { "class": "CullingParameters" },
+      { "class": "VisibleRenderer" },
+      { "class": "CullingResults" },
+      { "class": "ScriptableRenderContext" },
+      { "class": "RenderPass" },
+      { "class": "ClearPass" },
+      { "class": "ShadowCasterPass" },
+      { "class": "DepthPrepass" },
+      { "class": "DrawObjectsPass" },
+      { "class": "SkyboxPass" },
+      { "class": "PostProcessPass" },
+      { "class": "RenderPassList" },
+      { "class": "RenderPipeline" },
+      { "class": "RenderPipelineAsset" },
+      { "class": "RenderPipelineManager" },
+      { "class": "UniversalRenderPipelineAsset" },
+      { "class": "UniversalRenderPipeline" },
+      { "class": "PipelineDemo" }
+    ]}
+  ],
+  "export": {
+    "moduleName": "Render",
+    "outputDir": "F:\\project\\lang\\simple_language\\out\\export",
+    "versionMain": 1,
+    "versionSub": 0,
+    "versionPatch": 0,
+    "includeMetadata": true,
+    "debugText": {
+      "outputDir": "",
+      "code": true,
+      "token": true,
+      "node": true,
+      "file": true,
+      "meta": true,
+      "ir": true
+    }
+  }
+}

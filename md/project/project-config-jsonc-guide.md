@@ -66,6 +66,11 @@
         "name":"ashu",
         "price":10
       }
+    },
+    "macro": {
+      "platform": "Win32",
+      "useFastMath": true,
+      "maxThreads": 8
     }
   },
   "references": [
@@ -79,6 +84,17 @@
   }
 }
 ```
+
+## 2.1 `global` 段说明
+
+- `global.imports`：全局导入命名空间。
+- `global.replace`：文本宏替换表（`$xxx`，见 `md/syntax/marco.md`）。
+- `global.data`：注入为 Project 数据成员，运行期通过 `global.<name>` 读取（旧版根级 `"data"` 仍兼容）。
+- `global.macro`：**static if 条件编译用的宏字段**，与 `data` 字段定义方式一样，值为布尔/数值/字符串；
+  供 `static if global.macro.X == ...` 编译期判断（运行期也可只读访问 `global.macro.X`）。
+  宏值只能在 `.sp` 的 `CompileBefore(){}` 中修改，详见 `md/project/static-if.md`。
+  编译前也可由外部环境注入覆盖初值：CLI `--macro name=value`（可重复）或环境变量 `SL_MACRO_<name>=<value>`，
+  优先级 `jsonc 初值 < 环境变量 < CLI < CompileBefore()`。
 
 ## 3. CLI 与配置联动
 

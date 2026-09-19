@@ -1,0 +1,54 @@
+{
+  "project": {
+    "name": "TankGame",
+    "desc": "最简单的坦克游戏（cmd 回合式）",
+    "mainVersion": 0,
+    "subVersion": 1,
+    "buildVersion": 0
+  },
+  "source": {
+    "root": "."
+  },
+  "compile": {
+    "optimize": false,
+    "target": "x64",
+    "debug": true,
+    "isUseForceSemiColonInLineEnd": true,
+    "isForceUseClassKey": false,
+    "isSupportDoublePlus": false,
+    "requireSameNumericTypes": false
+  },
+  "compileFiles": {
+    "files": [
+      { "path": "TankGame.sl", "group": "game", "tag": "all", "ignore": false, "priority": 0 }
+    ]
+  },
+  "compileFilter": {
+    "isAllGroup": true,
+    "isAllTag": true
+  },
+  "global": {
+    "imports": [
+      "Std.Console"
+    ],
+    "replace": {}
+  },
+  "references": [
+    { "path": "F:\\project\\lang\\simple_language\\out\\export\\Core", "uuid": "123123123213", "name": "Core.module.json" },
+    { "path": "F:\\project\\lang\\simple_language\\out\\export\\Std", "uuid": "456456456456", "name": "Std.module.json" }
+  ],
+  "export": {
+    "moduleName": "TankGame",
+    "outputDir": "F:\\project\\lang\\simple_language\\out\\export",
+    "includeMetadata": true,
+    "debugText": {
+      "outputDir": "",
+      "code": true,
+      "token": true,
+      "node": true,
+      "file": true,
+      "meta": true,
+      "ir": true
+    }
+  }
+}

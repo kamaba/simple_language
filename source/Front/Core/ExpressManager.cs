@@ -97,8 +97,42 @@ namespace SimpleLanguage.Core
 
             if (fmte == null)
             {
-                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, equalMetaVariable?.token, "" );
+                Log.AddMetaCoreLog(LID.MetaCoreExpressManagerIssue, equalMetaVariable?.token, "" );
                 return null;
+            }
+
+            // Check for try/try?/try! prefix expression at the root
+            // The root may be a FileMetaSymbolTerm (try) or a FileMetaTermExpress whose root is a try symbol
+            FileMetaBaseTerm tryRoot = fmte.root;
+            if (tryRoot != null && tryRoot is FileMetaSymbolTerm trySym
+                && (trySym.symBolType == ETokenType.Try
+                    || trySym.symBolType == ETokenType.TryQuestion
+                    || trySym.symBolType == ETokenType.TryExclamation)
+                && tryRoot.right != null)
+            {
+                CreateExpressParam innerCep = new CreateExpressParam(cep);
+                innerCep.fme = tryRoot.right;
+                MetaExpressNodeBase innerNode = CreateExpressNodeByCEP(innerCep);
+                if (innerNode != null)
+                {
+                    var tryExpress = new MetaTryExpressNode(trySym, innerNode);
+                    return tryExpress;
+                }
+            }
+
+            // Check for checked(expr) prefix expression at the root
+            if (tryRoot != null && tryRoot is FileMetaSymbolTerm checkedSym
+                && checkedSym.symBolType == ETokenType.Checked
+                && tryRoot.right != null)
+            {
+                CreateExpressParam innerCep = new CreateExpressParam(cep);
+                innerCep.fme = tryRoot.right;
+                MetaExpressNodeBase innerNode = CreateExpressNodeByCEP(innerCep);
+                if (innerNode != null)
+                {
+                    var checkedExpress = new MetaCheckedExpressNode(checkedSym, innerNode);
+                    return checkedExpress;
+                }
             }
 
 
@@ -126,7 +160,7 @@ namespace SimpleLanguage.Core
             }
             else if( ifExpressTerm != null )
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, "不允许使用If语句!!");
+                Log.AddMetaCoreLog(LID.MetaCoreExpressManagerIf, "不允许使用If语句!!");
                 return null;
             }
 
@@ -144,7 +178,7 @@ namespace SimpleLanguage.Core
             }
             else if (switchExpressTerm != null)
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, "不允许使用Switch语句!!");
+                Log.AddMetaCoreLog(LID.MetaCoreExpressManagerSwitch, "不允许使用Switch语句!!");
                 return null;
             }
 
@@ -161,7 +195,7 @@ namespace SimpleLanguage.Core
             //}
             //else if (parExpressTerm != null)
             //{
-            //    Log.AddMetaCoreLog(LID.ShowExtendMessage, "不允许使用Switch语句!!");
+            //    Log.AddMetaCoreLog(LID.MetaCoreExpressManagerSwitch2, "不允许使用Switch语句!!");
             //    return null;
             //}
 
@@ -188,7 +222,7 @@ namespace SimpleLanguage.Core
 
                     case FileMetaSymbolTerm fmst:
                         {
-                            //Log.AddMetaCoreLog(LID.ShowExtendMessage, root.token, "Error CreateExpressNode 创建表达项不能为符号");
+                            //Log.AddMetaCoreLog(LID.MetaCoreExpressManagerCreateExpressNode, root.token, "Error CreateExpressNode 创建表达项不能为符号");
                         }
                         break;
                     case FileMetaAsOrIsTerm fmaoit:
@@ -259,7 +293,7 @@ namespace SimpleLanguage.Core
                             }
                             else
                             {
-                                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, fmpt.token, "fmpt file meta express list count !");
+                                Log.AddMetaCoreLog(LID.MetaCoreExpressManagerFmptFileMeta, fmpt.token, "fmpt file meta express list count !");
                             }
                         }
                         break;
@@ -277,7 +311,7 @@ namespace SimpleLanguage.Core
                             return maen;
                         }
                     default:
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error CreateExpressNode 创建表达项不能为符号");
+                        Log.AddMetaCoreLog(LID.MetaCoreExpressManagerCreateExpressNode2, "Error CreateExpressNode 创建表达项不能为符号");
                         break;
                 }
             }
@@ -293,11 +327,23 @@ namespace SimpleLanguage.Core
                 {
                     if (root is FileMetaSymbolTerm fmst)
                     {
+                        // try / try? / try! prefix creates a MetaTryExpressNode
+                        if (fmst.symBolType == ETokenType.Try
+                            || fmst.symBolType == ETokenType.TryQuestion
+                            || fmst.symBolType == ETokenType.TryExclamation)
+                        {
+                            return new MetaTryExpressNode(fmst, rightNode);
+                        }
+                        // checked(expr) prefix creates a MetaCheckedExpressNode
+                        if (fmst.symBolType == ETokenType.Checked)
+                        {
+                            return new MetaCheckedExpressNode(fmst, rightNode);
+                        }
                         return new MetaOpExpressNode(fmst, cep.metaType, leftNode, rightNode);
                     }
                     else
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, root.token, " Error VisitFileMetaExpress fileMetaNode 不是符号!!");
+                        Log.AddMetaCoreLog(LID.MetaCoreExpressManagerVisitFileMetaExpressFileMetaNode, root.token, " Error VisitFileMetaExpress fileMetaNode 不是符号!!");
                     }
                 }
                 else if (leftNode != null && rightNode == null)
@@ -313,9 +359,21 @@ namespace SimpleLanguage.Core
                 }
                 else if (leftNode == null && rightNode != null)
                 {
-                    if (root is FileMetaSymbolTerm)
+                    if (root is FileMetaSymbolTerm fmst2)
                     {
-                        return new MetaUnaryOpExpressNode(root as FileMetaSymbolTerm, rightNode);
+                        // try / try? / try! prefix expressions
+                        if (fmst2.symBolType == ETokenType.Try
+                            || fmst2.symBolType == ETokenType.TryQuestion
+                            || fmst2.symBolType == ETokenType.TryExclamation)
+                        {
+                            return new MetaTryExpressNode(fmst2, rightNode);
+                        }
+                        // checked(expr) prefix expression
+                        if (fmst2.symBolType == ETokenType.Checked)
+                        {
+                            return new MetaCheckedExpressNode(fmst2, rightNode);
+                        }
+                        return new MetaUnaryOpExpressNode(fmst2, rightNode);
                     }
                     else
                     {
@@ -324,7 +382,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, " Error VisitFileMetaExpress left and right都为空!!");
+                    Log.AddMetaCoreLog(LID.MetaCoreExpressManagerVisitFileMetaExpressLeftRight, " Error VisitFileMetaExpress left and right都为空!!");
                 }
                 return null;
             }
@@ -373,7 +431,7 @@ namespace SimpleLanguage.Core
                     break;
                 default:
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Optimaze don't support that ExpressType");
+                        Log.AddMetaCoreLog(LID.MetaCoreExpressManagerNotSupportOptimazeDon, "Error Optimaze don't support that ExpressType");
                     }
                     break;
             }
@@ -388,7 +446,7 @@ namespace SimpleLanguage.Core
                 var mcen = oldmen as MetaCallLinkExpressNode;
                 if( mcen == null )
                 {
-                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, "老类型不是CallLinkExpressNode");
+                    Log.AddMetaCoreLog(LID.MetaCoreExpressManagerCallLinkExpressNode, "老类型不是CallLinkExpressNode");
                     return null;
                 }
                 var menNew1 = new MetaNewObjectExpressNode(mdt, mcen);
@@ -438,7 +496,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, "oldmen as MetaConstExpressNode is null");
+                    Log.AddMetaCoreLog(LID.MetaCoreExpressManagerIsNullOldmenAs, "oldmen as MetaConstExpressNode is null");
                 }
             }
             return menNew;

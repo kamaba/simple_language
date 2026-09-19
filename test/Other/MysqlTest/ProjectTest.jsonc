@@ -1,0 +1,77 @@
+{
+  "project":
+  {
+    "name": "ProjectTest",
+    "desc": "Mysql test project - end-to-end MySQL driver tests (connect / DDL / CRUD / transaction / params binding) via SLMysql module, running against a real MySQL server",
+    "mainVersion": 0,
+    "subVersion": 0,
+    "buildVersion": 1,
+    "buildSubVersion": 0
+  },
+  "source": {
+    "root": "."
+  },
+  "compile": {
+    "optimize": false,
+    "target": "x64",
+    "debug": true,
+    "isUseForceSemiColonInLineEnd": true,
+    "isForceUseClassKey": false,
+    "isSupportDoublePlus": false,
+    "requireSameNumericTypes": false
+  },
+  "compileFiles": {
+    "files": [
+      { "path": "MysqlTest.sl", "group": "mysql", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "MysqlApiTest.sl", "group": "mysql", "tag": "api", "ignore": false, "priority": 1 }
+    ]
+  },
+  "compileFilter": {
+    "isAllGroup": true,
+    "isAllTag": true
+  },
+  "global": {
+    "imports": [
+      "Std.Console"
+    ],
+    "replace": {
+      "DEBUG": "true"
+    }
+  },
+  // 连接目标（run 时用 global.<name> 读取，见 ProjectTest.md）。
+  // ⚠️ 这里是真实环境的账号密码，仅限本机开发测试使用，请勿提交到公共仓库；
+  //    正式迁移请改为环境变量 / 本地未纳入版本管理的配置文件。
+  "data": {
+    "mysqlHost": "bj-cdb-mri5uaiu.sql.tencentcdb.com",
+    "mysqlPort": 22718,
+    "mysqlUser": "root",
+    "mysqlPassword": "Likecg00@123",
+    "mysqlDatabase": "ry_net",
+    "mysqlTestDb": "sl_mysql_test",
+    "mysqlCharset": "utf8mb4"
+  },
+  "references": [
+    { "path": "../../out/export/Core", "uuid":"123123123213", "name": "Core.module.json" },
+    { "path": "../../out/export/Std", "uuid":"456456456456", "name": "Std.module.json" },
+    { "path": "../../out/export/SLMysql", "uuid":"2dce7a34c06436ceca45d8557a5f137f", "name": "SLMysql.module.json" }
+  ],
+  "struct": [
+  ],
+  "export": {
+    "moduleName": "MysqlTest",
+    "outputDir": "F:\\project\\lang\\simple_language\\out\\export",
+    "versionMain": 0,
+    "versionSub": 0,
+    "versionPatch": 1,
+    "includeMetadata": true,
+    "debugText": {
+      "outputDir": "",
+      "code": true,
+      "token": true,
+      "node": true,
+      "file": true,
+      "meta": true,
+      "ir": true
+    }
+  }
+}

@@ -186,6 +186,67 @@ Character
 
 ---
 
+## 内置序列化标签（@Serializable / @SerializeField / @NonSerialized）
+
+标准库内置三个 Attribute 类（定义于 `Core/Attribute.sl`），配合 `Core/IO/Serialize.sl` 的 JSON 直连门面（`Serialize.toJson` / `toJsonPretty` / `fromJson`）控制对象与 JSON 的互转范围：
+
+| 标签 | 修饰对象 | 作用 |
+|------|----------|------|
+| `@Serializable()` | class / data | 声明该类型按成员展开参与 JSON 序列化 |
+| `@SerializeField()` | 成员变量 | 强制 protected/private 成员参与序列化（补票） |
+| `@NonSerialized()` | 成员变量 | 将该成员从序列化中淘汰（一票否决，优先级最高） |
+
+### 类型级规则
+
+- `class` 标注 `@Serializable()` 后走**成员展开**（与 `data` 同款，逐成员过滤输出 JSON 对象）。
+- 未标注的 `class` 维持原嫁接链：虚调 `toJson()` 子树嫁接 → 无 `toJson()` 时回退 `toString()` 字符串叶 → 再失败为 `null` 叶。
+- `data` **默认可序列化**，`@Serializable()` 为可选的显式标注。
+- 嵌套的 `@Serializable` class / data 成员递归展开子树。
+
+### 成员级规则（正反向对称）
+
+判定优先级：`@NonSerialized()` > `@SerializeField()` > 可见性默认。
+
+| 成员情形 | 是否参与序列化 |
+|----------|----------------|
+| class `public` 成员 | 默认参与 |
+| class `protected` / `private` 成员 | 默认排除；标 `@SerializeField()` 后参与 |
+| 任意可见性 + `@NonSerialized()` | 淘汰（一票否决，优先级最高） |
+| `static` 成员 | 一律排除（不属于实例状态） |
+| `data` 成员 | 默认全量（data 无可见性修饰） |
+
+### 反向（fromJson）
+
+与正向使用**同一套过滤规则**：按类型 new 实例（不执行构造器）后按 JSON key 对名填充；JSON 中缺失的成员保持默认零值 / null；嵌套的 `@Serializable` class 成员同样可还原；未标注 class 的引用成员不还原（保持 null）。
+
+### 示例
+
+```sl
+@Serializable()
+class Point
+{
+    public Int32 x = 0                    # 默认参与
+    public Int32 y = 0                    # 默认参与
+    protected Int32 z = 0                 # 默认排除
+    @SerializeField()
+    protected Int32 forced = 0            # 补票参与
+    @NonSerialized()
+    public Int32 skipped = 0              # public 被淘汰
+    public static Int32 Version = 9       # static 排除
+}
+
+Point p = Point()
+p.x = 1
+p.y = 2
+p.forced = 5
+string json = Serialize.toJson( p )          # {"x":1,"y":2,"forced":5}
+Point back = Serialize.fromJson<Point>( json )
+```
+
+> 门面方法契约详见 `Core/IO/Serialize.sl` 文件头注释；data 侧规则见 [data.md](data.md) §4.2；测试用例见 `test/ExpendTest/SerializeTest.sl`。
+
+---
+
 ## 约定与限制（Front 层解析阶段）
 
 - Attribute 只负责"挂载元数据"，不直接改变语义。

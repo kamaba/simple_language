@@ -1,0 +1,871 @@
+﻿LidIndexer 扫描报告  2026-09-08 08:57:59
+调用点总数: 774
+  [Project] 33 处  (ID 20000 - 20032)
+      ProjectClass         17
+      ReferenceModule      13
+      Compile              3
+  [Process] 4 处  (ID 20050 - 20053)
+      SystemMethodCall     3
+      DllImport            1
+  [Token] 18 处  (ID 20100 - 20117)
+      Lexer                16
+      ParseNode            2
+  [Node] 87 处  (ID 20200 - 20286)
+      StructParse          43
+      StructFrame          41
+      ParseNode            3
+  [File] 144 处  (ID 20300 - 20443)
+      Class                47
+      Express              22
+      MemberVariable       14
+      Util                 9
+      BindExpand           8
+      Common               7
+      MemberFunction       7
+      GlobalSyntax         6
+      StructFrame          6
+      Syntax               4
+      FileParse            3
+      VisitCall            3
+      Namespace            2
+      Enum                 2
+      File                 1
+      Lexer                1
+      ParseNode            1
+      ClassManager         1
+  [MetaCore] 443 处  (ID 21000 - 21442)
+      Call                 86
+      ExpressNewObject     49
+      Type                 46
+      Enum                 29
+      Class                27
+      AssignStatement      27
+      ExpressOperator      22
+      Attribute            13
+      ClassManager         13
+      MemberFunction       13
+      ExpressManager       12
+      CallLink             8
+      MemberVariable       8
+      Data                 7
+      WhileDoWhileStatement 7
+      MemberEnum           6
+      BlockStatement       6
+      DefineVarStatement   6
+      Variable             5
+      ClosureDefineStatement 5
+      ExpressAsIs          4
+      MetaNode             4
+      Param                4
+      TemplateClass        4
+      GenTemplateClass     3
+      MemberData           3
+      Number               3
+      BreakContinueGoStatement 3
+      Local                2
+      ExpressArray         2
+      Module               2
+      AttributeRegistry    2
+      ReturnStatement      2
+      TryCatchStatement    2
+      Namespace            1
+      ExpressAnonData      1
+      ExpressChecked       1
+      ExpressConst         1
+      ExpressTry           1
+      Method               1
+      VisitCall            1
+      SwitchStatement      1
+  [IR] 34 处  (ID 22000 - 22033)
+      Express              7
+      Manager              6
+      ClosureDefineStatement 4
+      Variable             4
+      CallLink             3
+      AssignStatement      3
+      Class                2
+      Call                 2
+      Method               1
+      ReturnStatement      1
+      Util                 1
+  [Export] 11 处  (ID 22100 - 22110)
+      MLIR                 10
+      SLModulePackage      1
+
+---- 明细 ----
+ 20300  FileMetaFileNamespace                                   File/File             FileMeta.cs:351  <- Error 暂不允许使用namespace 定义命名空间!!!
+ 20301  FileMetaClassM_NodeListCount                            File/Class            FileMetaClass.cs:99  <- Error m_NodeList.Count == 0
+ 20302  FileMetaClassBind                                       File/Class            FileMetaClass.cs:131  <- Error bind关键字后边没有相应的内容!
+ 20303  FileMetaClassExtend                                     File/Class            FileMetaClass.cs:141  <- Error 已有继承类,请勿多重继承!
+ 20304  FileMetaClassExtend2                                    File/Class            FileMetaClass.cs:146  <- Error 继承关键字后边没有相应的内容!
+ 20305  FileMetaClassNotAllowExtend                             File/Class            FileMetaClass.cs:150  <- Error 继承只能单继承，不能多继承!!
+ 20306  FileMetaClassInterface                                  File/Class            FileMetaClass.cs:160  <- 接口关键字后边没有相应的内容!
+ 20307  FileMetaClassIssue                                      File/Class            FileMetaClass.cs:169  <- Error 字符两次赋值 107
+ 20308  FileMetaClassIssue2                                     File/Class            FileMetaClass.cs:172  <- (动态消息)
+ 20309  FileMetaClassNotSupport                                 File/Class            FileMetaClass.cs:222  <- Error 不支持其它格式 在类后续的模板限定中!
+ 20310  FileMetaClassT                                          File/Class            FileMetaClass.cs:243  <- 没有找到模板定义T
+ 20311  FileMetaClassNotSupport2                                File/Class            FileMetaClass.cs:286  <- Error 不支持其它格式 在类后续的模板限定中!
+ 20312  FileMetaClassIssue3                                     File/Class            FileMetaClass.cs:308  <- Error 解析过了一次权限!!
+ 20313  FileMetaClassConst                                      File/Class            FileMetaClass.cs:324  <- Error 解析过了一次Const!!
+ 20314  FileMetaClassClass                                      File/Class            FileMetaClass.cs:332  <- Error 解析过了一次Class!!
+ 20315  FileMetaClassAbstract                                   File/Class            FileMetaClass.cs:341  <- Error 解析过了一次Abstract!!
+ 20316  FileMetaClassEnum                                       File/Class            FileMetaClass.cs:350  <- Error 解析过了一次Enum!!
+ 20317  FileMetaClassData                                       File/Class            FileMetaClass.cs:355  <- Error 解析过了一次data!!
+ 20318  FileMetaClassClass2                                     File/Class            FileMetaClass.cs:360  <- Error 解析过了一次Class!!
+ 20319  FileMetaClassEnum2                                      File/Class            FileMetaClass.cs:369  <- Error 解析过了一次Enum!!
+ 20320  FileMetaClassData2                                      File/Class            FileMetaClass.cs:374  <- Error 解析过了一次data!!
+ 20321  FileMetaClassClass3                                     File/Class            FileMetaClass.cs:379  <- Error 解析过了一次Class!!
+ 20322  FileMetaClassEnum3                                      File/Class            FileMetaClass.cs:388  <- Error 解析过了一次Enum!!
+ 20323  FileMetaClassData3                                      File/Class            FileMetaClass.cs:395  <- Error 解析过了一次data!!
+ 20324  FileMetaClassClass4                                     File/Class            FileMetaClass.cs:400  <- Error 解析过了一次Class!!
+ 20325  FileMetaClassExtend3                                    File/Class            FileMetaClass.cs:410  <- Error 解析过了一次Extend!!
+ 20326  FileMetaClassBind2                                      File/Class            FileMetaClass.cs:420  <- Error 解析过了一次bind!!
+ 20327  FileMetaClassEnum4                                      File/Class            FileMetaClass.cs:430  <- Error 解析过了一次Enum!!
+ 20328  FileMetaClassData4                                      File/Class            FileMetaClass.cs:435  <- Error 解析过了一次data!!
+ 20329  FileMetaClassInterface2                                 File/Class            FileMetaClass.cs:442  <- Error 解析类时，已发现用过interface标记，不可重复使用该标记
+ 20330  FileMetaClassInterface3                                 File/Class            FileMetaClass.cs:447  <- Error 解析类时，已发现用过interface标记，不可重复使用该标记
+ 20331  FileMetaClassInterfaceClass                             File/Class            FileMetaClass.cs:458  <- Error 解析interface与class不可以周时出现!!
+ 20332  FileMetaClassInterface4                                 File/Class            FileMetaClass.cs:463  <- Error 解析类时，已发现用过interface标记，不可重复使用该标记
+ 20333  FileMetaClassInterface5                                 File/Class            FileMetaClass.cs:468  <- Error 解析类时，已发现用过interface标记，不可重复使用该标记
+ 20334  FileMetaClassClass5                                     File/Class            FileMetaClass.cs:480  <- Error 有其它未知类型在class中
+ 20335  FileMetaClassEnum5                                      File/Class            FileMetaClass.cs:491  <- Error Enum方式，与enum同级，不允许同时出现
+ 20336  FileMetaClassEnum6                                      File/Class            FileMetaClass.cs:496  <- Error Enum方式，不支持接口方式
+ 20337  FileMetaClassIssue4                                     File/Class            FileMetaClass.cs:497  <- (动态消息)
+ 20338  FileMetaClassEnumBind                                   File/Class            FileMetaClass.cs:502  <- Error Enum方式，不支持bind的使用!!
+ 20339  FileMetaClassEnum7                                      File/Class            FileMetaClass.cs:507  <- Error Enum方式，不支持权限的使用!!
+ 20340  FileMetaClassEnumPartial                                File/Class            FileMetaClass.cs:512  <- Error Enum方式，不支持partial的使用!!
+ 20341  FileMetaClassEnumData                                   File/Class            FileMetaClass.cs:521  <- Error Enum方式，与data同级，不允许同时出现
+ 20342  FileMetaClassEnum8                                      File/Class            FileMetaClass.cs:526  <- Error Enum方式，不支持接口方式
+ 20343  FileMetaClassDataBind                                   File/Class            FileMetaClass.cs:531  <- Error Data方式，不支持bind的使用!!
+ 20344  FileMetaClassData5                                      File/Class            FileMetaClass.cs:536  <- Error Data方式，不支持权限的使用!!
+ 20345  FileMetaClassDataPartial                                File/Class            FileMetaClass.cs:541  <- Error Data方式，不支持partial的使用!!
+ 20346  FileMetaClassType                                       File/Class            FileMetaClass.cs:551  <- Error 解析类型名称错误!!
+ 20347  FileMetaClassNotSupport3                                File/Class            FileMetaClass.cs:588  <- Error 不支持其它格式 在类后续的模板限定中!
+ 20348  FileMetaCommonX                                         File/Common           FileMetaCommon.cs:122  <- Error 命名空间有误，必须为X.xx.X 类似的格式!
+ 20349  FileMetaCommonX2                                        File/Common           FileMetaCommon.cs:130  <- Error 命名空间有误，必须为X.xx.X 类似的格式!
+ 20350  FileMetaCommonIssue                                     File/Common           FileMetaCommon.cs:280  <- 已经有解析()
+ 20351  FileMetaCommonDBGFileMetaCallNodeNode                   File/Common           FileMetaCommon.cs:292  <- [DBG FileMetaCallNode] node='{}' nodeType={} angleNode children={}
+ 20352  FileMetaCommonArray                                     File/Common           FileMetaCommon.cs:712  <- 数组获取长度文件的时候，有异常!
+ 20353  FileMetaCommonIssue2                                    File/Common           FileMetaCommon.cs:786  <- Error 在<>中没有发现元素!!
+ 20354  FileMetaCommonTClassName                                File/Common           FileMetaCommon.cs:797  <- Error 在<T in> or <T []> or <T ClassName> 使用方法不正确,请使用 <T in []>或者是 <T in ClassNam...
+ 20355  FileMetaExpressCannot                                   File/Express          FileMetaExpress.cs:76  <- Error 多重逗号，导致解析无法解析!!
+ 20356  FileMetaExpressNotAllowSign                             File/Express          FileMetaExpress.cs:81  <- Error 首符号不能为逗号
+ 20357  FileMetaExpressFileMetaAsOrIsTermAs                     File/Express          FileMetaExpress.cs:357  <- Error FileMetaAsOrIsTerm 参数不合法，无法构造 as/is 表达式
+ 20358  FileMetaExpressNodeListCount                            File/Express          FileMetaExpress.cs:588  <- Error nodeList.Count == 0
+ 20359  FileMetaExpressFileMetaBraceTerm                        File/Express          FileMetaExpress.cs:729  <- Error FileMetaBraceTerm--
+ 20360  FileMetaExpressErrorrFileMetaBraceTermHandleBraceTerm   File/Express          FileMetaExpress.cs:782  <- Errorr FileMetaBraceTerm.HandleBraceTerm 解析{ a = ?} 时，多个=号 Token:
+ 20361  FileMetaExpressErrorrFileMetaBraceTermHandleBraceTerm2  File/Express          FileMetaExpress.cs:794  <- Errorr FileMetaBraceTerm.HandleBraceTerm 解析{ a:'aaa'} 时，多个:号 Token:
+ 20362  FileMetaExpressArray                                    File/Express          FileMetaExpress.cs:839  <- Error 在解析为{}中，数组形式 解析有问题!!
+ 20363  FileMetaExpressIssue                                    File/Express          FileMetaExpress.cs:848  <- Error 在解析为{}中，赋值= 解析有问题!!
+ 20364  FileMetaExpressIssue2                                   File/Express          FileMetaExpress.cs:875  <- Error 在解析为{}中，出现了不该出现的格式
+ 20365  FileMetaExpressIssue3                                   File/Express          FileMetaExpress.cs:975  <- Warning [1,2,3,]有多余逗号出现??
+ 20366  FileMetaExpressIssue4                                   File/Express          FileMetaExpress.cs:1016  <- Warning [1,2,3,]有多余逗号出现??
+ 20367  FileMetaExpressNotSupport                               File/Express          FileMetaExpress.cs:1022  <- Error 不支持在[]中解析()的逻辑!!
+ 20368  FileMetaExpressKey                                      File/Express          FileMetaExpress.cs:1035  <- Error 不支持在[]中解析Key的逻辑!!
+ 20369  FileMetaExpressIssue5                                   File/Express          FileMetaExpress.cs:1051  <- Warning [1,2,3,]有多余逗号出现??
+ 20370  FileMetaExpressData                                     File/Express          FileMetaExpress.cs:1094  <- Error Data数据中 []中，不支持该类型的数据
+ 20371  FileMetaExpressData2                                    File/Express          FileMetaExpress.cs:1108  <- Error Data数据中 []中，不支持该类型的数据
+ 20372  FileMetaExpressNotAllowNotAllow                         File/Express          FileMetaExpress.cs:1410  <- Error not allow
+ 20373  FileMetaExpressFileMetaExpress                          File/Express          FileMetaExpress.cs:1420  <- Error 表达式解析错误!! FileMetaExpress 575
+ 20374  FileMetaExpressI                                        File/Express          FileMetaExpress.cs:1440  <- Error 只有在语句中，可以使用i++ 等语法，变量与传参是禁止使用i++
+ 20375  FileMetaExpressFileMetaExpress2                         File/Express          FileMetaExpress.cs:1447  <- Error 不能使用错误符号 !! FileMetaExpress 698
+ 20376  FileMetaExpressBuildTst                                 File/Express          FileMetaExpress.cs:1468  <- Error BuildTst 表达式解析错误!! 604 [
+ 20377  FileMetaGlobalSyntaxImport                              File/GlobalSyntax     FileMetaGlobalSyntax.cs:50  <- Error import必须有2个节点!!
+ 20378  FileMetaGlobalSyntaxImport2                             File/GlobalSyntax     FileMetaGlobalSyntax.cs:108  <- Error import 字符串中没有命名空间名称
+ 20379  FileMetaGlobalSyntaxImport3                             File/GlobalSyntax     FileMetaGlobalSyntax.cs:179  <- 解析Import语句发生错误，没有找到对应的命名空间路径:
+ 20380  FileMetaGlobalSyntaxImport4                             File/GlobalSyntax     FileMetaGlobalSyntax.cs:197  <- 没有找到 import 模块:
+ 20381  FileMetaGlobalSyntaxNotFound                            File/GlobalSyntax     FileMetaGlobalSyntax.cs:229  <- 文件:{} 没有找到:{} 下的:{}
+ 20382  FileMetaGlobalSyntaxImport5                             File/GlobalSyntax     FileMetaGlobalSyntax.cs:267  <- 解析Import语句发生错误，没有找到对应的命名空间路径:
+ 20383  FileMetaMemberFunctionNodeList                          File/MemberFunction   FileMetaMemberFunction.cs:42  <- Error 解析NodeList出现错误~~~
+ 20384  FileMetaMemberFunctionParseBuildMetaParamterTypeNameParamName File/MemberFunction   FileMetaMemberFunction.cs:53  <- ParseBuildMetaParamter Error 定义参数的格式为 TypeName ParamName or param object[] Param...
+ 20385  FileMetaMemberFunctionX                                 File/MemberFunction   FileMetaMemberFunction.cs:58  <- Error 没有找到该定义名称 必须使用例: X = 101; 的格式
+ 20386  FileMetaMemberFunctionNotAllowFunction                  File/MemberFunction   FileMetaMemberFunction.cs:254  <- Error 已有函数实体，不能同时出现两个函数实体!
+ 20387  FileMetaMemberFunctionParseFileMetaMemberFunction       File/MemberFunction   FileMetaMemberFunction.cs:379  <- ParseFileMetaMemberFunction have Error
+ 20388  FileMetaMemberFunctionParam                             File/MemberFunction   FileMetaMemberFunction.cs:440  <- Error 参数名称有重名!!!
+ 20389  FileMetaMemberFunctionParam2                            File/MemberFunction   FileMetaMemberFunction.cs:462  <- Error 参数名称有重名!!!
+ 20390  FileMetaMemberVariableNodeList                          File/MemberVariable   FileMetaMemberVariable.cs:125  <- Error 解析NodeList出现错误~~~
+ 20391  FileMetaMemberVariableListDefieNode                     File/MemberVariable   FileMetaMemberVariable.cs:130  <- Error listDefieNode 不能为空~
+ 20392  FileMetaMemberVariableX                                 File/MemberVariable   FileMetaMemberVariable.cs:136  <- Error 没有找到该定义名称 必须使用例: X = 103; 的格式
+ 20393  FileMetaMemberVariableIsNullTokenNull                   File/MemberVariable   FileMetaMemberVariable.cs:142  <- token is null
+ 20394  FileMetaMemberVariableData                              File/MemberVariable   FileMetaMemberVariable.cs:190  <- Error Data数据中 []中，不支持该类型的数据
+ 20395  FileMetaMemberVariableData2                             File/MemberVariable   FileMetaMemberVariable.cs:204  <- Error Data数据中 []中，不支持该类型的数据
+ 20396  FileMetaMemberVariableData3                             File/MemberVariable   FileMetaMemberVariable.cs:218  <- Error Data数据中 []中，不支持该类型的数据
+ 20397  FileMetaMemberVariableData4                             File/MemberVariable   FileMetaMemberVariable.cs:230  <- Error Data数据中 []中，不支持该类型的数据
+ 20398  FileMetaMemberVariableDefine                            File/MemberVariable   FileMetaMemberVariable.cs:415  <- Error 多重定义名称的权限定义!!
+ 20399  FileMetaMemberVariableDefineStatic                      File/MemberVariable   FileMetaMemberVariable.cs:424  <- Error 多重定义名称的静态定义!!
+ 20400  FileMetaMemberVariableConst                             File/MemberVariable   FileMetaMemberVariable.cs:433  <- Error 多重定义const定义!!
+ 20401  FileMetaMemberVariableMut                               File/MemberVariable   FileMetaMemberVariable.cs:446  <- Error 多重定义名称的Mut定义!!
+ 20402  FileMetaMemberVariableNotAllowTypeVariable              File/MemberVariable   FileMetaMemberVariable.cs:453  <- Error 解析变量中，不允许的类型存在!!
+ 20403  FileMetaMemberVariableNodeListCount                     File/MemberVariable   FileMetaMemberVariable.cs:470  <- node List count > 2
+ 20404  FileMetaNamespaceNamespace                              File/Namespace        FileMetaNamespace.cs:82  <- Error 在解析namespace 中，没有找到namespace设置的名称!!
+ 20405  FileMetaNamespaceNamespace2                             File/Namespace        FileMetaNamespace.cs:100  <- Error 暂不允许使用namespace 定义命名空间!!!
+ 21000  MetaCoreNamespaceNamespaceNameConflicts                 MetaCore/Namespace        FileMetaNamespace.cs:145  <- Namespace name conflicts with existing node:
+ 20406  FileMetaSyntaxFileMetaConditionExpressSyntaxInit        File/Syntax           FileMetaSyntax.cs:78  <- FileMetaConditionExpressSyntax init
+ 20407  FileMetaSyntaxIf                                        File/Syntax           FileMetaSyntax.cs:133  <- Error 不能有多个if语句!!
+ 20408  FileMetaSyntaxGotoLabelId                               File/Syntax           FileMetaSyntax.cs:881  <- Error 解析Goto Label语法，只支持 goto id;的语法!!
+ 20409  FileMetaSyntaxGotoLabel                                 File/Syntax           FileMetaSyntax.cs:888  <- Error 解析GotoLabel中 后边必须使用普通字符
+ 20410  FileMetaUtilIsNullParamDefine                           File/Util             FileMetatUtil.cs:23  <- 自定义字符错误, 参数不可以为空!!
+ 20411  FileMetaUtilIsNullDefine                                File/Util             FileMetatUtil.cs:29  <- 自定义字符错误, 不可以为空!!
+ 20412  FileMetaUtilImportTokenLexeme                           File/Util             FileMetatUtil.cs:50  <- 检查到Import语句中，token内容lexeme为空!!
+ 20413  FileMetaUtilImport                                      File/Util             FileMetatUtil.cs:57  <- 检查到Import语句中，导入名称不合规!!
+ 20414  FileMetaUtilNodeStructVariable                          File/Util             FileMetatUtil.cs:87  <- 解析NodeStructVariable时有=号，但没有值内容
+ 20415  FileMetaUtilCreateFileOneTerm                           File/Util             FileMetatUtil.cs:154  <- Error CreateFileOneTerm 单1表达式，没有找到该类型:
+ 20416  FileMetaUtilIssue                                       File/Util             FileMetatUtil.cs:265  <- Error --------------------------------------!!
+ 20417  FileMetaUtilNotFoundType                                File/Util             FileMetatUtil.cs:331  <- 没有找到该类型:
+ 20418  FileMetaUtilExpress                                     File/Util             FileMetatUtil.cs:413  <- Error 生成表达式错误!!
+ 20050  ProcessDllImportDllImportSourceRewriterRewrittenC       Process/DllImport        DllImportSourceRewriter.cs:96  <- DllImportSourceRewriter: '{0}' rewritten {1} C#-style declaration(s)
+ 20419  FileMetaFileParseIssue                                  File/FileParse        FileParse.cs:214  <- (动态消息)
+ 20420  FileMetaFileParseExportFileMetaDebug                    File/FileParse        FileParse.cs:239  <- Export FileMeta debug data failed:
+ 20421  FileMetaFileParseExportMetaDebug                        File/FileParse        FileParse.cs:274  <- Export Meta debug data failed:
+ 20100  TokenLexerCannotUndoChar                                Token/Lexer            LexerParseToToken.cs:96  <- Error Cannot undo char beyond start of source.
+ 20101  TokenLexerNosupportStyle                                Token/Lexer            LexerParseToToken.cs:516  <- nosupport <<<? style!
+ 20102  TokenLexerIssue                                         Token/Lexer            LexerParseToToken.cs:619  <- (动态消息)
+ 20103  TokenLexerReadNumber                                    Token/Lexer            LexerParseToToken.cs:866  <- Error ReadNumber ...
+ 20104  TokenLexerCharLogicFloat                                Token/Lexer            LexerParseToToken.cs:884  <- char. logic is float format call inner functionname
+ 20105  TokenLexerDecimalNumberOverflow                         Token/Lexer            LexerParseToToken.cs:912  <- Decimal number overflow ({}), fallback to UInt64.MaxValue.
+ 20106  TokenLexerRadixNumberOverflow                           Token/Lexer            LexerParseToToken.cs:959  <- Radix number overflow (0{}{}), fallback to UInt64.MaxValue.
+ 20107  TokenLexerToken                                         Token/Lexer            LexerParseToToken.cs:1077  <- @ _ token
+ 20108  TokenLexerEndCharReached                                Token/Lexer            LexerParseToToken.cs:1095  <- end char reached before closing quote in string literal
+ 20109  TokenLexerEndCharReached2                               Token/Lexer            LexerParseToToken.cs:1178  <- end char reached before closing quote in string literal
+ 20110  TokenLexerEndCharReached3                               Token/Lexer            LexerParseToToken.cs:1354  <- end char reached before closing quote in string literal
+ 20111  TokenLexerOtherCharNeed                                 Token/Lexer            LexerParseToToken.cs:1389  <- other char need handle
+ 20112  TokenLexerLevel                                         Token/Lexer            LexerParseToToken.cs:1690  <- # 。。。 level
+ 20113  TokenLexerIssue2                                        Token/Lexer            LexerParseToToken.cs:1730  <- Error 块注释 #! 未闭合，直接跳到文件末尾 :
+ 20114  TokenLexerRead                                          Token/Lexer            LexerParseToToken.cs:1832  <- read $
+ 20115  TokenLexerIssue3                                        Token/Lexer            LexerParseToToken.cs:2505  <- (动态消息)
+ 20422  FileMetaLexerNotFoundTokenNot                           File/Lexer            LexerParseToToken.cs:2543  <- token not found extend in sharp!
+ 20423  FileMetaStructFrameAddParseLocalNodeInfo                File/StructFrame      StructParseFrame.cs:107  <- Error AddParseLocalNodeInfo
+ 20424  FileMetaStructFrameAddParseNamespaceNodeInfo            File/StructFrame      StructParseFrame.cs:124  <- Error AddParseNamespaceNodeInfo
+ 20200  NodeStructFrameAddParseClassNodeInfo                    Node/StructFrame      StructParseFrame.cs:146  <- Error AddParseClassNodeInfo
+ 20201  NodeStructFrameAddParseVariableInfo                     Node/StructFrame      StructParseFrame.cs:162  <- Error AddParseVariableInfo
+ 20202  NodeStructFrameAddParseDataInfo                         Node/StructFrame      StructParseFrame.cs:178  <- Error AddParseDataInfo
+ 20203  NodeStructFrameAddParseFunctionNodeInfo                 Node/StructFrame      StructParseFrame.cs:198  <- Error AddParseFunctionNodeInfo
+ 20425  FileMetaStructFrameAddParseSyntaxNodeInfo               File/StructFrame      StructParseFrame.cs:218  <- Error AddParseSyntaxNodeInfo
+ 20204  NodeStructFrameTypealiasImportLocal                     Node/StructFrame      StructParseFrame.cs:317  <- Error typealias 只能写在 import/local 后、namespace/class/data/enum 前
+ 20426  FileMetaStructFrameLocalImportNamespace                 File/StructFrame      StructParseFrame.cs:338  <- Error local{} 只能写在 import 后、namespace/class/data/enum 前
+ 20205  NodeStructFrameFile                                     Node/StructFrame      StructParseFrame.cs:370  <- Error 不允许 在File头级目录中出现 :
+ 20206  NodeStructFrameFile2                                    Node/StructFrame      StructParseFrame.cs:383  <- Error 不允许 在File头级目录中出现2 :
+ 20207  NodeStructFrameCodeMeta                                 Node/StructFrame      StructParseFrame.cs:397  <- 解析成Code代码结构文件成功!!! 下一步，可以生产Meta文件了
+ 20208  NodeStructFrameParseFile                                Node/StructFrame      StructParseFrame.cs:404  <- [{}]解析出现错误 ParseFile :
+ 20427  FileMetaStructFrameAttributeNamespaceClass              File/StructFrame      StructParseFrame.cs:432  <- Error @Attribute 只允许写在 namespace{} / class{} 内
+ 20428  FileMetaStructFrameAttribute                            File/StructFrame      StructParseFrame.cs:441  <- Error @Attribute 名称为空
+ 20209  NodeStructFrameTypealias                                Node/StructFrame      StructParseFrame.cs:625  <- Error typealias 后缺少别名与类型
+ 20210  NodeStructFrameTypealias2                               Node/StructFrame      StructParseFrame.cs:639  <- Error typealias 后应为单个标识符别名
+ 20211  NodeStructFrameTypealias3                               Node/StructFrame      StructParseFrame.cs:647  <- Error typealias 缺少 = 与目标类型
+ 20212  NodeStructFrameTypealias4                               Node/StructFrame      StructParseFrame.cs:727  <- Error typealias 目标类型无法解析
+ 20213  NodeStructFrameLocalStatic                              Node/StructFrame      StructParseFrame.cs:882  <- Error local{} 中定义的函数不允许使用 static
+ 20214  NodeStructFrameNamespace                                Node/StructFrame      StructParseFrame.cs:921  <- Error 在解析namespace 中，后边跟着参数多于正常语法!!
+ 20215  NodeStructFrameNamespace2                               Node/StructFrame      StructParseFrame.cs:955  <- Error 在解析namespace 中，需要强制;号结束
+ 20216  NodeStructFrameNamespace3                               Node/StructFrame      StructParseFrame.cs:977  <- 现在不允许 namespace {};这种的语法了
+ 20217  NodeStructFrameAttributeNamespaceClass                  Node/StructFrame      StructParseFrame.cs:1006  <- Error @Attribute 不允许出现在文件头级(只能在 namespace{} / class{} 内)
+ 20218  NodeStructFrameClass                                    Node/StructFrame      StructParseFrame.cs:1074  <- Error 不允许在解释Class的时候，有错误 的语法--------------------
+ 20219  NodeStructFrameNamespaceN1                              Node/StructFrame      StructParseFrame.cs:1105  <- 现在不允许 namespace N1;这种的语法了
+ 20220  NodeStructFrameNamespaceAttribute                       Node/StructFrame      StructParseFrame.cs:1111  <- 在namespace不允许有attribute
+ 20221  NodeStructFrameNamespaceB                               Node/StructFrame      StructParseFrame.cs:1118  <- Error 对于 namespace A.B{}的格式 多了一个参数!1
+ 20222  NodeStructFrameClassNamespace                           Node/StructFrame      StructParseFrame.cs:1123  <- Error 没有发现是Class还是Namespace的关键字!
+ 20223  NodeStructFrameTypealiasSpProject                       Node/StructFrame      StructParseFrame.cs:1159  <- Error 类体内的 typealias 仅允许出现在 .sp 工程的 Project 类中
+ 20224  NodeStructFrameStructParseFrameParseClassNode           Node/StructFrame      StructParseFrame.cs:1235  <- Error StructParseFrame.ParseClassNode 解析的类后边不用使用;号结尾!!
+ 20225  NodeStructFrameParseClassNodeClass                      Node/StructFrame      StructParseFrame.cs:1301  <- Error ParseClassNode 不允许2在解释Class的时候，有错误 的语法--------------------
+ 20226  NodeStructFrameClassInterface                           Node/StructFrame      StructParseFrame.cs:1351  <- Error class 内部不允许使用 interface 修饰函数
+ 20227  NodeStructFrameFileMetaMemberVariableClass              Node/StructFrame      StructParseFrame.cs:1381  <- 在fileMetaMemberVariable 不在class里边
+ 20228  NodeStructFrameConst                                    Node/StructFrame      StructParseFrame.cs:1454  <- Error 在+-符前边不允许有其它非const类型存在!
+ 20229  NodeStructFrameData                                     Node/StructFrame      StructParseFrame.cs:1525  <- Error Data数据中 []中，不支持该类型的数据
+ 20230  NodeStructFrameDataConst                                Node/StructFrame      StructParseFrame.cs:1701  <- Error data 成员的 const 关键字只能出现在赋值号前
+ 20231  NodeStructFrameDataConst2                               Node/StructFrame      StructParseFrame.cs:1706  <- Error data 成员定义中 const 必须位于名称之前
+ 20232  NodeStructFrameX                                        Node/StructFrame      StructParseFrame.cs:1760  <- Error 如果是 x=-??的形式，在符号后边
+ 20233  NodeStructFrameX2                                       Node/StructFrame      StructParseFrame.cs:1765  <- Error 如果是 x=-??的形式，在符号后边
+ 20234  NodeStructFrameData2                                    Node/StructFrame      StructParseFrame.cs:1799  <- Error 在定义Data数据的时候，如果有折行，只允许 ={} =[] 两种形式!
+ 20235  NodeStructFrameData3                                    Node/StructFrame      StructParseFrame.cs:1804  <- Error 在定义Data数据的时候，不允许=号后边有其它形式的存在
+ 20236  NodeStructFrameData4                                    Node/StructFrame      StructParseFrame.cs:1852  <- 匿名或嵌套的 data {{}} 内请使用英文逗号 ',' 分隔成员，不要使用 ';'
+ 20237  NodeStructFrameData5                                    Node/StructFrame      StructParseFrame.cs:1857  <- Error 报错，不允许 解析Data有其它的类型出现!
+ 20238  NodeStructFrameEnum                                     Node/StructFrame      StructParseFrame.cs:1899  <- error 不允许在enum 内容里边再嵌套enum
+ 20239  NodeStructFrameEnumMemberIdentifier                     Node/StructFrame      StructParseFrame.cs:1979  <- 在解析enum member 中 成员变量 如果是identifier格式，则后边不允许跟当前格式
+ 20240  NodeStructFrameNotAllow                                 Node/StructFrame      StructParseFrame.cs:2029  <- 不允许有{}其它形式的存在!
+ 20241  NodeStructParseElse                                     Node/StructParse      StructParseToSyntax.cs:81  <- Error 不允许在Else后增加任何代码
+ 20242  NodeStructParseStatementExtend                          Node/StructParse      StructParseToSyntax.cs:335  <- warning 使用的是强制封号结束语句方式，注意这个节点会继承往下查找语句
+ 20243  NodeStructParseStatic                                   Node/StructParse      StructParseToSyntax.cs:691  <- Error 多个Static!!
+ 20244  NodeStructParseConst                                    Node/StructParse      StructParseToSyntax.cs:699  <- Error 多个Const!!
+ 20245  NodeStructParseDynamic                                  Node/StructParse      StructParseToSyntax.cs:712  <- Error 多个Dynamic!!
+ 20246  NodeStructParseVar                                      Node/StructParse      StructParseToSyntax.cs:721  <- Error 多个Var!!
+ 20247  NodeStructParseData                                     Node/StructParse      StructParseToSyntax.cs:730  <- Error 多个Data!!
+ 20248  NodeStructParseFunction                                 Node/StructParse      StructParseToSyntax.cs:741  <- Error 多个Function!!
+ 20249  NodeStructParseIssue                                    Node/StructParse      StructParseToSyntax.cs:747  <- Error 解析发现没有该节点!!
+ 20250  NodeStructParseTypeDefine                               Node/StructParse      StructParseToSyntax.cs:754  <- Error 定义类型少于1
+ 20251  NodeStructParseDefine                                   Node/StructParse      StructParseToSyntax.cs:776  <- Error 定义名称只允许一个字符串!!
+ 20252  NodeStructParseN                                        Node/StructParse      StructParseToSyntax.cs:786  <- Error '=' 后缺少赋值表达式；不支持 '=n{}' 或 '= 后注释再换行 { }' 这类写法。请将右值与 '=' 放在同一行。
+ 20253  NodeStructParseNewClassName                             Node/StructParse      StructParseToSyntax.cs:804  <- Error '=' 后不允许直接换行或结束，右值必须与 '=' 同行出现（例如: [ { new() ClassName() 等）
+ 20254  NodeStructParseNotFoundExpress                          Node/StructParse      StructParseToSyntax.cs:815  <- Error '=' 后未找到同一行右值表达式
+ 20255  NodeStructParseDefine2                                  Node/StructParse      StructParseToSyntax.cs:838  <- Error 闭包只能定义在方法体内!
+ 20256  NodeStructParseFunctionVarName                          Node/StructParse      StructParseToSyntax.cs:858  <- Error 匿名闭包需使用 function 关键字: var name = function( 参数 ) { 闭包体 }
+ 20257  NodeStructParseIfSwitch                                 Node/StructParse      StructParseToSyntax.cs:872  <- Error 暂不支持 a = if/switch{}语法
+ 20258  NodeStructParseIsNullNotAllowVariable                   Node/StructParse      StructParseToSyntax.cs:926  <- Error 当为定义变量时，名称不能为空!!
+ 20259  NodeStructParseIssue2                                   Node/StructParse      StructParseToSyntax.cs:1068  <- Error
+ 20260  NodeStructParseSpawnFunction                            Node/StructParse      StructParseToSyntax.cs:1083  <- Error spawn 匿名闭包语法应为: spawn function( 参数 ) { 闭包体 }
+ 20261  NodeStructParseSpawn                                    Node/StructParse      StructParseToSyntax.cs:1091  <- Error spawn 匿名闭包只能出现在方法体内!
+ 20262  NodeStructParseSpawnF                                   Node/StructParse      StructParseToSyntax.cs:1139  <- Error spawn 后必须是带参数列表的函数调用, 例如: spawn f( 1, 2 )
+ 20263  NodeStructParseSpawn2                                   Node/StructParse      StructParseToSyntax.cs:1156  <- Error spawn 目前最多支持 3 个参数!
+ 20264  NodeStructParseSpawnFFunction                           Node/StructParse      StructParseToSyntax.cs:1224  <- Error spawn 后必须是函数调用或匿名闭包, 例如: spawn f( 1, 2 ) 或 spawn function(){...}
+ 20265  NodeStructParseAwait                                    Node/StructParse      StructParseToSyntax.cs:1255  <- Error await 后缺少表达式!
+ 20266  NodeStructParseFunction2                                Node/StructParse      StructParseToSyntax.cs:1523  <- Error 闭包(function)只能定义在方法体内!
+ 20267  NodeStructParseFunctionName                             Node/StructParse      StructParseToSyntax.cs:1543  <- Error 闭包定义语法不正确 应为 function name( 参数 ) { 闭包体 }
+ 20268  NodeStructParseDefine3                                  Node/StructParse      StructParseToSyntax.cs:1548  <- Error 闭包定义缺少名称
+ 20269  NodeStructParseYieldCoroutineWaitUntil                  Node/StructParse      StructParseToSyntax.cs:1574  <- Error yield 不支持带表达式参数, 等待条件请使用 Coroutine.waitUntil( 谓词闭包 )
+ 20270  NodeStructParseYieldCoroutineYieldNow                   Node/StructParse      StructParseToSyntax.cs:1589  <- Error yield 语句展开为 Coroutine.yieldNow() 失败!
+ 20271  NodeStructParseGotoLabelId                              Node/StructParse      StructParseToSyntax.cs:1650  <- Error 解析Goto Label语法，只支持 goto id;的语法!!
+ 20272  NodeStructParseGotoLabel                                Node/StructParse      StructParseToSyntax.cs:1657  <- Error 解析GotoLabel中 后边必须使用普通字符
+ 20273  NodeStructParseStatement                                Node/StructParse      StructParseToSyntax.cs:1804  <- Error For语句中，条件区域没有相关的值!!
+ 20274  NodeStructParseTypeDefineStatement                      Node/StructParse      StructParseToSyntax.cs:1860  <- Error 解析for 第一部分错误，解析语句出错，不是定义类型语句!!
+ 20275  NodeStructParseIssue3                                   Node/StructParse      StructParseToSyntax.cs:1872  <- Error 解析for 第二部分错误!!
+ 20276  NodeStructParseIssue4                                   Node/StructParse      StructParseToSyntax.cs:1887  <- Error 解析for 第二部分错误!!
+ 20277  NodeStructParseIssue5                                   Node/StructParse      StructParseToSyntax.cs:1903  <- Error 解析for 第三部分错误!!
+ 20278  NodeStructParseFileMetaCallLink                         Node/StructParse      StructParseToSyntax.cs:2024  <- Error 创建 FileMetaCallLink 失败
+ 20279  NodeStructParseSwitchCaseDefault                        Node/StructParse      StructParseToSyntax.cs:2050  <- Error switch中不能出现除case/default子外的语句!!
+ 20280  NodeStructParseCase                                     Node/StructParse      StructParseToSyntax.cs:2065  <- Error Case语句不允许没有检查值!!
+ 20281  NodeStructParseCaseClassName                            Node/StructParse      StructParseToSyntax.cs:2097  <- Error case is 类型匹配的格式为: case is ClassName [变量名]!!
+ 20282  NodeStructParseNumberStringBool                         Node/StructParse      StructParseToSyntax.cs:2112  <- Error 多值分割(|/)只允许number,string,bool
+ 20283  NodeStructParseType                                     Node/StructParse      StructParseToSyntax.cs:2124  <- Error 使用|或逗号切割开后，类型不相同!!
+ 20116  TokenParseNodeIssue                                     Token/ParseNode        TokenParseToNode.cs:131  <- 现在$符必须使用.$方式!!
+ 20117  TokenParseNodeIssue2                                    Token/ParseNode        TokenParseToNode.cs:209  <- 现在$符必须使用.$方式!!
+ 20284  NodeParseNodeGreaterCountZero                           Node/ParseNode        TokenParseToNode.cs:247  <- greater count is zero
+ 20285  NodeParseNodeSign                                       Node/ParseNode        TokenParseToNode.cs:328  <- () 符号没有对称! 原符号:
+ 20286  NodeParseNodeSign2                                      Node/ParseNode        TokenParseToNode.cs:357  <- () 符号没有对称! 原符号:
+ 20429  FileMetaParseNodePathLineSource                         File/ParseNode        TokenParseToNode.cs:787  <- Path:{0} Line:{1} Source: {2}
+ 21001  MetaCoreAttributeCannotNicknameFind                     MetaCore/Attribute        AttributeManager.cs:82  <- Nickname: cannot find parent MetaNode for '{}'
+ 21002  MetaCoreAttributeNicknameRegisteredAlias                MetaCore/Attribute        AttributeManager.cs:91  <- Nickname: registered alias '{}' -> '{}' under '{}'
+ 21003  MetaCoreAttributeAOTAttributeRegistered                 MetaCore/Attribute        AttributeManager.cs:108  <- AOT: attribute registered on '{}' (no logic yet)
+ 21004  MetaCoreAttributeGPUAttributeRegistered                 MetaCore/Attribute        AttributeManager.cs:127  <- GPU: attribute registered on '{}' args={}
+ 21005  MetaCoreAttributeDllImportOwner                         MetaCore/Attribute        AttributeManager.cs:143  <- DllImport: 需要 (库路径, 符号名) 两个字符串实参, owner='{}'
+ 21006  MetaCoreAttributeDllImportAttributeRegistered           MetaCore/Attribute        AttributeManager.cs:147  <- DllImport: attribute registered on '{}' (initializer injected at member express ...
+ 21007  MetaCoreAttributeAttributeManagerProcessCompileTimeCompile MetaCore/Attribute        AttributeManager.cs:231  <- AttributeManager.ProcessCompileTime: compile={}, runtime={}
+ 21008  MetaCoreAttributeCompileAttributeAttr                   MetaCore/Attribute        AttributeManager.cs:296  <- Compile attribute error: attr={} owner={} err={}
+ 21009  MetaCoreAttributeCompileHandlerAttribute                MetaCore/Attribute        AttributeManager.cs:302  <- No compile handler for attribute '{}' on {}
+ 21010  MetaCoreAttributeAttributeConditionNot                  MetaCore/Attribute        AttributeManager.cs:357  <- Attribute Condition '{}' not met for {}, skipping
+ 21011  MetaCoreAttributeAttributeHookOwnerAttr                 MetaCore/Attribute        AttributeManager.cs:365  <- AttributeHook {} owner:{} attr:{}
+ 20430  FileMetaBindExpandBindData                              File/BindExpand       BindExpandManager.cs:106  <- Error bind 引用的数据类型 '{}' 未找到或不是 data 类型!
+ 20431  FileMetaBindExpandBind                                  File/BindExpand       BindExpandManager.cs:219  <- Warning 类 '{}' 已有成员 '{}'，跳过 bind 成员变量注入。
+ 20432  FileMetaBindExpandBind2                                 File/BindExpand       BindExpandManager.cs:238  <- Warning 类 '{}' 已有成员变量 '{}'，跳过 bind 字段访问器。
+ 20433  FileMetaBindExpandBindGetSet                            File/BindExpand       BindExpandManager.cs:246  <- Warning bind 数据中字段 '{}' 存在冲突，请手动实现 get/set。
+ 20434  FileMetaBindExpandBind3                                 File/BindExpand       BindExpandManager.cs:340  <- Warning 接口 '{}' bind 字段 '{}' 冲突，请手动声明。
+ 20435  FileMetaBindExpandBind4                                 File/BindExpand       BindExpandManager.cs:450  <- Error 类 '{}' 实现接口 '{}' bind 了数据 '{}'，但类未 bind 该数据!
+ 20436  FileMetaBindExpandBind5                                 File/BindExpand       BindExpandManager.cs:479  <- Error bind 展开失败：无法找到合成类 '{}'。
+ 20437  FileMetaBindExpandBind6                                 File/BindExpand       BindExpandManager.cs:503  <- Error bind 展开异常 (类 '{}'): {}
+ 21012  MetaCoreClassManagerNotFoundNotFound                    MetaCore/ClassManager     ClassManager.cs:303  <- not found topLevelClass!!!
+ 21013  MetaCoreClassManagerNotAllowNamespaceData               MetaCore/ClassManager     ClassManager.cs:312  <- Namespace/data/enum node already exists, duplicate class node is not allowed.
+ 21014  MetaCoreClassManagerFoundExistingClass                  MetaCore/ClassManager     ClassManager.cs:330  <- Found existing class node with incompatible define type.
+ 21015  MetaCoreClassManagerFoundExistingClass2                 MetaCore/ClassManager     ClassManager.cs:335  <- Found existing class node with incompatible define type2.
+ 21016  MetaCoreClassManagerIssue                               MetaCore/ClassManager     ClassManager.cs:372  <- ???????????????????????????????????????!!
+ 20438  FileMetaClassManagerDuplicateDefine                     File/ClassManager     ClassManager.cs:418  <- 已经有一个重复的定义类了
+ 21017  MetaCoreClassManagerIssue2                              MetaCore/ClassManager     ClassManager.cs:428  <- ??
+ 21018  MetaCoreClassManagerIssue3                              MetaCore/ClassManager     ClassManager.cs:437  <- ??
+ 21019  MetaCoreClassManagerClass                               MetaCore/ClassManager     ClassManager.cs:475  <- Class
+ 21020  MetaCoreClassManagerClass2                              MetaCore/ClassManager     ClassManager.cs:484  <- Class
+ 21021  MetaCoreClassManagerNotAllowUseDefineNamespaceTypeNot   MetaCore/ClassManager     ClassManager.cs:508  <- useDefineNamespaceType not allow
+ 21022  MetaCoreClassManagerClassConst                          MetaCore/ClassManager     ClassManager.cs:550  <- Class ??????? const ????
+ 21023  MetaCoreClassManagerIssue4                              MetaCore/ClassManager     ClassManager.cs:605  <- ???????????:{} ????????????????????!
+ 21024  MetaCoreClassManagerIssue5                              MetaCore/ClassManager     ClassManager.cs:874  <- ????????????????????????????????????????????????????????????!!
+ 21025  MetaCoreExpressManagerIssue                             MetaCore/ExpressManager   ExpressManager.cs:100  <- (动态消息)
+ 21026  MetaCoreExpressManagerIf                                MetaCore/ExpressManager   ExpressManager.cs:163  <- 不允许使用If语句!!
+ 21027  MetaCoreExpressManagerSwitch                            MetaCore/ExpressManager   ExpressManager.cs:181  <- 不允许使用Switch语句!!
+ 21028  MetaCoreExpressManagerSwitch2                           MetaCore/ExpressManager   ExpressManager.cs:198  <- 不允许使用Switch语句!!
+ 21029  MetaCoreExpressManagerCreateExpressNode                 MetaCore/ExpressManager   ExpressManager.cs:225  <- Error CreateExpressNode 创建表达项不能为符号
+ 21030  MetaCoreExpressManagerFmptFileMeta                      MetaCore/ExpressManager   ExpressManager.cs:296  <- fmpt file meta express list count !
+ 21031  MetaCoreExpressManagerCreateExpressNode2                MetaCore/ExpressManager   ExpressManager.cs:314  <- Error CreateExpressNode 创建表达项不能为符号
+ 21032  MetaCoreExpressManagerVisitFileMetaExpressFileMetaNode  MetaCore/ExpressManager   ExpressManager.cs:346  <- Error VisitFileMetaExpress fileMetaNode 不是符号!!
+ 21033  MetaCoreExpressManagerVisitFileMetaExpressLeftRight     MetaCore/ExpressManager   ExpressManager.cs:385  <- Error VisitFileMetaExpress left and right都为空!!
+ 21034  MetaCoreExpressManagerNotSupportOptimazeDon             MetaCore/ExpressManager   ExpressManager.cs:434  <- Error Optimaze don't support that ExpressType
+ 21035  MetaCoreExpressManagerCallLinkExpressNode               MetaCore/ExpressManager   ExpressManager.cs:449  <- 老类型不是CallLinkExpressNode
+ 21036  MetaCoreExpressManagerIsNullOldmenAs                    MetaCore/ExpressManager   ExpressManager.cs:499  <- oldmen as MetaConstExpressNode is null
+ 21037  MetaCoreLocalLocalGeneratedClass                        MetaCore/Local            LocalManager.cs:85  <- Error local{} generated class name conflict:
+ 21038  MetaCoreLocalCannotLocalFunctions                       MetaCore/Local            LocalManager.cs:112  <- Error local{} functions cannot use static keyword
+ 21039  MetaCoreAttributeIsNullMetaAttributeAttribute           MetaCore/Attribute        MetaAttribute.cs:57  <- MetaAttribute.Parse: attribute name is null or empty
+ 21040  MetaCoreAttributeNotFoundMetaAttributeAttribute         MetaCore/Attribute        MetaAttribute.cs:77  <- MetaAttribute.Parse: attribute class '{}' not found, args: {}, handleType: {}
+ 21041  MetaCoreCallLinkIssue                                   MetaCore/CallLink         MetaCallLink.cs:156  <- Error 鏉╃偞甯存稉鍙夌梾閺堝澹橀崚鏉挎値闁倻娈戦懞鍌滃仯  360!!!
+ 21042  MetaCoreCallLinkStatementWClassName                     MetaCore/CallLink         MetaCallLink.cs:205  <- Parse Statement Error 閸︺劋濞囬悽鈭焑wClassName閻ㄥ嫭鏌熷蹇ョ礉閸氬氦绔熸稉宥呭帒鐠佸憡婀侀崗璺虹暊閻ㄥ嫯鐨熼悽?
+ 21043  MetaCoreCallLink_init_                                  MetaCore/CallLink         MetaCallLink.cs:282  <- Error 绌烘潯浠惰繍绠楃 ?. 涓嶈兘鐢ㄤ簬鏋勯€犲嚱鏁?_init_!
+ 21044  MetaCoreCallLinkSet                                     MetaCore/CallLink         MetaCallLink.cs:287  <- Error 绌烘潯浠惰繍绠楃 ?. 涓嶈兘鐢ㄤ簬 set 鍑芥暟!
+ 21045  MetaCoreCallLinkVoid                                    MetaCore/CallLink         MetaCallLink.cs:293  <- Error 绌烘潯浠惰繍绠楃 ?. 涓嶈兘鐢ㄤ簬 void 杩斿洖鍊肩殑鍑芥暟!
+ 21046  MetaCoreCallLinkExpressList                             MetaCore/CallLink         MetaCallLink.cs:326  <- 鐟欙絾鐎藉畵灞筋殰expressList 閻ㄥ嫭妞傞崐娆忓絺閻㈢喍绨￠梻顕€顣?
+ 21047  MetaCoreCallLinkIsNullLocalImplicit                     MetaCore/CallLink         MetaCallLink.cs:389  <- Error local implicit this: thisMetaVariable is null
+ 21048  MetaCoreCallLinkMetaCommonIteratorVariable              MetaCore/CallLink         MetaCallLink.cs:696  <- Meta Common Parse IteratorVariable----------------------------------------------...
+ 21049  MetaCoreCallMetaStatementsTokenQuestionMarkDotToken     MetaCore/Call             MetaCallNode.cs:186  <- Error MetaStatements Parse  token == questionMarkDotToken !
+ 21050  MetaCoreCallMetaStatementsToken                         MetaCore/Call             MetaCallNode.cs:192  <- Error MetaStatements Parse  token == And !
+ 21051  MetaCoreCallMetaStatementsToken2                        MetaCore/Call             MetaCallNode.cs:197  <- Error MetaStatements Parse  token 顑?!
+ 21052  MetaCoreCallIssue                                       MetaCore/Call             MetaCallNode.cs:266  <- Error 111111!
+ 21053  MetaCoreCallIssue2                                      MetaCore/Call             MetaCallNode.cs:273  <- Error 123123123!
+ 21054  MetaCoreCallBracketExpressFailed                        MetaCore/Call             MetaCallNode.cs:329  <- bracket express parse failed!
+ 21055  MetaCoreCallFained11                                    MetaCore/Call             MetaCallNode.cs:439  <- Error is fained11
+ 21056  MetaCoreCallFained222                                   MetaCore/Call             MetaCallNode.cs:445  <- Error is fained222
+ 21057  MetaCoreCallRayRray                                     MetaCore/Call             MetaCallNode.cs:516  <- Error 閸λ媟ray.閸氬氦绔熸俊鍌涚亯娴ｈ法鏁ら崣姗€鍣洪幋鏍偓鍛Ц閺佹澘鐡х敮鎼佸櫤閿涘苯绻€妞よ濞囬悽藡rray.$閺傜懓绱?!
+ 21058  MetaCoreCallNotConstValue                               MetaCore/Call             MetaCallNode.cs:532  <- Error not const value
+ 21059  MetaCoreCallGlobalCanOnly                               MetaCore/Call             MetaCallNode.cs:539  <- Error global can only be used at first position.
+ 21060  MetaCoreCallGlobalAllowFunction                         MetaCore/Call             MetaCallNode.cs:545  <- global now allow function
+ 21061  MetaCoreCallGlobalAllowFunction2                        MetaCore/Call             MetaCallNode.cs:561  <- global now allow function
+ 21062  MetaCoreCallNewCanOnly                                  MetaCore/Call             MetaCallNode.cs:570  <- Error new can only be used at first position.
+ 21063  MetaCoreCallCannotNewAs                                 MetaCore/Call             MetaCallNode.cs:575  <- Error new cannot be used as non-function form.
+ 21064  MetaCoreCallMissingFrontDefine                          MetaCore/Call             MetaCallNode.cs:584  <- Error missing front define meta type.
+ 21065  MetaCoreCallIssue3                                      MetaCore/Call             MetaCallNode.cs:596  <- Error 111
+ 21066  MetaCoreCallNotAllowNotAllowed                          MetaCore/Call             MetaCallNode.cs:623  <- Error this is not allowed in member variable expression.
+ 21067  MetaCoreCallNotAllowNotAllowed2                         MetaCore/Call             MetaCallNode.cs:627  <- Error this is not allowed in input parameter expression.
+ 21068  MetaCoreCallCanOnlyFirst                                MetaCore/Call             MetaCallNode.cs:632  <- Error this can only be used at first position.
+ 21069  MetaCoreCallIssue4                                      MetaCore/Call             MetaCallNode.cs:637  <- Error this()?!
+ 21070  MetaCoreCallIssue5                                      MetaCore/Call             MetaCallNode.cs:650  <- Error 闂寘鍦ㄩ潤鎬佹柟娉曚腑瀹氫箟, 涓嶈兘浣跨敤 this!
+ 21071  MetaCoreCallCannotStaticFunction                        MetaCore/Call             MetaCallNode.cs:659  <- Error static function cannot use this.
+ 21072  MetaCoreCallCannotStaticFunction2                       MetaCore/Call             MetaCallNode.cs:664  <- Error static function cannot use this.
+ 21073  MetaCoreCallBaseCanOnly                                 MetaCore/Call             MetaCallNode.cs:674  <- Error base can only be used at first position.
+ 21074  MetaCoreCallCannotBaseAs                                MetaCore/Call             MetaCallNode.cs:679  <- Error base cannot be used as function form.
+ 21075  MetaCoreCallNotAllowBaseNot                             MetaCore/Call             MetaCallNode.cs:684  <- Error base is not allowed in member variable expression.
+ 21076  MetaCoreCallNotAllowBaseNot2                            MetaCore/Call             MetaCallNode.cs:688  <- Error base is not allowed in input parameter expression.
+ 21077  MetaCoreCallBaseRequiresClass                           MetaCore/Call             MetaCallNode.cs:694  <- Error base requires class context.
+ 21078  MetaCoreCallNotFoundBaseParent                          MetaCore/Call             MetaCallNode.cs:701  <- Error base parent class not found.
+ 21079  MetaCoreCallLocalCanOnly                                MetaCore/Call             MetaCallNode.cs:713  <- Error local can only be used at first position.
+ 21080  MetaCoreCallCannotLocalAs                               MetaCore/Call             MetaCallNode.cs:718  <- Error local cannot be used as function call form.
+ 21081  MetaCoreCallIsNullLocalResolve                          MetaCore/Call             MetaCallNode.cs:728  <- Error local resolve failed: fileMeta is null
+ 21082  MetaCoreCallCannotCurrentFile                           MetaCore/Call             MetaCallNode.cs:733  <- Error current file does not define local{}, cannot use local.xxx
+ 21083  MetaCoreCallNotFoundLocalClass                          MetaCore/Call             MetaCallNode.cs:740  <- Error local class not found for file:
+ 21084  MetaCoreCallNotFoundLocalInstance                       MetaCore/Call             MetaCallNode.cs:746  <- Error local instance member not found on class:
+ 21085  MetaCoreCallIssue6                                      MetaCore/Call             MetaCallNode.cs:771  <- Error 娑撳秷鍏樼€圭偘绶ラ崠鏍ㄥ▕鐠烇紕琚?
+ 21086  MetaCoreCallNotFoundNotFound                            MetaCore/Call             MetaCallNode.cs:842  <- Error not found type
+ 21087  MetaCoreCallNotFoundNotFound2                           MetaCore/Call             MetaCallNode.cs:944  <- not found memberDataType
+ 21088  MetaCoreCallNotFoundNotFound3                           MetaCore/Call             MetaCallNode.cs:961  <- not found enum.member?
+ 21089  MetaCoreCallIssue7                                      MetaCore/Call             MetaCallNode.cs:967  <- (
+ 21090  MetaCoreCallIssue8                                      MetaCore/Call             MetaCallNode.cs:1004  <- Error 闂寘璋冪敤娌℃湁杩斿洖绫诲瀷!
+ 21091  MetaCoreCallIssue9                                      MetaCore/Call             MetaCallNode.cs:1051  <- Error 濞屸剝婀侀幍鎯у煂 閸忓厖绨猾璁宠厬
+ 21092  MetaCoreCallIsNullM_FrontCallNodeM_MetaType             MetaCore/Call             MetaCallNode.cs:1065  <- Error m_FrontCallNode m_MetaType is null
+ 21093  MetaCoreCallIsNullVisitVariable                         MetaCore/Call             MetaCallNode.cs:1088  <- Error visit variable type is null
+ 21094  MetaCoreCallNotSupportFrontCall                         MetaCore/Call             MetaCallNode.cs:1129  <- Error front call node type not supported:
+ 21095  MetaCoreCallClass_init_                                 MetaCore/Call             MetaCallNode.cs:1282  <- Error Class._init_
+ 21096  MetaCoreCallIssue10                                     MetaCore/Call             MetaCallNode.cs:1296  <- Error 瑜版挸澧犳担宥囩枂娑撳秴鍘戠拋鍛婃箒閸戣姤鏆熺拫鍐暏閺傜懓绱℃担璺ㄦ暏!!!
+ 21097  MetaCoreCallDataStaticNew                               MetaCore/Call             MetaCallNode.cs:1303  <- Error data static 涓嶅厑璁歌繘琛屽疄渚嬪寲(new/鏋勯€犺皟鐢?:
+ 21098  MetaCoreCallNputParamLassName                           MetaCore/Call             MetaCallNode.cs:1312  <- Error 閸︹問nputParam 闁插矁绔熼敍灞剧€鍝勫毐閺佸府绱濋崣顏勫帒鐠?娴ｈ法鏁lassName() 閻ㄥ嫭鏌熷?
+ 21099  MetaCoreCallNotSupportNotSupport                        MetaCore/Call             MetaCallNode.cs:1336  <- Error not support type
+ 21100  MetaCoreCallShuldNotStatic                              MetaCore/Call             MetaCallNode.cs:1352  <- Error {} is {} shuld not static variable
+ 21101  MetaCoreCallClassMemeberFunctionNot                     MetaCore/Call             MetaCallNode.cs:1475  <- Error Class.MemeberFunction not should non static
+ 21102  MetaCoreCallNotAllowConstructorCall                     MetaCore/Call             MetaCallNode.cs:1480  <- Error constructor call is not allowed here.
+ 21103  MetaCoreCallSMemberVariable                             MetaCore/Call             MetaCallNode.cs:1499  <- Error {}'s member variable {} is static!
+ 21104  MetaCoreCallIssue11                                     MetaCore/Call             MetaCallNode.cs:1514  <- Error 閸︺劌缍嬮崜宥囪: {}
+ 21105  MetaCoreCallGlobal                                      MetaCore/Call             MetaCallNode.cs:1532  <- Error global.
+ 21106  MetaCoreCallGlobal2                                     MetaCore/Call             MetaCallNode.cs:1537  <- Error global.
+ 21107  MetaCoreCallGlobal3                                     MetaCore/Call             MetaCallNode.cs:1556  <- Error global.
+ 21108  MetaCoreCallGlobal4                                     MetaCore/Call             MetaCallNode.cs:1561  <- Error global.
+ 21109  MetaCoreCallLassVariable                                MetaCore/Call             MetaCallNode.cs:1620  <- Error 鐠嬪啰鏁ら棃鐐烘饯閹焦鍨氶崨妯哄毐閺佸府绱濇稉宥堝厴娴ｈ法鏁lass.Variable閻ㄥ嫭鏌熷?
+ 21110  MetaCoreCallNotAllowConstructorCall2                    MetaCore/Call             MetaCallNode.cs:1625  <- Error constructor call is not allowed here.
+ 21111  MetaCoreCallLassVariable2                               MetaCore/Call             MetaCallNode.cs:1644  <- Error 鐠嬪啰鏁ら棃鐐烘饯閹焦鍨氶崨妯哄綁闁插骏绱濇稉宥堝厴娴ｈ法鏁lass.Variable閻ㄥ嫭鏌熷?
+ 21112  MetaCoreCallIssue12                                     MetaCore/Call             MetaCallNode.cs:1659  <- Error 閸︺劌缍嬮崜宥囪: {}
+ 21113  MetaCoreCallIsNullHandleGetTypeByMetaVariableMv         MetaCore/Call             MetaCallNode.cs:1674  <- Error HandleGetTypeByMetaVariable mv is null
+ 21114  MetaCoreCallEtaData                                     MetaCore/Call             MetaCallNode.cs:1721  <- Error 濞屸剝婀侀幍鎯у煂{} 閻ㄥ嚜etaData閺佺増宓?
+ 21115  MetaCoreCallArrayIndexOut                               MetaCore/Call             MetaCallNode.cs:1884  <- Array index out of range.
+ 21116  MetaCoreCallCannotFindSuitable                          MetaCore/Call             MetaCallNode.cs:1951  <- Cannot find suitable visit variable/access node.
+ 21117  MetaCoreCallDataGlobalDataReturn                        MetaCore/Call             MetaCallNode.cs:2030  <- Error data 榛樿闈欐€佸疄渚嬪垱寤哄け璐ワ細globalData 涓虹┖銆?);
+        //        return null;
+...
+ 21118  MetaCoreCallRetMCEtaCommon                              MetaCore/Call             MetaCallNode.cs:2239  <- Error 濞屸剝婀侀崣鎴ｎ嚉RetMC閻ㄥ嫮琚崚鐜€etaCommon
+ 21119  MetaCoreCallFindMetaMember                              MetaCore/Call             MetaCallNode.cs:2287  <- find meta member variable by name{}
+ 21120  MetaCoreCallNotFoundNotFound4                           MetaCore/Call             MetaCallNode.cs:2309  <- not found functon by [
+ 21121  MetaCoreCallData                                        MetaCore/Call             MetaCallNode.cs:2316  <- Error data 涓嶆敮鎸佸湪鏈綋鍐呰皟鐢?
+ 21122  MetaCoreCallEnum                                        MetaCore/Call             MetaCallNode.cs:2330  <- Error enum 涓嶆敮鎸佸湪鏈綋鍐呰皟鐢?
+ 21123  MetaCoreCallData2                                       MetaCore/Call             MetaCallNode.cs:2334  <- Error data 涓嶆敮鎸佸嚱鏁拌皟鐢?
+ 21124  MetaCoreCallDataDoesNot                                 MetaCore/Call             MetaCallNode.cs:2351  <- Error data '{}' does not have member variable '{}'
+ 21125  MetaCoreCallIssue13                                     MetaCore/Call             MetaCallNode.cs:2389  <- 濞屸剝婀侀崣鎴犲箛鐎圭偘缍嬮惃鍕侀弶璺ㄨ!!
+ 21126  MetaCoreCallSet                                         MetaCore/Call             MetaCallNode.cs:2476  <- set 鐨勬柟娉? 涓嶅簲璇ユ湁鍙傛暟锛岃€屾槸閫氳繃澶栭儴浼犲叆
+ 21127  MetaCoreCallGet                                         MetaCore/Call             MetaCallNode.cs:2497  <- get 鐨勬柟娉? 涓嶅簲璇ユ湁鍙傛暟
+ 21128  MetaCoreCallNotFoundNotFound5                           MetaCore/Call             MetaCallNode.cs:2524  <- Error not found metatype class type
+ 21129  MetaCoreCallFindFunctionFailed                          MetaCore/Call             MetaCallNode.cs:2746  <- find function failed
+ 21130  MetaCoreCallIssue14                                     MetaCore/Call             MetaCallNode.cs:2756  <- (动态消息)
+ 21131  MetaCoreCallEtaData2                                    MetaCore/Call             MetaCallNode.cs:2770  <- Error 濞屸剝婀侀幍鎯у煂{} 閻ㄥ嚜etaData閺佺増宓?
+ 21132  MetaCoreCallNotFoundNotFound6                           MetaCore/Call             MetaCallNode.cs:2807  <- not found memberDataType
+ 21133  MetaCoreCallDmemberDataTypeNotData                      MetaCore/Call             MetaCallNode.cs:2812  <- dmemberDataType not is data
+ 21134  MetaCoreCallDmemberDataTypeNotData2                     MetaCore/Call             MetaCallNode.cs:2818  <- dmemberDataType not is data 2
+ 21135  MetaCoreClassExtend                                     MetaCore/Class            MetaClass.cs:259  <- 已绑定过了继承类 :
+ 21136  MetaCoreClassExtend2                                    MetaCore/Class            MetaClass.cs:271  <- 已绑定过了继承类 :
+ 21137  MetaCoreClassTypeExtend                                 MetaCore/Class            MetaClass.cs:282  <- 没有发现继承类的类型!!!
+ 21138  MetaCoreClassNotFoundDefineInterface                    MetaCore/Class            MetaClass.cs:320  <- 没有找到接口相关的定义类!!
+ 21139  MetaCoreClassExtend3                                    MetaCore/Class            MetaClass.cs:368  <- Error 继承的类123:{} 在继承的父类{} 中已包含:{}
+ 21140  MetaCoreClassExtend4                                    MetaCore/Class            MetaClass.cs:381  <- Error 继承的类123:{} 在继承的父类{} 中已包含:{}
+ 21141  MetaCoreClassExtend5                                    MetaCore/Class            MetaClass.cs:395  <- Error 继承的类321:{} 在继承的父类{} 中已包含:{}
+ 21142  MetaCoreClassExtend6                                    MetaCore/Class            MetaClass.cs:401  <- Error 继承的类321:{} 在继承的父类{} 中已包含:{}
+ 21143  MetaCoreClassIssue                                      MetaCore/Class            MetaClass.cs:481  <- Error 类[
+ 21144  MetaCoreClassIssue2                                     MetaCore/Class            MetaClass.cs:525  <- Error 子类[
+ 21145  MetaCoreClassIssue3                                     MetaCore/Class            MetaClass.cs:545  <- Error 子类[
+ 21146  MetaCoreClassIssue4                                     MetaCore/Class            MetaClass.cs:552  <- Warning 类[
+ 21147  MetaCoreClassIssue5                                     MetaCore/Class            MetaClass.cs:564  <- Error 子类[
+ 21148  MetaCoreClassIssue6                                     MetaCore/Class            MetaClass.cs:584  <- Error 类[
+ 21149  MetaCoreClassProject                                    MetaCore/Class            MetaClass.cs:1062  <- Error Project类
+ 21150  MetaCoreClassMetaClassMemberVarAndFunc                  MetaCore/Class            MetaClass.cs:1078  <- Error MetaClass MemberVarAndFunc已有定义类:
+ 21151  MetaCoreClassMetaClassMemberVarAndFunc2                 MetaCore/Class            MetaClass.cs:1095  <- Error MetaClass MemberVarAndFunc已有定义类:
+ 21152  MetaCoreClassProjectStaticConst                         MetaCore/Class            MetaClass.cs:1110  <- Error Project类成员变量不允许显式定义 static/const，系统会按全局语义处理:
+ 21153  MetaCoreClassMetaClassMemberVarAndFunc3                 MetaCore/Class            MetaClass.cs:1127  <- Error MetaClass MemberVarAndFunc已有定义类:
+ 21154  MetaCoreClassInfoProjectStatic                          MetaCore/Class            MetaClass.cs:1141  <- Info Project类成员函数默认按 static 处理:
+ 21155  MetaCoreClassFunction                                   MetaCore/Class            MetaClass.cs:1168  <- 没有找发现默认构造函数
+ 21156  MetaCoreClassDuplicateInterface                         MetaCore/Class            MetaClass.cs:1269  <- 重复添加接口
+ 21157  MetaCoreClassIsNullTypeReturn                           MetaCore/Class            MetaClass.cs:1899  <- Error 赋值表达式返回定义类型为空
+ 21158  MetaCoreClassIssue7                                     MetaCore/Class            MetaClass.cs:1928  <- (动态消息)
+ 21159  MetaCoreClassTypeParamInterface                         MetaCore/Class            MetaClass.cs:1941  <- 模板类型不匹配（接口模板位置仅在可协变标记下允许协变），请检查模板参数或接口变型规则。
+ 21160  MetaCoreClassIssue8                                     MetaCore/Class            MetaClass.cs:1950  <- (动态消息)
+ 21161  MetaCoreClassTypeDefineExpress                          MetaCore/Class            MetaClass.cs:1955  <- 表达式错误，或者是定义类型错误
+ 21162  MetaCoreDataNotFoundData                                MetaCore/Data             MetaData.cs:177  <- 没有找到父级别自己模板生成时的数据!!
+ 21163  MetaCoreDataNotFoundData2                               MetaCore/Data             MetaData.cs:182  <- 没有找到父级别自己模板生成时的数据!!
+ 21164  MetaCoreDataDefine                                      MetaCore/Data             MetaData.cs:220  <- 这里需要个名字的定义!
+ 21165  MetaCoreDataExtend                                      MetaCore/Data             MetaData.cs:248  <- Error 继承的类123:{} 在继承的父类{} 中已包含:{}
+ 21166  MetaCoreDataData                                        MetaCore/Data             MetaData.cs:279  <- Error 子data[
+ 21167  MetaCoreDataData2                                       MetaCore/Data             MetaData.cs:304  <- Error data[
+ 21168  MetaCoreDataData3                                       MetaCore/Data             MetaData.cs:317  <- Error data[
+ 21169  MetaCoreEnumCoreMemberValue                             MetaCore/Enum             MetaEnum.cs:149  <- Error Core.Member 缺少 value 字段，无法构造 Member 初始化
+ 20439  FileMetaEnumExtendEnum                                  File/Enum             MetaEnum.cs:187  <- have parse extend in enum
+ 20440  FileMetaEnumIsNullM_FileMetaClassNull                   File/Enum             MetaEnum.cs:192  <- m_FileMetaClass is null in ParseExtendsRelation
+ 21170  MetaCoreEnumEnumExtends                                 MetaCore/Enum             MetaEnum.cs:213  <- Error Enum extends 没有找到继承类:
+ 21171  MetaCoreEnumEnumExtendsByte                             MetaCore/Enum             MetaEnum.cs:238  <- Error Enum extends 仅允许内置整数类型（byte/sbyte/short/ushort/int/uint/long/ulong 等）、stri...
+ 21172  MetaCoreEnumEnum                                        MetaCore/Enum             MetaEnum.cs:251  <- Error Enum 不允许继承另一个 Enum:
+ 21173  MetaCoreEnumEnumExtends2                                MetaCore/Enum             MetaEnum.cs:257  <- Error Enum extends 解析到未知节点类型:
+ 21174  MetaCoreEnumMemberFunctionNot                           MetaCore/Enum             MetaEnum.cs:268  <- Error member function not should function
+ 21175  MetaCoreEnumTemplateDefineList                          MetaCore/Enum             MetaEnum.cs:272  <- Error template define list
+ 21176  MetaCoreEnumParseFileMetaEnumMemeberEnum                MetaCore/Enum             MetaEnum.cs:292  <- ParseFileMetaEnumMemeberEnum 没有找到定义变量名称!
+ 21177  MetaCoreEnumEnumMetaMemberDataMember                    MetaCore/Enum             MetaEnum.cs:299  <- Error Enum MetaMemberData have member variable
+ 21178  MetaCoreEnumRepeatName                                  MetaCore/Enum             MetaEnum.cs:331  <- repeat name
+ 21179  MetaCoreEnumEnum2                                       MetaCore/Enum             MetaEnum.cs:352  <- Warning Enum :
+ 21180  MetaCoreEnumIsNullEnumMember                            MetaCore/Enum             MetaEnum.cs:383  <- Warning Enum Member Enum realMetaType is null
+ 21181  MetaCoreEnumEnumMemberConst                             MetaCore/Enum             MetaEnum.cs:391  <- Error Enum Member Enum const express
+ 21182  MetaCoreEnumEnumMemberEx                                MetaCore/Enum             MetaEnum.cs:406  <- Error Enum Member Enum ex
+ 21183  MetaCoreEnumEnumMember                                  MetaCore/Enum             MetaEnum.cs:419  <- Error Enum Member Enum [
+ 21184  MetaCoreEnumEnumMember2                                 MetaCore/Enum             MetaEnum.cs:432  <- Error Enum Member Enum [
+ 21185  MetaCoreEnumEnumMember3                                 MetaCore/Enum             MetaEnum.cs:445  <- Error Enum Member Enum [
+ 21186  MetaCoreEnumEnumMember4                                 MetaCore/Enum             MetaEnum.cs:458  <- Error Enum Member Enum [
+ 21187  MetaCoreEnumEnumMember5                                 MetaCore/Enum             MetaEnum.cs:471  <- Error Enum Member Enum [
+ 21188  MetaCoreEnumNotSupportEnumExtends                       MetaCore/Enum             MetaEnum.cs:508  <- Error Enum extends float8 or float16 is not support
+ 21189  MetaCoreEnumEnumMemberOnst                              MetaCore/Enum             MetaEnum.cs:521  <- Error Enum Member Enum 鍐呭厑璁镐娇鐢╟onst鍊肩被鍙橀噺
+ 21190  MetaCoreEnumEnumMemberTring                             MetaCore/Enum             MetaEnum.cs:526  <- Error Enum Member Enum 鍐呭厑璁镐娇鐢╯tring鍊肩被鍙橀噺
+ 21191  MetaCoreEnumEnumExtendsData                             MetaCore/Enum             MetaEnum.cs:540  <- Error Enum extends data: member must have = assignment:
+ 21192  MetaCoreEnumEnumExtendsData2                            MetaCore/Enum             MetaEnum.cs:549  <- Error Enum extends data: member value must be a data new expression
+ 21193  MetaCoreEnumEnumExtendsData3                            MetaCore/Enum             MetaEnum.cs:555  <- Error Enum extends data: 成员必须是 extends 所指定 data 类型的实例（
+ 21194  MetaCoreEnumEnumExtendsData4                            MetaCore/Enum             MetaEnum.cs:563  <- Error Enum extends data: member value must use data new expression
+ 21195  MetaCoreEnumEnumMember6                                 MetaCore/Enum             MetaEnum.cs:577  <- Error Enum Member Enum 鍔ㄦ€佹垚鍛樼涓€浣嶅繀椤绘湁=鍙
+ 21196  MetaCoreEnumEnumMemberAta                               MetaCore/Enum             MetaEnum.cs:588  <- Error Enum Member Enum 鍐呭厑璁镐娇鐢╠ata鍊肩被鍙橀噺, 涓嶅厑璁稿叾瀹冪被鍨
+ 21197  MetaCoreEnumEnumMemberAta2                              MetaCore/Enum             MetaEnum.cs:593  <- Error Enum Member Enum 鍐呭厑璁镐娇鐢╠ata new 鍊肩被鍙橀噺
+ 21198  MetaCoreExpressAnonDataNotFoundNotFound                 MetaCore/ExpressAnonData  MetaExpressAnonData.cs:92  <- not found metadata
+ 21199  MetaCoreExpressArrayM_FileMetaBaseTermListNeedNot       MetaCore/ExpressArray     MetaExpressArray.cs:67  <- m_FileMetaBaseTermList need not null
+ 21200  MetaCoreExpressArrayMetaArrayExpressNodeDefineMTNeed    MetaCore/ExpressArray     MetaExpressArray.cs:102  <- MetaArrayExpressNode defineMT need have template meta type
+ 21201  MetaCoreExpressAsIsIssue                                MetaCore/ExpressAsIs      MetaExpressAsIs.cs:61  <- ????????
+ 21202  MetaCoreExpressAsIsIssue2                               MetaCore/ExpressAsIs      MetaExpressAsIs.cs:69  <- ????????
+ 21203  MetaCoreExpressAsIsIssue3                               MetaCore/ExpressAsIs      MetaExpressAsIs.cs:82  <- ???????????
+ 21204  MetaCoreExpressAsIsAsDataType                           MetaCore/ExpressAsIs      MetaExpressAsIs.cs:104  <- {} as/is {} data type convert error!!
+ 21205  MetaCoreExpressCheckedCheckedLabel                      MetaCore/ExpressChecked   MetaExpressChecked.cs:35  <- Error: checked 表达式只能在 label{} 或 checked label{} 块内使用
+ 21206  MetaCoreExpressConstIssue                               MetaCore/ExpressConst     MetaExpressConst.cs:228  <- (动态消息)
+ 21207  MetaCoreExpressNewObjectNotFoundMetaBraceAssignStatementsNot MetaCore/ExpressNewObject MetaExpressNewObject.cs:72  <- MetaBraceAssignStatements not found FileMetaOpAssignSyntax
+ 21208  MetaCoreExpressNewObjectNotFoundMetaBraceAssignStatementsNot2 MetaCore/ExpressNewObject MetaExpressNewObject.cs:118  <- MetaBraceAssignStatements not found FileMetaOpAssignSyntax
+ 21209  MetaCoreExpressNewObjectIssue                           MetaCore/ExpressNewObject MetaExpressNewObject.cs:126  <- Error ??
+ 21210  MetaCoreExpressNewObjectNotFoundMemberVariable          MetaCore/ExpressNewObject MetaExpressNewObject.cs:147  <- member variable not found:
+ 21211  MetaCoreExpressNewObjectSetAccessorParam                MetaCore/ExpressNewObject MetaExpressNewObject.cs:154  <- set accessor param invalid:
+ 21212  MetaCoreExpressNewObjectIsNullSetAccessor               MetaCore/ExpressNewObject MetaExpressNewObject.cs:161  <- set accessor param type is null:
+ 21213  MetaCoreExpressNewObjectIsNullMemberVariable            MetaCore/ExpressNewObject MetaExpressNewObject.cs:179  <- member variable type is null
+ 21214  MetaCoreExpressNewObjectNotFoundMemberData              MetaCore/ExpressNewObject MetaExpressNewObject.cs:192  <- member data not found:
+ 21215  MetaCoreExpressNewObjectIsNullMemberData                MetaCore/ExpressNewObject MetaExpressNewObject.cs:206  <- member data type is null
+ 21216  MetaCoreExpressNewObjectUnresolvedTypeBrace             MetaCore/ExpressNewObject MetaExpressNewObject.cs:220  <- unresolved type in brace assign:
+ 21217  MetaCoreExpressNewObjectMap                             MetaCore/ExpressNewObject MetaExpressNewObject.cs:307  <- ?Map???????:???
+ 21218  MetaCoreExpressNewObjectClassData                       MetaCore/ExpressNewObject MetaExpressNewObject.cs:315  <- ?class???data???????=???
+ 21219  MetaCoreExpressNewObjectClassDataFilemetaCallTerm       MetaCore/ExpressNewObject MetaExpressNewObject.cs:321  <- ?class???data?????????filemetaCallTerm
+ 21220  MetaCoreExpressNewObjectIssue2                          MetaCore/ExpressNewObject MetaExpressNewObject.cs:342  <- Error ??
+ 21221  MetaCoreExpressNewObjectEnum                            MetaCore/ExpressNewObject MetaExpressNewObject.cs:350  <- -----------------------------------Enum-------------------------
+ 21222  MetaCoreExpressNewObjectIssue3                          MetaCore/ExpressNewObject MetaExpressNewObject.cs:357  <- Error ??
+ 21223  MetaCoreExpressNewObjectConst                           MetaCore/ExpressNewObject MetaExpressNewObject.cs:439  <- const ?????????????? '=' ????:
+ 21224  MetaCoreExpressNewObjectConst2                          MetaCore/ExpressNewObject MetaExpressNewObject.cs:452  <- const ?????????????? '=' ????:
+ 21225  MetaCoreExpressNewObjectDefineMtEnumExpressMt           MetaCore/ExpressNewObject MetaExpressNewObject.cs:748  <- defineMt is Enum and expressMt is Enum define=
+ 21226  MetaCoreExpressNewObjectDefine                          MetaCore/ExpressNewObject MetaExpressNewObject.cs:760  <- ????????????, define=
+ 21227  MetaCoreExpressNewObjectDefine2                         MetaCore/ExpressNewObject MetaExpressNewObject.cs:772  <- ??????????, define=
+ 21228  MetaCoreExpressNewObjectDefine3                         MetaCore/ExpressNewObject MetaExpressNewObject.cs:800  <- ????????, define=
+ 21229  MetaCoreExpressNewObjectNumNull                         MetaCore/ExpressNewObject MetaExpressNewObject.cs:830  <- ???????????/Num ??????????????????????????? null
+ 21230  MetaCoreExpressNewObjectDefine4                         MetaCore/ExpressNewObject MetaExpressNewObject.cs:849  <- ???????????????, define=
+ 21231  MetaCoreExpressNewObjectElement                         MetaCore/ExpressNewObject MetaExpressNewObject.cs:866  <- ???????????????, element=
+ 21232  MetaCoreExpressNewObjectMetaNewObjectExpressNodeGetMaxLevelMetaTypeM_NewMetaType MetaCore/ExpressNewObject MetaExpressNewObject.cs:1518  <- MetaNewObjectExpressNode GetMaxLevelMetaType m_NewMetaType and m_DefineMetaType ...
+ 21233  MetaCoreExpressNewObjectIssue4                          MetaCore/ExpressNewObject MetaExpressNewObject.cs:1583  <- ??????????
+ 21234  MetaCoreExpressNewObjectNotDefineTemplate               MetaCore/ExpressNewObject MetaExpressNewObject.cs:1638  <- not define template meta type list
+ 21235  MetaCoreExpressNewObjectIssue5                          MetaCore/ExpressNewObject MetaExpressNewObject.cs:1688  <- ??????,????,
+ 21236  MetaCoreExpressNewObjectFileMetaBracketTerm             MetaCore/ExpressNewObject MetaExpressNewObject.cs:1708  <- Error ????????FileMetaBracketTerm ??!
+ 21237  MetaCoreExpressNewObjectListTRequires                   MetaCore/ExpressNewObject MetaExpressNewObject.cs:1717  <- List<T> requires exactly 1 template parameter
+ 21238  MetaCoreExpressNewObjectListTBrace                      MetaCore/ExpressNewObject MetaExpressNewObject.cs:1779  <- List<T> brace-assign: expected comma between elements
+ 21239  MetaCoreExpressNewObjectListTBrace2                     MetaCore/ExpressNewObject MetaExpressNewObject.cs:1784  <- Error List<T> brace-assign: unsupported term type
+ 21240  MetaCoreExpressNewObjectIssue6                          MetaCore/ExpressNewObject MetaExpressNewObject.cs:1836  <- ??????,????,
+ 21241  MetaCoreExpressNewObjectArrayObject                     MetaCore/ExpressNewObject MetaExpressNewObject.cs:1857  <- Error Array<Object> ???????????!
+ 21242  MetaCoreExpressNewObjectIssue7                          MetaCore/ExpressNewObject MetaExpressNewObject.cs:2099  <- !!!!
+ 21243  MetaCoreExpressNewObjectIsNullM_ExpressReturnMetaTypeNull MetaCore/ExpressNewObject MetaExpressNewObject.cs:2112  <- m_ExpressReturnMetaType is null
+ 21244  MetaCoreExpressNewObjectIsNullM_ExpressReturnMetaTypeNull2 MetaCore/ExpressNewObject MetaExpressNewObject.cs:2123  <- m_ExpressReturnMetaType is null
+ 21245  MetaCoreExpressNewObjectIsNullM_ExpressReturnMetaTypeNull3 MetaCore/ExpressNewObject MetaExpressNewObject.cs:2152  <- m_ExpressReturnMetaType is null
+ 21246  MetaCoreExpressNewObjectIsNullM_ExpressReturnMetaTypeNull4 MetaCore/ExpressNewObject MetaExpressNewObject.cs:2168  <- m_ExpressReturnMetaType is null
+ 21247  MetaCoreExpressNewObjectNew                             MetaCore/ExpressNewObject MetaExpressNewObject.cs:2188  <- ??????????new??????????
+ 21248  MetaCoreExpressNewObjectIssue8                          MetaCore/ExpressNewObject MetaExpressNewObject.cs:2316  <- ???????????
+ 21249  MetaCoreExpressNewObjectIssue9                          MetaCore/ExpressNewObject MetaExpressNewObject.cs:2321  <- ???????????????
+ 21250  MetaCoreExpressNewObjectIssue10                         MetaCore/ExpressNewObject MetaExpressNewObject.cs:2356  <- ?????? ??????????????
+ 21251  MetaCoreExpressNewObjectNew2                            MetaCore/ExpressNewObject MetaExpressNewObject.cs:2365  <- ???????????????! ??????????new?????????????!
+ 21252  MetaCoreExpressNewObjectIssue11                         MetaCore/ExpressNewObject MetaExpressNewObject.cs:2398  <- --
+ 21253  MetaCoreExpressNewObjectIssue12                         MetaCore/ExpressNewObject MetaExpressNewObject.cs:2408  <- ??????????????????????????/???????????:
+ 21254  MetaCoreExpressNewObjectIssue13                         MetaCore/ExpressNewObject MetaExpressNewObject.cs:2746  <- ?[]???????????
+ 21255  MetaCoreExpressNewObjectIssue14                         MetaCore/ExpressNewObject MetaExpressNewObject.cs:2756  <- ?[]??????????[3][-1][-1]??????????[3][-1][2] ????
+ 21256  MetaCoreExpressOperatorSign                             MetaCore/ExpressOperator  MetaExpressOperator.cs:349  <- Error 没有适合的符号!!!
+ 21257  MetaCoreExpressOperatorIsNullRightLeft                  MetaCore/ExpressOperator  MetaExpressOperator.cs:434  <- right or left is null
+ 21258  MetaCoreExpressOperatorEnum                             MetaCore/ExpressOperator  MetaExpressOperator.cs:455  <- enum类型只允许 == 或 != 运算!!
+ 21259  MetaCoreExpressOperatorEnum2                            MetaCore/ExpressOperator  MetaExpressOperator.cs:474  <- 不是同一个enum
+ 21260  MetaCoreExpressOperatorEnum3                            MetaCore/ExpressOperator  MetaExpressOperator.cs:482  <- 不是同一个enum
+ 21261  MetaCoreExpressOperatorNotEnumMember                    MetaCore/ExpressOperator  MetaExpressOperator.cs:488  <- is not enum member
+ 21262  MetaCoreExpressOperatorEnum4                            MetaCore/ExpressOperator  MetaExpressOperator.cs:503  <- 不是同一个enum
+ 21263  MetaCoreExpressOperatorEnum5                            MetaCore/ExpressOperator  MetaExpressOperator.cs:511  <- 不是同一个enum
+ 21264  MetaCoreExpressOperatorNotEnumMember2                   MetaCore/ExpressOperator  MetaExpressOperator.cs:517  <- is not enum member
+ 21265  MetaCoreExpressOperatorEnum6                            MetaCore/ExpressOperator  MetaExpressOperator.cs:525  <- 不是同一个enum
+ 21266  MetaCoreExpressOperatorEnum7                            MetaCore/ExpressOperator  MetaExpressOperator.cs:539  <- enum类型只允许 == 或 != 运算!!
+ 21267  MetaCoreExpressOperatorIsNullLeftRight                  MetaCore/ExpressOperator  MetaExpressOperator.cs:563  <- left or right class is null
+ 21268  MetaCoreExpressOperatorIsNullLeftRight2                 MetaCore/ExpressOperator  MetaExpressOperator.cs:567  <- left or right class is null
+ 21269  MetaCoreExpressOperatorNull                             MetaCore/ExpressOperator  MetaExpressOperator.cs:586  <- Error null == 或 != 运算!!
+ 21270  MetaCoreExpressOperatorStringTypeOnly                   MetaCore/ExpressOperator  MetaExpressOperator.cs:615  <- string type only support _plus_,_equal_,_noequal_
+ 21271  MetaCoreExpressOperatorNotAllowType                     MetaCore/ExpressOperator  MetaExpressOperator.cs:620  <- 布尔类型不能参与加减运算
+ 21272  MetaCoreExpressOperatorCompileRequireSameNumericTypesByte MetaCore/ExpressOperator  MetaExpressOperator.cs:644  <- 已启用 compile.requireSameNumericTypes：算术/位运算两侧须为同一数字类型（如 byte+byte、Int32+Int32），禁止...
+ 21273  MetaCoreExpressOperatorType                             MetaCore/ExpressOperator  MetaExpressOperator.cs:671  <- 加减运算类型计算错误!!
+ 21274  MetaCoreExpressOperatorType2                            MetaCore/ExpressOperator  MetaExpressOperator.cs:697  <- Error 字符串类型只能参与加法运算!!
+ 21275  MetaCoreExpressOperatorStringTypeOnly2                  MetaCore/ExpressOperator  MetaExpressOperator.cs:735  <- string type only support _plus_,_equal_,_noequal_
+ 21276  MetaCoreExpressOperatorLeft                             MetaCore/ExpressOperator  MetaExpressOperator.cs:799  <- Left:
+ 21277  MetaCoreExpressOperatorIssue                            MetaCore/ExpressOperator  MetaExpressOperator.cs:808  <- (动态消息)
+ 21278  MetaCoreExpressTryTryLabelChecked                       MetaCore/ExpressTry       MetaExpressTry.cs:44  <- Error: try 表达式只能在 label{} 或 checked label{} 块内使用
+ 21279  MetaCoreGenTemplateClassMetaGentemplateClass            MetaCore/GenTemplateClass MetaGenTemplateClass.cs:149  <- meta gentemplate class cls={} template={} nonStatic={} templateNonStatic={}
+ 21280  MetaCoreGenTemplateClassAssert                          MetaCore/GenTemplateClass MetaGenTemplateClass.cs:190  <- assert 模板类的父类只能是普通类或者是带模板参数的类!
+ 21281  MetaCoreGenTemplateClassNotFoundDefine                  MetaCore/GenTemplateClass MetaGenTemplateClass.cs:346  <- 没有找到模板中定义的模板内容!
+ 21282  MetaCoreMemberDataIssue                                 MetaCore/MemberData       MetaMemberData.cs:361  <- (动态消息)
+ 21283  MetaCoreMemberDataIssue2                                MetaCore/MemberData       MetaMemberData.cs:855  <- [
+ 21284  MetaCoreMemberDataMetaMemberDataToString                MetaCore/MemberData       MetaMemberData.cs:894  <- MetaMemberData.ToString() 暂不支持其它类型 123
+ 21285  MetaCoreMemberEnumEnumStatic                            MetaCore/MemberEnum       MetaMemberEnum.cs:57  <- Error Enum 中不允许使用 static 关键字，枚举值的静态语义由系统处理!!
+ 21286  MetaCoreMemberEnumEnumPublicPrivate                     MetaCore/MemberEnum       MetaMemberEnum.cs:61  <- Error Enum中，不允许使用public/private等权限关键字!!
+ 21287  MetaCoreMemberEnumEnum                                  MetaCore/MemberEnum       MetaMemberEnum.cs:100  <- Error Enum成员没有找到定义类型，无法解析!!
+ 21288  MetaCoreMemberEnumExpressMetaMemberData                 MetaCore/MemberEnum       MetaMemberEnum.cs:132  <- Error 没有解析到Express的内容 在MetaMemberData 里边 372
+ 21289  MetaCoreMemberEnumCoreMemberName                        MetaCore/MemberEnum       MetaMemberEnum.cs:155  <- Error Core.Member 缺少 name/value/index 字段，无法构造 Member 初始化
+ 21290  MetaCoreMemberEnumCoreMemberName2                       MetaCore/MemberEnum       MetaMemberEnum.cs:187  <- Error Core.Member 缺少 name/value/index 字段，无法构造 Member 初始化
+ 21291  MetaCoreMemberFunctionDefine                            MetaCore/MemberFunction   MetaMemberFunction.cs:106  <- 发现已经定义过某某类1
+ 21292  MetaCoreMemberFunctionInClass                           MetaCore/MemberFunction   MetaMemberFunction.cs:520  <- Error 没有查找到inClass的类名,
+ 21293  MetaCoreMemberFunctionNotFoundTypeReturn                MetaCore/MemberFunction   MetaMemberFunction.cs:798  <- 没有找到{} 的相关返回类型!
+ 21294  MetaCoreMemberFunctionIssue                             MetaCore/MemberFunction   MetaMemberFunction.cs:803  <- Error 当前类:
+ 21295  MetaCoreMemberFunctionFunctionDefine                    MetaCore/MemberFunction   MetaMemberFunction.cs:924  <- Error 类[{}] 该函数[{}] 没有定义函数内容！！
+ 21296  MetaCoreMemberFunctionFileMetaConditionExpressSyntax    MetaCore/MemberFunction   MetaMemberFunction.cs:1136  <- Error FileMetaConditionExpressSyntax: 暂不支持该类型的解析!!
+ 21297  MetaCoreMemberFunctionUncheckedCheckedLabel             MetaCore/MemberFunction   MetaMemberFunction.cs:1171  <- Error: unchecked{} 只能在 checked 上下文中使用 (checked label{} 或 checked{})
+ 21298  MetaCoreMemberFunctionVarDataDynamic                    MetaCore/MemberFunction   MetaMemberFunction.cs:1208  <- Error 如果使用了var/data/dynamic/int 等前缀，有重复定义的行为
+ 21299  MetaCoreMemberFunctionNotAllowFunctionDefine            MetaCore/MemberFunction   MetaMemberFunction.cs:1249  <- Error 构造函数中，不允许使用定义字段，必须使用this.非静态或者是类名.静态字段赋值!
+ 21300  MetaCoreMemberFunctionVariableFunctionDefine            MetaCore/MemberFunction   MetaMemberFunction.cs:1270  <- Error 定义变量名称与类函数临时名称一样!!
+ 21301  MetaCoreMemberFunctionVariableDefineCall                MetaCore/MemberFunction   MetaMemberFunction.cs:1293  <- Error 定义变量名称与类定义名称一样 如果调用成员变量，需要在前边使用this.!!
+ 21302  MetaCoreMemberFunctionMetaStatementsKeyReturnSyntax     MetaCore/MemberFunction   MetaMemberFunction.cs:1338  <- Error 生成MetaStatements出错KeyReturnSyntax类型错误!!
+ 21303  MetaCoreMemberFunctionWaningMetaMemberFunction          MetaCore/MemberFunction   MetaMemberFunction.cs:1357  <- Waning 还有没有解析的语句!! MetaMemberFunction 314
+ 21304  MetaCoreMemberVariableNotFoundVariableDefine            MetaCore/MemberVariable   MetaMemberVariable.cs:129  <- 没有找到定义变量名称!
+ 21305  MetaCoreMemberVariableVariableExpressMember             MetaCore/MemberVariable   MetaMemberVariable.cs:284  <- Error [{} ]配置成员变量时，必须需要有等号及后续的表达式!!
+ 21306  MetaCoreMemberVariableDllImportStatic                   MetaCore/MemberVariable   MetaMemberVariable.cs:318  <- DllImport: '{}.{}' 必须为 static 成员变量!!
+ 21307  MetaCoreMemberVariableDllImport                         MetaCore/MemberVariable   MetaMemberVariable.cs:326  <- DllImport: 需要 (库路径, 符号名) 两个字符串实参!!
+ 21308  MetaCoreMemberVariableDllImportAlias                    MetaCore/MemberVariable   MetaMemberVariable.cs:339  <- DllImport: alias '{}' -> '{}'
+ 21309  MetaCoreMemberVariableDllImportFuncFFI                  MetaCore/MemberVariable   MetaMemberVariable.cs:353  <- DllImport: '{}' 的 Func 签名无法映射为 FFI sig（含 Ptr 等类型时可用第 3 个实参手写 sig）!!
+ 21310  MetaCoreMemberVariableDllImportInjectFFI                MetaCore/MemberVariable   MetaMemberVariable.cs:359  <- DllImport: inject '{}.{}' = FFI.StaticLibrary.bindFunction({}, {}, {})
+ 21311  MetaCoreMemberVariableIsNullTypeReturn                  MetaCore/MemberVariable   MetaMemberVariable.cs:510  <- Error 表达式中返回定义类型为空
+ 21312  MetaCoreMethodRet                                       MetaCore/Method           MetaMethod.cs:413  <- Error 函数[{}] 声明了返回类型[{}]，但并非所有代码路径都有ret返回语句!
+ 21313  MetaCoreMetaNodeIssue                                   MetaCore/MetaNode         MetaNode.cs:140  <- 已有该模板数量的类{} :{}
+ 21314  MetaCoreMetaNodeNamespace                               MetaCore/MetaNode         MetaNode.cs:180  <- 添加命名空间
+ 21315  MetaCoreMetaNodeAddMetaclassMetanode                    MetaCore/MetaNode         MetaNode.cs:212  <- 添加add metaclass metanode节点有问题! 有重复:
+ 21316  MetaCoreMetaNodeParentCurrentAdd                        MetaCore/MetaNode         MetaNode.cs:235  <- Parent:{} Current:{} 添加 add metanode metanode节点有问题! 有重复
+ 21317  MetaCoreParamDefineParamCompare                         MetaCore/Param            MetaParam.cs:347  <- define param compare error
+ 21318  MetaCoreParamParams                                     MetaCore/Param            MetaParam.cs:466  <- Error Params ???????????????????????????????????
+ 21319  MetaCoreParamAddMetaDefineParam                         MetaCore/Param            MetaParam.cs:483  <- Error AddMetaDefineParam 参数前边已定义默认值，后边必须跟进默认值表达式!!
+ 21320  MetaCoreParamIssue                                      MetaCore/Param            MetaParam.cs:1040  <- ??????
+ 21321  MetaCoreTemplateClassDuplicateDefine                    MetaCore/TemplateClass    MetaTemplateClass.cs:78  <- Error 定义模式名称重复!!
+ 21322  MetaCoreTemplateClassNotFoundData                       MetaCore/TemplateClass    MetaTemplateClass.cs:183  <- 没有找到父级别自己模板生成时的数据!!
+ 21323  MetaCoreTemplateClassNotFoundData2                      MetaCore/TemplateClass    MetaTemplateClass.cs:188  <- 没有找到父级别自己模板生成时的数据!!
+ 21324  MetaCoreTemplateClassTemplate                           MetaCore/TemplateClass    MetaTemplateClass.cs:419  <- Error 没有找到合适的Template
+ 21325  MetaCoreTypeIsNullMetaDefineTypeRetMetaClass            MetaCore/Type             MetaType.cs:126  <- Error MetaDefineType RetMetaClass is Null MetaMemberVariable Only MetaClass A
+ 21326  MetaCoreTypeIsNullMetaDefineTypeRetMetaData             MetaCore/Type             MetaType.cs:137  <- Error MetaDefineType RetMetaData is Null
+ 21327  MetaCoreTypeIsNullMetaDefineTypeRetMetaEnum             MetaCore/Type             MetaType.cs:146  <- Error MetaDefineType RetMetaEnum is Null
+ 21328  MetaCoreTypeIsNullMetaDefineTypeRetMetaModule           MetaCore/Type             MetaType.cs:159  <- Error MetaDefineType RetMetaModule is Null
+ 21329  MetaCoreTypeIsNullMetaDefineTypeRetMetaClass2           MetaCore/Type             MetaType.cs:174  <- Error MetaDefineType RetMetaClass is Null MetaMemberVariable Only MetaClass B
+ 21330  MetaCoreTypeIsNullMetaDefineTypeRetMetaClass3           MetaCore/Type             MetaType.cs:187  <- Error MetaDefineType RetMetaClass is Null MetaMemberVariable Only MetaClass C
+ 21331  MetaCoreTypeIsNull                                      MetaCore/Type             MetaType.cs:719  <- 注册生成类是空!
+ 21332  MetaCoreTypeIsNullMetaType                              MetaCore/Type             MetaType.cs:772  <- meta type is m_MetaData is null
+ 21333  MetaCoreTypeIsNullMetaType2                             MetaCore/Type             MetaType.cs:784  <- meta type is m_MetaEnum is null
+ 21334  MetaCoreTypeIsNullMetaType3                             MetaCore/Type             MetaType.cs:796  <- meta type is m_MetaEnum is null
+ 21335  MetaCoreTypeIsNullMetaType4                             MetaCore/Type             MetaType.cs:852  <- meta type is m_MetaClass is null
+ 21336  MetaCoreTypeIsNullEMetaTypeTypeNull                     MetaCore/Type             MetaType.cs:882  <- eMetaTypeType is null
+ 21337  MetaCoreVariableVisitMetaVariable                       MetaCore/Variable         MetaVariable.cs:477  <- Error VisitMetaVariable访问变量访问位置不能同时为空!!
+ 21338  MetaCoreVariableVisitMetaVariable2                      MetaCore/Variable         MetaVariable.cs:498  <- Error VisitMetaVariable访问变量访问位置不能同时为空!!
+ 21339  MetaCoreVariableVisitMetaVariable3                      MetaCore/Variable         MetaVariable.cs:527  <- Error VisitMetaVariable访问变量访问位置不能同时为空!!
+ 21340  MetaCoreVariableParseDefineMetaTypeNotArray             MetaCore/Variable         MetaVariable.cs:573  <- ParseDefineMetaType not array and no _getItem_ support
+ 21341  MetaCoreVariableParseDefineRealMetaTypeNotArray         MetaCore/Variable         MetaVariable.cs:611  <- ParseDefineRealMetaType not array
+ 20441  FileMetaVisitCallPositionalArgumentFollows              File/VisitCall        MetaVisitCall.cs:284  <- Error: positional argument follows keyword argument
+ 20442  FileMetaVisitCallParameterNamed                         File/VisitCall        MetaVisitCall.cs:313  <- Error: no parameter named '
+ 20443  FileMetaVisitCallMultipleValuesParameter                File/VisitCall        MetaVisitCall.cs:319  <- Error: multiple values for parameter '
+ 21342  MetaCoreVisitCallIssue                                  MetaCore/VisitCall        MetaVisitCall.cs:947  <- Error
+ 21343  MetaCoreModuleIssue                                     MetaCore/Module           ModuleManager.cs:66  <- Error 严重错误，获取模式不传名称!!
+ 21344  MetaCoreModuleModuleReplacedReference                   MetaCore/Module           ModuleManager.cs:115  <- Module '{}' replaced by reference loading.
+ 21345  MetaCoreNumberValueOutRange                             MetaCore/Number           NumberManager.cs:331  <- Warning: value '{}' ({}) is out of range for target type '{}'.
+ 21346  MetaCoreNumberArray                                     MetaCore/Number           NumberManager.cs:551  <- 数组元素[
+ 21347  MetaCoreNumberArray2                                    MetaCore/Number           NumberManager.cs:559  <- 数组元素[
+ 21348  MetaCoreAttributeRegistryRouteRegistered                MetaCore/AttributeRegistry RuntimeAttributeRegistry.cs:83  <- Route registered: '{}' -> {}.{}
+ 21349  MetaCoreAttributeRegistryConditionRegistered            MetaCore/AttributeRegistry RuntimeAttributeRegistry.cs:117  <- Condition registered: '{}' for {}.{}
+ 21350  MetaCoreAssignStatementReturnStatement                  MetaCore/AssignStatement  MetaAssignStatements.cs:48  <- Error 返回的判断语句:
+ 21351  MetaCoreAssignStatementIssue                            MetaCore/AssignStatement  MetaAssignStatements.cs:56  <- Error -------------------------------------------1
+ 21352  MetaCoreAssignStatementReturnStatement2                 MetaCore/AssignStatement  MetaAssignStatements.cs:68  <- Error 返回的判断语句:
+ 21353  MetaCoreAssignStatementIssue2                           MetaCore/AssignStatement  MetaAssignStatements.cs:83  <- Error -------------------------------------------2
+ 21354  MetaCoreAssignStatementStatic                           MetaCore/AssignStatement  MetaAssignStatements.cs:153  <- Error 不允许在语句中，出现static字段!
+ 21355  MetaCoreAssignStatementIsNullRightExpress               MetaCore/AssignStatement  MetaAssignStatements.cs:174  <- right express it null!
+ 21356  MetaCoreAssignStatementNotSupportNotSupport             MetaCore/AssignStatement  MetaAssignStatements.cs:274  <- Error not support operator sign
+ 21357  MetaCoreAssignStatementTryParseRightExpressExpressFailed MetaCore/AssignStatement  MetaAssignStatements.cs:287  <- TryParseRightExpress express parse failed!
+ 21358  MetaCoreAssignStatementTryParseRightExpressExpressFailed2 MetaCore/AssignStatement  MetaAssignStatements.cs:313  <- TryParseRightExpress express parse failed!
+ 21359  MetaCoreAssignStatementLeftCallNodeListCount            MetaCore/AssignStatement  MetaAssignStatements.cs:330  <- leftCallNodeList.Count == 0
+ 21360  MetaCoreAssignStatementFirstNodeParseNodeFailed         MetaCore/AssignStatement  MetaAssignStatements.cs:345  <- firstNode.ParseNode is failed
+ 21361  MetaCoreAssignStatementIsNullGetOperatorMetaMemberFunctionByName_setItem_ MetaCore/AssignStatement  MetaAssignStatements.cs:366  <- GetOperatorMetaMemberFunctionByName _setItem_ is null
+ 21362  MetaCoreAssignStatementIsNullGetOperatorMetaMemberFunctionByName_setItem_2 MetaCore/AssignStatement  MetaAssignStatements.cs:373  <- GetOperatorMetaMemberFunctionByName _setItem_ need a=b is null
+ 21363  MetaCoreAssignStatementBracketExpressFailed             MetaCore/AssignStatement  MetaAssignStatements.cs:387  <- bracket express parse failed!
+ 21364  MetaCoreAssignStatementFirstNodeParseNodeBracket        MetaCore/AssignStatement  MetaAssignStatements.cs:398  <- firstNode.ParseNode bracket express List need equal 1
+ 21365  MetaCoreAssignStatementTryParseRightExpressExpressFailed3 MetaCore/AssignStatement  MetaAssignStatements.cs:408  <- TryParseRightExpress express parse failed!
+ 21366  MetaCoreAssignStatementBracketExpressFailed2            MetaCore/AssignStatement  MetaAssignStatements.cs:416  <- bracket express parse failed!
+ 21367  MetaCoreAssignStatementTryParseRightExpressExpressFailed4 MetaCore/AssignStatement  MetaAssignStatements.cs:431  <- TryParseRightExpress express parse failed!
+ 21368  MetaCoreAssignStatementTryParseRightExpressExpressFailed5 MetaCore/AssignStatement  MetaAssignStatements.cs:471  <- TryParseRightExpress express parse failed!
+ 21369  MetaCoreAssignStatementBracketExpressFailed3            MetaCore/AssignStatement  MetaAssignStatements.cs:480  <- bracket express parse failed!
+ 21370  MetaCoreAssignStatementMetaAssignStatementBuildCall     MetaCore/AssignStatement  MetaAssignStatements.cs:492  <- MetaAssignStatement build call node List!
+ 21371  MetaCoreAssignStatementSetter                           MetaCore/AssignStatement  MetaAssignStatements.cs:517  <- Error 空条件运算符 ?. 不能用于赋值操作的左值（包括字段赋值和 setter 方法调用）!
+ 21372  MetaCoreAssignStatementConst                            MetaCore/AssignStatement  MetaAssignStatements.cs:597  <- Error 当前左值声明为 const，不允许进行赋值或修改!!
+ 21373  MetaCoreAssignStatementIssue3                           MetaCore/AssignStatement  MetaAssignStatements.cs:610  <- in
+ 21374  MetaCoreAssignStatementIsNullRightExpress2              MetaCore/AssignStatement  MetaAssignStatements.cs:633  <- Error right express is null!
+ 21375  MetaCoreAssignStatementMetaAssignStatements             MetaCore/AssignStatement  MetaAssignStatements.cs:661  <- MetaAssignStatements
+ 21376  MetaCoreAssignStatementLeftRightCompare                 MetaCore/AssignStatement  MetaAssignStatements.cs:718  <- left or right compare failed
+ 21377  MetaCoreBlockStatementNextBreakContinue                 MetaCore/BlockStatement   MetaBlockStatements.cs:106  <- Error 终结语句 next/break/continue/return 互斥
+ 21378  MetaCoreBlockStatementBreak                             MetaCore/BlockStatement   MetaBlockStatements.cs:115  <- Error break 必须放到语句块的结尾
+ 21379  MetaCoreBlockStatementContinue                          MetaCore/BlockStatement   MetaBlockStatements.cs:122  <- Error continue 必须放到语句块的结尾
+ 21380  MetaCoreBlockStatementReturn                            MetaCore/BlockStatement   MetaBlockStatements.cs:129  <- Error return 必须放到语句块的结尾
+ 21381  MetaCoreBlockStatementNext                              MetaCore/BlockStatement   MetaBlockStatements.cs:136  <- Error next 必须放到语句块的结尾
+ 21382  MetaCoreBlockStatementIssue                             MetaCore/BlockStatement   MetaBlockStatements.cs:251  <- (动态消息)
+ 21383  MetaCoreBreakContinueGoStatementBreakWhileDowhile       MetaCore/BreakContinueGoStatement MetaBreakContinueGoStatements.cs:44  <- Error break 只能出现在 for/while/dowhile 循环体内或 switch case 体内
+ 21384  MetaCoreBreakContinueGoStatementNextWhileDowhile        MetaCore/BreakContinueGoStatement MetaBreakContinueGoStatements.cs:87  <- Error next 只能出现在 for/while/dowhile 循环体内或 switch case 体内
+ 21385  MetaCoreBreakContinueGoStatementContinueWhileDowhile    MetaCore/BreakContinueGoStatement MetaBreakContinueGoStatements.cs:125  <- Error continue 只能出现在 for/while/dowhile 循环体内
+ 21386  MetaCoreClosureDefineStatementNotSupportVariableDefine  MetaCore/ClosureDefineStatement MetaClosureDefineStatements.cs:142  <- Error 闭包嵌套定义暂不支持!! (变量:
+ 21387  MetaCoreClosureDefineStatementDefine                    MetaCore/ClosureDefineStatement MetaClosureDefineStatements.cs:211  <- Error 闭包定义缺少名称!!
+ 21388  MetaCoreClosureDefineStatementDefine2                   MetaCore/ClosureDefineStatement MetaClosureDefineStatements.cs:218  <- Error 闭包只能在类的方法体内定义!!
+ 21389  MetaCoreClosureDefineStatementFunctionDefine            MetaCore/ClosureDefineStatement MetaClosureDefineStatements.cs:266  <- Error 闭包只能在类的方法体内定义!! (宿主函数缺失)
+ 21390  MetaCoreClosureDefineStatementIssue                     MetaCore/ClosureDefineStatement MetaClosureDefineStatements.cs:309  <- Error 闭包构造异常:
+ 21391  MetaCoreDefineVarStatementDuplicate                     MetaCore/DefineVarStatement MetaDefineVarStatements.cs:99  <- 名称{}与{} 有重复
+ 21392  MetaCoreDefineVarStatementCallNodeList                  MetaCore/DefineVarStatement MetaDefineVarStatements.cs:150  <- call node list is not count equal 1
+ 21393  MetaCoreDefineVarStatementDuplicate2                    MetaCore/DefineVarStatement MetaDefineVarStatements.cs:159  <- 名称{}与{} 有重复
+ 21394  MetaCoreDefineVarStatementIsNullVariableExpress         MetaCore/DefineVarStatement MetaDefineVarStatements.cs:205  <- Error 解析新建变量语句时，表达式解析为空!!__1
+ 21395  MetaCoreDefineVarStatementIsNullTypeVariable            MetaCore/DefineVarStatement MetaDefineVarStatements.cs:228  <- Error 解析新建变量语句时，表达式返回类型为空!!__2
+ 21396  MetaCoreDefineVarStatementDefineVarStatement            MetaCore/DefineVarStatement MetaDefineVarStatements.cs:252  <- Error DefineVarStatement表达式中返回定义类型为空
+ 21397  MetaCoreReturnStatementLeftCompareRight                 MetaCore/ReturnStatement  MetaReturnStatements.cs:100  <- left compare right
+ 21398  MetaCoreReturnStatementLeftCompareRight2                MetaCore/ReturnStatement  MetaReturnStatements.cs:154  <- left compare right
+ 21399  MetaCoreSwitchStatementSwitch                           MetaCore/SwitchStatement  MetaSwitchStatements.cs:296  <- Error switch 的源表达式解析失败!
+ 21400  MetaCoreTryCatchStatementThrowThrows                    MetaCore/TryCatchStatement MetaTryCatchStatements.cs:208  <- Error: throw 只能在声明了 throws 的函数中使用，当前函数未声明 throws:
+ 21401  MetaCoreTryCatchStatementThrowEnumExtends               MetaCore/TryCatchStatement MetaTryCatchStatements.cs:232  <- Error: throw 只能抛出 enum extends Error 类型的值，不能使用:
+ 21402  MetaCoreWhileDoWhileStatementExpress                    MetaCore/WhileDoWhileStatement MetaWhileDoWhileStatements.cs:67  <- Error for in express后边没有表达式!!
+ 21403  MetaCoreWhileDoWhileStatementExpressArray               MetaCore/WhileDoWhileStatement MetaWhileDoWhileStatements.cs:97  <- Error For in 表达式，应该是个数组形式
+ 21404  MetaCoreWhileDoWhileStatementNotAllowVariableDefine     MetaCore/WhileDoWhileStatement MetaWhileDoWhileStatements.cs:204  <- Error 在 for .. in 中，不允许从for 外边定义遍历变量!!
+ 21405  MetaCoreWhileDoWhileStatementNotAllowVariableDefine2    MetaCore/WhileDoWhileStatement MetaWhileDoWhileStatements.cs:218  <- Error 在 for .. in 中，不允许从for 外边定义遍历变量!!
+ 21406  MetaCoreWhileDoWhileStatementX                          MetaCore/WhileDoWhileStatement MetaWhileDoWhileStatements.cs:228  <- Error For x in X必须有!!
+ 21407  MetaCoreWhileDoWhileStatementNotFoundVariable           MetaCore/WhileDoWhileStatement MetaWhileDoWhileStatements.cs:302  <- Error 没有找到相应的变量!!
+ 21408  MetaCoreWhileDoWhileStatementWhileDowhile               MetaCore/WhileDoWhileStatement MetaWhileDoWhileStatements.cs:466  <- Error while/dowhile 缺少条件表达式
+ 21409  MetaCoreTypeIsNullMetaClassAddInstanceMetaClass         MetaCore/Type             TypeManager.cs:362  <- metaClass.AddInstanceMetaClass MetaClass is Null
+ 21410  MetaCoreTypeIsNullMetaGenTemplateNotfind                MetaCore/Type             TypeManager.cs:392  <- in MetaGenTemplate notfind MetaClass is Null
+ 21411  MetaCoreTypeIsNullMetaGenTemplateNotfind2               MetaCore/Type             TypeManager.cs:425  <- in MetaGenTemplate notfind MetaClass is Null
+ 21412  MetaCoreTypeNotFoundDefine                              MetaCore/Type             TypeManager.cs:437  <- 没有找到模板中定义的模板内容![
+ 21413  MetaCoreTypeNotFound                                    MetaCore/Type             TypeManager.cs:814  <- 没有找到模板类中，对应的模板，名称为{}请仔细检查模板的命名与使用模板命名是否对应
+ 21414  MetaCoreTypeData                                        MetaCore/Type             TypeManager.cs:851  <- data 类型不支持模板实参
+ 21415  MetaCoreTypeEnum                                        MetaCore/Type             TypeManager.cs:860  <- enum 类型不支持模板实参
+ 21416  MetaCoreTypeNotFoundTypeParam                           MetaCore/Type             TypeManager.cs:883  <- 没有找到模板参数{} 的相关类型!
+ 21417  MetaCoreTypeIssue                                       MetaCore/Type             TypeManager.cs:901  <- 没有发现{}找到的类!
+ 21418  MetaCoreTypeNotFound2                                   MetaCore/Type             TypeManager.cs:952  <- 没有找到模板类中，对应的模板，请仔细检查模板的命名与使用模板命名是否对应
+ 21419  MetaCoreTypeNotAllowSign                                MetaCore/Type             TypeManager.cs:961  <- 使用模板类中使用.连接符号，模板中不允许使用.
+ 21420  MetaCoreTypeNotFound3                                   MetaCore/Type             TypeManager.cs:1057  <- 没有找到{} 的相关类!
+ 21421  MetaCoreTypeFunc                                        MetaCore/Type             TypeManager.cs:1086  <- Error Func<> 的返回类型解析失败:
+ 21422  MetaCoreTypeFunc2                                       MetaCore/Type             TypeManager.cs:1096  <- Error Func<> 的第
+ 21423  MetaCoreTypeFuncVoid                                    MetaCore/Type             TypeManager.cs:1120  <- Error Func<> 的参数类型不允许为 void, 仅返回类型可以使用 void!
+ 21424  MetaCoreTypeData2                                       MetaCore/Type             TypeManager.cs:1158  <- data 类型不支持模板实参
+ 21425  MetaCoreTypeEnum2                                       MetaCore/Type             TypeManager.cs:1167  <- enum 类型不支持模板实参
+ 21426  MetaCoreTypeData3                                       MetaCore/Type             TypeManager.cs:1226  <- data 类型不支持模板实参
+ 21427  MetaCoreTypeEnum3                                       MetaCore/Type             TypeManager.cs:1235  <- enum 类型不支持模板实参
+ 21428  MetaCoreTypeNotFound4                                   MetaCore/Type             TypeManager.cs:1244  <- 没有找到相对应的模板类!!
+ 21429  MetaCoreTypeFmtdNameListCount                           MetaCore/Type             TypeManager.cs:1287  <- ----fmtd.nameList.count > 1
+ 21430  MetaCoreTypeEnum4                                       MetaCore/Type             TypeManager.cs:1385  <- 不是同一个enum
+ 21431  MetaCoreTypeEnum5                                       MetaCore/Type             TypeManager.cs:1393  <- 不是同一个enum
+ 21432  MetaCoreTypeNotEnumMember                               MetaCore/Type             TypeManager.cs:1399  <- is not enum member
+ 21433  MetaCoreTypeEnum6                                       MetaCore/Type             TypeManager.cs:1413  <- 不是同一个enum
+ 21434  MetaCoreTypeEnum7                                       MetaCore/Type             TypeManager.cs:1421  <- 不是同一个enum
+ 21435  MetaCoreTypeNotEnumMember2                              MetaCore/Type             TypeManager.cs:1427  <- is not enum member
+ 21436  MetaCoreTypeEnum8                                       MetaCore/Type             TypeManager.cs:1435  <- 不是同一个enum
+ 21437  MetaCoreTypeParam                                       MetaCore/Type             TypeManager.cs:1819  <- 模板参数[
+ 21438  MetaCoreTypeResultT                                     MetaCore/Type             TypeManager.cs:1919  <- Result 赋值类型不匹配：不允许将非泛型 Result 赋给 Result<T>（反向协变不合法）。
+ 21439  MetaCoreTypeData4                                       MetaCore/Type             TypeManager.cs:1944  <- data 声明类型与右侧表达式类型不匹配：右值非 data 类型。
+ 21440  MetaCoreTypeData5                                       MetaCore/Type             TypeManager.cs:2037  <- data 声明类型与右侧表达式类型不匹配：右值非 data 类型。
+ 21441  MetaCoreTypeData6                                       MetaCore/Type             TypeManager.cs:2237  <- data 声明类型与右侧表达式类型不匹配：右值非 data 类型。
+ 21442  MetaCoreTypeTypeArrayConvert                            MetaCore/Type             TypeManager.cs:2325  <- 数组元素强制转换失败（可能溢出或类型不匹配）: 目标类型
+ 22100  ExportMLIRAOTBuildDll                                   Export/MLIR             MLIRExportManager.cs:135  <- AOT: build dll failed, fallback to CVM:
+ 22101  ExportMLIRAOTBuildDll2                                  Export/MLIR             MLIRExportManager.cs:148  <- AOT: build dll failed, fallback to CVM:
+ 22102  ExportMLIRAOTSkipStage1                                 Export/MLIR             MLIRExportManager.cs:182  <- AOT: skip '{}' (stage1 supports static non-template only)
+ 22103  ExportMLIRAOTCandidateS                                 Export/MLIR             MLIRExportManager.cs:185  <- AOT: {} candidate(s) collected from module '{}'
+ 22104  ExportMLIRAOTCandidate                                  Export/MLIR             MLIRExportManager.cs:189  <- AOT: candidate '{}'
+ 22105  ExportMLIRAOTExportSuccess                              Export/MLIR             MLIRExportManager.cs:207  <- AOT: export {} success: {}
+ 22106  ExportMLIRAOTMethodEmit                                 Export/MLIR             MLIRExportManager.cs:213  <- AOT: method emit failed: {} ({})
+ 22107  ExportMLIRAOTBuildDll3                                  Export/MLIR             MLIRExportManager.cs:237  <- AOT: build dll success:
+ 22108  ExportMLIRAOTBuildDll4                                  Export/MLIR             MLIRExportManager.cs:241  <- AOT: build dll failed, fallback to CVM:
+ 22109  ExportMLIRAOTDllBuild                                   Export/MLIR             MLIRExportManager.cs:247  <- AOT: dll build disabled (export.aot.buildDll=false)
+ 22110  ExportSLModulePackageExportModuleSuccess                Export/SLModulePackage  SLModulePackageWriter.cs:100  <- export module success:
+ 22000  IRCallLinkIsNullClosureCall                             IR/CallLink         IRMetaCallLink.cs:262  <- closure call node is null
+ 22001  IRCallLinkNotFoundNewCall                               IR/CallLink         IRMetaCallLink.cs:394  <- New-in-call-link: IRMetaClass not found for {}
+ 22002  IRCallLinkNotFoundNewCall2                              IR/CallLink         IRMetaCallLink.cs:458  <- New-in-call-link: constructor not found for {}
+ 22003  IRClassIsNullGetIRMethodByIndexNull                     IR/Class            IRMetaClass.cs:246  <- GetIRMethodByIndex is null
+ 22004  IRClassIsNullCvNull                                     IR/Class            IRMetaClass.cs:641  <- cv is null
+ 22005  IRCallNotFoundIrRuntime                                 IR/Call             IRCall.cs:262  <- ir runtime[{}] method not found!! func: {}
+ 22006  IRCallIssue                                             IR/Call             IRCall.cs:302  <- aaaa
+ 22007  IRExpressNotFoundOperatorMethod                         IR/Express          IRExpress.cs:113  <- operator method not found!! func:
+ 22008  IRExpressNotSign                                        IR/Express          IRExpress.cs:146  <- not have sign
+ 22009  IRExpressNotFoundNotfoundExpress                        IR/Express          IRExpress.cs:418  <- notfound express
+ 22010  IRExpressNotFoundNotfoundOwner                          IR/Express          IRExpress.cs:482  <- notfound owner mc !
+ 22011  IRExpressNotFoundNotfoundOwner2                         IR/Express          IRExpress.cs:729  <- notfound owner mc !
+ 22012  IRExpressNotFoundNotfoundOwner3                         IR/Express          IRExpress.cs:741  <- notfound owner mc !
+ 22013  IRExpressNotFoundSetAccessor                            IR/Express          IRExpress.cs:854  <- set accessor method not found in ir class:
+ 22014  IRManagerStartTranslatingIR                             IR/Manager          IRManager.cs:49  <- Start translating IR...
+ 22015  IRManagerEndTranslatingIR                               IR/Manager          IRManager.cs:87  <- End translating IR...
+ 22016  IRManagerStartExportingIR                               IR/Manager          IRManager.cs:99  <- Start exporting IR debug data...
+ 22017  IRManagerEndExportingIR                                 IR/Manager          IRManager.cs:218  <- End exporting IR debug data...
+ 22018  IRManagerStartTranslatingIRMetaClass                    IR/Manager          IRManager.cs:467  <- Start translating IRMetaClass...
+ 22019  IRManagerEndTranslatingIRMetaClass                      IR/Manager          IRManager.cs:514  <- End translating IRMetaClass...
+ 22020  IRMethodNotFoundResultPrologue                          IR/Method           IRMethod.cs:1062  <- result prologue: not found Result IRMetaClass!
+ 22021  IRAssignStatementAssignStatement                        IR/AssignStatement  IRAssignStatements.cs:29  <- AssignStatement 没有可生成的表达式
+ 22022  IRAssignStatementIRAssignStatementVisitVariable         IR/AssignStatement  IRAssignStatements.cs:138  <- IRAssignStatement visit variable is Static
+ 22023  IRAssignStatementIRAssignStatementVisitVariable2        IR/AssignStatement  IRAssignStatements.cs:207  <- IRAssignStatement visit variable is Static2
+ 22024  IRClosureDefineStatementClosureHostFunction             IR/ClosureDefineStatement IRClosureDefineStatements.cs:37  <- closure host function missing __closure_ctx__
+ 22025  IRClosureDefineStatementNotFoundClosureContext          IR/ClosureDefineStatement IRClosureDefineStatements.cs:43  <- closure context local variable not found: __closure_ctx__
+ 22026  IRClosureDefineStatementIsNullClosureFunction           IR/ClosureDefineStatement IRClosureDefineStatements.cs:82  <- closure function is null
+ 22027  IRClosureDefineStatementNotFoundClosureIRMethod         IR/ClosureDefineStatement IRClosureDefineStatements.cs:96  <- closure IRMethod not found:
+ 22028  IRReturnStatementNotFoundResultValue                    IR/ReturnStatement  IRReturnStatements.cs:91  <- result value return: not found value field!
+ 22029  IRUtilIR                                                IR/Util             IRUtil.cs:147  <- Error 未支持表达式中的IR代码
+ 22030  IRVariableIndex                                         IR/Variable         IRVariable.cs:120  <- 没有找到对应成员变量的Index
+ 22031  IRVariableIndex2                                        IR/Variable         IRVariable.cs:193  <- 没有找到对应成员变量的Index
+ 22032  IRVariableSVM                                           IR/Variable         IRVariable.cs:644  <- SVM Error 没有找到加载变量的来源类型！
+ 22033  IRVariableSVM2                                          IR/Variable         IRVariable.cs:676  <- SVM Error 没有找到加载变量的来源类型！
+ 20000  ProjectProjectClassIsNullNodeNull                       Project/ProjectClass     PorjectClass.cs:63  <- Error [{}] node is null
+ 20001  ProjectProjectClassNamespace                            Project/ProjectClass     PorjectClass.cs:94  <- Error 解析namespace添加命名空间节点时，发现已有定义类11!!
+ 20002  ProjectProjectClassNamespace2                           Project/ProjectClass     PorjectClass.cs:113  <- Error 解析namespace添加命名空间节点时，发现已有定义类22!!
+ 20003  ProjectProjectClassNamespace3                           Project/ProjectClass     PorjectClass.cs:132  <- Error 解析namespace添加命名空间节点时，发现已有定义类33!!
+ 20004  ProjectProjectClassNamespace4                           Project/ProjectClass     PorjectClass.cs:158  <- Error 解析namespace添加命名空间节点时，发现已有定义类44!!
+ 20005  ProjectProjectClassJsoncDataArray                       Project/ProjectClass     PorjectClass.cs:415  <- jsonc data array '{}' contains unsupported element types (only primitive/array s...
+ 20006  ProjectProjectClassUnsupportedJsoncData                 Project/ProjectClass     PorjectClass.cs:419  <- Unsupported jsonc data value kind for '{}': {}
+ 20007  ProjectProjectClassCannotInject_inputArgs               Project/ProjectClass     PorjectClass.cs:463  <- Inject _inputArgs failed: cannot build Array<Object> meta type.
+ 20008  ProjectProjectClassNotFoundDllImportsFFI                Project/ProjectClass     PorjectClass.cs:518  <- dllImports: FFI.Library not found (Std not referenced?), skip global.dllImport i...
+ 20009  ProjectProjectClassDllImportsAliasNot                   Project/ProjectClass     PorjectClass.cs:554  <- dllImports: alias '{}' is not a valid identifier, skipped.
+ 20010  ProjectProjectClassDllImportsSyntheticHolder            Project/ProjectClass     PorjectClass.cs:577  <- dllImports: synthetic holder class parse failed, global.dllImport not injected.
+ 20011  ProjectProjectClassDllImportsHolderClass                Project/ProjectClass     PorjectClass.cs:583  <- dllImports: holder class synthesis error: {}
+ 20012  ProjectProjectClassDllImportsFunctionName               Project/ProjectClass     PorjectClass.cs:662  <- dllImports: function name '{}' is not a valid identifier, skipped.
+ 20013  ProjectProjectClassDllImportsFunctionSig                Project/ProjectClass     PorjectClass.cs:677  <- dllImports: function '{}' sig '{}' has unsupported type, skipped.
+ 20014  ProjectProjectClassDllImportsFunctionBind               Project/ProjectClass     PorjectClass.cs:702  <- dllImports: function '{}' bind expression build failed, skipped.
+ 20015  ProjectProjectClassDllImportsInjectGlobal               Project/ProjectClass     PorjectClass.cs:708  <- dllImports: inject global.{} = FFI.StaticLibrary.bindFunction({}, {}, {})
+ 20016  ProjectProjectClassExportProjectGuide                   Project/ProjectClass     PorjectClass.cs:1104  <- Export project guide markdown failed:
+ 20017  ProjectCompileIssue                                     Project/Compile          ProjectCompile.cs:38  <- (动态消息)
+ 20018  ProjectCompileIssue2                                    Project/Compile          ProjectCompile.cs:303  <- 已经添加过一次该文件:
+ 20019  ProjectCompileNotFound                                  Project/Compile          ProjectCompile.cs:321  <- 没有找到要编译的文件:
+ 20020  ProjectReferenceModuleNotFoundReferenceModule           Project/ReferenceModule  ProjectReferenceModuleLoader.cs:110  <- Reference module not found or could not be loaded: path={}, name={}
+ 20021  ProjectReferenceModuleReferenceModuleRead               Project/ReferenceModule  ProjectReferenceModuleLoader.cs:172  <- Reference module read failed:
+ 20022  ProjectReferenceModuleReferenceModuleRead2              Project/ReferenceModule  ProjectReferenceModuleLoader.cs:183  <- Reference module read failed:
+ 20023  ProjectReferenceModuleReferenceModuleAlready            Project/ReferenceModule  ProjectReferenceModuleLoader.cs:239  <- Reference module '{}' is already loaded, skipping. path={}
+ 20024  ProjectReferenceModuleReferenceModuleLoaded             Project/ReferenceModule  ProjectReferenceModuleLoader.cs:271  <- Reference module loaded (compiled): name={}, path={}
+ 20025  ProjectReferenceModuleReferenceModuleUuid               Project/ReferenceModule  ProjectReferenceModuleLoader.cs:296  <- Reference module uuid mismatch: {}, expected={}, actual={}
+ 20026  ProjectReferenceModuleNotFindBase                       Project/ReferenceModule  ProjectReferenceModuleLoader.cs:1186  <- not find base type
+ 20027  ProjectReferenceModuleNotFindInterface                  Project/ReferenceModule  ProjectReferenceModuleLoader.cs:1201  <- not find interface type
+ 20028  ProjectReferenceModuleReferenceSourceModule             Project/ReferenceModule  ProjectReferenceModuleLoader.cs:1339  <- Reference source module .jsonc parse failed: {} {}
+ 20029  ProjectReferenceModuleReferenceModuleRegistered         Project/ReferenceModule  ProjectReferenceModuleLoader.cs:1350  <- Reference module registered {} system calls. path={}
+ 20030  ProjectReferenceModuleReferenceModuleAlias              Project/ReferenceModule  ProjectReferenceModuleLoader.cs:1363  <- Reference module alias is empty: {}
+ 20031  ProjectReferenceModuleReferenceModuleAlready2           Project/ReferenceModule  ProjectReferenceModuleLoader.cs:1372  <- Reference module '{}' is already loaded, skipping. path={}
+ 20032  ProjectReferenceModuleReferenceModuleLoaded2            Project/ReferenceModule  ProjectReferenceModuleLoader.cs:1400  <- Reference module loaded (source): name={}, path={}, structCount={}
+ 20051  ProcessSystemMethodCallNotFoundImportSystem             Process/SystemMethodCall SystemMethodCallDeclaration.cs:190  <- import system method call param type not found! name={}, paramType={}
+ 20052  ProcessSystemMethodCallNotFoundImportSystem2            Process/SystemMethodCall SystemMethodCallDeclaration.cs:198  <- import system method call param type not found! name={}, paramType={}
+ 20053  ProcessSystemMethodCallImportSystemMethod               Process/SystemMethodCall SystemMethodCallDeclaration.cs:207  <- import system method call name had define!

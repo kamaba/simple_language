@@ -1,0 +1,373 @@
+//****************************************************************************
+//  File:      MLIRExportManager.cs
+// ------------------------------------------------
+//  Description: Unified entrypoint for the MLIR AOT export pipeline.
+//  Everything MLIR/AOT related (env-var switches, stage-1 candidate
+//  selection, stage-2 emission, stage-3 dll build, manifest bookkeeping)
+//  is encapsulated in this directory:
+//
+//    MLIRExportConfig   - environment/config switches (SIMPLELANG_*)
+//    MLIRExportManager  - orchestration + public AOT query interfaces
+//    MLIRExporter       - stage-2 MLIR emission (per-method)
+//    MLIRToolchain      - stage-3 external toolchain (mlir-opt/llc/link)
+//
+//  Pipeline (per module):
+//    stage 1: collect @AOT() candidates (isAot && isStatic && !isTemplateFunction)
+//    stage 2: MLIRExporter.ExportModuleToFile -> aot.mlir (+ method manifest)
+//    stage 3: MLIRToolchain.TryBuildAotDll    -> aot.dll (fallback to CVM on failure)
+//    stage 3.5: the method manifest is merged into module.json ("aot" field);
+//              the VM reads it from there to load the dll (stage 4).
+//****************************************************************************
+
+using SimpleLanguage.Export.SLIR.Types;
+using SimpleLanguage.IR;
+using SimpleLanguage.Logging;
+using SimpleLanguage.Project;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+
+namespace SimpleLanguage.Export.MLIR
+{
+    /// <summary>
+    /// MLIR/AOT 导出配置：来自工程 jsonc 的 "export"."aot" 段（ProjectManager.config）。
+    /// 工具链路径（mlir-opt/llc/link.exe）不在此配置——MLIRToolchain 按固定顺序
+    /// 探测（exe 目录 auto-deploy 副本 → tools\llvm → vswhere/PATH），与环境变量无关。
+    /// </summary>
+    public sealed class MLIRExportConfig
+    {
+        /// <summary>jsonc export.aot.enabled=false 关闭整个 AOT 导出（默认开启）。</summary>
+        public bool AotEnabled { get; init; } = true;
+        /// <summary>jsonc export.aot.buildDll=false 跳过 stage-3 dll 构建（只导出 mlir，默认开启）。</summary>
+        public bool BuildDll { get; init; } = true;
+
+        /// <summary>jsonc export.aot.triple：llc -mtriple 目标三元组（空 = llc 宿主默认，§11.4）。</summary>
+        public string Triple { get; init; } = string.Empty;
+        /// <summary>jsonc export.aot.cpu：llc -mcpu 目标 CPU（空 = llc 宿主默认，§11.4）。</summary>
+        public string Cpu { get; init; } = string.Empty;
+        /// <summary>jsonc export.aot.features：llc -mattr 特性列表（空 = llc 宿主默认，§11.4）。</summary>
+        public string Features { get; init; } = string.Empty;
+
+        /// <summary>模块级 AOT 产物文件名（aot.mlir）。</summary>
+        public string MlirFileName { get; init; } = "aot.mlir";
+        /// <summary>模块级 AOT dll 文件名（aot.dll）。</summary>
+        public string DllFileName { get; init; } = "aot.dll";
+
+        /// <summary>
+        /// 从当前工程配置（jsonc export.aot 段）解析；无工程上下文时用默认值（全开）。
+        /// </summary>
+        public static MLIRExportConfig FromProject()
+        {
+            var aot = ProjectManager.config?.Export?.Aot;
+            return new MLIRExportConfig
+            {
+                AotEnabled = aot?.Enabled ?? true,
+                BuildDll = aot?.BuildDll ?? true,
+                Triple = aot?.Triple ?? string.Empty,
+                Cpu = aot?.Cpu ?? string.Empty,
+                Features = aot?.Features ?? string.Empty,
+            };
+        }
+
+        /// <summary>
+        /// 解析为 stage-3 工具链目标（§11.4）：三字段全空返回 null（llc 宿主默认，
+        /// 不追加 -mtriple/-mcpu/-mattr）。
+        /// </summary>
+        public MLIRToolchain.AotTarget? ResolveAotTarget()
+        {
+            if (string.IsNullOrWhiteSpace(Triple)
+                && string.IsNullOrWhiteSpace(Cpu)
+                && string.IsNullOrWhiteSpace(Features))
+            {
+                return null;
+            }
+            return new MLIRToolchain.AotTarget
+            {
+                Triple = Triple,
+                Cpu = Cpu,
+                Features = Features,
+            };
+        }
+    }
+
+    /// <summary>
+    /// MLIR AOT 导出编排器（stage 1 -> 3.5）。
+    /// 用法：
+    ///   var result = MLIRExportManager.Instance.Run(outDir);
+    ///   // result.ToSlAotPackage() 并入 module.json 的 "aot" 字段
+    /// </summary>
+    public sealed class MLIRExportManager
+    {
+        private static readonly MLIRExportManager s_Instance = new MLIRExportManager();
+        public static MLIRExportManager Instance => s_Instance;
+
+        /// <summary>最近一次 Run 的结果（null 表示尚未运行）。</summary>
+        public AotModuleResult? LastResult { get; private set; }
+
+        // ------------------------------------------------------------------
+        // Public AOT query interfaces (任务2：供 AOT/宿主调用)
+        // ------------------------------------------------------------------
+
+        /// <summary>stage-1 候选判定：@AOT() 标记的非模板静态成员函数。</summary>
+        public static bool IsAotCandidate(IRMethod? m)
+            => m != null && m.isAot && m.isStatic && !m.isTemplateFunction;
+
+        /// <summary>方法是否在最近一次导出中成功降级（可原生分发）。</summary>
+        public bool IsMethodAotReady(string methodId)
+            => LastResult?.Methods.FirstOrDefault(x => x.Id == methodId)?.Status == "ok";
+
+        /// <summary>收集当前模块的全部 AOT 候选与被跳过项。</summary>
+        public static (List<IRMethod> candidates, List<string> skipped) CollectCandidates(
+            IEnumerable<KeyValuePair<string, IRMethod>> methods)
+        {
+            var candidates = new List<IRMethod>();
+            var skipped = new List<string>();
+            foreach (var kv in methods)
+            {
+                var m = kv.Value;
+                if (m == null || !m.isAot) continue;
+                if (!IsAotCandidate(m))
+                {
+                    skipped.Add(m.id);
+                    continue;
+                }
+                candidates.Add(m);
+            }
+            return (candidates, skipped);
+        }
+
+        /// <summary>
+        /// 单方法/方法集导出接口：发射 MLIR 并按需构建 dll（不经过 stage-1 收集）。
+        /// 返回 null 表示发射失败。
+        /// </summary>
+        public static MLIRExporter.AotExportResult? TryExportMethods(
+            IReadOnlyList<IRMethod> methods, string mlirPath, bool buildDll = false,
+            string? dllPath = null, MLIRExportConfig? config = null)
+        {
+            config ??= MLIRExportConfig.FromProject();
+            var result = MLIRExporter.ExportModuleToFile(methods, mlirPath);
+            if (result.OkSymbols.Count == 0) return result;
+
+            if (!buildDll) return result;
+
+            var symbols = (IReadOnlyList<string>)result.OkSymbols;
+            if (result.NeedsBridgeInit)
+                symbols = result.OkSymbols.Concat(new[] { "sl_aot_bridge_init" }).ToArray();
+            if (MLIRToolchain.TryBuildAotDll(mlirPath, dllPath ?? "", symbols,
+                    out var error, MLIRToolchain.ToolchainPaths.Resolve(),
+                    gpu: result.HasGpuMethods,
+                    target: config.ResolveAotTarget()))
+            {
+                result.DllFileName = Path.GetFileName(dllPath ?? "aot.dll");
+            }
+            else
+            {
+                Log.AddIRLog(LID.ExportMLIRAOTBuildDll,
+                    "AOT: build dll failed, fallback to CVM: " + error);
+            }
+            return result;
+        }
+
+        /// <summary>构建 AOT dll（stage-3）。返回 null 表示构建失败。</summary>
+        public static string? TryBuildDll(string mlirPath, IReadOnlyList<string> exportSymbols,
+            string dllPath, MLIRExportConfig? config = null)
+        {
+            if (!MLIRToolchain.TryBuildAotDll(mlirPath, dllPath, exportSymbols,
+                    out var error, MLIRToolchain.ToolchainPaths.Resolve(),
+                    target: config.ResolveAotTarget()))
+            {
+                Log.AddIRLog(LID.ExportMLIRAOTBuildDll2,
+                    "AOT: build dll failed, fallback to CVM: " + error);
+                return null;
+            }
+            return dllPath;
+        }
+
+        // ------------------------------------------------------------------
+        // Orchestration (stage 1 -> 3.5)
+        // ------------------------------------------------------------------
+
+        /// <summary>
+        /// 执行整个模块的 AOT 导出管线。开关关闭或无候选时返回未运行的空结果。
+        /// </summary>
+        public AotModuleResult Run(string outDir, MLIRExportConfig? config = null)
+        {
+            config ??= MLIRExportConfig.FromProject();
+
+            var result = new AotModuleResult { Ran = false };
+            if (!config.AotEnabled)
+            {
+                LastResult = result;
+                return result;
+            }
+
+            var (candidates, skipped) = CollectCandidates(IRManager.instance.IRMethodDict);
+            if (candidates.Count == 0 && skipped.Count == 0)
+            {
+                LastResult = result;
+                return result;
+            }
+
+            foreach (var s in skipped)
+            {
+                Log.AddIRLog(LID.ExportMLIRAOTSkipStage1,
+                    $"AOT: skip '{s}' (stage1 supports static non-template only)");
+            }
+            Log.AddIRLog(LID.ExportMLIRAOTCandidateS,
+                $"AOT: {candidates.Count} candidate(s) collected from module '{ResolveModuleName()}'");
+            foreach (var m in candidates)
+            {
+                Log.AddIRLog(LID.ExportMLIRAOTCandidate, $"AOT: candidate '{m.id}'");
+            }
+
+            if (candidates.Count == 0)
+            {
+                LastResult = result;
+                return result;
+            }
+
+            // ---- stage 2: emit aot.mlir -----------------------------------
+            result.Ran = true;
+            var mlirPath = Path.Combine(outDir, config.MlirFileName);
+            var export = MLIRExporter.ExportModuleToFile(candidates, mlirPath);
+            result.MlirPath = mlirPath;
+            result.NeedsBridgeInit = export.NeedsBridgeInit;
+            result.Methods.AddRange(export.Methods);
+            result.TypeTable = export.TypeTable;
+
+            Log.AddIRLog(LID.ExportMLIRAOTExportSuccess,
+                $"AOT: export {config.MlirFileName} success: {mlirPath} " +
+                $"({export.OkSymbols.Count} ok, {export.FailedIds.Count} failed)");
+            foreach (var m in export.Methods)
+            {
+                if (m.Status != "failed") continue;
+                Log.AddIRLog(LID.ExportMLIRAOTMethodEmit,
+                    $"AOT: method emit failed: {m.Id} ({m.Reason})");
+            }
+
+            if (export.OkSymbols.Count == 0)
+            {
+                LastResult = result;
+                return result;
+            }
+
+            // ---- stage 3: lower to aot.dll (fallback to CVM on failure) ---
+            if (config.BuildDll)
+            {
+                var aotTarget = config.ResolveAotTarget();
+                // §11.4（P2.5）：export.aot.triple/cpu/features 已配置时，
+                // llc 按其追加 -mtriple/-mcpu/-mattr（Info 22115 可溯源实际参数）。
+                if (aotTarget != null)
+                {
+                    Log.AddIRLog(LID.ExportMLIRAOTTarget,
+                        "AOT: llc target options:" + aotTarget.ToLlcArgs());
+                }
+                var dllPath = Path.Combine(outDir, config.DllFileName);
+                // Stage-5 reverse bridge: the module references @sl_aot_bridge_init,
+                // so it must be exported from the dll (only when actually emitted).
+                var exportSymbols = export.NeedsBridgeInit
+                    ? export.OkSymbols.Concat(new[] { "sl_aot_bridge_init" }).ToArray()
+                    : (IReadOnlyList<string>)export.OkSymbols;
+                if (MLIRToolchain.TryBuildAotDll(mlirPath, dllPath, exportSymbols,
+                        out var dllError, MLIRToolchain.ToolchainPaths.Resolve(),
+                        gpu: export.HasGpuMethods,
+                        target: aotTarget))
+                {
+                    result.DllFileName = config.DllFileName;
+                    Log.AddIRLog(LID.ExportMLIRAOTBuildDll3, "AOT: build dll success: " + dllPath);
+                }
+                else
+                {
+                    Log.AddIRLog(LID.ExportMLIRAOTBuildDll4,
+                        "AOT: build dll failed, fallback to CVM: " + dllError);
+                }
+            }
+            else
+            {
+                Log.AddIRLog(LID.ExportMLIRAOTDllBuild,
+                    "AOT: dll build disabled (export.aot.buildDll=false)");
+            }
+
+            LastResult = result;
+            return result;
+        }
+
+        // ------------------------------------------------------------------
+        // Result model
+        // ------------------------------------------------------------------
+
+        /// <summary>一次模块级 AOT 导出的汇总结果。</summary>
+        public sealed class AotModuleResult
+        {
+            /// <summary>管线是否真正执行了发射（开关开启且有候选）。</summary>
+            public bool Ran { get; set; }
+            public string? MlirPath { get; set; }
+            /// <summary>构建成功的 dll 文件名（相对导出目录；null = 未构建/失败）。</summary>
+            public string? DllFileName { get; set; }
+            /// <summary>模块是否包含 stage-5 反向桥（需要导出 sl_aot_bridge_init）。</summary>
+            public bool NeedsBridgeInit { get; set; }
+            public List<MLIRExporter.AotMethodManifest> Methods { get; } = new();
+            /// <summary>模块级 data 类型注册表（发射期收集；manifest
+            /// "aot.typeList" 的数据源）。null = 导出未运行或发射前抛出。</summary>
+            internal AotTypeTable? TypeTable { get; set; }
+
+            /// <summary>是否有可原生分发的方法。</summary>
+            public bool AnyOk
+                => Methods.Any(m => m.Status == "ok" && !string.IsNullOrEmpty(DllFileName));
+
+            /// <summary>转换为 module.json 的 "aot" 字段数据（任务3）。</summary>
+            public SLAotPackage? ToSlAotPackage()
+            {
+                if (!Ran || Methods.Count == 0) return null;
+                var pkg = new SLAotPackage
+                {
+                    enabled = true,
+                    // Debug 导出带 mlir 溯源字段；Release 导出 dll 构建成功后
+                    // aot.mlir 已随中间产物删除（KeepIntermediateArtifacts=false），
+                    // 字段不写（null 序列化省略）。dll 未构建/构建失败时文件仍在，
+                    // 字段保留供排查。
+                    mlir = (MLIRToolchain.KeepIntermediateArtifacts
+                            || string.IsNullOrEmpty(DllFileName))
+                        ? Path.GetFileName(MlirPath ?? "aot.mlir")
+                        : null,
+                    dll = DllFileName ?? string.Empty,
+                };
+                foreach (var m in Methods)
+                {
+                    var mp = new SLAotMethodPackage
+                    {
+                        id = Core.ClassManager.GetMethodId(m.Id),
+                        symbol = m.Symbol,
+                        status = m.Status,
+                        reason = string.IsNullOrEmpty(m.Reason) ? null : m.Reason,
+                    };
+                    // 参数/返回 ABI 清单仅对 ok 方法有意义（C 侧 marshal 只看 ok 条目）
+                    if (m.Status == "ok")
+                    {
+                        mp.paramList.AddRange(m.ParamList);
+                        mp.retSlot = m.RetSlot;
+                        mp.retTypeId = m.RetTypeId;
+                    }
+                    pkg.methods.Add(mp);
+                }
+                if (TypeTable != null && TypeTable.Count > 0)
+                    pkg.typeList.AddRange(TypeTable.ToPackages());
+                return pkg;
+            }
+        }
+
+        private static string ResolveModuleName()
+        {
+            var exportModuleName = ProjectManager.config?.Export?.ModuleName;
+            if (!string.IsNullOrWhiteSpace(exportModuleName))
+                return exportModuleName;
+
+            var projectName = ProjectManager.config?.Project?.Name;
+            if (!string.IsNullOrWhiteSpace(projectName))
+                return projectName;
+
+            return "SimpleLanguage";
+        }
+    }
+}

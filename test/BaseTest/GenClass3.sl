@@ -1,11 +1,9 @@
 
-import Std
-
 namespace GC3{
 
 LT
 {
-    private _init_()
+    private override _init_()
     {
 
     }
@@ -20,9 +18,26 @@ Level1<LT11,LT12>
     LT11 Level1_t1 = new()
     LT12 Level1_t2 = new()
 
+    LT12 level1Fun( LT11 t1, LT12 t2 )
+    {
+        string ret1 = "  t1=" + t1.toString()
+
+        global.println(ret1)
+
+        ret t2
+    }
+    static LT12 level1staticFun( LT11 t1, LT12 t2 )
+    {
+        string ret1 = "  t1=" + t1.toString()
+
+        global.println(ret1)
+
+        ret t2
+    }
+
     override string toString()
     {
-        ret "  Level1_t1" + this.Level1_t1.toString() + "  Level1_t2" + this.Level1_t2.toString()
+        ret "  Level1_t1=" + this.Level1_t1.toString() + "  Level1_t2=" + this.Level1_t2.toString()
     }
 }
 interface Interface1<IT1>
@@ -38,6 +53,15 @@ Level2<LT21, LT22, LT23> extends Level1<LT23,LT22 > interface Interface1<LT23>
         LT23 llevel11sx = new()
 
         ret tttt
+    }
+    
+    LT23 level2un( LT21 t1, LT22 t2, LT23 t3 )
+    {
+        string ret1 = "  t1=" + t1.toString()
+
+        global.println(ret1)
+
+        ret t3
     }
 
     static LT23 _test = new()
@@ -63,6 +87,27 @@ Level3<LT31, LT32> extends Level2<LT32, LT32, LT31>
     {
         ret tttt
     }
+    
+    LT32 level3Fun( LT31 t1, LT32 t2 )
+    {
+        string ret1 = "  t1=" + t1.toString()
+
+        global.println(ret1)
+
+        ret t2
+    }
+
+    
+    
+    static LT32 level3staticFun( LT31 t1, LT32 t2 )
+    {
+        string ret1 = "  t1=" + t1.toString()
+
+        global.println(ret1)
+
+        ret t2
+    }
+
     override string toString()
     {
         ret "Level3_t=" + this.Level3_t.toString() + "\n" + base.toString()
@@ -74,6 +119,23 @@ Level4<LT41,LT42> extends Level3<LT42,LT41>
     override LT42 add( LT42 tttt )
     {
         ret tttt
+    }
+    
+    LT42 level4Fun( LT41 t1, LT42 t2 )
+    {
+        string ret1 = "  t1=" + t1.toString()
+
+        global.println(ret1)
+
+        ret t2
+    }
+    static LT42 level4staticFun( LT41 t1, LT42 t2 )
+    {
+        string ret1 = "  t1=" + t1.toString()
+
+        global.println(ret1)
+
+        ret t2
     }
 
     override string toString()
@@ -93,9 +155,13 @@ GenClass3{
         GenClass3.testGetTest()
         GenClass3.testFields()
         
+        global.println("====== [11] testTemplate ======" )
         GenClass3.testTemplate<int,int>(300)
         
-        GenClass3.testTemplate<float,int>(123.45)
+        global.println("====== [12] testTemplate ======" )
+        GenClass3.testTemplate<float,int>(123.45f)
+
+        global.println("====== [13] testTemplate ======" )
         GenClass3.testTemplate<string,string>("string___string")
         #global.println("====== GenClass3: 已知 VM 限制，4层泛型继承链构造未支持 ======" )
     }
@@ -130,13 +196,15 @@ GenClass3{
         global.println("Level3_t 期望: 999  实际: " + llll3333.Level3_t.toString() )
         # 已知限制: 深层继承的泛型字段 (Level1_t2, Level21_t) 的 store 路径
         # callMetaType 为 null 时字段索引解析为 -1，读取正常
-        global.println("Level1_t2 读取 期望: (默认值)  实际: " + llll3333.Level1_t2?.toString() )
-        global.println("Level21_t 读取 期望: (默认值)  实际: " + llll3333.Level21_t?.toString() )
+        llll3333.Level1_t2 = 888
+        llll3333.Level21_t = 777
+        global.println("Level1_t2 读取 期望: 888 (默认值)  实际: " + llll3333.Level1_t2?.toString() )
+        global.println("Level21_t 读取 期望: 777 (默认值)  实际: " + llll3333.Level21_t?.toString() )
     }
     static testTemplate<TT1,TT2>( TT1 t1 )
     {
         global.println("====== [5] 模板类 ======" )
-        Level4<TT1,TT2> llll3333 = new(t1)
+        Level4<TT2,TT1> llll3333 = new(t1)
         global.println("llll3333 模板类 输出: " + llll3333.toString() )
     }
 }

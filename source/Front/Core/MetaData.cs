@@ -1,4 +1,4 @@
-﻿using SimpleLanguage.Compile;
+using SimpleLanguage.Compile;
 
 using SimpleLanguage.Logging;
 using System;
@@ -21,6 +21,8 @@ namespace SimpleLanguage.Core
         public List<MetaMemberFunction> nonStaticVirtualMetaMemberFunctionList => m_NonStaticVirtualMetaMemberFunctionList;
         public List<MetaMemberFunction> fileCollectMetaMemberFunctionList => m_FileCollectMetaMemberFunctionList;
         public Dictionary<MetaClass, ClassLevelRelationData> metaTemplateMapDict => m_MetaTemplateMapDict;
+        /// <summary>data 类型级 attribute（@Serializable 等），SLIR 导出与序列化判定用。</summary>
+        public List<MetaAttribute> attributeList => m_AttributeList;
 
 
 
@@ -37,6 +39,7 @@ namespace SimpleLanguage.Core
         private List<MetaMemberFunction> m_NonStaticVirtualMetaMemberFunctionList = new List<MetaMemberFunction>();// inner temp add , after combine to m_MetaMemberFunctionListDict 
         private List<MetaMemberFunction> m_StaticMetaMemberFunctionList = new List<MetaMemberFunction>();// inner temp add , after combine to m_MetaMemberFunctionListDict 
         protected Dictionary<string, MetaMemberFunctionTemplateNode> m_MetaMemberFunctionTemplateNodeDict = new Dictionary<string, MetaMemberFunctionTemplateNode>();
+        private List<MetaAttribute> m_AttributeList = new List<MetaAttribute>();
 
         public MetaData( FileMetaClass md )
         {
@@ -47,6 +50,15 @@ namespace SimpleLanguage.Core
             m_IsDynamic = false;
             m_Token = md.token;
             AddPingToken(md?.token);
+            /* 拷贝 data 类型级 attribute（@Serializable 等），供 SLIR 导出 */
+            if (md.attributeList != null && md.attributeList.Count > 0)
+            {
+                foreach (var attr in md.attributeList)
+                {
+                    if (attr == null) continue;
+                    m_AttributeList.Add(new MetaAttribute(attr));
+                }
+            }
         }
         public MetaData(string _name, bool constToken, bool staticToken, bool dynamic ) : base()
         {
@@ -174,12 +186,12 @@ namespace SimpleLanguage.Core
                                 }
                                 else
                                 {
-                                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "没有找到父级别自己模板生成时的数据!!");
+                                    Log.AddMetaCoreLog(LID.MetaCoreDataNotFoundData, "没有找到父级别自己模板生成时的数据!!");
                                 }
                             }
                             else
                             {
-                                Log.AddMetaCoreLog(LID.ShowExtendMessage, "没有找到父级别自己模板生成时的数据!!");
+                                Log.AddMetaCoreLog(LID.MetaCoreDataNotFoundData2, "没有找到父级别自己模板生成时的数据!!");
                             }
                         }
                     }
@@ -217,7 +229,7 @@ namespace SimpleLanguage.Core
                     isHave = false;
                 if( v.isWithName == false )
                 {
-                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, v.token, "这里需要个名字的定义!");
+                    Log.AddMetaCoreLog(LID.MetaCoreDataDefine, v.token, "这里需要个名字的定义!");
                     continue;
                 }
                 MetaMemberData mmv = new MetaMemberData(this, v, this, i,  false );
@@ -245,7 +257,7 @@ namespace SimpleLanguage.Core
                 var c = v.Value;
                 if (this.m_MetaMemberDataDict.ContainsKey(c.name))
                 {
-                    var ld = Log.AddMetaCoreLog(LID.ShowExtendMessage, $"Error 继承的类123:{m_AllName} 在继承的父类{m_ExtendClass?.allName} 中已包含:{c.name} ");
+                    var ld = Log.AddMetaCoreLog(LID.MetaCoreDataExtend, $"Error 继承的类123:{m_AllName} 在继承的父类{m_ExtendClass?.allName} 中已包含:{c.name} ");
                     //ld.valDict.Add(EMetaType.MetaClass, this);
                     //ld.valDict.Add(EMetaType.MetaExtendsClass, m_ExtendClass);
                     //ld.valDict.Add(EMetaType.MetaMemberVariable, c);
@@ -256,13 +268,39 @@ namespace SimpleLanguage.Core
         }
         public void HandleExtendMemberFunction()
         {
-            bool canAdd = false;
             foreach (var v in this.m_ExtendClass.nonStaticVirtualMetaMemberFunctionList)
             {
-                canAdd = true;
-                var efun = v;
-                //if (efun.isConstructInitFunction) { continue; }
-                m_NonStaticVirtualMetaMemberFunctionList.Add(efun);
+                // 在子类定义的方法中查找与父类方法签名相同的方法
+                MetaMemberFunction matchedChild = null;
+                foreach (var v2 in this.m_FileCollectMetaMemberFunctionList)
+                {
+                    if (v.IsEqualMetaFunction(v2))
+                    {
+                        matchedChild = v2;
+                        break;
+                    }
+                }
+
+                if (matchedChild != null)
+                {
+                    // 子类方法替换父类方法，记录override链供 base 调用解析
+                    if (!v.isStatic)
+                    {
+                        if (v.isFinal && !v.isAbstract)
+                        {
+                            Log.AddMetaCoreLog(LID.MetaCoreDataData, matchedChild.token,
+                                "Error 子data[" + this.m_AllName + "] 方法: " + matchedChild.name +
+                                " 不能override父类的final方法: " + this.m_ExtendClass.allName + "." + v.name);
+                        }
+                        matchedChild.SetOverrideMetaMemberFunction(v);
+                    }
+                    m_NonStaticVirtualMetaMemberFunctionList.Add(matchedChild);
+                }
+                else
+                {
+                    // 子类没有重写该方法: 直接继承父类方法
+                    m_NonStaticVirtualMetaMemberFunctionList.Add(v);
+                }
             }
 
             foreach (var v2 in this.m_FileCollectMetaMemberFunctionList)
@@ -272,6 +310,12 @@ namespace SimpleLanguage.Core
                     var find = m_StaticMetaMemberFunctionList.Find(a => a == v2);
                     if (find != null) continue;
 
+                    // static方法不支持override标记
+                    if (v2.isOverrideFunction)
+                    {
+                        Log.AddMetaCoreLog(LID.MetaCoreDataData2, v2.token,
+                            "Error data[" + this.m_AllName + "] 的static方法: " + v2.name + " 不能使用override标记");
+                    }
                     m_StaticMetaMemberFunctionList.Add(v2);
                 }
                 else
@@ -279,9 +323,12 @@ namespace SimpleLanguage.Core
                     var find = m_NonStaticVirtualMetaMemberFunctionList.Find(a => a == v2);
                     if (find != null) continue;
 
-                    if (v2.isOverrideFunction && v2.overrideMetaMemberFunction != null)
+                    // 有override标记，但父类中不存在签名相同的方法
+                    if (v2.isOverrideFunction && v2.overrideMetaMemberFunction == null)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, find.token, "有override标记，但没有父类 ");
+                        Log.AddMetaCoreLog(LID.MetaCoreDataData3, v2.token,
+                            "Error data[" + this.m_AllName + "] 方法: " + v2.name +
+                            " 有override标记，但没有找到父类中相同签名的方法");
                     }
                     m_NonStaticVirtualMetaMemberFunctionList.Add(v2);
                 }

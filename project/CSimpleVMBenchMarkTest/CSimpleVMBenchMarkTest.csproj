@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <!-- 用 CMake 构建 C VM（唯一二进制来源：csimple_lang\build\<Config>\bin\）。
+       Debug  : 构建 Debug DLL + exe（Program.cs P/Invoke 加载 DLL；exe 供路径解析/回退）
+       Release: 构建 Release exe（/O2 + RELEASE=1 优化构建，Program.cs 以进程方式运行它） -->
+  <Target Name="BuildCVM" BeforeTargets="Build">
+    <PropertyGroup>
+      <CVMRoot>$(MSBuildThisFileDirectory)..\..\..\csimple_lang</CVMRoot>
+      <CVMConfig Condition="'$(Configuration)' == 'Release'">Release</CVMConfig>
+      <CVMConfig Condition="'$(CVMConfig)' == ''">Debug</CVMConfig>
+    </PropertyGroup>
+    <Exec Command="cmake -B &quot;$(CVMRoot)\build&quot; -S &quot;$(CVMRoot)&quot;" />
+    <Exec Command="cmake --build &quot;$(CVMRoot)\build&quot; --config $(CVMConfig) --target csimple_lang_dll --target csimple_lang" />
+  </Target>
+  <ItemGroup>
+    <ProjectReference Include="..\..\source\Front\SimpleLanguageFront.csproj" />
+  </ItemGroup>
+
+</Project>
