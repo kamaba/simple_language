@@ -27,6 +27,9 @@ internal static class Program
         bool debug = args.Any(a => string.Equals(a, "-debug", StringComparison.OrdinalIgnoreCase));
         // -O0..-O3 / -o0..-o3 forwarded to the Front compile step (absent = compiler default level)
         string? optLevelArg = GetOptimizeLevelArg(args);
+        // 程序参数（Project._inputArgs）："--" 之后所有 token 原样透传给 C VM
+        // 例：dotnet run --project ... -- -- w3   ->   C VM 收到 "-- w3"（只跑 w3 组）
+        List<string> programArgs = GetProgramArgs(args);
 
         if (args.Length == 0)
         {
@@ -65,7 +68,7 @@ internal static class Program
         Console.WriteLine($"Package: {packagePath}");
 
         // Step 3: Run C VM (csimple_lang.exe) as external process
-        int cvmExit = RunCVM(packagePath, runTestEntry, repoRoot, debug);
+        int cvmExit = RunCVM(packagePath, runTestEntry, repoRoot, debug, programArgs);
         if (cvmExit != 0)
         {
             Console.WriteLine($"C VM run failed, exit code: {cvmExit}");
@@ -76,7 +79,7 @@ internal static class Program
         return 0;
     }
 
-    static int RunCVM(string packagePath, bool runTestEntry, string repoRoot, bool debug = false)
+    static int RunCVM(string packagePath, bool runTestEntry, string repoRoot, bool debug = false, List<string>? programArgs = null)
     {
         // Resolve csimple_lang exe/dll path (VS output: csimple_lang\build\<Config>\bin,
         // produced by the BuildCVM target in CSimpleVMTest.csproj)
@@ -108,12 +111,14 @@ internal static class Program
         {
             cvmArgs.Add("-test");
         }
-        // 程序参数（Project._inputArgs）："--" 之后所有 token 均原样注入
-        // 与 InputArgsTest.sl 约定一致：hello 42 world
-        cvmArgs.Add("--");
-        cvmArgs.Add("hello");
-        cvmArgs.Add("42");
-        cvmArgs.Add("world");
+        // 程序参数（Project._inputArgs）：仅透传宿主命令行 "--" 之后的 token，
+        // 无 "--" 时不注入（_inputArgs 为空数组，全量回归不受影响）。
+        // InputArgsTest 三参数路径：dotnet run --project ... -- -- hello 42 world
+        if (programArgs != null && programArgs.Count > 0)
+        {
+            cvmArgs.Add("--");
+            cvmArgs.AddRange(programArgs);
+        }
 
 #if DEBUG
         // Debug: P/Invoke into csimple_lang_dll.dll (in-process, can attach C debugger)
@@ -320,6 +325,9 @@ internal static class Program
         for (int i = 0; i < args.Length; i++)
         {
             var a = args[i];
+            // "--" 之后的 token 属于程序参数（透传给 C VM），不参与本宿主选项解析
+            if (a == "--")
+                break;
             if (string.IsNullOrEmpty(a) || a.StartsWith('-'))
                 continue;
             // "-start true/false" takes the next token as its value, not a project path
@@ -328,6 +336,18 @@ internal static class Program
             return a;
         }
         return null;
+    }
+
+    static List<string> GetProgramArgs(string[] args)
+    {
+        var result = new List<string>();
+        int idx = Array.IndexOf(args, "--");
+        if (idx >= 0)
+        {
+            for (int i = idx + 1; i < args.Length; i++)
+                result.Add(args[i]);
+        }
+        return result;
     }
 
     static string? GetOptimizeLevelArg(string[] args)

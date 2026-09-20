@@ -196,6 +196,14 @@ namespace SimpleLanguage
         DebugBegin,                         // = 119
         DebugEnd,                           // = 120
         DebugWatch,                         // = 121
+
+        // ARC retain/release (ARC_MEMORY_DESIGN.md §10; CVM OpCode_ARC_RETAIN=122 /
+        // ARC_RELEASE=123, workspace rule R2 alignment). Zero-payload stack ops:
+        // pop 1 (object ptr) -> push 1. Objects with is_owned=0 pass through
+        // untouched (GC-owned). P2 lowering will emit these around local
+        // lifetimes (non-escaping new / block exits).
+        ArcRetain,                          // = 122
+        ArcRelease,                         // = 123
     }
 
     /// <summary>
