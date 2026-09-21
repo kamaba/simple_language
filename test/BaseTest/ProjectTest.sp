@@ -41,7 +41,6 @@ Project
         GenClass_Interface.fun()
         GenClass.fun()
         GC2.GenClass2.fun()
-        DeferTest.fun()
         ExitTestNS.ExitTest.fun()
         TryTest.fun()
         CheckedCalcTest.fun()

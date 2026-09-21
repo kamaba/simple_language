@@ -148,11 +148,6 @@ namespace SimpleLanguage.IR
                             m_IRStatements.AddRange(irthrows.irStatements);
                         }
                         break;
-                    case MetaDeferStatements _:
-                    case MetaErrDeferStatements _:
-                        // defer/errdefer blocks are emitted at function level by IRMethod,
-                        // not at their in-line position.
-                        break;
                     case MetaCheckedStatements mcs:
                         {
                             // Emit BeginChecked, block body, EndChecked

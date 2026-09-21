@@ -13,9 +13,8 @@
 5. [label{}catch{} - 异常捕获块](#5-labelcatch--异常捕获块)
 6. [try 表达式 - try / try? / try!](#6-try-表达式--try--try-try)
 7. [checked / unchecked - 溢出检测](#7-checked--unchecked--溢出检测)
-8. [errdefer - 延迟错误处理](#8-errdefer--延迟错误处理)
-9. [执行流程与语义](#9-执行流程与语义)
-10. [完整示例](#10-完整示例)
+8. [执行流程与语义](#8-执行流程与语义)
+9. [完整示例](#9-完整示例)
 
 ---
 
@@ -418,59 +417,12 @@ catch
 
 ---
 
-## 8. errdefer - 延迟错误处理
+## 8. 执行流程与语义
 
-### 语法
-
-```sl
-[修饰符] [返回类型] 函数名(参数列表) throws
-{
-    errdefer
-    {
-        // 异常发生时执行的延迟处理块
-        ret 回退值    // 可选：设置回退返回值
-    }
-
-    // 函数体（可能抛出异常的代码）
-}
-```
-
-### 语义
-
-- `errdefer` 块在函数内**发生异常时**自动执行。
-- `errdefer` 中的 `ret` 设置回退返回值，异常不再传播（错误被拦截）。
-- 如果 `errdefer` 中没有 `ret`，仅做清理，异常继续传播。
-
-### 示例
-
-```sl
-Int32 riskyCompute(Int32 a, Int32 b) throws
-{
-    errdefer
-    {
-        global.println("riskyCompute 发生异常")
-        ret 100    # 拦截异常，返回 100
-    }
-
-    Int32 o = null
-    o.toString()    # 抛出异常
-    ret a + b
-}
-```
-
----
-
-## 9. 执行流程与语义
-
-### 9.1 异常传播路径
+### 8.1 异常传播路径
 
 ```
 throws 函数内异常发生
-       │
-       ▼
-  errdefer{} 执行（如果存在）
-  ├── 有 ret -> 设置回退返回值，错误被拦截
-  └── 无 ret -> 仅清理，错误继续传播
        │
        ▼
   调用方捕获
@@ -481,7 +433,7 @@ throws 函数内异常发生
   └── 未捕获 -> 继续向外层调用栈传播
 ```
 
-### 9.2 try 与 label{}catch{} 的关系
+### 8.2 try 与 label{}catch{} 的关系
 
 ```
 label myBlock
@@ -497,11 +449,10 @@ catch MathError e
 }
 ```
 
-### 9.3 各机制对比
+### 8.3 各机制对比
 
 | 机制 | 触发位置 | 作用 | 是否吞掉异常 |
 |------|----------|------|-------------|
-| `errdefer{}` | 函数内部 | 延迟清理 / 设置回退值 | 有 `ret` 则吞掉 |
 | `try` | label{}catch{} 块内 | 标记表达式，异常由 catch 捕获 | 是（由 catch 处理） |
 | `try?` | 表达式级 | 异常转 null | 是（转为 null） |
 | `try!` | 表达式级 | 异常则崩溃 | 否（崩溃） |
@@ -509,9 +460,9 @@ catch MathError e
 
 ---
 
-## 10. 完整示例
+## 9. 完整示例
 
-### 10.1 综合示例
+### 9.1 综合示例
 
 ```sl
 enum MathError extends Error
@@ -523,11 +474,6 @@ enum MathError extends Error
 # throws 函数
 Int32 safeDivide(Int32 a, Int32 b) throws
 {
-    errdefer
-    {
-        global.println("safeDivide 异常清理")
-    }
-
     if (b == 0)
     {
         throw MathError.DivZero
@@ -581,7 +527,7 @@ catch
 }
 ```
 
-### 10.2 嵌套与 re-throw
+### 9.2 嵌套与 re-throw
 
 ```sl
 label outer
@@ -633,10 +579,6 @@ finally { ... }                    # 总是执行
 # 溢出检测
 checked { ... } catch { ... }      # 溢出时抛出异常
 unchecked { ... }                   # 显式不检测
-
-# 延迟错误处理
-errdefer { ret 回退值 }             # 有 ret：拦截异常
-errdefer { 清理代码 }               # 无 ret：仅清理，异常传播
 
 # try 表达式（在 label{}catch{} 块内使用）
 try funcThatMayThrow()              # 异常 -> 需 catch 捕获

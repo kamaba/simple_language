@@ -66,7 +66,7 @@ InlineLambdaForbiddenTest
 
         # 负例6 [21451]: try? 表达式前缀 —— 表达式位置异常帧形态, 定义点拦截
         # (try/try?/try! 均为表达式前缀, 可出现在 => 体内; 21450 的 break/return 等与
-        #  21451 的块级 try/catch/defer 无法在表达式位置合法出现, 扫描器作为防御保留)
+        #  21451 的块级 try/catch 无法在表达式位置合法出现, 扫描器作为防御保留)
         var f6 = ( x ) => try? safeThrowsFn()
 
         # 负例7 [21456]: M3 实参类型与标注不匹配 —— 调用点类型校验拦截

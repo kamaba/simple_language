@@ -72,7 +72,7 @@ sl compile -p <工程> -O3     # 最高优化
 | operator 运算符重载方法 | 运算符调用解析链特殊，保守排除 |
 | get / set 属性访问器 | 属性访问不走普通调用点展开路径 |
 | 闭包合成函数、模板函数、ref 模块导入（`ref` 声明）的函数 | 无源体 / 实例化拷贝无 FileMeta / 无体 |
-| 体内含违禁构造（`spawn`/`isolate`/`await`/`yield`、`try`/`catch`/`defer`、`goto`、闭包或内联 lambda 定义、递归自引用等，同 LID 21449-21452 扫描口径） | 展开后无法等价发射——**静默预检不过即跳过，不报编译错误** |
+| 体内含违禁构造（`spawn`/`isolate`/`await`/`yield`、`try`/`catch`/`finally`、`goto`、闭包或内联 lambda 定义、递归自引用等，同 LID 21449-21452 扫描口径） | 展开后无法等价发射——**静默预检不过即跳过，不报编译错误** |
 
 其余语义细节（实例方法隐含 `final`、`this` 槽绑定、`ret` 改写等）与 `inline` 方法修饰符完全一致，见 `md/syntax/inline_lambda.md` 第二章。
 

@@ -2177,12 +2177,6 @@ namespace SimpleLanguage.Compile
                 case "throw":
                     tokenType = ETokenType.Throw;
                     break;
-                case "defer":
-                    tokenType = ETokenType.Defer;
-                    break;
-                case "errdefer":
-                    tokenType = ETokenType.ErrDefer;
-                    break;
                 case "checked":
                     tokenType = ETokenType.Checked;
                     break;

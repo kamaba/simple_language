@@ -68,7 +68,7 @@
 | [syntax/switch.md](./syntax/switch.md) | `switch` |
 | [syntax/forwhiledowhile.md](./syntax/forwhiledowhile.md) | 循环 |
 | [syntax/labelgoto.md](./syntax/labelgoto.md) | 标签与 goto |
-| [syntax/try.md](./syntax/try.md) | 异常处理（throw / throws / try / catch / defer / checked） |
+| [syntax/try.md](./syntax/try.md) | 异常处理（throw / throws / try / catch / checked） |
 
 ### 3.4 面向对象与复用
 

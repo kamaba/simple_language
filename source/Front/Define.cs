@@ -305,10 +305,6 @@ namespace SimpleLanguage
         Finally,
         /// <summary> throw </summary>
         Throw,
-        /// <summary> defer </summary>
-        Defer,
-        /// <summary> errdefer </summary>
-        ErrDefer,
         /// <summary> checked </summary>
         Checked,
         /// <summary> unchecked </summary>

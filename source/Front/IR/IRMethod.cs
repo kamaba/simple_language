@@ -395,19 +395,6 @@ namespace SimpleLanguage.IR
                 return;
             }
 
-            // ── defer / errdefer wrapping ──
-            bool hasDefer = mf.deferStatementsList != null && mf.deferStatementsList.Count > 0;
-            bool hasErrDefer = mf.errDeferStatementsList != null && mf.errDeferStatementsList.Count > 0;
-
-            // If defer exists, redirect funEndLabelData so all returns jump to defer cleanup first
-            IRData originalFunEndLabel = m_FunEndLabelData;
-            IRNop deferCleanupNop = null;
-            if (hasDefer)
-            {
-                deferCleanupNop = new IRNop(this);
-                m_FunEndLabelData = deferCleanupNop.data;
-            }
-
             // Generate IR for function body
             IRBlockStatements irbs = new IRBlockStatements(this);
             irbs.ParseAllIRStatements(mbs);
@@ -433,114 +420,13 @@ namespace SimpleLanguage.IR
                 irbs.irStatements.InsertRange(0, resultPrologue);
             }
 
-            // Build final IRBase list (optionally wrapped in try/catch for errdefer)
-            List<IRBase> finalStatements = new List<IRBase>();
-
-            if (hasErrDefer)
+            // Add all function body statements to m_IRDataList
+            for (int i = 0; i < irbs.irStatements.Count; i++)
             {
-                IRNop errdeferNop = new IRNop(this);
-
-                // BeginTry (catch = errdefer handler, no finally)
-                IRData beginTryData = new IRData();
-                beginTryData.opCode = EIROpCode.BeginTry;
-                TryScopeData tsd = new TryScopeData();
-                tsd.catchTarget = errdeferNop.data;
-                tsd.finallyTarget = null;
-                beginTryData.SetOpValue(tsd);
-                finalStatements.Add(new IRRawData(this, beginTryData));
-
-                // Function body
-                finalStatements.AddRange(irbs.irStatements);
-
-                // LeaveTry (normal exit -> defer cleanup or real end)
-                IRData leaveTryData = new IRData();
-                leaveTryData.opCode = EIROpCode.LeaveTry;
-                leaveTryData.SetOpValue(hasDefer ? deferCleanupNop.data : originalFunEndLabel);
-                finalStatements.Add(new IRRawData(this, leaveTryData));
-
-                // Errdefer handler (catch target)
-                finalStatements.Add(errdeferNop);
-                for (int i = mf.errDeferStatementsList.Count - 1; i >= 0; i--)
+                if (irbs.irStatements[i] == null) continue;
+                for (int j = 0; j < irbs.irStatements[i].IRDataList.Count; j++)
                 {
-                    var ed = mf.errDeferStatementsList[i];
-                    if (ed.errDeferBlockStatements == null) continue;
-                    IRBlockStatements irED = new IRBlockStatements(this);
-                    irED.ParseIRStatements(ed.errDeferBlockStatements);
-                    finalStatements.AddRange(irED.irStatements);
-                }
-
-                // If defer also exists, run defer blocks before re-throwing
-                if (hasDefer)
-                {
-                    for (int i = mf.deferStatementsList.Count - 1; i >= 0; i--)
-                    {
-                        var d = mf.deferStatementsList[i];
-                        if (d.deferBlockStatements == null) continue;
-                        IRBlockStatements irD = new IRBlockStatements(this);
-                        irD.ParseIRStatements(d.deferBlockStatements);
-                        finalStatements.AddRange(irD.irStatements);
-                    }
-                }
-
-                // Re-throw (exception propagates after errdefer cleanup)
-                IRData throwData = new IRData();
-                throwData.opCode = EIROpCode.Throw;
-                finalStatements.Add(new IRRawData(this, throwData));
-            }
-            else
-            {
-                finalStatements.AddRange(irbs.irStatements);
-            }
-
-            // Add all final statements to m_IRDataList
-            for (int i = 0; i < finalStatements.Count; i++)
-            {
-                if (finalStatements[i] == null) continue;
-                for (int j = 0; j < finalStatements[i].IRDataList.Count; j++)
-                {
-                    var addIR = finalStatements[i].IRDataList[j];
-                    addIR.id = m_IRDataList.Count;
-                    AddLabelDict(addIR);
-                    m_IRDataList.Add(addIR);
-                }
-            }
-
-            // Defer cleanup section (runs on normal return / function end)
-            if (hasDefer)
-            {
-                // Defer cleanup label
-                for (int j = 0; j < deferCleanupNop.IRDataList.Count; j++)
-                {
-                    var addIR = deferCleanupNop.IRDataList[j];
-                    addIR.id = m_IRDataList.Count;
-                    AddLabelDict(addIR);
-                    m_IRDataList.Add(addIR);
-                }
-
-                // Defer blocks in reverse (LIFO) order
-                for (int i = mf.deferStatementsList.Count - 1; i >= 0; i--)
-                {
-                    var d = mf.deferStatementsList[i];
-                    if (d.deferBlockStatements == null) continue;
-                    IRBlockStatements irD = new IRBlockStatements(this);
-                    irD.ParseIRStatements(d.deferBlockStatements);
-                    for (int si = 0; si < irD.irStatements.Count; si++)
-                    {
-                        for (int j = 0; j < irD.irStatements[si].IRDataList.Count; j++)
-                        {
-                            var addIR = irD.irStatements[si].IRDataList[j];
-                            addIR.id = m_IRDataList.Count;
-                            AddLabelDict(addIR);
-                            m_IRDataList.Add(addIR);
-                        }
-                    }
-                }
-
-                // Jump to real function end
-                IRBranch brToEnd = new IRBranch(this, EIROpCode.BrLabel, originalFunEndLabel);
-                for (int j = 0; j < brToEnd.IRDataList.Count; j++)
-                {
-                    var addIR = brToEnd.IRDataList[j];
+                    var addIR = irbs.irStatements[i].IRDataList[j];
                     addIR.id = m_IRDataList.Count;
                     AddLabelDict(addIR);
                     m_IRDataList.Add(addIR);
@@ -567,12 +453,12 @@ namespace SimpleLanguage.IR
             }
 
             // Real function end label
-            originalFunEndLabel.id = m_IRDataList.Count;
-            m_IRDataList.Add(originalFunEndLabel);
+            m_FunEndLabelData.id = m_IRDataList.Count;
+            m_IRDataList.Add(m_FunEndLabelData);
 
             // ── ARC v1: 确定性释放段 (插在 funEndLabel 之后) ──
-            // 所有退出路径(提前 return 的 BrLabel funEnd / defer 段收尾跳转 /
-            // 正常落出)都先汇聚到 funEndLabel 再顺序经过本段, 因此函数内全部
+            // 所有退出路径(提前 return 的 BrLabel funEnd / 正常落出)都先汇聚到
+            // funEndLabel 再顺序经过本段, 因此函数内全部
             // 提前退出路径都被覆盖 (ARC_MEMORY_DESIGN §5.4 函数级 v1;
             // 异常 throw 路径不经过本段, 由 GC 兜底回收)。
             List<IRBase> arcReleaseEpilogue = GenerateArcReleaseEpilogue();

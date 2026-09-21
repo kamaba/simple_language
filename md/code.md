@@ -131,7 +131,7 @@ public void UpdateHost
 关键字的完整清单与语法糖总表见 [syntax/keywords.md](./syntax/keywords.md)，此处只列编码时的硬性约束。
 
 [规则4-1] 禁止使用关键字作标识符（变量名、方法名、类名、参数名等）。
-关键字包括：`typealias` `import` `as` `is` `isnot` `namespace` `class` `extends` `enum` `data` `dynamic` `void` `abstract` `interface` `extern` `bind` `label` `public` `protected` `private` `const` `mut` `final` `static` `partial` `override` `operator` `params` `tr` `if` `elif` `else` `while` `dowhile` `for` `in` `out` `switch` `case` `default` `next` `continue` `break` `goto` `ret` `try` `catch` `finally` `throw` `throws` `defer` `errdefer` `checked` `unchecked` `new` `var` `this` `base` `null` `true` `false` `get` `set` `function` `await` `spawn` `yield`，以及类型词 `object` `byte` `sbyte` `short` `ushort` `int` `uint` `long` `ulong` `bool` `half` `float` `double` `string`。
+关键字包括：`typealias` `import` `as` `is` `isnot` `namespace` `class` `extends` `enum` `data` `dynamic` `void` `abstract` `interface` `extern` `bind` `label` `public` `protected` `private` `const` `mut` `final` `static` `partial` `override` `operator` `params` `tr` `if` `elif` `else` `while` `dowhile` `for` `in` `out` `switch` `case` `default` `next` `continue` `break` `goto` `ret` `try` `catch` `finally` `throw` `throws` `checked` `unchecked` `new` `var` `this` `base` `null` `true` `false` `get` `set` `function` `await` `spawn` `yield`，以及类型词 `object` `byte` `sbyte` `short` `ushort` `int` `uint` `long` `ulong` `bool` `half` `float` `double` `string`。
 
 [规则4-2] `get` / `set` 是属性访问器关键字，禁止用作成员名和方法名（词法阶段即报错）。
 

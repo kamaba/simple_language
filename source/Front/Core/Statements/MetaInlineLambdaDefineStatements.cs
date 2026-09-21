@@ -222,7 +222,7 @@ namespace SimpleLanguage.Core
         // 双形态识别 (脱糖顺序: CrateFileMetaSyntaxNoKey 入口的 TransformCoroutineKeywordNodes /
         //   TransformIsolateCallNodes 先于内联 lambda 识别执行):
         //   (1) 原始关键字 Key 节点 —— spawn/await/yield 嵌套在括号/实参内未被脱糖时保持原样;
-        //       try/catch/finally/defer/break/continue/goto/return/out 不参与脱糖, 恒为原始 token
+        //       try/catch/finally/break/continue/goto/return/out 不参与脱糖, 恒为原始 token
         //   (2) 脱糖产物 —— Coroutine.spawnClosureN / Coroutine.awaitTask / Coroutine.yieldNow 合成调用,
         //       SystemIsolateRun / SystemIsolateSpawn 系统调用, Isolate.run/spawn/spawnInstance 原链
         // 嵌套闭包 (Key(Function) 子树) 整体跳过: 闭包自有帧, 其内部 return/spawn 属于闭包语义
@@ -233,7 +233,7 @@ namespace SimpleLanguage.Core
             None = 0,
             Coroutine,          // spawn / isolate / await / yield (帧依赖)
             ControlFlow,        // break / continue / goto / return / out (控制流逃逸 / 参数)
-            ExceptionFrame,     // try / catch / finally / defer / errdefer (异常/资源帧)
+            ExceptionFrame,     // try / catch / finally (异常帧)
             SelfReference,      // 自引用 (内联无限展开)
         }
 
@@ -279,8 +279,7 @@ namespace SimpleLanguage.Core
                     hitDesc = "关键字 " + node.token.lexeme?.ToString();
                     return EInlineLambdaForbiddenKind.ControlFlow;
                 }
-                if ( ttype == ETokenType.Try || ttype == ETokenType.Catch || ttype == ETokenType.Finally
-                    || ttype == ETokenType.Defer || ttype == ETokenType.ErrDefer )
+                if ( ttype == ETokenType.Try || ttype == ETokenType.Catch || ttype == ETokenType.Finally )
                 {
                     hitDesc = "关键字 " + node.token.lexeme?.ToString();
                     return EInlineLambdaForbiddenKind.ExceptionFrame;
@@ -397,7 +396,7 @@ namespace SimpleLanguage.Core
                     break;
                 case EInlineLambdaForbiddenKind.ExceptionFrame:
                     Log.AddMetaCoreLog( LID.MetaCoreInlineLambdaBodyForbiddenExceptionFrame, token,
-                        "Error 内联lambda '" + name + "' 体不允许异常/资源帧构造 (try/try?/try!/catch/finally/defer), 命中: "
+                        "Error 内联lambda '" + name + "' 体不允许异常帧构造 (try/try?/try!/catch/finally), 命中: "
                         + hitDesc + " : 请改用 function 闭包" );
                     break;
                 case EInlineLambdaForbiddenKind.SelfReference:

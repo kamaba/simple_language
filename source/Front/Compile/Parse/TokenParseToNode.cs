@@ -752,8 +752,6 @@ namespace SimpleLanguage.Compile
                 case ETokenType.Finally:
                 case ETokenType.Throw:
                 case ETokenType.Throws:
-                case ETokenType.Defer:
-                case ETokenType.ErrDefer:
                 case ETokenType.Checked:
                 case ETokenType.Unchecked:
                 case ETokenType.Await:    // await 一元前缀（表达式），在 CreateFileMetaExpress 展开

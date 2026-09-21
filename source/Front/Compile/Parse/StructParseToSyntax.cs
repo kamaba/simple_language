@@ -63,8 +63,6 @@ namespace SimpleLanguage.Compile
                     || tokenType == ETokenType.Catch
                     || tokenType == ETokenType.Finally
                     || tokenType == ETokenType.Throw
-                    || tokenType == ETokenType.Defer
-                    || tokenType == ETokenType.ErrDefer
                     || tokenType == ETokenType.Yield
                     || tokenType == ETokenType.Function)
                 {
@@ -114,8 +112,6 @@ namespace SimpleLanguage.Compile
                     || tokenType == ETokenType.Try
                     || tokenType == ETokenType.Catch
                     || tokenType == ETokenType.Finally
-                    || tokenType == ETokenType.Defer
-                    || tokenType == ETokenType.ErrDefer
                     || tokenType == ETokenType.Checked
                     || tokenType == ETokenType.Unchecked
                     || tokenType == ETokenType.Function)
@@ -139,8 +135,6 @@ namespace SimpleLanguage.Compile
                     || tokenType == ETokenType.Try
                     || tokenType == ETokenType.Catch
                     || tokenType == ETokenType.Finally
-                    || tokenType == ETokenType.Defer
-                    || tokenType == ETokenType.ErrDefer
                     || tokenType == ETokenType.Function )
                 {
                     if( blockNode == null )
@@ -192,8 +186,6 @@ namespace SimpleLanguage.Compile
                 || tokenType == ETokenType.Try
                 || tokenType == ETokenType.Catch
                 || tokenType == ETokenType.Finally
-                || tokenType == ETokenType.Defer
-                || tokenType == ETokenType.ErrDefer
                 || tokenType == ETokenType.Checked
                 || tokenType == ETokenType.Unchecked
                 || tokenType == ETokenType.Function;
@@ -377,8 +369,6 @@ namespace SimpleLanguage.Compile
                                 || ttt == ETokenType.Try
                                 || ttt == ETokenType.Catch
                                 || ttt == ETokenType.Finally
-                                || ttt == ETokenType.Defer
-                                || ttt == ETokenType.ErrDefer
                                 || ttt == ETokenType.Function ) // ClassName(){}
                     {
 
@@ -453,8 +443,6 @@ namespace SimpleLanguage.Compile
                         || ttt == ETokenType.Catch
                         || ttt == ETokenType.Finally
                         || ttt == ETokenType.Throw
-                        || ttt == ETokenType.Defer
-                        || ttt == ETokenType.ErrDefer
                         || ttt == ETokenType.Checked
                         || ttt == ETokenType.Unchecked
                         || ttt == ETokenType.Yield
@@ -2354,17 +2342,15 @@ namespace SimpleLanguage.Compile
                     AddParseSyntaxNodeInfo(fmks);
                     fms = fmks;
                 }
-                else if (akss.tokenType == ETokenType.Defer
-                    || akss.tokenType == ETokenType.ErrDefer
-                    || akss.tokenType == ETokenType.Checked
+                else if (akss.tokenType == ETokenType.Checked
                     || akss.tokenType == ETokenType.Unchecked)
                 {
-                    FileMetaBlockSyntax deferBlock = new FileMetaBlockSyntax(m_FileMeta, akss.blockNode.token, akss.blockNode.endToken);
-                    FileMetaKeyOnlySyntax fmkis = new FileMetaKeyOnlySyntax(m_FileMeta, akss.keyNode.token, deferBlock);
+                    FileMetaBlockSyntax keyBlock = new FileMetaBlockSyntax(m_FileMeta, akss.blockNode.token, akss.blockNode.endToken);
+                    FileMetaKeyOnlySyntax fmkis = new FileMetaKeyOnlySyntax(m_FileMeta, akss.keyNode.token, keyBlock);
                     AddParseSyntaxNodeInfo(fmkis);
                     fms = fmkis;
 
-                    ParseCurrentNodeInfo pcnic = new ParseCurrentNodeInfo(deferBlock);
+                    ParseCurrentNodeInfo pcnic = new ParseCurrentNodeInfo(keyBlock);
                     m_CurrentNodeInfoStack.Push(pcnic);
                     ParseSyntax(akss.blockNode);
                     m_CurrentNodeInfoStack.Pop();

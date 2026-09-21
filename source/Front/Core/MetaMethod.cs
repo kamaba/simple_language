@@ -90,8 +90,6 @@ namespace SimpleLanguage.Core
         public MetaBlockStatements metaBlockStatements => m_MetaBlockStatements;
         public MetaDefineTemplateCollection metaMemberTemplateCollection => m_MetaMemberTemplateCollection;
         public int index => m_Index;
-        public List<MetaDeferStatements> deferStatementsList => m_DeferStatementsList;
-        public List<MetaErrDeferStatements> errDeferStatementsList => m_ErrDeferStatementsList;
         /// <summary>函数体所有代码路径是否都有 ret 返回（CheckAllPathsReturn 中计算缓存，供 IR 层判断是否发射 result epilogue）。</summary>
         public bool isBlockAlwaysReturn => m_IsBlockAlwaysReturn;
 
@@ -111,8 +109,6 @@ namespace SimpleLanguage.Core
         protected int m_Index = -1;
         protected MetaType m_DefineMetaType = null;
         protected MetaType m_RealMetaType = null;
-        protected List<MetaDeferStatements> m_DeferStatementsList = new List<MetaDeferStatements>();
-        protected List<MetaErrDeferStatements> m_ErrDeferStatementsList = new List<MetaErrDeferStatements>();
         protected bool m_IsBlockAlwaysReturn = false;
         #endregion
 
@@ -228,14 +224,6 @@ namespace SimpleLanguage.Core
             var ld = new LabelData() { label = label, nextStatements = nextState };
             m_LabelDataList.Add(ld);
             return ld;
-        }
-        public void AddDeferStatements(MetaDeferStatements mds)
-        {
-            m_DeferStatementsList.Add(mds);
-        }
-        public void AddErrDeferStatements(MetaErrDeferStatements mds)
-        {
-            m_ErrDeferStatementsList.Add(mds);
         }
         public bool IsExtentParams()
         {

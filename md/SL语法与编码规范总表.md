@@ -87,7 +87,7 @@ SL 源码内注释（见 §三 3.6）：`#` 行注释、`#! ... !#` 块注释。
 
 **控制流**：`if`、`elif`、`else`、`while`、`dowhile`、`for`、`in`、`out`、`switch`、`case`、`default`、`next`、`continue`、`break`、`goto`、`ret`
 
-**异常**：`try`、`catch`、`finally`、`throw`、`throws`、`defer`、`errdefer`、`checked`、`unchecked`
+**异常**：`try`、`catch`、`finally`、`throw`、`throws`、`checked`、`unchecked`
 
 **对象 / 值 / 协程**：`new`、`var`、`this`、`base`、`null`、`true`、`false`、`get`、`set`、`function`、`await`、`spawn`、`yield`
 
@@ -510,12 +510,6 @@ catch TestError ex                    # 带类型捕获
 }
 
 label block { ... } catch { ... } finally { ... }   # finally 兜底
-
-defer                                  # 延迟执行：函数结束时 LIFO 执行，ret 之后也执行
-{
-    global.println("cleanup")
-}
-errdefer { ... }                       # 延迟错误处理
 checked { ... } / unchecked { ... }    # 溢出检测上下文
 
 var s = try? riskyFunc(true)           # try? / try! 表达式形式

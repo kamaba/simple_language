@@ -1224,21 +1224,7 @@ namespace SimpleLanguage.Core
                     break;
                 case FileMetaKeyOnlySyntax fmoks:
                     {
-                        if (fmoks.token.type == ETokenType.Defer)
-                        {
-                            var metaDeferStatements = new MetaDeferStatements(currentBlockStatements, fmoks);
-                            currentBlockStatements.ownerMetaFunction?.AddDeferStatements(metaDeferStatements);
-                            beforeStatements.SetNextStatements(metaDeferStatements);
-                            beforeStatements = metaDeferStatements;
-                        }
-                        else if (fmoks.token.type == ETokenType.ErrDefer)
-                        {
-                            var metaErrDeferStatements = new MetaErrDeferStatements(currentBlockStatements, fmoks);
-                            currentBlockStatements.ownerMetaFunction?.AddErrDeferStatements(metaErrDeferStatements);
-                            beforeStatements.SetNextStatements(metaErrDeferStatements);
-                            beforeStatements = metaErrDeferStatements;
-                        }
-                        else if (fmoks.token.type == ETokenType.Checked)
+                        if (fmoks.token.type == ETokenType.Checked)
                         {
                             // Set checked context for the block body
                             bool savedChecked = s_IsInCheckedContext;
@@ -1591,7 +1577,7 @@ namespace SimpleLanguage.Core
             None = 0,
             Coroutine,          // spawn / isolate / await / yield (帧依赖)
             ControlFlow,        // break / continue / goto 逃逸方法体内自身循环
-            ExceptionFrame,     // try / try? / try! / catch / finally / defer / errdefer / checked / unchecked / 闭包与内联lambda 定义 (帧依赖)
+            ExceptionFrame,     // try / try? / try! / catch / finally / checked / unchecked / 闭包与内联lambda 定义 (帧依赖)
             SelfReference,      // 自引用递归 (内联无限展开)
         }
 
@@ -1726,7 +1712,7 @@ namespace SimpleLanguage.Core
             {
                 return HitInlineMethodForbidden(EInlineMethodForbiddenKind.ControlFlow, st.token, "goto 语句");
             }
-            // 单关键字语句: break/continue/next 看循环深度; defer/errdefer/checked/unchecked 报异常帧; else 递归块
+            // 单关键字语句: break/continue/next 看循环深度; checked/unchecked 报异常帧; else 递归块
             if (st is FileMetaKeyOnlySyntax kos)
             {
                 var ttype = kos.token?.type;
@@ -1737,8 +1723,7 @@ namespace SimpleLanguage.Core
                     return HitInlineMethodForbidden(EInlineMethodForbiddenKind.ControlFlow, kos.token,
                         "关键字 " + kos.token.lexeme?.ToString());
                 }
-                if (ttype == ETokenType.Defer || ttype == ETokenType.ErrDefer
-                    || ttype == ETokenType.Checked || ttype == ETokenType.Unchecked)
+                if (ttype == ETokenType.Checked || ttype == ETokenType.Unchecked)
                 {
                     return HitInlineMethodForbidden(EInlineMethodForbiddenKind.ExceptionFrame, kos.token,
                         "关键字 " + kos.token.lexeme?.ToString());
@@ -2073,7 +2058,7 @@ namespace SimpleLanguage.Core
                     break;
                 case EInlineMethodForbiddenKind.ExceptionFrame:
                     Log.AddMetaCoreLog(LID.MetaCoreInlineLambdaBodyForbiddenExceptionFrame, posToken,
-                        "Error inline 方法 [" + fname + "] 体不允许异常/资源帧构造 (try/try?/try!/catch/finally/defer/checked), 命中: "
+                        "Error inline 方法 [" + fname + "] 体不允许异常/资源帧构造 (try/try?/try!/catch/finally/checked), 命中: "
                         + hitDesc + " : 请去掉 inline 修饰符");
                     break;
                 case EInlineMethodForbiddenKind.SelfReference:

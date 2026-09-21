@@ -62,7 +62,6 @@
 |--------|------|------|
 | `try` / `catch` / `finally` | 异常捕获 | [try.md](./try.md) |
 | `throw` / `throws` | 抛出 / 函数异常声明 | [try.md](./try.md) |
-| `defer` / `errdefer` | 延迟清理 / 延迟错误处理 | [try.md](./try.md) |
 | `checked` / `unchecked` | 溢出检测上下文 | [try.md](./try.md) |
 
 ### 1.5 对象、值与协程

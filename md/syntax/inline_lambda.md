@@ -249,7 +249,7 @@ Int32 r = sum(1, 2) + sum3(3, 4, 5)           # 两处调用点均展开为体�
 | 帧依赖 | `spawn` / `await` / `yield`（含脱糖产物 `Coroutine.spawnClosure*` / `Coroutine.awaitTask`） | 21449 | 需真实协程帧；内联无帧 |
 | 帧依赖 | `isolate`（含 `Isolate.*` 脱糖产物 `SystemIsolateRun`） | 21449 | 跨隔离区需真实调用边界 |
 | 控制流逃逸 | `break` / `continue` / `goto` / `ret` / `out`（目标在体内自身控制流之外） | 21450 | 内联后无方法边界，跳转/返回目标失效 |
-| 异常/资源帧 | `try` / `try?` / `try!` / `catch` / `finally` / `defer` | 21451 | 异常/资源帧与内联拼接不兼容 |
+| 异常帧 | `try` / `try?` / `try!` / `catch` / `finally` | 21451 | 异常帧与内联拼接不兼容 |
 | 自引用 | 递归 / 自调用 / 互递归 | 21452 | 内联无限展开 |
 | 规模 | `inline` 方法体顶层语句 > 10 条 | 21453 | 防代码膨胀（仅 `inline` 方法形态） |
 | 声明互斥 | `inline` + `throws` 标签组合 | 21457 | 体替换与异常帧语义冲突（仅 `inline` 方法形态） |
