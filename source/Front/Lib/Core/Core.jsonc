@@ -612,14 +612,8 @@
     { "name": "SystemLz4Compress",            "returnType": "Int64",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_lz4_compress" },
     { "name": "SystemLz4Decompress",          "returnType": "Int64",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_lz4_decompress" },
     // ---- Debug sampling (DEBUG_SYSTEM_DESIGN §9.1): special-translated by the
-    // Front into opcodes 119/120/121 (never dispatched as system calls, so
-    // cvmFunction is empty). Registered here for type checking only. ----
-    { "name": "SystemDebugWatch",       "returnType": "void",   "params": ["object", "string"], "isVariadic": false, "cvmFunction": "" },
-    { "name": "SystemDebugWatchMember", "returnType": "void",   "params": ["object", "string", "string"], "isVariadic": false, "cvmFunction": "" },
-    { "name": "SystemDebugWatchAssert", "returnType": "void",   "params": ["object", "string", "bool"], "isVariadic": false, "cvmFunction": "" },
-    { "name": "SystemDebugWatchIn",     "returnType": "void",   "params": ["object", "string", "string"], "isVariadic": false, "cvmFunction": "" },
-    { "name": "SystemDebugBegin",       "returnType": "void",   "params": ["string"], "isVariadic": false, "cvmFunction": "" },
-    { "name": "SystemDebugEnd",         "returnType": "void",   "params": ["string"], "isVariadic": false, "cvmFunction": "" },
+    // Front into opcodes 119/120/121 at Monitor.* facade call sites. No system
+    // call declarations needed (facade bodies are empty). ----
     // ---- Debug queries (DEBUG_SYSTEM_DESIGN §9.2, P1) ----
     { "name": "SystemDebugGetFrameCount",     "returnType": "Int32",  "params": [], "isVariadic": false, "cvmFunction": "vm_sys_debug_get_frame_count" },
     { "name": "SystemDebugGetFrame",          "returnType": "string", "params": ["Int32"], "isVariadic": false, "cvmFunction": "vm_sys_debug_get_frame" },

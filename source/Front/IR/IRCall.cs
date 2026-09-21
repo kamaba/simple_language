@@ -396,10 +396,10 @@ namespace SimpleLanguage.IR
 
         /// <summary>
         /// 拦截 Monitor 门面调用点并特译为采样指令 (v4 §7.2)。
-        /// 特译发生在用户调用点而非门面体内的 SystemDebug* 系统调用处:
-        /// label/member 定位参数只有在这里才是编译期字符串字面量, 可提取为
-        /// strIdx 进 payload; 门面体内系统调用因此永远编译为死代码
-        /// (Core.jsonc 的 SystemDebug* 注册仅供类型检查, VM 不实现)。
+        /// 特译发生在用户调用点 (Monitor.sl 门面体为空壳, 仅提供签名供
+        /// 重载解析): label/member 定位参数只有在这里才是编译期字符串
+        /// 字面量, 可提取为 strIdx 进 payload; 采样类 SystemDebug* 无
+        /// Core.jsonc 注册 (查询/监听类除外), 特译是唯一实现路径。
         /// P1 范围: watch 双重载 — 2 参 watch(value,label) → mode 0 (值监视),
         /// 3 参 watch(data,member,label) → mode 1 (成员监视)。
         /// P2 范围: begin(label) → DebugBegin(119) 8B payload / end(label) →
@@ -408,9 +408,11 @@ namespace SimpleLanguage.IR
         /// cond 再发射 value, VM 弹栈先得 value 后得 cond §7.2-4) /
         /// watchIn(value,label,caller) → mode 3 (调用链过滤, caller 字面量
         /// → callerStrIdx 写 payload[14..18))。
+        /// P4 范围: watch(value,tag,callback) (第 3 形参 object 闭包) →
+        /// 组合糖 [ListenLabel 系统调用][DebugWatch mode=0], 见 EmitWatchWithCallback。
         /// compile.debug 关闭 → 整句消除: 不发射任何 IR, 连实参求值一起消失 (§4.3)。
-        /// label/member 非字符串字面量 → 打点告警并回退正常 Call
-        /// (门面体系统调用在 VM 侧无 cvmFunction, 运行期报错兜底)。
+        /// label/member 非字符串字面量 → 打点告警 (Error 级, 编译失败)
+        /// 并回退正常 Call (空壳门面体 = 静默无操作)。
         /// 返回 true = 已特译/已消除, 调用方不再走正常 Call 路径; false = 回退。
         /// </summary>
         private bool ParseDebugWatchCall(MetaMethodCall mfc)
@@ -476,6 +478,17 @@ namespace SimpleLanguage.IR
                     methodName == "begin" ? $"DebugBegin label#{intervalLabelStrIdx}" : $"DebugEnd label#{intervalLabelStrIdx}");
                 AddIRData(dataInterval);
                 return true;
+            }
+
+            // P4 三参 watch(value, tag, callback) 组合糖 (§5.7/§10): 第 3 形参为
+            // object (闭包) — 特译为 [SystemDebugListenLabel(tag, callback) 系统调用]
+            // [DebugWatch mode=0] 序列, 与 Monitor.sl 门面体语义一致 (先订阅后采样,
+            // 首帧即通知)。P4 语义 (订阅+采样) 必须由特译实现: 空壳门面体
+            // 正常调用是静默无操作。
+            if (methodName == "watch" && paramCount == 3
+                && GetDebugParamEType(mmf, 2) == EType.Object)
+            {
+                return EmitWatchWithCallback(mfc, mf);
             }
 
             // 重载分流 (§7.1): watch 2 参 → mode 0; 3 参 → mode 1;
@@ -568,6 +581,84 @@ namespace SimpleLanguage.IR
             if (constNode == null || constNode.eType != EType.String)
                 return -1;
             return IRManager.instance.AddStringIRStack(constNode.value?.ToString() ?? string.Empty);
+        }
+
+        /// <summary>取门面方法 <paramref name="paramIndex"/> 形参的 EType; 越界/未知返回 None。</summary>
+        private EType GetDebugParamEType(MetaMemberFunction mmf, int paramIndex)
+        {
+            var plist = mmf?.metaMemberParamCollection?.metaDefineParamList;
+            if (plist == null || paramIndex < 0 || paramIndex >= plist.Count)
+                return EType.None;
+            return plist[paramIndex]?.metaVariable?.defineMetaType?.eType ?? EType.None;
+        }
+
+        /// <summary>
+        /// P4 三参 watch(value, tag, callback) 组合糖特译 (§5.7/§10):
+        /// 发射 [SystemDebugListenLabel(tag, callback) 系统调用][DebugWatch mode=0]
+        /// 序列 — 先订阅后采样, 首帧即通知 (原门面体组合的特译内联版)。
+        /// 实参照常发射管线 (CreateExpress), ListenLabel 走正常系统调用
+        /// (cvmFunction=vm_sys_debug_listen, 有 VM 实现); 采样走 opcode 121。
+        /// 返回 true = 已特译。
+        /// </summary>
+        private bool EmitWatchWithCallback(MetaMethodCall mfc, MetaFunction mf)
+        {
+            // tag (arg[1]) 必须字符串字面量 → strIdx (进 DebugWatch payload)
+            int tagStrIdx = GetDebugLiteralStringIndex(mfc, 1);
+            if (tagStrIdx < 0)
+            {
+                Log.AddIRLog(LID.IRCallIssue, mfc.token,
+                    $"Monitor.watch: tag 必须是字符串字面量, 回退正常调用! 函数[{mf.functionAllName}]");
+                return false;
+            }
+
+            // 1. SystemDebugListenLabel(tag, callback) — 正常系统调用发射管线
+            //    (实参无 VM 绑定矫正需求: 形参 string/object 均非数值)
+            int listenId = 0;
+            if (SystemMethodCallDeclarationRegistry.TryGetDeclaration("SystemDebugListenLabel", out var sysDecl))
+                listenId = sysDecl.GetIndex();
+            for (int j = 1; j <= 2; j++)
+            {
+                var argNode = mfc.metaInputParamList[j];
+                IRExpressBase irexpress = IRExpressManager.CreateExpress(m_IRMethod, argNode);
+                AddIRRangeData(irexpress.IRDataList);
+                TryAddDataTypeLiteralFallback(argNode, irexpress);
+            }
+            var sysPkg = new SLSystemMethodCallPackage
+            {
+                name = "SystemDebugListenLabel",
+                paramCount = 2,
+                systemMethodKind = -1,
+                id = listenId,
+            };
+            IRData dataListen = new IRData();
+            dataListen.opCode = EIROpCode.CallSystemMethod;
+            dataListen.index = 2;
+            dataListen.SetOpValue(sysPkg);
+            dataListen.SetDebugInfoByToken(mf.token ?? mfc.token, "CallSystemMethod SystemDebugListenLabel");
+            AddIRData(dataListen);
+
+            // 2. DebugWatch 采样 (mode 0 单值监视): value (arg[0]) 实参照常发射
+            var valueNode = mfc.metaInputParamList[0];
+            IRExpressBase irexpressValue = IRExpressManager.CreateExpress(m_IRMethod, valueNode);
+            AddIRRangeData(irexpressValue.IRDataList);
+            TryAddDataTypeLiteralFallback(valueNode, irexpressValue);
+
+            // payload 布局 (IROpEnum.cs 注释为权威):
+            // [targetKind:1][mode:1][line:4][labelStrIdx:4][memberStrIdx:4][callerStrIdx:4]
+            byte[] payload = new byte[18];
+            payload[0] = 0; // targetKind
+            payload[1] = 0; // mode 0 (值监视)
+            Buffer.BlockCopy(BitConverter.GetBytes(mfc.token?.sourceBeginLine ?? 0), 0, payload, 2, 4);
+            Buffer.BlockCopy(BitConverter.GetBytes(tagStrIdx), 0, payload, 6, 4);
+
+            IRData datawatch = new IRData();
+            datawatch.opCode = EIROpCode.DebugWatch;
+            // 手拼 payload: 不走 SetOpValue (会经 PackOpValue 重置 Payload)
+            datawatch.Payload = payload;
+            datawatch.UpdateByteLength();
+            datawatch.SetDebugInfoByToken(mf.token ?? mfc.token, "DebugWatch mode=0 (watch+callback)");
+            AddIRData(datawatch);
+            return true;
         }
 
         /// <summary>

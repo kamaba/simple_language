@@ -15,7 +15,7 @@ Project
     {     
         SystemPrintln("===== ProjectTest _main_ start =====")
         nowMs = Environment.sys.nowMillis()
-        
+        #!
         GlobalTest.fun()
         ObjectTest.fun()
         StringTest.fun()
@@ -52,9 +52,9 @@ Project
         
         CoroutineTest.fun();
         StringBuilderTest.fun()
+        !#
         MonitorTest.fun()
-        # WatcherTest 暂未实现(P7)，随 WatcherTest.sl 一同 ignore
-        # WatcherTest.fun()
+        #!
         
         EnvironmentTest.fun()
         PlatformOverrideTest.fun()
@@ -94,7 +94,7 @@ Project
         SwitchTest.fun()
         InputArgsTest.fun();        
         HashSetTest.fun()
-        
+        !#
 
         nowMs = Environment.sys.nowMillis() - nowMs
         SystemPrintln("===== ProjectTest _main_ end [$nowMs.toString() ms]=====")

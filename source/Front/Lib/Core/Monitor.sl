@@ -1,22 +1,32 @@
 # Monitor 点监视采样门面（DEBUG_SYSTEM_DESIGN.md v4）
 # 链路：Monitor.* → Front 特译 Debug IR（compile.debug 才生成，§7.2）
 #       → *.module.json 携带 optimizeLevel → C VM 分派 → 落帧 / 查询
-# 采样类调用点由 Front 特译为 opcode 119/120/121；compile.debug 关闭时整句消除。
-# 查询类为普通系统调用：compile.debug 关闭或 optimizeLevel>=2 时返回空/0，不报错。
-# 注：类名 Monitor（原 Debug，避免与 Std 的 SLang.Debug 混淆）；
-#     底层 SystemDebug* 系统调用与 C VM 实现不变。
+# 采样类方法（watch*/begin/end）体为空壳：调用点全部由 Front 特译为
+# opcode 119/120/121（Core.jsonc 无对应系统调用注册）；compile.debug
+# 关闭时整句消除。
+# 查询/监听类为普通系统调用：compile.debug 关闭或 optimizeLevel>=2 时
+# 返回空/0，不报错。
+# 注：类名 Monitor（原 Debug，避免与 Std 的 SLang.Debug 混淆）。
 public class Monitor extends Object
 {
     # 单值 / data 整表监视（T1/T2）——特译 opcode 121 mode=0
     public static void watch( object value, string tag )
     {
-        SystemDebugWatch( value, tag )
     }
 
     # data/class 单成员监视（T3/T4）——特译 opcode 121 mode=1
+    # （须声明在下方 P4 闭包重载之前：String 第 3 参精确匹配优先，
+    #   否则被 (object,string,object) 隐式转 object 抢先解析）
     public static void watch( object target, string member, string tag )
     {
-        SystemDebugWatchMember( target, member, tag )
+    }
+
+    # 单值监视 + 绑定闭包（P4 组合糖）：注册 tag 单标签订阅并立即采样，
+    # 此后该 tag 每次落帧调用 callback()（无参，闭包语法同 listen）。
+    # 非闭包对象订阅失败静默；重复调用会重复占订阅位（表满后静默失效）
+    # 且不返回订阅号——需退订请改用 listen(tag, callback) 持订阅号。
+    public static void watch( object value, string tag, object callback )
+    {
     }
 
     # 有效帧总数（o2 快速路径 / debug 关闭时为 0）
@@ -48,13 +58,11 @@ public class Monitor extends Object
     # 区间开始（进入 scope_chain）——特译 opcode 119
     public static void begin( string tag )
     {
-        SystemDebugBegin( tag )
     }
 
     # 区间结束（计入耗时统计）——特译 opcode 120
     public static void end( string tag )
     {
-        SystemDebugEnd( tag )
     }
 
     # 行边界标记（frameTable 行轴，P6 启用）
@@ -136,13 +144,11 @@ public class Monitor extends Object
     # 断言监视：cond==false 时计入违规并落违规帧（kind=3）——特译 opcode 121 mode=2
     public static void watchAssert( object value, string tag, bool cond )
     {
-        SystemDebugWatchAssert( value, tag, cond )
     }
 
     # 调用链过滤：仅在含 caller 的调用链上采样——特译 opcode 121 mode=3
     public static void watchIn( object value, string tag, string caller )
     {
-        SystemDebugWatchIn( value, tag, caller )
     }
 
     # 违规累计计数（§5.4，watchAssert cond==false 次数）

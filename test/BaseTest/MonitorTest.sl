@@ -706,6 +706,25 @@ MonitorTest
             j = j + 1
         }
 
+        # ---- 22b. P4 watch 三参: 监视 + 绑定闭包 ----
+        SystemPrintln("--- P4 watch with callback ---")
+        int wcHit = 0
+        function onWatchCb()
+        {
+            wcHit = wcHit + 1
+        }
+        Monitor.watch( 1, "p4wc", onWatchCb )    # 注册 + 首次采样 → 触发 1 次
+        Monitor.watch( 2, "p4wc" )               # 同标签再采样 → 累计 2
+        Monitor.watch( 3, "p4wcother" )          # 其他标签 → 不触发
+        if (wcHit == 2)
+        {
+            SystemPrintln("watch callback fires per tagged frame: OK")
+        }
+        else
+        {
+            SystemPrintln("watch callback fires per tagged frame: FAIL hit=" + wcHit.toString())
+        }
+
         # ---- 23. P5 StackView: stack / frames / frameData / frameVar ----
         SystemPrintln("--- P5 StackView ---")
 
