@@ -136,7 +136,7 @@
 | 文档 | 说明 |
 |------|------|
 | [log/log-system-guide.md](./log/log-system-guide.md) | 日志系统与诊断 |
-| [log/log-debug-usage.md](./log/log-debug-usage.md) | **SLang.Log/Logger/Debug 使用指南**：级别/文件落盘/显示配置、`Log.fatal` VM 硬停语义、调试工作流、测试用例（LogTest/LogFatalTest） |
+| [log/log-debug-usage.md](./log/log-debug-usage.md) | **SLang.Log/Logger/Profiling/Trace/Monitor 使用指南**：级别/文件落盘/显示配置、`Log.fatal` VM 硬停语义、调试工作流、测试用例（MonitorTest/LogTest/LogFatalTest） |
 
 ---
 

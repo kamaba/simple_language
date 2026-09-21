@@ -1,9 +1,11 @@
-# Debug 调试系统门面（DEBUG_SYSTEM_DESIGN.md v4）
-# 链路：Debug.* → Front 特译 Debug IR（compile.debug 才生成，§7.2）
+# Monitor 点监视采样门面（DEBUG_SYSTEM_DESIGN.md v4）
+# 链路：Monitor.* → Front 特译 Debug IR（compile.debug 才生成，§7.2）
 #       → *.module.json 携带 optimizeLevel → C VM 分派 → 落帧 / 查询
 # 采样类调用点由 Front 特译为 opcode 119/120/121；compile.debug 关闭时整句消除。
 # 查询类为普通系统调用：compile.debug 关闭或 optimizeLevel>=2 时返回空/0，不报错。
-public class Debug extends Object
+# 注：类名 Monitor（原 Debug，避免与 Std 的 SLang.Debug 混淆）；
+#     底层 SystemDebug* 系统调用与 C VM 实现不变。
+public class Monitor extends Object
 {
     # 单值 / data 整表监视（T1/T2）——特译 opcode 121 mode=0
     public static void watch( object value, string tag )

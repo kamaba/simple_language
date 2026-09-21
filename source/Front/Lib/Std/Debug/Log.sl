@@ -1,9 +1,9 @@
 # ============================================================================
-# Std/Debug/Debug.sl — 日志工具（Unity Debug 风格）
+# Std/Debug/Log.sl — 日志工具（Log / Logger）
 #
 # 与 Console 的区别：
 #   - Console 是「裸打印」（write/println/input），无级别、无文件落盘；
-#   - Debug.Log 是「带级别 + 时间戳 + 可选文件落盘」的结构化日志。
+#   - Log 是「带级别 + 时间戳 + 可选文件落盘」的结构化日志。
 #
 # 用法：
 #   SLang.Log.info("start")

@@ -43,7 +43,8 @@
       { "path": "Net/Uri.sl", "group": "std", "tag": "net", "ignore": false, "priority": 0 },
       { "path": "Component.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
       { "path": "Debug/Log.sl", "group": "std", "tag": "debug", "ignore": false, "priority": 0 },
-      { "path": "Debug/Debug.sl", "group": "std", "tag": "debug", "ignore": false, "priority": 0 },
+      { "path": "Debug/Profiling.sl", "group": "std", "tag": "debug", "ignore": false, "priority": 0 },
+      { "path": "Debug/Trace.sl", "group": "std", "tag": "debug", "ignore": false, "priority": 0 },
       // Data/Table.sl、Data/Tree.sl 已删除（源文件为空壳 stub，待 FrameData 重构），登记暂时注释
       // { "path": "Data/Table.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
       // { "path": "Data/Tree.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
@@ -149,12 +150,13 @@
       },
       { "class": "Component" },
       { "class": "Node" },
-      // ---- Std/Debug：SLang 命名空间（Log.sl / Debug.sl 均有 namespace SLang 声明）----
+      // ---- Std/Debug：SLang 命名空间（Log/Profiling/Trace.sl 均有 namespace SLang 声明）----
       { "namespace": "SLang", "children":
          [
             { "class": "Log" },
             { "class": "Logger" },
-            { "class": "Debug" }
+            { "class": "Profiling" },
+            { "class": "Trace" }
          ]
       },
       { "namespace": "GPU", "children":

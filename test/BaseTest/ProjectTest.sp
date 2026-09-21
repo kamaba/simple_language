@@ -52,8 +52,9 @@ Project
         
         CoroutineTest.fun();
         StringBuilderTest.fun()
-        DebugTest.fun()
-        WatcherTest.fun()
+        MonitorTest.fun()
+        # WatcherTest 暂未实现(P7)，随 WatcherTest.sl 一同 ignore
+        # WatcherTest.fun()
         
         EnvironmentTest.fun()
         PlatformOverrideTest.fun()

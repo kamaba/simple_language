@@ -1,4 +1,4 @@
-# Debug 采样系统测试（DEBUG_SYSTEM_DESIGN.md v4 §13.1 P1 + §13.2 P2 验收）
+# Monitor 采样系统测试（DEBUG_SYSTEM_DESIGN.md v4 §13.1 P1 + §13.2 P2 验收）
 # P1 覆盖: T1 单值监视 / T2 字符串监视 / T3 data 成员监视 / 帧查询 /
 #          截断标注 ...(len=N) / 环形缓冲覆盖最旧帧
 # P2 覆盖: begin/end/scopeChain 区间嵌套 / 异常回卷 / stats 区间统计 /
@@ -11,32 +11,32 @@
 # P5 覆盖: stack 语句级空栈 + 表达式快照 / frames 栈顶帧方法名行号 /
 #          frameData locals+args 行 / frameVar 本帧+跨帧+args+未找到 /
 #          越界降级 / 协程内帧链独立
-# 前提: ProjectTest.jsonc compile.debug=true → Debug.* 特译 opcode 119/120/121;
+# 前提: ProjectTest.jsonc compile.debug=true → Monitor.* 特译 opcode 119/120/121;
 #       optimize=false → optimizeLevel<2 → VM 采样开启。
 
-enum DebugTestError extends Error
+enum MonitorTestError extends Error
 {
     ScopeBoom = { code = 90, message = "scope-boom" }
 }
 
-data DebugScoreData
+data MonitorScoreData
 {
     math = 0
     english = 0
 }
 
-DebugTest
+MonitorTest
 {
     static fun()
     {
-        SystemPrintln("========== DebugTest (start) ==========")
+        SystemPrintln("========== MonitorTest (start) ==========")
 
         # ---- 1. T1 单值监视: 标量入帧, frameCount 递增 ----
         SystemPrintln("--- T1 scalar watch ---")
-        Int32 before = Debug.frameCount()
+        Int32 before = Monitor.frameCount()
         Int32 answer = 42
-        Debug.watch( answer, "answer" )
-        Int32 after = Debug.frameCount()
+        Monitor.watch( answer, "answer" )
+        Int32 after = Monitor.frameCount()
         SystemPrintln("frameCount before=" + before.toString() + " after=" + after.toString())
         if (after == before + 1)
         {
@@ -46,7 +46,7 @@ DebugTest
         {
             SystemPrintln("T1 frameCount increments: FAIL")
         }
-        string f0 = Debug.lastFrame()
+        string f0 = Monitor.lastFrame()
         SystemPrintln("lastFrame = [" + f0 + "]")
         if (f0 == "[watch] answer = 42")
         {
@@ -60,8 +60,8 @@ DebugTest
         # ---- 2. T2 字符串监视 ----
         SystemPrintln("--- T2 string watch ---")
         string name = "hello"
-        Debug.watch( name, "name" )
-        string f1 = Debug.lastFrame()
+        Monitor.watch( name, "name" )
+        string f1 = Monitor.lastFrame()
         SystemPrintln("lastFrame = [" + f1 + "]")
         if (f1 == "[watch] name = hello")
         {
@@ -74,7 +74,7 @@ DebugTest
 
         # ---- 3. getFrame 按索引回看 + 越界空串 ----
         SystemPrintln("--- getFrame by index ---")
-        string g0 = Debug.getFrame( after - 1 )
+        string g0 = Monitor.getFrame( after - 1 )
         SystemPrintln("getFrame(" + (after - 1).toString() + ") = [" + g0 + "]")
         if (g0 == "[watch] answer = 42")
         {
@@ -84,7 +84,7 @@ DebugTest
         {
             SystemPrintln("getFrame history: FAIL")
         }
-        string outOfRange = Debug.getFrame( 99999 )
+        string outOfRange = Monitor.getFrame( 99999 )
         if (outOfRange == "")
         {
             SystemPrintln("getFrame out-of-range returns empty: OK")
@@ -96,11 +96,11 @@ DebugTest
 
         # ---- 4. T3 data 成员监视 ----
         SystemPrintln("--- T3 data member watch ---")
-        DebugScoreData sd = DebugScoreData()
+        MonitorScoreData sd = MonitorScoreData()
         sd.math = 95
         sd.english = 88
-        Debug.watch( sd, "math", "sd.math" )
-        string fm = Debug.lastFrame()
+        Monitor.watch( sd, "math", "sd.math" )
+        string fm = Monitor.lastFrame()
         SystemPrintln("lastFrame = [" + fm + "]")
         if (fm == "[watch] sd.math = 95")
         {
@@ -111,8 +111,8 @@ DebugTest
             SystemPrintln("T3 member frame text: FAIL")
         }
         # 整表监视 (mode 0): data 实例文本化
-        Debug.watch( sd, "sd" )
-        string fd = Debug.lastFrame()
+        Monitor.watch( sd, "sd" )
+        string fd = Monitor.lastFrame()
         SystemPrintln("sd whole frame len = " + fd.length.toString())
         if (fd.length > 0)
         {
@@ -125,10 +125,10 @@ DebugTest
 
         # ---- 5. 截断: setMaxTextLength 后超长文本标注 ...(len=N) ----
         SystemPrintln("--- truncation ---")
-        Debug.setMaxTextLength( 16 )
+        Monitor.setMaxTextLength( 16 )
         string longText = "0123456789ABCDEFGHIJ"
-        Debug.watch( longText, "long" )
-        string ft = Debug.lastFrame()
+        Monitor.watch( longText, "long" )
+        string ft = Monitor.lastFrame()
         SystemPrintln("lastFrame = [" + ft + "]")
         if (ft == "[watch] long = 0123456789ABCDEF...(len=20)")
         {
@@ -139,13 +139,13 @@ DebugTest
             SystemPrintln("truncation marks ...(len=N): FAIL")
         }
         # 恢复默认, 不影响后续
-        Debug.setMaxTextLength( 0 )
+        Monitor.setMaxTextLength( 0 )
 
         # ---- 5.5 边界补充: null / bool / float / 字面量 / 快照语义 ----
         SystemPrintln("--- edge cases ---")
-        DebugScoreData nd = null
-        Debug.watch( nd, "nd" )
-        string fn = Debug.lastFrame()
+        MonitorScoreData nd = null
+        Monitor.watch( nd, "nd" )
+        string fn = Monitor.lastFrame()
         if (fn == "[watch] nd = null")
         {
             SystemPrintln("null watch text: OK")
@@ -155,8 +155,8 @@ DebugTest
             SystemPrintln("null watch text: FAIL")
         }
         bool flag = true
-        Debug.watch( flag, "flag" )
-        if (Debug.lastFrame() == "[watch] flag = true")
+        Monitor.watch( flag, "flag" )
+        if (Monitor.lastFrame() == "[watch] flag = true")
         {
             SystemPrintln("bool watch text: OK")
         }
@@ -165,8 +165,8 @@ DebugTest
             SystemPrintln("bool watch text: FAIL")
         }
         Float64 pi = 3.5
-        Debug.watch( pi, "pi" )
-        if (Debug.lastFrame() == "[watch] pi = 3.5")
+        Monitor.watch( pi, "pi" )
+        if (Monitor.lastFrame() == "[watch] pi = 3.5")
         {
             SystemPrintln("float watch text: OK")
         }
@@ -174,8 +174,8 @@ DebugTest
         {
             SystemPrintln("float watch text: FAIL")
         }
-        Debug.watch( "literal", "lit" )
-        if (Debug.lastFrame() == "[watch] lit = literal")
+        Monitor.watch( "literal", "lit" )
+        if (Monitor.lastFrame() == "[watch] lit = literal")
         {
             SystemPrintln("literal watch text: OK")
         }
@@ -185,9 +185,9 @@ DebugTest
         }
         # 快照语义(§11): 帧持克隆副本, watch 后修改原值不影响已落帧
         Int32 snap = 2
-        Debug.watch( snap, "snap" )
+        Monitor.watch( snap, "snap" )
         snap = 99
-        if (Debug.getFrame( Debug.frameCount() - 1 ) == "[watch] snap = 2")
+        if (Monitor.getFrame( Monitor.frameCount() - 1 ) == "[watch] snap = 2")
         {
             SystemPrintln("snapshot semantics: OK")
         }
@@ -198,14 +198,14 @@ DebugTest
 
         # ---- 6. 环形缓冲: 超容量覆盖最旧帧, count 封顶 ----
         SystemPrintln("--- ring buffer overflow ---")
-        Int32 capBefore = Debug.frameCount()
+        Int32 capBefore = Monitor.frameCount()
         int i = 0
         while (i < 1100)
         {
-            Debug.watch( i, "ring" )
+            Monitor.watch( i, "ring" )
             i = i + 1
         }
-        Int32 capAfter = Debug.frameCount()
+        Int32 capAfter = Monitor.frameCount()
         SystemPrintln("frameCount before=" + capBefore.toString() + " after=" + capAfter.toString())
         if (capAfter == 1024)
         {
@@ -215,7 +215,7 @@ DebugTest
         {
             SystemPrintln("ring caps at 1024: FAIL")
         }
-        string newest = Debug.lastFrame()
+        string newest = Monitor.lastFrame()
         SystemPrintln("newest = [" + newest + "]")
         if (newest == "[watch] ring = 1099")
         {
@@ -226,7 +226,7 @@ DebugTest
             SystemPrintln("ring newest frame survives: FAIL")
         }
         # 最旧帧应是被覆盖后的一帧 (ring=76 左右, 不再是 ring=0)
-        string oldest = Debug.getFrame( 0 )
+        string oldest = Monitor.getFrame( 0 )
         SystemPrintln("oldest = [" + oldest + "]")
         if (oldest != "[watch] ring = 0")
         {
@@ -239,70 +239,70 @@ DebugTest
 
         # ---- 7. P2 区间嵌套: begin/end/scopeChain ----
         SystemPrintln("--- P2 scope chain nesting ---")
-        Debug.begin( "p2main" )
-        if (Debug.scopeChain() == "p2main")
+        Monitor.begin( "p2main" )
+        if (Monitor.scopeChain() == "p2main")
         {
             SystemPrintln("begin enters chain: OK")
         }
         else
         {
-            SystemPrintln("begin enters chain: FAIL [" + Debug.scopeChain() + "]")
+            SystemPrintln("begin enters chain: FAIL [" + Monitor.scopeChain() + "]")
         }
-        Debug.begin( "p2loop" )
-        if (Debug.scopeChain() == "p2main > p2loop")
+        Monitor.begin( "p2loop" )
+        if (Monitor.scopeChain() == "p2main > p2loop")
         {
             SystemPrintln("nested chain joins with ' > ': OK")
         }
         else
         {
-            SystemPrintln("nested chain joins with ' > ': FAIL [" + Debug.scopeChain() + "]")
+            SystemPrintln("nested chain joins with ' > ': FAIL [" + Monitor.scopeChain() + "]")
         }
-        Debug.end( "p2loop" )
-        if (Debug.scopeChain() == "p2main")
+        Monitor.end( "p2loop" )
+        if (Monitor.scopeChain() == "p2main")
         {
             SystemPrintln("end pops inner scope: OK")
         }
         else
         {
-            SystemPrintln("end pops inner scope: FAIL [" + Debug.scopeChain() + "]")
+            SystemPrintln("end pops inner scope: FAIL [" + Monitor.scopeChain() + "]")
         }
-        Debug.end( "p2main" )
-        if (Debug.scopeChain() == "")
+        Monitor.end( "p2main" )
+        if (Monitor.scopeChain() == "")
         {
             SystemPrintln("end pops to empty: OK")
         }
         else
         {
-            SystemPrintln("end pops to empty: FAIL [" + Debug.scopeChain() + "]")
+            SystemPrintln("end pops to empty: FAIL [" + Monitor.scopeChain() + "]")
         }
 
         # ---- 8. P2 异常回卷: 被调方法内 begin 未配对 end, throw 后由帧弹出回卷 ----
         SystemPrintln("--- P2 exception unwind ---")
-        Debug.begin( "safeOuter" )
+        Monitor.begin( "safeOuter" )
         label unwindBlock
         {
-            try DebugTest.scopeThrow()
+            try MonitorTest.scopeThrow()
         }
         catch
         {
             SystemPrintln("exception caught")
         }
-        if (Debug.scopeChain() == "safeOuter")
+        if (Monitor.scopeChain() == "safeOuter")
         {
             SystemPrintln("unwind pops callee scopes: OK")
         }
         else
         {
-            SystemPrintln("unwind pops callee scopes: FAIL [" + Debug.scopeChain() + "]")
+            SystemPrintln("unwind pops callee scopes: FAIL [" + Monitor.scopeChain() + "]")
         }
-        Debug.end( "safeOuter" )
-        if (Debug.scopeChain() == "")
+        Monitor.end( "safeOuter" )
+        if (Monitor.scopeChain() == "")
         {
             SystemPrintln("outer scope still closable: OK")
         }
         else
         {
-            SystemPrintln("outer scope still closable: FAIL [" + Debug.scopeChain() + "]")
+            SystemPrintln("outer scope still closable: FAIL [" + Monitor.scopeChain() + "]")
         }
 
         # ---- 9. P2 采样控制三路径: setSkip / pause / disable ----
@@ -310,11 +310,11 @@ DebugTest
         # 改用 find 计数验证（跳过生效 = 该 label 只落 1 帧）
         SystemPrintln("--- P2 sampling controls ---")
         Int32 skipVal = 7
-        Debug.setSkip( 2 )
-        Debug.watch( skipVal, "skipfx" )
-        Debug.watch( skipVal, "skipfx" )
-        Debug.watch( skipVal, "skipfx" )
-        Array<Int32> skipHits = Debug.find( "skipfx" )
+        Monitor.setSkip( 2 )
+        Monitor.watch( skipVal, "skipfx" )
+        Monitor.watch( skipVal, "skipfx" )
+        Monitor.watch( skipVal, "skipfx" )
+        Array<Int32> skipHits = Monitor.find( "skipfx" )
         if (skipHits.length == 1)
         {
             SystemPrintln("setSkip skips first 2 hits: OK")
@@ -323,13 +323,13 @@ DebugTest
         {
             SystemPrintln("setSkip skips first 2 hits: FAIL")
         }
-        Debug.setSkip( 0 )
+        Monitor.setSkip( 0 )
 
-        Debug.pause()
-        Debug.watch( skipVal, "pfx" )
-        Debug.resume()
-        Debug.watch( skipVal, "pfx" )
-        Array<Int32> pauseHits = Debug.find( "pfx" )
+        Monitor.pause()
+        Monitor.watch( skipVal, "pfx" )
+        Monitor.resume()
+        Monitor.watch( skipVal, "pfx" )
+        Array<Int32> pauseHits = Monitor.find( "pfx" )
         if (pauseHits.length == 1)
         {
             SystemPrintln("pause blocks then resume restores: OK")
@@ -339,11 +339,11 @@ DebugTest
             SystemPrintln("pause blocks then resume restores: FAIL")
         }
 
-        Debug.disable( "dfx" )
-        Debug.watch( skipVal, "dfx" )
-        Debug.enable( "dfx" )
-        Debug.watch( skipVal, "dfx" )
-        Array<Int32> disableHits = Debug.find( "dfx" )
+        Monitor.disable( "dfx" )
+        Monitor.watch( skipVal, "dfx" )
+        Monitor.enable( "dfx" )
+        Monitor.watch( skipVal, "dfx" )
+        Array<Int32> disableHits = Monitor.find( "dfx" )
         if (disableHits.length == 1)
         {
             SystemPrintln("disable blocks single label only: OK")
@@ -355,17 +355,17 @@ DebugTest
 
         # ---- 10. P2 find: 标签 + scope 段级前缀过滤 ----
         SystemPrintln("--- P2 find by label + scope prefix ---")
-        Debug.watch( skipVal, "ofx" )
-        Debug.begin( "o1" )
-        Debug.watch( 1, "fx2" )
-        Debug.begin( "o2" )
-        Debug.watch( 2, "fx2" )
-        Debug.end( "o2" )
-        Debug.end( "o1" )
-        Array<Int32> allFx2 = Debug.find( "fx2" )
-        Array<Int32> inO1 = Debug.find( "fx2", "o1" )
-        Array<Int32> inO2 = Debug.find( "fx2", "o2" )
-        Array<Int32> inNoSuch = Debug.find( "fx2", "nosuch" )
+        Monitor.watch( skipVal, "ofx" )
+        Monitor.begin( "o1" )
+        Monitor.watch( 1, "fx2" )
+        Monitor.begin( "o2" )
+        Monitor.watch( 2, "fx2" )
+        Monitor.end( "o2" )
+        Monitor.end( "o1" )
+        Array<Int32> allFx2 = Monitor.find( "fx2" )
+        Array<Int32> inO1 = Monitor.find( "fx2", "o1" )
+        Array<Int32> inO2 = Monitor.find( "fx2", "o2" )
+        Array<Int32> inNoSuch = Monitor.find( "fx2", "nosuch" )
         SystemPrintln("find all=" + allFx2.length.toString()
             + " o1=" + inO1.length.toString()
             + " o2=" + inO2.length.toString()
@@ -381,7 +381,7 @@ DebugTest
 
         # ---- 11. P2 series: 标签值序列 ----
         SystemPrintln("--- P2 series ---")
-        Array<string> fx2Values = Debug.series( "fx2" )
+        Array<string> fx2Values = Monitor.series( "fx2" )
         if (fx2Values.length == 2 && fx2Values[0].length > 0 && fx2Values[1].length > 0)
         {
             SystemPrintln("series returns per-label value list: OK")
@@ -393,8 +393,8 @@ DebugTest
 
         # ---- 12. P2 mark: 行边界帧也按 label 可查 ----
         SystemPrintln("--- P2 mark ---")
-        Debug.mark( "m1" )
-        Array<Int32> marks = Debug.find( "m1" )
+        Monitor.mark( "m1" )
+        Array<Int32> marks = Monitor.find( "m1" )
         if (marks.length == 1)
         {
             SystemPrintln("mark lands findable frame: OK")
@@ -406,14 +406,14 @@ DebugTest
 
         # ---- 13. P2 stats: 区间耗时统计 JSON ----
         SystemPrintln("--- P2 interval stats ---")
-        Debug.begin( "loopStats" )
+        Monitor.begin( "loopStats" )
         int spin = 0
         while (spin < 1000)
         {
             spin = spin + 1
         }
-        Debug.end( "loopStats" )
-        string statJson = Debug.stats( "loopStats" )
+        Monitor.end( "loopStats" )
+        string statJson = Monitor.stats( "loopStats" )
         SystemPrintln("stats = [" + statJson + "]")
         # stats JSON 形如 {"label":"loopStats","count":N,...}：
         # 0-based 位置 10..18 恰为 label 名，slice 半开区间比对
@@ -430,12 +430,12 @@ DebugTest
         SystemPrintln("--- P2 diff ---")
         # mode 0 整对象 watch：帧 value 为对象克隆（diff 仅支持对象帧，
         # mode 1 成员监视的帧 value 是标量，不进 diff 对比）
-        DebugScoreData dd = DebugScoreData()
+        MonitorScoreData dd = MonitorScoreData()
         dd.math = 95
-        Debug.watch( dd, "dd" )
+        Monitor.watch( dd, "dd" )
         dd.math = 100
-        Debug.watch( dd, "dd" )
-        string df = Debug.diff( Debug.frameCount() - 1 )
+        Monitor.watch( dd, "dd" )
+        string df = Monitor.diff( Monitor.frameCount() - 1 )
         SystemPrintln("diff = [" + df + "]")
         # 行级对比输出 "-旧行" 在前 "+新行" 在后；克隆语义使旧帧仍见 95
         if (df.front(1) == "-" )
@@ -449,9 +449,9 @@ DebugTest
 
         # ---- 15. P3 watchAssert: 违规计数 + kind=3 违规帧 ----
         SystemPrintln("--- P3 watchAssert ---")
-        Int32 viol0 = Debug.assertViolations()
-        Debug.watchAssert( 100, "ax", 100 >= 50 )    # cond=true: 照常落 watch 帧
-        if (Debug.lastFrame() == "[watch] ax = 100")
+        Int32 viol0 = Monitor.assertViolations()
+        Monitor.watchAssert( 100, "ax", 100 >= 50 )    # cond=true: 照常落 watch 帧
+        if (Monitor.lastFrame() == "[watch] ax = 100")
         {
             SystemPrintln("watchAssert pass lands watch frame: OK")
         }
@@ -459,8 +459,8 @@ DebugTest
         {
             SystemPrintln("watchAssert pass lands watch frame: FAIL")
         }
-        Debug.watchAssert( -1, "axbad", 2 > 3 )      # cond=false: 违规帧 kind=3
-        if (Debug.lastFrame() == "[assert] axbad = -1")
+        Monitor.watchAssert( -1, "axbad", 2 > 3 )      # cond=false: 违规帧 kind=3
+        if (Monitor.lastFrame() == "[assert] axbad = -1")
         {
             SystemPrintln("watchAssert violation lands assert frame: OK")
         }
@@ -468,8 +468,8 @@ DebugTest
         {
             SystemPrintln("watchAssert violation lands assert frame: FAIL")
         }
-        Debug.watchAssert( 2, "axbad2", false )      # 字面量 cond=false: 第二次违规
-        Int32 viol1 = Debug.assertViolations()
+        Monitor.watchAssert( 2, "axbad2", false )      # 字面量 cond=false: 第二次违规
+        Int32 viol1 = Monitor.assertViolations()
         SystemPrintln("assertViolations before=" + viol0.toString() + " after=" + viol1.toString())
         if (viol0 == 0 && viol1 == 2)
         {
@@ -480,8 +480,8 @@ DebugTest
             SystemPrintln("assertViolations counts only false conds: FAIL")
         }
         # 违规/命中帧均按 label 可查 (find 不分 kind)
-        Array<Int32> axHits = Debug.find( "ax" )
-        Array<Int32> axbadHits = Debug.find( "axbad" )
+        Array<Int32> axHits = Monitor.find( "ax" )
+        Array<Int32> axbadHits = Monitor.find( "axbad" )
         if (axHits.length == 1 && axbadHits.length == 1)
         {
             SystemPrintln("assert frames findable by label: OK")
@@ -494,10 +494,10 @@ DebugTest
         # ---- 16. P3 watchIn: 只在目标调用链上采样 ----
         SystemPrintln("--- P3 watchIn ---")
         # 实例方法: M4 自动 inline 只收 static, 帧可靠落在调用链上
-        DebugTest dt = DebugTest()
+        MonitorTest dt = MonitorTest()
         dt.inTarget()      # 链含 inTarget: wix/wix2 各落 1 帧
         dt.outOther()     # 链不含 inTarget: 不落帧
-        Array<Int32> wixHits = Debug.find( "wix" )
+        Array<Int32> wixHits = Monitor.find( "wix" )
         SystemPrintln("wix hits=" + wixHits.length.toString())
         if (wixHits.length == 1)
         {
@@ -507,7 +507,7 @@ DebugTest
         {
             SystemPrintln("watchIn samples only on target chain: FAIL")
         }
-        if (wixHits.length == 1 && Debug.getFrame( wixHits[0] ) == "[watch] wix = 5")
+        if (wixHits.length == 1 && Monitor.getFrame( wixHits[0] ) == "[watch] wix = 5")
         {
             SystemPrintln("watchIn frame text: OK")
         }
@@ -516,7 +516,7 @@ DebugTest
             SystemPrintln("watchIn frame text: FAIL")
         }
         # caller 也可匹配类型全名 (declaring_type_full_name 子串)
-        Array<Int32> wix2Hits = Debug.find( "wix2" )
+        Array<Int32> wix2Hits = Monitor.find( "wix2" )
         if (wix2Hits.length == 1)
         {
             SystemPrintln("watchIn matches declaring type name: OK")
@@ -533,7 +533,7 @@ DebugTest
         {
             hit = hit + 1
         }
-        int id1 = Debug.listen( onFrame )
+        int id1 = Monitor.listen( onFrame )
         SystemPrintln("listen id = " + id1.toString())
         if (id1 >= 1)
         {
@@ -543,8 +543,8 @@ DebugTest
         {
             SystemPrintln("listen returns positive id: FAIL")
         }
-        Debug.watch( 1, "p4a" )
-        Debug.watch( 2, "p4a" )
+        Monitor.watch( 1, "p4a" )
+        Monitor.watch( 2, "p4a" )
         if (hit == 2)
         {
             SystemPrintln("all-frame listener fires per frame: OK")
@@ -553,7 +553,7 @@ DebugTest
         {
             SystemPrintln("all-frame listener fires per frame: FAIL hit=" + hit.toString())
         }
-        if (Debug.unlisten( id1 ))
+        if (Monitor.unlisten( id1 ))
         {
             SystemPrintln("unlisten returns true: OK")
         }
@@ -561,7 +561,7 @@ DebugTest
         {
             SystemPrintln("unlisten returns true: FAIL")
         }
-        Debug.watch( 3, "p4a" )
+        Monitor.watch( 3, "p4a" )
         if (hit == 2)
         {
             SystemPrintln("listener silent after unlisten: OK")
@@ -578,11 +578,11 @@ DebugTest
         {
             tagHit = tagHit + 1
         }
-        int id2 = Debug.listen( "p4tag", onTag )
-        Debug.watch( 1, "p4tag" )
-        Debug.watch( 2, "p4other" )
-        Debug.mark( "p4tag" )
-        Debug.mark( "p4other" )
+        int id2 = Monitor.listen( "p4tag", onTag )
+        Monitor.watch( 1, "p4tag" )
+        Monitor.watch( 2, "p4other" )
+        Monitor.mark( "p4tag" )
+        Monitor.mark( "p4other" )
         if (tagHit == 2)
         {
             SystemPrintln("label listener filters + mark fires: OK")
@@ -591,17 +591,17 @@ DebugTest
         {
             SystemPrintln("label listener filters + mark fires: FAIL hit=" + tagHit.toString())
         }
-        Debug.unlisten( id2 )
+        Monitor.unlisten( id2 )
 
         # ---- 19. P4 回调内 lastFrame: 即刚落的帧 ----
         SystemPrintln("--- P4 lastFrame inside callback ---")
         string seen = ""
         function onSeen()
         {
-            seen = Debug.lastFrame()
+            seen = Monitor.lastFrame()
         }
-        int id3 = Debug.listen( onSeen )
-        Debug.watch( 7, "seen1" )
+        int id3 = Monitor.listen( onSeen )
+        Monitor.watch( 7, "seen1" )
         if (seen == "[watch] seen1 = 7")
         {
             SystemPrintln("callback sees fresh frame via lastFrame: OK")
@@ -610,7 +610,7 @@ DebugTest
         {
             SystemPrintln("callback sees fresh frame via lastFrame: FAIL [" + seen + "]")
         }
-        Debug.unlisten( id3 )
+        Monitor.unlisten( id3 )
 
         # ---- 20. P4 重入保护: 回调内落帧只入缓冲不递归触发 ----
         SystemPrintln("--- P4 reentry guard ---")
@@ -618,10 +618,10 @@ DebugTest
         function onRe()
         {
             reHit = reHit + 1
-            Debug.watch( 99, "nested" )
+            Monitor.watch( 99, "nested" )
         }
-        int id4 = Debug.listen( onRe )
-        Debug.watch( 7, "re1" )
+        int id4 = Monitor.listen( onRe )
+        Monitor.watch( 7, "re1" )
         if (reHit == 1)
         {
             SystemPrintln("reentry guard blocks nested notify: OK")
@@ -630,7 +630,7 @@ DebugTest
         {
             SystemPrintln("reentry guard blocks nested notify: FAIL hit=" + reHit.toString())
         }
-        Array<Int32> nestedHits = Debug.find( "nested" )
+        Array<Int32> nestedHits = Monitor.find( "nested" )
         if (nestedHits.length == 1)
         {
             SystemPrintln("nested frame still buffered: OK")
@@ -639,7 +639,7 @@ DebugTest
         {
             SystemPrintln("nested frame still buffered: FAIL len=" + nestedHits.length.toString())
         }
-        Debug.unlisten( id4 )
+        Monitor.unlisten( id4 )
 
         # ---- 21. P4 违规帧(kind=3)也通知订阅者 ----
         SystemPrintln("--- P4 assert frame notifies ---")
@@ -648,9 +648,9 @@ DebugTest
         {
             axHit = axHit + 1
         }
-        int id5 = Debug.listen( onAx )
-        Debug.watch( 1, "axt" )
-        Debug.watchAssert( -1, "axbad", 2 > 3 )
+        int id5 = Monitor.listen( onAx )
+        Monitor.watch( 1, "axt" )
+        Monitor.watchAssert( -1, "axbad", 2 > 3 )
         if (axHit == 2)
         {
             SystemPrintln("assert violation frame notifies: OK")
@@ -659,7 +659,7 @@ DebugTest
         {
             SystemPrintln("assert violation frame notifies: FAIL hit=" + axHit.toString())
         }
-        Debug.unlisten( id5 )
+        Monitor.unlisten( id5 )
 
         # ---- 22. P4 表满: 容量 16, 第 17 次 -1; 重复 unlisten false ----
         SystemPrintln("--- P4 table full + double unlisten ---")
@@ -671,7 +671,7 @@ DebugTest
         int j = 0
         while (j < 20)
         {
-            int r = Debug.listen( fillCb )
+            int r = Monitor.listen( fillCb )
             ids[j] = r
             if (r > 0)
             {
@@ -688,8 +688,8 @@ DebugTest
         {
             SystemPrintln("listener table caps at 16: FAIL ok=" + okCount.toString())
         }
-        bool firstOut = Debug.unlisten( ids[0] )
-        bool secondOut = Debug.unlisten( ids[0] )
+        bool firstOut = Monitor.unlisten( ids[0] )
+        bool secondOut = Monitor.unlisten( ids[0] )
         if (firstOut && !secondOut)
         {
             SystemPrintln("double unlisten returns true then false: OK")
@@ -702,7 +702,7 @@ DebugTest
         j = 1
         while (j < okCount)
         {
-            Debug.unlisten( ids[j] )
+            Monitor.unlisten( ids[j] )
             j = j + 1
         }
 
@@ -710,7 +710,7 @@ DebugTest
         SystemPrintln("--- P5 StackView ---")
 
         # 23a. stackView(): 语句级干净调用, 操作数栈为空
-        string sv0 = Debug.stackView()
+        string sv0 = Monitor.stackView()
         SystemPrintln("stack(clean) = [" + sv0 + "]")
         if (sv0 == "[]")
         {
@@ -724,7 +724,7 @@ DebugTest
         # 23b. stackView(): 表达式上下文, 左操作数已压在操作数栈上
         # (SL string 在操作数栈是 PTR 槽, value 带 str: 前缀; 拼接结果带 x 前缀)
         string pre = "x"
-        string sv1 = pre + Debug.stackView()
+        string sv1 = pre + Monitor.stackView()
         SystemPrintln("stack(expr) = " + sv1)
         if (sv1 == "x[{\"index\":0,\"type\":\"ptr\",\"value\":\"str:x\"}]")
         {
@@ -811,9 +811,9 @@ DebugTest
         }
 
         # 23i. 越界与未找到: frameData "[]" / frameVar "" 降级
-        string fd99 = Debug.frameData( 99 )
-        string fv99 = Debug.frameVar( 99, "xx" )
-        string fvnf = Debug.frameVar( 0, "p5NoSuchVar" )
+        string fd99 = Monitor.frameData( 99 )
+        string fv99 = Monitor.frameVar( 99, "xx" )
+        string fvnf = Monitor.frameVar( 0, "p5NoSuchVar" )
         if (fd99 == "[]" && fv99 == "" && fvnf == "")
         {
             SystemPrintln("P5 oob/not-found degrade: OK")
@@ -842,8 +842,8 @@ DebugTest
         SystemPrintln("--- P6 trace & frameTable ---")
 
         # 24a. log 基本落帧: 未 mark → "#3 "; fun 直调无调用者 → 链段省略
-        Debug.log( "p6 first" )
-        string tr1 = Debug.getTraceLog()
+        Monitor.log( "p6 first" )
+        string tr1 = Monitor.getTraceLog()
         SystemPrintln("trace1 = " + tr1)
         if (tr1.length > 10 && tr1.front( 3 ) == "#3 " && tr1.end( 11 ) == " | p6 first")
         {
@@ -857,7 +857,7 @@ DebugTest
         # 24b. 调用链摘要: 实例两层调用 (p6mid → p6logIn), 链最外层在前,
         #      只锁内层尾段 (外层可能是 _main_ > fun, 不锁定)
         dt.p6mid()
-        string tr2 = Debug.getTraceLog()
+        string tr2 = Monitor.getTraceLog()
         SystemPrintln("trace2 = " + tr2)
         if (tr2.end( 19 ) == " > p6mid | p6 chain")
         {
@@ -869,12 +869,12 @@ DebugTest
         }
 
         # 24c. pause 静默丢弃: 丢弃后末行仍是 24b 条目; resume 后恢复落帧
-        Debug.pause()
-        Debug.log( "p6 dropped" )
-        string trp = Debug.getTraceLog()
-        Debug.resume()
-        Debug.log( "p6 kept" )
-        string trk = Debug.getTraceLog()
+        Monitor.pause()
+        Monitor.log( "p6 dropped" )
+        string trp = Monitor.getTraceLog()
+        Monitor.resume()
+        Monitor.log( "p6 kept" )
+        string trk = Monitor.getTraceLog()
         if (trp.end( 19 ) == " > p6mid | p6 chain" && trk.end( 10 ) == " | p6 kept")
         {
             SystemPrintln("P6 pause drops & resume keeps: OK")
@@ -885,9 +885,9 @@ DebugTest
         }
 
         # 24d. mark 后 log 关联新行 (row 4)
-        Debug.mark( "p6m" )
-        Debug.log( "p6 after mark" )
-        string tr4 = Debug.getTraceLog()
+        Monitor.mark( "p6m" )
+        Monitor.log( "p6 after mark" )
+        string tr4 = Monitor.getTraceLog()
         SystemPrintln("trace4 = " + tr4)
         if (tr4.end( 16 ) == " | p6 after mark")
         {
@@ -900,7 +900,7 @@ DebugTest
 
         # 24e. frameTable 空 labels: 返回 ""
         Array<string> noLabels = Array<string>( 0 )
-        string tbEmpty = Debug.frameTable( noLabels )
+        string tbEmpty = Monitor.frameTable( noLabels )
         if (tbEmpty == "")
         {
             SystemPrintln("P6 frameTable empty labels: OK")
@@ -913,7 +913,7 @@ DebugTest
         # 24f. 行轴=mark 行边界 (历史 1~3 + 新 4), 无匹配 label 单元格 "-"
         Array<string> lb1 = Array<string>( 1 )
         lb1[0] = "p6nope"
-        string tb1 = Debug.frameTable( lb1 )
+        string tb1 = Monitor.frameTable( lb1 )
         SystemPrintln("table1 = " + tb1)
         if (tb1 == "row | p6nope\n1 | -\n2 | -\n3 | -\n4 | -")
         {
@@ -925,12 +925,12 @@ DebugTest
         }
 
         # 24g. 行列对齐: watch 落在 mark 行边界 (11 落行 4, 22 落行 5)
-        Debug.watch( 11, "p6w" )
-        Debug.mark( "p6m2" )
-        Debug.watch( 22, "p6w" )
+        Monitor.watch( 11, "p6w" )
+        Monitor.mark( "p6m2" )
+        Monitor.watch( 22, "p6w" )
         Array<string> lb2 = Array<string>( 1 )
         lb2[0] = "p6w"
-        string tb2 = Debug.frameTable( lb2 )
+        string tb2 = Monitor.frameTable( lb2 )
         SystemPrintln("table2 = " + tb2)
         # 设计 §5.4: "单元格=该行处最近一帧的值" → 纯值文本 (无 [watch] 前缀,
         # 该前缀仅 getFrame/lastFrame 渲染格式)
@@ -944,12 +944,12 @@ DebugTest
         }
 
         # 24h. 单元格取该行该 label 最近一帧 (同 mark 行两次 watch 取后值)
-        Debug.mark( "p6m3" )
-        Debug.watch( 1, "p6j" )
-        Debug.watch( 2, "p6j" )
+        Monitor.mark( "p6m3" )
+        Monitor.watch( 1, "p6j" )
+        Monitor.watch( 2, "p6j" )
         Array<string> lb3 = Array<string>( 1 )
         lb3[0] = "p6j"
-        string tb3 = Debug.frameTable( lb3 )
+        string tb3 = Monitor.frameTable( lb3 )
         SystemPrintln("table3 = " + tb3)
         if (tb3 == "row | p6j\n1 | -\n2 | -\n3 | -\n4 | -\n5 | -\n6 | 2")
         {
@@ -964,7 +964,7 @@ DebugTest
         Array<string> lb4 = Array<string>( 2 )
         lb4[0] = "p6w"
         lb4[1] = "p6j"
-        string tb4 = Debug.frameTable( lb4 )
+        string tb4 = Monitor.frameTable( lb4 )
         SystemPrintln("table4 = " + tb4)
         if (tb4 == "row | p6w | p6j\n1 | - | -\n2 | - | -\n3 | - | -\n4 | 11 | -\n5 | 22 | -\n6 | - | 2")
         {
@@ -975,14 +975,14 @@ DebugTest
             SystemPrintln("P6 frameTable multi labels: FAIL tb4=[" + tb4 + "]")
         }
 
-        SystemPrintln("========== DebugTest (end) ==========")
+        SystemPrintln("========== MonitorTest (end) ==========")
     }
 
     # P5 辅助: 帧列表快照 (栈顶帧 = 本方法)
     # (实例方法: M4 AutoInlineMark 硬排除 !isStatic, 保证本方法有自身帧)
     string p5fr()
     {
-        ret Debug.frames()
+        ret Monitor.frames()
     }
 
     # P5 辅助: 当前帧 locals 行 (int-only, 按声明序 aa/bb)
@@ -990,7 +990,7 @@ DebugTest
     {
         Int32 aa = 7
         Int32 bb = 8
-        ret Debug.frameData( 0 )
+        ret Monitor.frameData( 0 )
     }
 
     # P5 辅助: 本帧变量取值 (int 与 string 两种格式)
@@ -998,41 +998,41 @@ DebugTest
     {
         Int32 xx = 42
         string yy = "abc"
-        string r1 = Debug.frameVar( 0, "xx" )
-        string r2 = Debug.frameVar( 0, "yy" )
+        string r1 = Monitor.frameVar( 0, "xx" )
+        string r2 = Monitor.frameVar( 0, "yy" )
         ret r1 + "|" + r2
     }
 
     # P5 辅助: 跨帧读调用者(fun)的局部变量 (非栈顶帧可读)
     string p5outer()
     {
-        ret Debug.frameVar( 1, "p5HostVar" )
+        ret Monitor.frameVar( 1, "p5HostVar" )
     }
 
     # P5 辅助: 帧数据 args 行 (locals 先 args 后)
     string p5arg( Int32 av )
     {
-        ret Debug.frameData( 0 )
+        ret Monitor.frameData( 0 )
     }
 
     # P5 辅助: frameVar 按 args 名取值
     string p5argvar( Int32 av )
     {
-        ret Debug.frameVar( 0, "av" )
+        ret Monitor.frameVar( 0, "av" )
     }
 
     # P5 辅助: 协程体内帧列表 (验证协程链独立)
     string p5cf()
     {
-        ret Debug.frames()
+        ret Monitor.frames()
     }
 
     # P2 异常回卷辅助: begin 无配对 end 即 throw —— 编译期触发
     # DebugScopeNotClosed warning (22034), 运行期由 VM 帧回卷兜底弹出。
     static void scopeThrow() throws
     {
-        Debug.begin( "risky" )
-        throw DebugTestError.ScopeBoom
+        Monitor.begin( "risky" )
+        throw MonitorTestError.ScopeBoom
     }
 
     # P3 watchIn 辅助: 调用链含 "inTarget" 时才采样
@@ -1040,17 +1040,17 @@ DebugTest
     #   static 小方法在 -O1+ 会被内联, 链上无本方法帧, watchIn 匹配必失败)
     void inTarget()
     {
-        Debug.watchIn( 5, "wix", "inTarget" )      # 方法名命中
-        Debug.watchIn( 9, "wix2", "DebugTest" )    # 类型全名子串命中
+        Monitor.watchIn( 5, "wix", "inTarget" )      # 方法名命中
+        Monitor.watchIn( 9, "wix2", "MonitorTest" )    # 类型全名子串命中
     }
 
     # P3 watchIn 辅助: 调用链不含 "inTarget", 不采样
     void outOther()
     {
-        Debug.watchIn( 6, "wix", "inTarget" )
+        Monitor.watchIn( 6, "wix", "inTarget" )
     }
 
-    # P6 辅助: 两层实例调用 (p6mid → p6logIn → Debug.log),
+    # P6 辅助: 两层实例调用 (p6mid → p6logIn → Monitor.log),
     # 保证 log 的调用链摘要含多层 (实例方法被 M4 自动 inline 排除, 帧可靠落在链上)
     void p6mid()
     {
@@ -1060,6 +1060,6 @@ DebugTest
     # P6 辅助: 链最内层 log 调用点
     void p6logIn()
     {
-        Debug.log( "p6 chain" )
+        Monitor.log( "p6 chain" )
     }
 }

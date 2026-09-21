@@ -184,7 +184,7 @@ namespace SimpleLanguage
         CallFFIStatic,                      // = 118
 
         // Debug sampling opcodes (v4 DEBUG_SYSTEM_DESIGN §7.1). Lowered by the
-        // ParseSystemCall special-translation when the call target is Core.Debug.
+        // ParseSystemCall special-translation when the call target is Core.Monitor.
         //   DebugBegin : payload [labelStrIdx:4][line:4]              pops 0
         //   DebugEnd   : payload [labelStrIdx:4]                      pops 0
         //   DebugWatch : payload [targetKind:1][mode:1][line:4][labelStrIdx:4]

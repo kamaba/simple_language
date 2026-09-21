@@ -1,14 +1,15 @@
 import Std;
 import Core;
 
-# SLang.Log / SLang.Logger / SLang.Debug 下沉 C VM 原生系统方法
+# SLang.Log / SLang.Logger / SLang.Profiling 下沉 C VM 原生系统方法
 # （SystemLogEmit / SystemLogAssert，core: log_system_method.c）后的语义验证用例。
 # 覆盖：
 #   1) 静态 Log：info/warning/logError 走原生 SystemLogEmit（时间戳+级别前缀+双路输出）
 #   2) 静态 Log.assert：通过热路径零输出；失败输出断言信息
 #   3) 级别开关 setMinLevel/setLogType/reset 与原生调用的门控联动
 #   4) Logger 实例：_init_/info/warning/logError/assert（实例状态独立于全局 Log）
-#   5) Debug 静态工具：err/logError/Assert/time/timeEnd
+#   5) Profiling 计时：time/timeEnd（原 SLang.Debug 计时拆分至此；断言直接用 Log.assert）
+#   5b) Trace 追踪：trace/Enter/Step/Exit/DumpStack/Break（原 SLang.Debug 追踪拆分至此）
 #   6) 显示配置：setShowTime/setShowLevel/setTimeFormat（行格式 [时间][LEVEL] msg 各块独立开关）
 #   7) 文件落盘：setFlushInterval 缓冲模式（间隔内不写盘）+ Log.save() 手动落盘 + 读回核验
 # 每条日志格式：[yyyy:MM:dd hh:mm:ss ffff] [LEVEL] message
@@ -66,14 +67,34 @@ LogTest
         lg.info("logger info muted by instance switch")
         SLang.Log.info("global info still alive")
 
-        # 5) Debug 静态工具
-        SLang.Debug.enabled = true
-        SLang.Debug.err("debug err message")
-        SLang.Debug.logError("debug logError message")
-        SLang.Debug.Assert(true, "debug assert pass")
-        SLang.Debug.Assert(false, "debug assert failed (expected)")
-        SLang.Debug.time("logtest-phase")
-        SLang.Debug.timeEnd("logtest-phase")
+        # 5) Profiling 计时（断言/错误日志直接用 Log，不再经 Debug 中转）
+        SLang.Profiling.enabled = true
+        SLang.Log.logError("debug err message")
+        SLang.Log.logError("debug logError message")
+        SLang.Log.assert(true, "debug assert pass")
+        SLang.Log.assert(false, "debug assert failed (expected)")
+        SLang.Profiling.time("logtest-phase")
+        SLang.Profiling.timeEnd("logtest-phase")
+
+        # 5b) Trace 追踪（原 SLang.Debug 追踪拆分至此）：
+        #     trace/Enter/Step/Exit 模拟调用栈缩进流 + DumpStack + Break 断点标记
+        Console.println("")
+        Console.println("-- 5b) Trace scope tracking --")
+        SLang.Trace.setEnabled(true)
+        check("Trace enabled", SLang.Trace.isEnabled() == true)
+        SLang.Trace.trace("reached step 3")
+        SLang.Trace.Enter("ProcessData")
+        SLang.Trace.Step("load")
+        SLang.Trace.Step("compute")
+        SLang.Trace.DumpStack()
+        SLang.Trace.Exit("ProcessData")
+        SLang.Trace.Break()
+        # 关开关后静默
+        SLang.Trace.setEnabled(false)
+        check("Trace disabled", SLang.Trace.isEnabled() == false)
+        SLang.Trace.trace("this trace must NOT appear")
+        SLang.Trace.Break()
+        SLang.Trace.setEnabled(true)
 
         # 6) 显示配置：[时间] / [LEVEL] 两个前缀块独立开关 + 自定义时间格式
         Console.println("")

@@ -388,14 +388,14 @@ namespace SimpleLanguage.IR
         }
 
         // ────────────────────────────────────────────────────────────────
-        // Debug 采样门面特译 (DEBUG_SYSTEM_DESIGN v4 §7.2)
+        // Monitor 采样门面特译 (DEBUG_SYSTEM_DESIGN v4 §7.2)
         // ────────────────────────────────────────────────────────────────
 
-        /// <summary>Debug 门面类 allName (Debug.sl 顶层类挂 module "Core" 直下, 单层 allName)。</summary>
-        private const string DebugFacadeClassAllName = "Core.Debug";
+        /// <summary>Monitor 门面类 allName (Monitor.sl 顶层类挂 module "Core" 直下, 单层 allName)。</summary>
+        private const string DebugFacadeClassAllName = "Core.Monitor";
 
         /// <summary>
-        /// 拦截 Debug 门面调用点并特译为采样指令 (v4 §7.2)。
+        /// 拦截 Monitor 门面调用点并特译为采样指令 (v4 §7.2)。
         /// 特译发生在用户调用点而非门面体内的 SystemDebug* 系统调用处:
         /// label/member 定位参数只有在这里才是编译期字符串字面量, 可提取为
         /// strIdx 进 payload; 门面体内系统调用因此永远编译为死代码
@@ -440,14 +440,14 @@ namespace SimpleLanguage.IR
                 if (paramCount != 1)
                 {
                     Log.AddIRLog(LID.IRCallIssue, mfc.token,
-                        $"Debug.{methodName}: 区间 API 需恰好 1 个 label 字面量参数, 回退正常调用! 函数[{mf.functionAllName}]");
+                        $"Monitor.{methodName}: 区间 API 需恰好 1 个 label 字面量参数, 回退正常调用! 函数[{mf.functionAllName}]");
                     return false;
                 }
                 int intervalLabelStrIdx = GetDebugLiteralStringIndex(mfc, 0);
                 if (intervalLabelStrIdx < 0)
                 {
                     Log.AddIRLog(LID.IRCallIssue, mfc.token,
-                        $"Debug.{methodName}: label 必须是字符串字面量, 回退正常调用! 函数[{mf.functionAllName}]");
+                        $"Monitor.{methodName}: label 必须是字符串字面量, 回退正常调用! 函数[{mf.functionAllName}]");
                     return false;
                 }
 
@@ -486,7 +486,7 @@ namespace SimpleLanguage.IR
                 if (paramCount != 3)
                 {
                     Log.AddIRLog(LID.IRCallIssue, mfc.token,
-                        $"Debug.watchAssert: 需恰好 3 个参数 (value,label,cond), 回退正常调用! 函数[{mf.functionAllName}]");
+                        $"Monitor.watchAssert: 需恰好 3 个参数 (value,label,cond), 回退正常调用! 函数[{mf.functionAllName}]");
                     return false;
                 }
                 mode = 2;
@@ -496,7 +496,7 @@ namespace SimpleLanguage.IR
                 if (paramCount != 3)
                 {
                     Log.AddIRLog(LID.IRCallIssue, mfc.token,
-                        $"Debug.watchIn: 需恰好 3 个参数 (value,label,caller), 回退正常调用! 函数[{mf.functionAllName}]");
+                        $"Monitor.watchIn: 需恰好 3 个参数 (value,label,caller), 回退正常调用! 函数[{mf.functionAllName}]");
                     return false;
                 }
                 mode = 3;
@@ -518,7 +518,7 @@ namespace SimpleLanguage.IR
             if (labelStrIdx < 0 || (mode == 1 && memberStrIdx < 0) || (mode == 3 && callerStrIdx < 0))
             {
                 Log.AddIRLog(LID.IRCallIssue, mfc.token,
-                    $"Debug.{methodName}: 定位参数 (label/member/caller) 必须是字符串字面量, 回退正常调用! 函数[{mf.functionAllName}]");
+                    $"Monitor.{methodName}: 定位参数 (label/member/caller) 必须是字符串字面量, 回退正常调用! 函数[{mf.functionAllName}]");
                 return false;
             }
 
