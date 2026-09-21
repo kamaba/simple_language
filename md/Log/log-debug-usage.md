@@ -3,19 +3,19 @@
 > 适用范围：三套日志/调试设施、五个类。
 > 源码位置：`source/Front/Lib/Std/Debug/Log.sl`（Log、Logger）、`source/Front/Lib/Std/Debug/Profiling.sl`（SLang.Profiling）、`source/Front/Lib/Std/Debug/Trace.sl`（SLang.Trace）、`source/Front/Lib/Core/Monitor.sl`（Monitor 点监视系统）。
 > 本文同时是「用 Log/Trace/Profiling/Monitor 加速功能点验证」的调试工作流参考。
-> Monitor（原 Core.Debug）的完整设计（含 payload 布局、分期 P1~P8）见 `csimple_lang/md/design/DEBUG_SYSTEM_DESIGN.md`（v4）。
+> Monitor（原 Core.Debug）的完整设计（含 payload 布局、分期 P1\~P8）见 `csimple_lang/md/design/DEBUG_SYSTEM_DESIGN.md`（v4）。
 
----
+***
 
 ## 1. 五个类的定位与选择
 
-| 类 | 形态 | 定位 | 典型场景 |
-|----|------|------|----------|
-| `SLang.Log` | 静态全局 | 级别化运行日志（info/warn/error/fatal + 时间戳 + 可选文件落盘） | 一般业务/运行期记录 |
-| `SLang.Logger` | 实例 | 同 Log，但每实例独立配置 | isolate / 协程中各持一份互不干扰的日志器 |
-| `SLang.Profiling` | 静态 | 计时（time/timeEnd 圈出耗时段） | 性能分析 |
-| `SLang.Trace` | 静态 | 显式作用域追踪（Enter/Exit 模拟调用栈 + 缩进流 + 断点标记） | 定位问题、梳理执行路径 |
-| `Monitor`（Core 模块） | 静态 | **点监视采样系统**：watch 落帧进环形缓冲，事后查询 / 实时监听 / 栈查看 | 观察一个值在执行过程中的演变、不变量断言、调用链过滤采样 |
+| 类                  | 形态   | 定位                                            | 典型场景                         |
+| ------------------ | ---- | --------------------------------------------- | ---------------------------- |
+| `SLang.Log`        | 静态全局 | 级别化运行日志（info/warn/error/fatal + 时间戳 + 可选文件落盘） | 一般业务/运行期记录                   |
+| `SLang.Logger`     | 实例   | 同 Log，但每实例独立配置                                | isolate / 协程中各持一份互不干扰的日志器    |
+| `SLang.Profiling`  | 静态   | 计时（time/timeEnd 圈出耗时段）                        | 性能分析                         |
+| `SLang.Trace`      | 静态   | 显式作用域追踪（Enter/Exit 模拟调用栈 + 缩进流 + 断点标记）        | 定位问题、梳理执行路径                  |
+| `Monitor`（Core 模块） | 静态   | **点监视采样系统**：watch 落帧进环形缓冲，事后查询 / 实时监听 / 栈查看   | 观察一个值在执行过程中的演变、不变量断言、调用链过滤采样 |
 
 > **演进说明**（2026-09-21 重构）：原两个同名 Debug 类已拆分——`SLang.Debug`（Std）拆为 Profiling（计时）+ Trace（追踪），与 Log 重复的方法（log/warn/err/logError/Assert/AssertNotNull）已删除，直接用 `SLang.Log`；`Core.Debug` 更名为 `Monitor`（避免与 Std 侧混淆），底层 `SystemDebug*` 系统调用与 C VM 实现未变。
 
@@ -29,25 +29,25 @@ Log/Logger 每条日志行格式（两个前缀块可独立开关）：
 [yyyy:MM:dd hh:mm:ss ffff] [LEVEL] message
 ```
 
----
+***
 
 ## 2. SLang.Log（静态全局日志）
 
 ### 2.1 输出方法
 
-| 方法 | 级别 | 受控开关 | 说明 |
-|------|------|----------|------|
-| `Log.verbose(msg)` | VERBOSE | info 开关 | 最细粒度（= debug） |
-| `Log.debug(msg)` | DEBUG | info 开关 | |
-| `Log.info(msg)` | INFO | info 开关 | |
-| `Log.warning(msg)` | WARN | warning 开关 | |
-| `Log.logError(msg)` | ERROR | error 开关 | 方法名 logError：`error` 为 Result 语义保留名 |
-| `Log.fatal(msg)` | FATAL | **始终输出** | **触发 VM 硬停**（见 §3） |
-| `Log.exception(msg)` | EXCEPTION | error 开关 | 异常信息 |
-| `Log.exception(msg, detail)` | EXCEPTION | error 开关 | 附详情（缩进拼接） |
-| `Log.log(level, msg)` | 按 level 映射 | 按级别 | 通用入口，level 数值见下 |
-| `Log.print(msg)` | 无前缀 | 控制台开关 | 实时原始打印 |
-| `Log.assert(flag, msg)` | ASSERT | flag=false 时输出 | 断言（不触发停机） |
+| 方法                           | 级别         | 受控开关           | 说明                                  |
+| ---------------------------- | ---------- | -------------- | ----------------------------------- |
+| `Log.verbose(msg)`           | VERBOSE    | info 开关        | 最细粒度（= debug）                       |
+| `Log.debug(msg)`             | DEBUG      | info 开关        | <br />                              |
+| `Log.info(msg)`              | INFO       | info 开关        | <br />                              |
+| `Log.warning(msg)`           | WARN       | warning 开关     | <br />                              |
+| `Log.logError(msg)`          | ERROR      | error 开关       | 方法名 logError：`error` 为 Result 语义保留名 |
+| `Log.fatal(msg)`             | FATAL      | **始终输出**       | **触发 VM 硬停**（见 §3）                  |
+| `Log.exception(msg)`         | EXCEPTION  | error 开关       | 异常信息                                |
+| `Log.exception(msg, detail)` | EXCEPTION  | error 开关       | 附详情（缩进拼接）                           |
+| `Log.log(level, msg)`        | 按 level 映射 | 按级别            | 通用入口，level 数值见下                     |
+| `Log.print(msg)`             | 无前缀        | 控制台开关          | 实时原始打印                              |
+| `Log.assert(flag, msg)`      | ASSERT     | flag=false 时输出 | 断言（不触发停机）                           |
 
 级别数值（`log`/`setMinLevel`/`isEnabled` 共用）：`0`=verbose/debug，`1`=info，`2`=warning，`3`=error，`4`=fatal。
 
@@ -84,7 +84,7 @@ SLang.Log.clearFile()                 # 清空日志文件（已设路径时）
 
 （见 §2.2 与 `Log.sl` 源码注释；`setShowTime/setShowLevel/setTimeFormat` 三个前缀块开关由 LogTest §6 验证。）
 
----
+***
 
 ## 3. Log.fatal 的 VM 硬停语义（重点）
 
@@ -97,7 +97,7 @@ SLang.Log.clearFile()                 # 清空日志文件（已设路径时）
 
 用途：探查「不该到达的路径」（unreachable）、复现偶发问题时的兜底停机。见 §9.2 LogFatalTest。
 
----
+***
 
 ## 4. SLang.Logger（实例日志器）
 
@@ -112,7 +112,7 @@ SLang.Log.info("global still alive")   # 全局不受影响
 
 适用：isolate / 协程中各持一份互不干扰的日志器。实例同样支持 `setFilePath/setFlushInterval/save/closeFile`。
 
----
+***
 
 ## 5. SLang.Trace（显式作用域追踪）
 
@@ -141,7 +141,7 @@ SLang.Trace.Break()   # 打印 [BREAK] 标记 + 作用域栈（当前无真实�
 
 断言直接用 `SLang.Log.assert(flag, msg)`（输出式，见 §2.1）；采样式不变量断言用 `Monitor.watchAssert`（§7.2）。
 
----
+***
 
 ## 6. SLang.Profiling（计时）
 
@@ -155,7 +155,7 @@ SLang.Profiling.timeEnd("phase1")     # 输出 [TIME] phase1: <N> ms；key 未�
 
 同一 key 可嵌套/多次圈段；配 Log 的 `setFilePath` 可把耗时数据落盘。
 
----
+***
 
 ## 7. Monitor 点监视（采样系统）★
 
@@ -165,17 +165,17 @@ SLang.Profiling.timeEnd("phase1")     # 输出 [TIME] phase1: <N> ms；key 未�
 
 ### 7.1 三级开关矩阵（先懂开关再用）
 
-| # | 开关 | 层级 | 效果 |
-|---|------|------|------|
-| 1 | `compile.debug`（jsonc `compile` 段） | 编译期 | `false` → **采样类调用点整体消除**（watch 族 / begin / end / mark / log，连参数求值一起消失）；查询类保留，运行期返回空 |
-| 2 | `optimizeLevel >= 2` | VM 运行期 | Debug opcode 走快速路径（只弹栈保栈平衡），不落帧、不报错；查询返回空/0；监听不触发。同一份模块在 `<o2` 调试、`>=o2` 正跑，无感降级 |
-| 3 | 采样软开关 | VM 运行期 | `pause()/setSkip(n)/disable(tag)`：开了 debug 但指定点不采 |
+| # | 开关                                 | 层级     | 效果                                                                                  |
+| - | ---------------------------------- | ------ | ----------------------------------------------------------------------------------- |
+| 1 | `compile.debug`（jsonc `compile` 段） | 编译期    | `false` → **采样类调用点整体消除**（watch 族 / begin / end / mark / log，连参数求值一起消失）；查询类保留，运行期返回空 |
+| 2 | `optimizeLevel >= 2`               | VM 运行期 | Debug opcode 走快速路径（只弹栈保栈平衡），不落帧、不报错；查询返回空/0；监听不触发。同一份模块在 `<o2` 调试、`>=o2` 正跑，无感降级    |
+| 3 | 采样软开关                              | VM 运行期 | `pause()/setSkip(n)/disable(tag)`：开了 debug 但指定点不采                                   |
 
-| compile.debug | optimizeLevel | 结果 |
-|---------------|---------------|------|
-| true | 0 / 1 | 正常采样、查询、监听 |
-| true | ≥ 2 | VM 无视（快速路径），执行结果与无 Debug 完全一致 |
-| false | 任意 | 采样调用点不存在；查询返回空 |
+| compile.debug | optimizeLevel | 结果                            |
+| ------------- | ------------- | ----------------------------- |
+| true          | 0 / 1         | 正常采样、查询、监听                    |
+| true          | ≥ 2           | VM 无视（快速路径），执行结果与无 Debug 完全一致 |
+| false         | 任意            | 采样调用点不存在；查询返回空                |
 
 > BaseTest 的 `ProjectTest.jsonc` 即 `debug:true` + `optimize:false`，是本系统的启用范本。
 
@@ -229,20 +229,20 @@ Monitor.disable( "tag" )  # 单监视点停用
 
 ### 7.5 查询 API
 
-| 方法 | 返回 | 说明 |
-|------|------|------|
-| `frameCount()` | Int32 | 有效帧总数（o2/关 debug 时 0） |
-| `getFrame(index)` | string | 按索引回看帧文本；越界返回 `""` |
-| `lastFrame()` | string | 最新帧文本（监听回调配套快取） |
-| `diff(index)` | string | 第 index 帧与前帧对比（仅 data/class 整对象帧；行级 `-旧/+新`） |
-| `find(tag, scope="")` | Array\<Int32\> | 按标签（+可选区间链前缀）找帧索引列表 |
-| `series(tag)` | Array\<string\> | 某标签的值序列（画帧表用） |
-| `stats(tag)` | string | 区间耗时统计 JSON |
-| `scopeChain()` | string | 当前区间链，如 `"main > loop"` |
-| `assertViolations()` | Int32 | watchAssert cond==false 累计次数 |
-| `getTraceLog()` | string | Monitor.log 日志流文本 |
-| `frameTable(labels)` | string | 帧表：行=mark 边界、列=labels、单元格=该行处该 label 最近一帧的**纯值**（无 `[watch]` 前缀；无匹配 `-`） |
-| `setMaxTextLength(n)` | void | 帧文本截断上限（超长标注 `...(len=N)`；`<=0` 恢复默认 256） |
+| 方法                    | 返回             | 说明                                                                       |
+| --------------------- | -------------- | ------------------------------------------------------------------------ |
+| `frameCount()`        | Int32          | 有效帧总数（o2/关 debug 时 0）                                                    |
+| `getFrame(index)`     | string         | 按索引回看帧文本；越界返回 `""`                                                       |
+| `lastFrame()`         | string         | 最新帧文本（监听回调配套快取）                                                          |
+| `diff(index)`         | string         | 第 index 帧与前帧对比（仅 data/class 整对象帧；行级 `-旧/+新`）                             |
+| `find(tag, scope="")` | Array\<Int32>  | 按标签（+可选区间链前缀）找帧索引列表                                                      |
+| `series(tag)`         | Array\<string> | 某标签的值序列（画帧表用）                                                            |
+| `stats(tag)`          | string         | 区间耗时统计 JSON                                                              |
+| `scopeChain()`        | string         | 当前区间链，如 `"main > loop"`                                                  |
+| `assertViolations()`  | Int32          | watchAssert cond==false 累计次数                                             |
+| `getTraceLog()`       | string         | Monitor.log 日志流文本                                                        |
+| `frameTable(labels)`  | string         | 帧表：行=mark 边界、列=labels、单元格=该行处该 label 最近一帧的**纯值**（无 `[watch]` 前缀；无匹配 `-`） |
+| `setMaxTextLength(n)` | void           | 帧文本截断上限（超长标注 `...(len=N)`；`<=0` 恢复默认 256）                                |
 
 帧表输出示例：
 
@@ -274,12 +274,12 @@ Monitor.unlisten( id )                       # 退订成功 true；不存在/已
 
 ### 7.7 栈查看（真实 VM 栈，非模拟）
 
-| 方法 | 返回 | 说明 |
-|------|------|------|
-| `stackView()` | string | 当前**操作数栈**快照：每槽 `{index,type,value}` 的 JSON 数组；无栈 `[]` |
-| `frames()` | string | 调用帧列表 `[{index,method,line}]`（栈顶→栈底）；协程内只列本协程链 |
-| `frameData(depth)` | string | 第 depth 层调用帧（0=当前执行帧）locals+args 行；越界 `[]` |
-| `frameVar(depth, name)` | string | 某帧上指定变量/参数值文本（先 locals 后 args）；未找到 `""` |
+| 方法                      | 返回     | 说明                                                     |
+| ----------------------- | ------ | ------------------------------------------------------ |
+| `stackView()`           | string | 当前**操作数栈**快照：每槽 `{index,type,value}` 的 JSON 数组；无栈 `[]` |
+| `frames()`              | string | 调用帧列表 `[{index,method,line}]`（栈顶→栈底）；协程内只列本协程链         |
+| `frameData(depth)`      | string | 第 depth 层调用帧（0=当前执行帧）locals+args 行；越界 `[]`             |
+| `frameVar(depth, name)` | string | 某帧上指定变量/参数值文本（先 locals 后 args）；未找到 `""`                |
 
 ```sl
 # 表达式上下文中能看到已压栈的左操作数
@@ -297,49 +297,85 @@ string sv = pre + Monitor.stackView()
 
 ### 7.9 最小示例
 
-```sl
-# 前提：工程 jsonc compile 段 debug=true、optimize=false
+\# 前提：工程 jsonc compile 段 debug=true、optimize=false
+
 data ScoreData
+
 {
-    math = 0
+
+&#x20;   math = 0
+
 }
+
+<br />
 
 WatchDemo
+
 {
-    static fun()
-    {
-        Int32 answer = 42
-        Monitor.watch( answer, "answer" )        # 落帧 "[watch] answer = 42"
 
-        ScoreData sd = ScoreData()
-        sd.math = 95
-        Monitor.watch( sd, "math", "sd.math" )   # 落帧 "[watch] sd.math = 95"
+&#x20;   static fun()
 
-        # 循环里观察值演变（不刷屏，全部进缓冲）
-        Monitor.begin( "loop" )
-        int i = 0
-        while (i < 5)
-        {
-            Monitor.watch( i * i, "sq" )
-            i = i + 1
-        }
-        Monitor.end( "loop" )
+&#x20;   {
 
-        # 事后查询
-        Console.println("frames = " + Monitor.frameCount().toString())
-        Console.println("last   = " + Monitor.lastFrame())
-        Array<Int32> hits = Monitor.find( "sq" )
-        Console.println("sq hit count = " + hits.length.toString())
-        Console.println("stats  = " + Monitor.stats( "loop" ))
+&#x20;       Int32 answer = 42
 
-        # 不变量：值恒 >= 0，违反则计违规
-        Monitor.watchAssert( answer, "answer>=0", answer >= 0 )
-        Console.println("violations = " + Monitor.assertViolations().toString())
-    }
+&#x20;       Monitor.watch( answer, "answer" )        # 落帧 "\[watch] answer = 42"
+
+<br />
+
+&#x20;       ScoreData sd = ScoreData()
+
+&#x20;       sd.math = 95
+
+&#x20;       Monitor.watch( sd, "math", "sd.math" )   # 落帧 "\[watch] sd.math = 95"
+
+<br />
+
+&#x20;       \# 循环里观察值演变（不刷屏，全部进缓冲）
+
+&#x20;       Monitor.begin( "loop" )
+
+&#x20;       int i = 0
+
+&#x20;       while (i < 5)
+
+&#x20;       {
+
+&#x20;           Monitor.watch( i \* i, "sq" )
+
+&#x20;           i = i + 1
+
+&#x20;       }
+
+&#x20;       Monitor.end( "loop" )
+
+<br />
+
+&#x20;       \# 事后查询
+
+&#x20;       Console.println("frames = " + Monitor.frameCount().toString())
+
+&#x20;       Console.println("last   = " + Monitor.lastFrame())
+
+&#x20;       Array\<Int32> hits = Monitor.find( "sq" )
+
+&#x20;       Console.println("sq hit count = " + hits.length.toString())
+
+&#x20;       Console.println("stats  = " + Monitor.stats( "loop" ))
+
+<br />
+
+&#x20;       \# 不变量：值恒 >= 0，违反则计违规
+
+&#x20;       Monitor.watchAssert( answer, "answer>=0", answer >= 0 )
+
+&#x20;       Console.println("violations = " + Monitor.assertViolations().toString())
+
+&#x20;   }
+
 }
-```
 
----
+***
 
 ## 8. 调试工作流：用 Log/Trace/Profiling/Monitor 加速功能点验证
 
@@ -353,17 +389,17 @@ WatchDemo
 6. **留痕**：复现偶发问题时 `setFilePath("repro.log")` + `setFlushInterval(60)` + 结尾 `Log.save()`（或用 fatal 硬停兜底，日志在停机前已实时输出）。
 7. **兜底**：探查「不该到达的路径」用 `Log.fatal("unreachable: ...")` —— 直接硬停，退出码 1，一眼定位。
 
----
+***
 
 ## 9. 测试用例与运行方式
 
 ### 9.1 用例位置
 
-| 用例 | 覆盖 |
-|------|------|
-| `test/BaseTest/MonitorTest.sl` | **Monitor 点监视全量验收**（P1~P6）：单值/字符串/成员/整表 watch、帧查询、截断标注、环形覆盖、区间嵌套与异常回卷、采样控制三路径、find/series/stats/diff、watchAssert 违规计数、watchIn 调用链过滤、listen 订阅时序/重入保护/表满、stackView/frames/frameData/frameVar、log/getTraceLog/frameTable |
-| `test/ExpendTest/LogTest.sl` | 三级别输出、assert、级别开关（setMinLevel/setLogType/reset/isEnabled）、Logger 实例独立性、Profiling 计时（time/timeEnd）、Trace 追踪（trace/Enter/Step/DumpStack/Break + 开关静默）、显示配置（showTime/showLevel/timeFormat）、文件缓冲 + save |
-| `test/ExpendTest/LogFatalTest.sl` | fatal 硬停：后续语句不执行、try/catch 不可截获、进程退出码 1 |
+| 用例                                | 覆盖                                                                                                                                                                                                                      |
+| --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `test/BaseTest/MonitorTest.sl`    | **Monitor 点监视全量验收**（P1\~P6）：单值/字符串/成员/整表 watch、帧查询、截断标注、环形覆盖、区间嵌套与异常回卷、采样控制三路径、find/series/stats/diff、watchAssert 违规计数、watchIn 调用链过滤、listen 订阅时序/重入保护/表满、stackView/frames/frameData/frameVar、log/getTraceLog/frameTable |
+| `test/ExpendTest/LogTest.sl`      | 三级别输出、assert、级别开关（setMinLevel/setLogType/reset/isEnabled）、Logger 实例独立性、Profiling 计时（time/timeEnd）、Trace 追踪（trace/Enter/Step/DumpStack/Break + 开关静默）、显示配置（showTime/showLevel/timeFormat）、文件缓冲 + save                     |
+| `test/ExpendTest/LogFatalTest.sl` | fatal 硬停：后续语句不执行、try/catch 不可截获、进程退出码 1                                                                                                                                                                                 |
 
 ### 9.2 LogFatalTest 核心片段
 
@@ -414,27 +450,28 @@ csimple_lang\build\Debug\bin\csimple_lang.exe run out\export\ProjectTest2\Projec
 - ExpendTest 用例集：联合测试宿主 `project/CSimpleVMStdTest`。
 - **跑 MonitorTest 的前提**：`test/BaseTest/ProjectTest.jsonc` 中 `compile.debug=true` 且 `optimize=false`（当前已如此配置）。
 
----
+***
 
 ## 10. 底层实现速查
 
-| 层 | 位置 | 说明 |
-|----|------|------|
-| SL API（Log/Logger） | `source/Front/Lib/Std/Debug/Log.sl` | 全部方法；`_emit`/`assert` 下沉 C 原生 |
-| SL API（Profiling/Trace） | `source/Front/Lib/Std/Debug/Profiling.sl`、`Trace.sl` | 计时 / 显式作用域追踪 |
-| SL API（Monitor） | `source/Front/Lib/Core/Monitor.sl` | 点监视门面；采样类由 Front 特译 |
-| 系统调用注册（Log） | `source/Front/Lib/Std/Std.jsonc` `systemCalls[]` | `SystemLogEmit`/`SystemLogAssert`/`SystemLogSave` |
-| 系统调用注册（Debug 采样） | `source/Front/Lib/Core/Core.jsonc` `systemCalls[]` | `SystemDebugWatch` 族查询类调用 |
-| C# 枚举 | `source/Front/Define.cs` `ESystemMethodCall` | 与 cvmFunction 对齐（R7 四处同步） |
-| Debug 特译 | `source/Front/IR/IRCall.cs` `ParseDebugWatchCall` | watch 族→opcode 121（mode 0~3）、begin→119、end→120；门面类全名 `Core.Monitor` |
-| opcode 对齐 | `Front/IROpEnum.cs` ↔ `csimple_lang/src/vm/vm.h`（R2） | `DebugBegin=119` `DebugEnd=120` `DebugWatch=121` |
-| C 实现（Log） | `csimple_lang/src/vm/system_method_call/log_system_method.c` | `vm_sys_log_emit` 等；FATAL 特判在此 |
-| C 实现（Debug 采样） | `csimple_lang/src/vm/runtime/debug/vm_debug.c/.h` | 环形帧缓冲 + 区间链 + 统计 + 订阅表 + 栈查看 |
-| FATAL 硬停 | `csimple_lang/src/vm/runtime/vm_runtime.c` `vm_request_fatal_halt` | 置 `fatal_halt` + 错误码 -91；复活点防护散布 `runtime_call.c`/`vm_call_frame.c`/`vm_coroutine.c`/`vm_runtime.c` |
+| 层                       | 位置                                                                 | 说明                                                                                                  |
+| ----------------------- | ------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------- |
+| SL API（Log/Logger）      | `source/Front/Lib/Std/Debug/Log.sl`                                | 全部方法；`_emit`/`assert` 下沉 C 原生                                                                       |
+| SL API（Profiling/Trace） | `source/Front/Lib/Std/Debug/Profiling.sl`、`Trace.sl`               | 计时 / 显式作用域追踪                                                                                        |
+| SL API（Monitor）         | `source/Front/Lib/Core/Monitor.sl`                                 | 点监视门面；采样类由 Front 特译                                                                                 |
+| 系统调用注册（Log）             | `source/Front/Lib/Std/Std.jsonc` `systemCalls[]`                   | `SystemLogEmit`/`SystemLogAssert`/`SystemLogSave`                                                   |
+| 系统调用注册（Debug 采样）        | `source/Front/Lib/Core/Core.jsonc` `systemCalls[]`                 | `SystemDebugWatch` 族查询类调用                                                                           |
+| C# 枚举                   | `source/Front/Define.cs` `ESystemMethodCall`                       | 与 cvmFunction 对齐（R7 四处同步）                                                                           |
+| Debug 特译                | `source/Front/IR/IRCall.cs` `ParseDebugWatchCall`                  | watch 族→opcode 121（mode 0\~3）、begin→119、end→120；门面类全名 `Core.Monitor`                                |
+| opcode 对齐               | `Front/IROpEnum.cs` ↔ `csimple_lang/src/vm/vm.h`（R2）               | `DebugBegin=119` `DebugEnd=120` `DebugWatch=121`                                                    |
+| C 实现（Log）               | `csimple_lang/src/vm/system_method_call/log_system_method.c`       | `vm_sys_log_emit` 等；FATAL 特判在此                                                                      |
+| C 实现（Debug 采样）          | `csimple_lang/src/vm/runtime/debug/vm_debug.c/.h`                  | 环形帧缓冲 + 区间链 + 统计 + 订阅表 + 栈查看                                                                        |
+| FATAL 硬停                | `csimple_lang/src/vm/runtime/vm_runtime.c` `vm_request_fatal_halt` | 置 `fatal_halt` + 错误码 -91；复活点防护散布 `runtime_call.c`/`vm_call_frame.c`/`vm_coroutine.c`/`vm_runtime.c` |
 
 修改注意：
 
 - FATAL 语义：级别检测置于 `enabled` 开关之前；`fatal_halt` 置位后不得被任何路径复位。
 - Debug 采样：`optimizeLevel >= 2` 快速路径**必须保持栈平衡**（按 mode 弹栈：mode 0/1/3 弹 1 槽、mode 2 弹 2 槽）；`compile.debug=false` 时采样调用点连参数求值一起消除。
-- 类名演进：`Core.Debug → Core.Monitor`（特译门面常量 `DebugFacadeClassAllName = "Core.Monitor"`，见 IRCall.cs）；`SLang.Debug → SLang.Profiling + SLang.Trace`。改名只动 SL 门面与测试，**`SystemDebug*` 系统调用与 C VM 实现不变**。
-- 设计全貌（payload 布局、P1~P8 分期、Watcher 预留）：`csimple_lang/md/design/DEBUG_SYSTEM_DESIGN.md`。
+- 类名演进：`Core.Debug → Core.Monitor`（特译门面常量 `DebugFacadeClassAllName = "Core.Monitor"`，见 IRCall.cs）；`SLang.Debug → SLang.Profiling + SLang.Trace`。改名只动 SL 门面与测试，**`SystemDebug*`** **系统调用与 C VM 实现不变**。
+- 设计全貌（payload 布局、P1\~P8 分期、Watcher 预留）：`csimple_lang/md/design/DEBUG_SYSTEM_DESIGN.md`。
+

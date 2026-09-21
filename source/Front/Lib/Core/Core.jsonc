@@ -732,9 +732,7 @@
         { "class": "LengthPrefix" },
         { "class": "ProtoCodec" },
         { "class": "ProtoCodec<T>" },
-        { "class": "Monitor" },
-        { "class": "Watcher" },
-        { "class": "Watcher<T>" }
+        { "class": "Monitor" }
       ] },
       // ---- Environment namespace tree (P1.7, PLATFORM_CAPABILITY §13.2) ----
       { "namespace": "Environment", "children":

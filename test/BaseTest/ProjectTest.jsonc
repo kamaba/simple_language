@@ -94,7 +94,8 @@
       { "path": "StringBuilderTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "ProtocalBuffersTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "StreamTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
-      { "path": "CodecFrameTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 }
+      { "path": "CodecFrameTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "ExitTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 }
     ]
   },
   "compileFilter": {

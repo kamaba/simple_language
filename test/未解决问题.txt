@@ -1,14 +1,10 @@
 函数名称和类名冲突时候的处理  
 
-还需要改动 Log.FATAL() 需要在vm中有一次中断   以后，你如果调试的时候，可以把Log类和Debug类的使用方式 加入到代码验证的过程中 ，这样可以加速调试一些功能点。 把详细的使用规则，还有说明还有简单的测试用例，都放到一份.md的说明文件中
-原来的三色机制是否因为有了ARC的机制变的有些冗余。
-GenerateArcReleaseEpilogue 这个函数体，为什么 先LoadLocal,然后再StoreLocal 为什么不把index,直接集成到 EIROpCode.ArcRelease 内部处理。
-怎么有两个 debug？一个在 core 里边，一个在 STD 里边，应该只有一个 debug 才对吧？或者说它们两个是干什么用的？你解释一下
 我现在不需要 defer 和 defer error 机制了。从 token 层到 feel 层，到 metal 层，然后到 IR 层，还有到 CVM 里面的，都去掉了 defer 和 defer error
-
-内存管理机制使用arc 
+Montior类，貌似 像 SystemDebugWatch，这种的，怎么没有在jsonc里边找到对应的映射关系呀
+Monitor.watch 就是再增加一个 监视然后绑定闭包函数的方法 ， 如果里边的变量发生了变化，那就 在闭包的传参数里边，能拿到  前数据，后数据
 内存管理机制使用小分块
-内存管理优化 三色管理
+原来的三色机制是否因为有了ARC的机制变的有些冗余。 内存管理优化 三色管理
 
 编码相关的
 Tcp/Udp/HttpClient/Websocket/NetStream相关接口
@@ -16,8 +12,6 @@ Yaml/Xml/RegExp
 
 
 TankGame.sl 引入Math类。把一些 二维的都使用Int32_2 Int32_3
-
-
 
 我现在要以plugins的形式 把F:\project\lang\SLPlugin\csharp_mono 接入进来，这个主要是用来跑csharp的源码的，我接入规则是这样的，在jsonc配置文件中，配置一个plugins的的字段，然后 里边{ "csharp_mono":{} } 来配置这个具体的过程 
 "csharp_mono":
@@ -49,9 +43,6 @@ ffmpeg的dll 引入
 
 
 制定规则，在配置的jsonc里边，如果配置了，是否是public就可以为导出类  有三个选项 不导出，public,extern导出  
-Defer,
-/// <summary> errdefer </summary>
-ErrDefer, 这两关键字， 要在制定完 函数退出规则后，再确定使用不使用。
 
 把global.data 确定了 下边的关联元素确定下，还有调用方式
 把Core.module.json还有错误.csv 打包到.exe 然后 加载std需要另再加载
