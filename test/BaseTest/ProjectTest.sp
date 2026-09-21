@@ -16,7 +16,6 @@ Project
         SystemPrintln("===== ProjectTest _main_ start =====")
         nowMs = Environment.sys.nowMillis()
         
-        #!
         GlobalTest.fun()
         ObjectTest.fun()
         StringTest.fun()
@@ -50,12 +49,12 @@ Project
         InterfaceTest.fun()
         MVTest1.fun()
         MVTest2.fun()    
-        !#
-        #CoroutineTest.fun();
-        #StringBuilderTest.fun()
+        
+        CoroutineTest.fun();
+        StringBuilderTest.fun()
         DebugTest.fun()
         WatcherTest.fun()
-        #!
+        
         EnvironmentTest.fun()
         PlatformOverrideTest.fun()
         PlatformLibTest.fun()
@@ -65,8 +64,7 @@ Project
         ProtocalBuffersTest.fun()
         StreamTest.fun()
         CodecFrameTest.fun()
-        !#
-        #!
+        
         GuidTest.fun()
         RandomTest.fun()
         Float8Test.fun()
@@ -74,6 +72,7 @@ Project
         IfelseTest.fun()
         NSClosureTest.ClosureTest.fun()
         #PtrTest.fun()
+        
 
         MemberFunction1Test.fun()
         MemberFunction2Test.fun()
@@ -94,7 +93,7 @@ Project
         SwitchTest.fun()
         InputArgsTest.fun();        
         HashSetTest.fun()
-        !#
+        
 
         nowMs = Environment.sys.nowMillis() - nowMs
         SystemPrintln("===== ProjectTest _main_ end [$nowMs.toString() ms]=====")

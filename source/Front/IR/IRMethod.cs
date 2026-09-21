@@ -50,6 +50,11 @@ namespace SimpleLanguage.IR
         /// <summary>是否为模板函数（fun&lt;T&gt;()）。导出时从 MetaMemberFunction.isTemplateFunction 读取，
         /// 导入时从 SLMethodPackage.isTemplateFunction 还原。</summary>
         public bool isTemplateFunction => m_IsTemplateFunction;
+        /// <summary>ref module 方法体是否可证明为空（instructionList 为空或仅 Nop/Label，
+        /// 由 SLModulePackageWriter.Read 在剥离指令前计算的 isEmptyInstructionBody 还原）。
+        /// 供反向构建 MetaMemberFunction 时回填，作为 ARC 空体 ctor 认领证据
+        /// (ARC_MEMORY_DESIGN §16-C)。本地编译方法恒为 false。</summary>
+        public bool isEmptyBodyFromRefModule => m_IsEmptyBodyFromRefModule;
         /// <summary>模板函数的模板参数名列表，导入时用于重建 MetaTemplate。</summary>
         public List<string> templateParameterNames => m_TemplateParameterNames;
         public IRManager irManager => m_IRManager;
@@ -90,9 +95,15 @@ namespace SimpleLanguage.IR
         private bool m_IsAot = false;
         private int m_DeclaringClassId = 0;
         private bool m_IsTemplateFunction = false;
+        private bool m_IsEmptyBodyFromRefModule = false;
         private List<string> m_TemplateParameterNames = new List<string>();
         private IRData m_FunEndLabelData = null;
         private IRManager m_IRManager = null;
+        /// <summary>ARC v1: 本函数内被编译器认领(is_owned)的 new 对象局部变量表。
+        /// IRDefineVarStatements 对非逃逸 new 局部插入 ArcRetain 认领时注册;
+        /// Parse 末尾在 funEndLabel 之后为每个条目发射
+        /// [LoadLocal][ArcRelease][StoreLocal] 确定性释放段 (ARC_MEMORY_DESIGN §5.4)。</summary>
+        private List<IRMetaVariable> m_ARCOwnedLocalList = new List<IRMetaVariable>();
 
         /// <summary>
         /// 编译期上下文标记：当前是否在 try 表达式内部生成 IR。
@@ -230,6 +241,7 @@ namespace SimpleLanguage.IR
             m_IsAot = (flags & 256) != 0;
             m_DeclaringClassId = mp?.declaringClassId ?? 0;
             m_IsTemplateFunction = mp?.isTemplateFunction ?? false;
+            m_IsEmptyBodyFromRefModule = mp?.isEmptyInstructionBody ?? false;
             if (m_IsTemplateFunction && mp?.templateParameterNames != null)
             {
                 foreach (var tn in mp.templateParameterNames)
@@ -557,6 +569,26 @@ namespace SimpleLanguage.IR
             // Real function end label
             originalFunEndLabel.id = m_IRDataList.Count;
             m_IRDataList.Add(originalFunEndLabel);
+
+            // ── ARC v1: 确定性释放段 (插在 funEndLabel 之后) ──
+            // 所有退出路径(提前 return 的 BrLabel funEnd / defer 段收尾跳转 /
+            // 正常落出)都先汇聚到 funEndLabel 再顺序经过本段, 因此函数内全部
+            // 提前退出路径都被覆盖 (ARC_MEMORY_DESIGN §5.4 函数级 v1;
+            // 异常 throw 路径不经过本段, 由 GC 兜底回收)。
+            List<IRBase> arcReleaseEpilogue = GenerateArcReleaseEpilogue();
+            if (arcReleaseEpilogue != null)
+            {
+                for (int j = 0; j < arcReleaseEpilogue.Count; j++)
+                {
+                    for (int k = 0; k < arcReleaseEpilogue[j].IRDataList.Count; k++)
+                    {
+                        var addIR = arcReleaseEpilogue[j].IRDataList[k];
+                        addIR.id = m_IRDataList.Count;
+                        AddLabelDict(addIR);
+                        m_IRDataList.Add(addIR);
+                    }
+                }
+            }
 
             // ---- null 快速判断 peephole（optimizeLevel >= 1）----
             // 在 label 回填之前运行：把 ?. / ?? / var == null / var != null 的
@@ -1191,6 +1223,59 @@ namespace SimpleLanguage.IR
             storeRetData.index = 0;
             storeRetData.SetDebugInfoByToken(mmf.token, "StoreReturn result");
             list.Add(new IRBase(storeRetData));
+            return list;
+        }
+
+        /// <summary>ARC v1: 注册被认领的 new 对象局部变量 (retain 侧调用)。
+        /// 同一 MetaVariable 多次注册(inline 展开段对同一体内变量多次声明)
+        /// 时取最近注册的 IRMetaVariable, 与 GetIRLocalVariableById 语义一致。</summary>
+        public void RegisterArcOwnedLocal(MetaVariable mv)
+        {
+            if (mv == null)
+            {
+                return;
+            }
+            var irmv = GetIRLocalVariableById(mv.GetHashCode());
+            if (irmv != null && !m_ARCOwnedLocalList.Contains(irmv))
+            {
+                m_ARCOwnedLocalList.Add(irmv);
+            }
+        }
+
+        /// <summary>
+        /// ARC v1: 函数级确定性释放段。对每个被认领的局部发射:
+        ///   [LoadLocal x] [ArcRelease] [StoreLocal x]
+        /// ArcRelease 栈协议: pop 引用 -> release -> 归零时压 null, 否则压回原值;
+        /// StoreLocal 写回使归零对象的槽位被清为 null, 防止 GC 根扫描看到
+        /// 已释放的悬垂指针。三条指令栈中性, 可安全插在函数退出汇合点之后。
+        /// </summary>
+        private List<IRBase> GenerateArcReleaseEpilogue()
+        {
+            if (m_ARCOwnedLocalList.Count == 0)
+            {
+                return null;
+            }
+            var token = m_BindMetaFunction?.token;
+            var list = new List<IRBase>();
+            foreach (var irmv in m_ARCOwnedLocalList)
+            {
+                var loadData = new IRData();
+                loadData.opCode = EIROpCode.LoadLocal;
+                loadData.index = irmv.index;
+                loadData.SetDebugInfoByToken(token, "ARC release: LoadLocal " + irmv.name);
+                list.Add(new IRBase(loadData));
+
+                var releaseData = new IRData();
+                releaseData.opCode = EIROpCode.ArcRelease;
+                releaseData.SetDebugInfoByToken(token, "ARC release owned local: " + irmv.name);
+                list.Add(new IRBase(releaseData));
+
+                var storeData = new IRData();
+                storeData.opCode = EIROpCode.StoreLocal;
+                storeData.index = irmv.index;
+                storeData.SetDebugInfoByToken(token, "ARC release: StoreLocal " + irmv.name);
+                list.Add(new IRBase(storeData));
+            }
             return list;
         }
 

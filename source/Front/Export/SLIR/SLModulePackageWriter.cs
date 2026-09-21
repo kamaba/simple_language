@@ -117,7 +117,56 @@ namespace SimpleLanguage.Export.SLIR
 
             var pkg = ReadModulePackageJson(json, options);
             NormalizeFieldFlags(pkg);
+            ComputeEmptyInstructionBodyFlags(pkg);
             return pkg;
+        }
+
+        /// <summary>
+        /// 为每个 SLMethodPackage 计算 isEmptyInstructionBody:
+        /// instructionList 为空或仅含 Nop/Label 结构指令 => 方法体无可执行用户代码。
+        /// 必须在 ReadWithoutInstructionCode 剥离指令之前调用(此处即 Read 尾部,
+        /// 剥离只 Clear 列表, 标志保留)。空体证据供引用方 ARC 认领判定
+        /// (ARC_MEMORY_DESIGN §16-C: 空体 ctor 不可能让 this 逃逸)。
+        /// </summary>
+        private static void ComputeEmptyInstructionBodyFlags(SLModulePackage pkg)
+        {
+            if (pkg == null) return;
+            ComputeEmptyInstructionBodyFlags(pkg.methodList);
+            if (pkg.moduleList != null)
+            {
+                for (int i = 0; i < pkg.moduleList.Count; i++)
+                {
+                    ComputeEmptyInstructionBodyFlags(pkg.moduleList[i]?.methodList);
+                }
+            }
+        }
+
+        private static void ComputeEmptyInstructionBodyFlags(List<SLMethodPackage>? methods)
+        {
+            if (methods == null) return;
+            for (int i = 0; i < methods.Count; i++)
+            {
+                var m = methods[i];
+                if (m == null) continue;
+                var list = m.instructionList;
+                if (list == null || list.Count == 0)
+                {
+                    m.isEmptyInstructionBody = true;
+                    continue;
+                }
+                m.isEmptyInstructionBody = true;
+                for (int k = 0; k < list.Count; k++)
+                {
+                    var ins = list[k];
+                    if (ins == null) continue;
+                    var op = (EIROpCode)ins.opCode;
+                    if (op != EIROpCode.Nop && op != EIROpCode.Label)
+                    {
+                        m.isEmptyInstructionBody = false;
+                        break;
+                    }
+                }
+            }
         }
 
         internal static SLModulePackage ReadWithoutInstructionCode(string inputPath)

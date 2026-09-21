@@ -582,6 +582,18 @@ namespace SimpleLanguage.Export.MLIR
             return env;
         }
 
+        // Clip redirected tool output before it lands in exception messages /
+        // export logs: mlir-opt dumps the whole module IR to stderr on
+        // failure, which would bloat Front.txt by megabytes.
+        private const int MaxToolOutputChars = 4000;
+
+        private static string Clip(string s)
+        {
+            return s.Length <= MaxToolOutputChars
+                ? s
+                : s.Substring(0, MaxToolOutputChars) + $"\n... ({s.Length} chars, clipped)";
+        }
+
         private static string? TryRunCapture(string fileName, string args)
         {
             try
@@ -597,9 +609,13 @@ namespace SimpleLanguage.Export.MLIR
                 };
                 using var p = Process.Start(psi);
                 if (p == null) return null;
-                string stdout = p.StandardOutput.ReadToEnd();
-                _ = p.StandardError.ReadToEnd();
+                // Drain both pipes concurrently: a sequential ReadToEnd
+                // deadlocks when the child fills the stderr pipe buffer while
+                // we are still blocked reading stdout.
+                var stdoutTask = p.StandardOutput.ReadToEndAsync();
+                var stderrTask = p.StandardError.ReadToEndAsync();
                 p.WaitForExit();
+                string stdout = stdoutTask.Result;
                 return p.ExitCode == 0 ? stdout : null;
             }
             catch
@@ -635,13 +651,18 @@ namespace SimpleLanguage.Export.MLIR
             using var p = Process.Start(psi);
             if (p == null) throw new InvalidOperationException("Failed to start process: " + fileName);
 
-            string stdout = p.StandardOutput.ReadToEnd();
-            string stderr = p.StandardError.ReadToEnd();
+            // Drain both pipes concurrently: a sequential ReadToEnd deadlocks
+            // when the child fills the stderr pipe buffer (e.g. mlir-opt
+            // dumping IR on failure) while we are still blocked on stdout.
+            var stdoutTask = p.StandardOutput.ReadToEndAsync();
+            var stderrTask = p.StandardError.ReadToEndAsync();
             p.WaitForExit();
+            string stdout = stdoutTask.Result;
+            string stderr = stderrTask.Result;
 
             if (p.ExitCode != 0)
             {
-                throw new InvalidOperationException($"Tool failed: {fileName} {args}\n{stdout}\n{stderr}");
+                throw new InvalidOperationException($"Tool failed: {fileName} {args}\n{Clip(stdout)}\n{Clip(stderr)}");
             }
         }
     }

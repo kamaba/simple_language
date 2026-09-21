@@ -149,7 +149,12 @@ namespace SimpleLanguage.Project
                 if (refConfig?.Export == null || string.IsNullOrWhiteSpace(refConfig.Export.OutputDir) || string.IsNullOrWhiteSpace(refConfig.Export.ModuleName))
                     return null;
 
-                var moduleJsonPath = Path.Combine(refConfig.Export.OutputDir, refConfig.Export.ModuleName, refConfig.Export.ModuleName + ".module.json");
+                /* 相对 outputDir 按被引用模块 jsonc 所在目录解析（与 ProjectOutputEnvironment.ApplyFromConfig 同语义） */
+                var refJsoncDir = Path.GetDirectoryName(jsoncFiles[0]);
+                var refExportRoot = Path.IsPathRooted(refConfig.Export.OutputDir)
+                    ? Path.GetFullPath(refConfig.Export.OutputDir)
+                    : Path.GetFullPath(Path.Combine(refJsoncDir ?? string.Empty, refConfig.Export.OutputDir));
+                var moduleJsonPath = Path.Combine(refExportRoot, refConfig.Export.ModuleName, refConfig.Export.ModuleName + ".module.json");
                 return File.Exists(moduleJsonPath) ? moduleJsonPath : null;
             }
             catch
@@ -1011,6 +1016,14 @@ namespace SimpleLanguage.Project
             mmf.SetIsAbstract(irm.isAbstract);
             mmf.SetIsOverrideFunction(irm.isOverrideFunction);
             mmf.SetIsOverrideInterface(irm.interfaceMethod);
+            /* ARC §16-C: 跨模块方法体在 Front 侧不可见(metaBlockStatements 恒为 null)，
+             * 空体证据 = 导出包 instructionList 为空或仅 Nop/Label(SLModulePackageWriter.Read
+             * 剥离指令前计算)。空体 ctor 不可能让 this 逃逸，供引用方 IRDefineVarStatements
+             * 认领判定；非空体方法保持 false，一律交 GC。 */
+            if (irm.isEmptyBodyFromRefModule)
+            {
+                mmf.SetIsEmptyBodyFromRefModule();
+            }
 
             /* 模板函数参数恢复：从 IRMethod.templateParameterNames 重建 MetaTemplate，
              * 使 functionAllName（含 <TKey,TValue>）与导出端匹配，classId 一致。 */

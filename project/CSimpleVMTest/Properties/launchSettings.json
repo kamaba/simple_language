@@ -60,6 +60,11 @@
       "commandLineArgs": "InlineMethodTest",
       "nativeDebugging": true
     },
+    "ARCTest": {
+      "commandName": "Project",
+      "commandLineArgs": "ARCTest",
+      "nativeDebugging": true
+    },
     "GameTank": {
       "commandName": "Project",
       "commandLineArgs": "GameTank",

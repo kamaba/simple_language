@@ -236,6 +236,10 @@ namespace SimpleLanguage.Core
         public bool isAbstract => m_IsAbstract;
         public bool isOverrideInterface => m_IsOverrideInterface;        
         public bool isConstructInitFunction => m_ConstructInitFunction;
+        /// <summary>ref module 方法体是否可证明为空（由 ProjectReferenceModuleLoader 依据导出包
+        /// instructionList 结构回填：为空或仅 Nop/Label）。空体 ctor 不可能让 this 逃逸，
+        /// 是 ARC 认领的安全证据 (ARC_MEMORY_DESIGN §16-C)。本地编译方法恒为 false。</summary>
+        public bool isEmptyBodyFromRefModule => m_IsEmptyBodyFromRefModule;
         public bool isGet => m_IsGet;
         public bool isSet => m_IsSet;
         public bool isFinal => m_IsFinal;
@@ -396,6 +400,7 @@ namespace SimpleLanguage.Core
         protected bool m_IsClosureFunction = false;
         protected bool m_IsTemplateInParam = false;
         protected bool m_ConstructInitFunction = false;
+        protected bool m_IsEmptyBodyFromRefModule = false;
         protected bool m_IsWithInterface = false;
         protected MetaVariable m_CapturedThis = null; // 闭包函数: 从宿主实例方法捕获的 this
         // ── 闭包共享捕获上下文注册表 ──
@@ -704,6 +709,12 @@ namespace SimpleLanguage.Core
         public void SetIsTemplateFunction(bool flag)
         {
             this.m_IsTemplateFunction = flag;
+        }
+        /// <summary>回填 ref module 空体标记（ProjectReferenceModuleLoader 从 IRMethod.isEmptyBodyFromRefModule
+        /// 传播，证据为导出包 instructionList 为空或仅 Nop/Label）。</summary>
+        public void SetIsEmptyBodyFromRefModule()
+        {
+            this.m_IsEmptyBodyFromRefModule = true;
         }
         public bool IsEqualWithMMFByNameAndParam( MetaMemberFunction mmf )
         {

@@ -382,7 +382,7 @@
   ],
   "export": {
     "moduleName": "Std",
-    "outputDir": "F:\\project\\lang\\simple_language\\out\\export",
+    "outputDir": "..\\..\\..\\..\\out\\export",
     "versionMain": 0,
     "versionSub": 1,
     "versionPatch": 0,

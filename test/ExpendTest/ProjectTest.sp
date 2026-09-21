@@ -27,6 +27,8 @@ Project
         #EncodingTest.fun() # var 推断暂不支持(Node 层关键字冲突),待 var 语法落地后启用
         LogTest.fun()
         #IsolateTest.fun()
+        # LogFatalTest 必须放最末尾：fatal 触发 fatal_halt 硬停，整个进程终止（退出码 1）
+        LogFatalTest.fun()
     }
     CompileBefore()
     {

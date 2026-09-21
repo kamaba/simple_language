@@ -92,8 +92,7 @@
       { "path": "Text/StringBuilder.sl", "group": "text", "tag": "text", "ignore": false, "priority": 0 },
       { "path": "Text/Lz4.sl", "group": "io", "tag": "io", "ignore": false, "priority": 0 },
       { "path": "Text/ProtocalBuffers.sl", "group": "io", "tag": "io", "ignore": false, "priority": 0 },
-      { "path": "Debug.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
-      { "path": "Watcher.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 }
+      { "path": "Debug.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 }
     ]
   },
   "compileFilter": {
@@ -773,7 +772,7 @@
   ],
   "export": {
     "moduleName": "Core",
-    "outputDir": "F:\\project\\lang\\simple_language\\out\\export",
+    "outputDir": "..\\..\\..\\..\\out\\export",
     "versionMain": 1,
     "versionSub": 0,
     "versionPatch": 0,

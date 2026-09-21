@@ -172,6 +172,11 @@ namespace SimpleLanguage.Export.SLIR.Types
         public List<SLVariablePackage> argumentList { get; set; } = new();
         public List<SLVariablePackage> localList { get; set; } = new();
         public List<SLIRInstructionPackage> instructionList { get; set; } = new();
+        /// <summary>[非序列化] 读取时计算: instructionList 为空或仅含 Nop/Label 结构指令
+        /// (方法体无可执行用户代码)。引用模块侧 ReadWithoutInstructionCode 剥离指令前计算,
+        /// 供 ARC 空体 ctor 认领判定 (ARC_MEMORY_DESIGN §16-C)。</summary>
+        [JsonIgnore]
+        public bool isEmptyInstructionBody { get; set; }
         public List<SLAttributePackage> attributeList { get; set; } = new();
     }
     /// <summary>

@@ -1,9 +1,10 @@
 函数名称和类名冲突时候的处理  
 
 还需要改动 Log.FATAL() 需要在vm中有一次中断   以后，你如果调试的时候，可以把Log类和Debug类的使用方式 加入到代码验证的过程中 ，这样可以加速调试一些功能点。 把详细的使用规则，还有说明还有简单的测试用例，都放到一份.md的说明文件中
-
-Watcher观察类，需要可以拿到变化的数据，最好是可以读取，数据初始化，新变化的值。
-  我再说下，这个类应该叫Monitor 叫监控类，他的主要作用是，可以传一个变量，，就是监控一个变量的变量，如果变量被监控了，变量发生了变量，需要进行回调。 当然包括变量里边的值变化全部被监控，比如这个变量是某个类，类下边的发生了变量，都要进行回调，   还有就是我的FrameData貌似没有使用上，如果可以的话，尽量用下
+原来的三色机制是否因为有了ARC的机制变的有些冗余。
+GenerateArcReleaseEpilogue 这个函数体，为什么 先LoadLocal,然后再StoreLocal 为什么不把index,直接集成到 EIROpCode.ArcRelease 内部处理。
+怎么有两个 debug？一个在 core 里边，一个在 STD 里边，应该只有一个 debug 才对吧？或者说它们两个是干什么用的？你解释一下
+我现在不需要 defer 和 defer error 机制了。从 token 层到 feel 层，到 metal 层，然后到 IR 层，还有到 CVM 里面的，都去掉了 defer 和 defer error
 
 内存管理机制使用arc 
 内存管理机制使用小分块
@@ -12,7 +13,6 @@ Watcher观察类，需要可以拿到变化的数据，最好是可以读取，�
 编码相关的
 Tcp/Udp/HttpClient/Websocket/NetStream相关接口
 Yaml/Xml/RegExp
-
 
 
 TankGame.sl 引入Math类。把一些 二维的都使用Int32_2 Int32_3

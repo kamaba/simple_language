@@ -250,7 +250,7 @@
   ],
   "export": {
     "moduleName": "Math",
-    "outputDir": "F:\\project\\lang\\simple_language\\out\\export",
+    "outputDir": "..\\..\\..\\..\\out\\export",
     "nativeDll": "MathNativeImpl.dll",
     "versionMain": 1,
     "versionSub": 0,

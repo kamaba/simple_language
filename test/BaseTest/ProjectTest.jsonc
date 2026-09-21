@@ -138,7 +138,7 @@
   ],
   "export": {
     "moduleName": "ProjectTest",
-    "outputDir": "F:\\project\\lang\\simple_language\\out\\export",
+    "outputDir": "..\\..\\out\\export",
     "versionMain": 0,
     "versionSub": 0,
     "versionPatch": 1,
