@@ -71,3 +71,12 @@ public enum MathOpError extends Error
     InvalidOperation = { code = 4 }
 }
 
+# P5-3: pool-exhaustion singleton thrown by the C VM when the SBA small-block
+# pool is used up (design SMALL_BLOCK_ALLOCATOR_DESIGN.md). The VM resolves
+# this enum by name ("Core.MemoryError" / "MemoryError") and reads the OOM
+# static slot, so label{}catch{} can recover from out-of-memory.
+public enum MemoryError extends Error
+{
+    OOM = { code = 5, message = "small-block pool exhausted" }
+}
+

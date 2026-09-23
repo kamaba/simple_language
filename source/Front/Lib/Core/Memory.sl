@@ -162,6 +162,89 @@ public class Memory
         ret SystemMemoryGetTotalFreed()
     }
 
+    # TRUE when the TLSF large-object arena is compiled in (P4, design
+    # SMALL_BLOCK_ALLOCATOR_DESIGN.md §3.6/§3.7).  Host builds default
+    # to FALSE; embedded verification builds opt in via VM_TLSF_ENABLE.
+    public static bool tlsfEnabled()
+    {
+        ret SystemMemoryTlsfEnabled()
+    }
+
+    # Bytes currently held by live TLSF arena blocks (0 when disabled).
+    public static Int32 tlsfUsedBytes()
+    {
+        ret SystemMemoryTlsfUsedBytes()
+    }
+
+    # Bytes currently sitting in free TLSF arena blocks (0 when disabled).
+    public static Int32 tlsfFreeBytes()
+    {
+        ret SystemMemoryTlsfFreeBytes()
+    }
+
+    # External fragmentation of the TLSF arena, 0..100 (0 when disabled
+    # or when the free space is a single contiguous block).
+    public static Int32 tlsfFragmentation()
+    {
+        ret SystemMemoryTlsfFragmentation()
+    }
+
+    # ---------------------------------------------------------------
+    # mimalloc host allocator (P6).  On MMU hosts the whole VM heap
+    # (SBA superblocks, LOS fallback, GC, runtime structures) is served
+    # by mimalloc; MCU builds keep the TLSF arena instead.  All probes
+    # return 0/FALSE when the takeover is compiled out.
+    # ---------------------------------------------------------------
+
+    # TRUE when mimalloc owns the process heap.
+    public static bool mimallocEnabled()
+    {
+        ret SystemMemoryMimallocEnabled()
+    }
+
+    # mimalloc library version as an int (v3.5 -> 305; 0 when disabled).
+    public static Int32 mimallocVersion()
+    {
+        ret SystemMemoryMimallocVersion()
+    }
+
+    # Release free memory back to the OS.  force=true also abandons
+    # thread-owned free pages (heavier, for tests/diagnostics).
+    public static void mimallocCollect( bool force )
+    {
+        SystemMemoryMimallocCollect( force )
+    }
+
+    # Bytes currently held by live allocations (normal + huge blocks).
+    public static Int64 mimallocCurrentBytes()
+    {
+        ret SystemMemoryMimallocCurrentBytes()
+    }
+
+    # Peak of mimallocCurrentBytes() since process start.
+    public static Int64 mimallocPeakBytes()
+    {
+        ret SystemMemoryMimallocPeakBytes()
+    }
+
+    # Live bytes the user actually requested (no allocator overhead).
+    public static Int64 mimallocRequestedBytes()
+    {
+        ret SystemMemoryMimallocRequestedBytes()
+    }
+
+    # Bytes currently committed to the OS by the allocator.
+    public static Int64 mimallocCommittedBytes()
+    {
+        ret SystemMemoryMimallocCommittedBytes()
+    }
+
+    # Bytes currently reserved (committed + free reserved ranges).
+    public static Int64 mimallocReservedBytes()
+    {
+        ret SystemMemoryMimallocReservedBytes()
+    }
+
     # ---------------------------------------------------------------
     # Strong / weak references (moved from Object.sl).
     # ---------------------------------------------------------------

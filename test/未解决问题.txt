@@ -1,10 +1,6 @@
 函数名称和类名冲突时候的处理  
 
-我现在不需要 defer 和 defer error 机制了。从 token 层到 feel 层，到 metal 层，然后到 IR 层，还有到 CVM 里面的，都去掉了 defer 和 defer error
-Montior类，貌似 像 SystemDebugWatch，这种的，怎么没有在jsonc里边找到对应的映射关系呀
-Monitor.watch 就是再增加一个 监视然后绑定闭包函数的方法 ， 如果里边的变量发生了变化，那就 在闭包的传参数里边，能拿到  前数据，后数据
-内存管理机制使用小分块
-原来的三色机制是否因为有了ARC的机制变的有些冗余。 内存管理优化 三色管理
+在linux wsl上跑起来，然后在ssh一台linux上跑下
 
 编码相关的
 Tcp/Udp/HttpClient/Websocket/NetStream相关接口

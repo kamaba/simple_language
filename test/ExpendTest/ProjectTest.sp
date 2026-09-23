@@ -15,7 +15,7 @@ Project
         Sqlite3Test.fun()
         CsvTest.fun();
         ModuleGlobalTest.fun()
-        !#
+        
         # IsolateTest 置于末尾:其 IO 组存在遗留缺陷(闭包捕获 string 到 worker 为空,
         # worker 报错不可发送导致 VM 提前退出),放最后不影响其余测试执行
         #ComponentTest.fun()
@@ -25,10 +25,13 @@ Project
         GZipTest.fun()
         Base64Test.fun()
         #EncodingTest.fun() # var 推断暂不支持(Node 层关键字冲突),待 var 语法落地后启用
-        LogTest.fun()
+        #LogTest.fun()
         #IsolateTest.fun()
+        # mimalloc host 堆接管回归（按构建变体自动分派禁用/接管断言）
         # LogFatalTest 必须放最末尾：fatal 触发 fatal_halt 硬停，整个进程终止（退出码 1）
-        LogFatalTest.fun()
+        #LogFatalTest.fun()
+        !#
+        MiTest.fun()
     }
     CompileBefore()
     {

@@ -405,3 +405,13 @@
 /test/ExpendTest/LogTest_flush.log
 /test/ExpendTest/LogTest_flush2.log
 /test/Other/ARCTest/ArcProbe
+/LogTest_flush.log
+/LogTest_flush2.log
+/test/BaseTest/ExitTest.sl
+/test/Other/ARCTest/build/logs/VM.txt
+/test/Other/SFRepro/dbg_run.txt
+/test/Other/SFRepro/err.txt
+/test/Other/SFRepro/err2.txt
+/test/Other/SFRepro/out.txt
+/test/Other/SFRepro/out2.txt
+/test/ExpendTest/build

@@ -41,7 +41,6 @@ Project
         GenClass_Interface.fun()
         GenClass.fun()
         GC2.GenClass2.fun()
-        ExitTestNS.ExitTest.fun()
         TryTest.fun()
         CheckedCalcTest.fun()
         GC3.GenClass3.fun()
@@ -54,6 +53,7 @@ Project
         StringBuilderTest.fun()
         !#
         MonitorTest.fun()
+        ExitTestNS.ExitTest.fun()
         #!
         
         EnvironmentTest.fun()
