@@ -49,6 +49,12 @@ namespace SimpleLanguage.ExportLanguage
             // 失败仅记日志不中断导出。
             VmDllBuildManager.Run(outDir);
 
+            // plugins[].lib 对象：按四级目录回退（lib/<os>-<arch>/ → <os>/ →
+            // <arch>/ → lib/）求值平台库并拷到 outDir/plugins/<id>/，写回
+            // PluginSection.Lib/Libs 供下方 module.json 导出（§4.2/§5.3②）。
+            // 先于 SLModulePackageWriter.Write 运行；失败仅记日志不中断导出。
+            PluginLibExportManager.Run(outDir);
+
             // Unified JSON export (VM symmetric)
             string exportIRPath = Path.Combine(outDir, filePrefix + ".module.json");
             SLModulePackageWriter.Write(IRManager.instance, exportIRPath, moduleName);

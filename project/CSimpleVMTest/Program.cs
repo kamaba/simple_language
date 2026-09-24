@@ -84,6 +84,34 @@ internal static class Program
             {
                 projectPath = Path.Combine(repoRoot, "test", "Other", "ARCTest", "ArcProbe");
             }
+            else if (arg == "CoroGCProbe")
+            {
+                projectPath = Path.Combine(repoRoot, "test", "Other", "CoroGCProbe", "CoroGCProbe");
+            }
+            else if (arg == "MiProbe")
+            {
+                projectPath = Path.Combine(repoRoot, "test", "Other", "MiProbe", "MiProbe");
+            }
+            else if (arg == "NestedGCProbe")
+            {
+                projectPath = Path.Combine(repoRoot, "test", "Other", "NestedGCProbe", "NestedGCProbe");
+            }
+            else if (arg == "OOMProbe")
+            {
+                projectPath = Path.Combine(repoRoot, "test", "Other", "OOMProbe", "OOMProbe");
+            }
+            else if (arg == "SBAProbe")
+            {
+                projectPath = Path.Combine(repoRoot, "test", "Other", "SBAProbe", "SBAProbe");
+            }
+            else if (arg == "SFRepro")
+            {
+                projectPath = Path.Combine(repoRoot, "test", "Other", "SFRepro", "SFRepro");
+            }
+            else if (arg == "TLSFProbe")
+            {
+                projectPath = Path.Combine(repoRoot, "test", "Other", "TLSFProbe", "TLSFProbe");
+            }
             else if (arg == "GameTank")
             {
                 projectPath = Path.Combine(repoRoot, "samples", "Game", "TankGame", "TankGame");

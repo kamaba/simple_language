@@ -26,6 +26,7 @@
       { "path": "AOTStructTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "AOTGPUTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "FFITest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "CSharpTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "ProcessTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "AOT.sl", "group": "core", "tag": "base", "ignore": true, "priority": 0 },
       { "path": "MapTest.sl", "group": "core", "tag": "base", "ignore": true, "priority": 0 },
@@ -60,6 +61,65 @@
       "b": 20.1
     }
   },
+  // 插件声明（PLUGIN_SYSTEM_DESIGN.md §0.1/§4.2）：key=插件 id；lib 对象由
+  // PluginLibExportManager 四级回退（lib/windows-x64/ → lib/windows/ → …）
+  // 求值平台库并拷到 out/export/ProjectTest/plugins/echo/，module.json 记
+  // 相对包路径（lib/libs）；CVM 侧登记不加载（惰性激活）。
+  "plugins": {
+    "echo": {
+      "name": "echo_test_plugin",
+      "version": "0.1.0",
+      "path": "SLPlugin/echo",
+      "enabled": true,
+      "abi": 1,
+      "lib": { "dir": "lib", "select": "auto" },
+      // 插件级平台条件短写（§4.1/§4.3：复用 SLRequirementExpr 语法，String=eq 简写）：
+      // 编译为条件 AST 随 module.json 导出，CVM 装配期 sl_require_check 求值
+      //（先模块后插件），未通过按 onUnavailable 三态降级（disable/warn/error）。
+      "platform": { "os": "windows", "arch": "x86_64" },
+      "onUnavailable": "warn",
+      "capabilities": [
+        { "type": "systemCall", "name": "echo" }
+      ]
+    },
+    // csharp_mono（P1-e，MONO_INTEGRATION_DESIGN.md §4.3 / PLUGIN_SYSTEM_DESIGN.md §10.1）：
+    // lib 用字符串直给（相对包路径，CVM 侧基准 = module.json 所在目录拼
+    // sl_plugin_resolver_join_lib_path），从 SLPlugin 原位加载——不走
+    // PluginLibExportManager 拷贝（其 TopDirectoryOnly 不递归 lib/mono/4.5/
+    // BCL 目录树，对象形态会缺 BCL）；原位同目录天然齐备 mono-2.0-sgen.dll + BCL。
+    // prefix 必须显式 = 实际符号前缀 "sl_csharp_mono_"（plugin.jsonc entry.prefix），
+    // 缺省 id+"_" 会解析不到六件套符号。测试程序集 SLCSharpTestLib.dll 部署在
+    // 插件 dll 同目录，asm 元参用裸文件名经 assemblies_path 兜底命中。
+    "csharp_mono": {
+      "name": "csharp_runtime_use_mono_engine",
+      "version": "0.1.0",
+      "path": "SLPlugin/csharp_mono",
+      "enabled": true,
+      "abi": 1,
+      "prefix": "sl_csharp_mono_",
+      "lib": "../../../../SLPlugin/csharp_mono/lib/windows-x64/cvm_csharp_mono.dll",
+      "platform": { "os": "windows", "arch": "x86_64" },
+      "onUnavailable": "warn",
+      "capabilities": [
+        { "type": "systemCall", "name": "csharp" }
+      ]
+    }
+  },
+  // 插件系统方法（PLUGIN_SYSTEM_DESIGN.md §10.1）：cvmFunction = "plugin:<capability name>"，
+  // 装配期 CVM 经 plugin registry 隐式 load+enter 插件 echo 后直注册 echo_exec
+  //（sl_runtime_assembly_register_plugin_system_call）。
+  // 注意：returnType/params 类型名须用 ResolveTypeName 支持的写法（float64 等，"double" 不识别）。
+  "systemCalls": [
+    { "name": "Echo", "returnType": "Float64", "params": ["Float64"], "isVariadic": false, "cvmFunction": "plugin:echo" },
+    // csharp_mono（P1-e）：SL 调 C# 静态方法，共用 csharp_exec 入口（cvm_csharp_mono.c
+    // 栈协议：前 4 参 = asm/ns/class/method（String），第 5 参 = ret_kind（整型变参：
+    // 0=void/1=int/2=string），其后为 C# 实参——变参按实际类型压栈不矫正
+    //（IRCall.cs ParseSystemCall 只矫正固定形参），int 字面量即 INT32 槽。
+    // 按返回形态注册三入口，调用侧形如 CSharpCallInt(asm, ns, cls, m, 1, 40, 2)。
+    { "name": "CSharpCallVoid",   "returnType": "Void",   "params": ["String","String","String","String"], "isVariadic": true,  "cvmFunction": "plugin:csharp" },
+    { "name": "CSharpCallInt",    "returnType": "Int32",  "params": ["String","String","String","String"], "isVariadic": true,  "cvmFunction": "plugin:csharp" },
+    { "name": "CSharpCallString", "returnType": "String", "params": ["String","String","String","String"], "isVariadic": true,  "cvmFunction": "plugin:csharp" }
+  ],
   "dllImports": [
     {
       "path": "../../source/CLangdll/x64/Debug/CLangdll.dll", "name": "CLangdll", "alias": "CLangdll", "static": "CLangdll",

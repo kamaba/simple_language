@@ -1000,6 +1000,26 @@ namespace SimpleLanguage.Logging
         ExportVmDllBuildSuccess = 22114,
         // MLIR AOT 目标三元组（P2.5 §11.4：export.aot.triple/cpu/features）
         ExportMLIRAOTTarget = 22115,
+        // Plugin lib 平台求值与拷贝（PLUGIN_SYSTEM_DESIGN.md §4.2 四级回退）
+        ExportPluginLibResolved = 22116,
+        ExportPluginLibNotFound = 22117,
+        ExportPluginLibCopyFailed = 22118,
+        // ---- Plugin 系统诊断（PLUGIN_SYSTEM_DESIGN.md §12，双宿主 Front/CVM 通用）----
+        PluginNotFound = 22120,
+        PluginManifestInvalid = 22121,
+        PluginVersionMismatch = 22122,
+        PluginAbiMismatch = 22123,
+        PluginPlatformMismatch = 22124,
+        PluginLoadFailed = 22125,
+        PluginMissingSymbol = 22126,
+        PluginEnterFailed = 22127,
+        PluginCapabilityDuplicate = 22128,
+        PluginCapabilityDisabled = 22129,
+        PluginActivated = 22130,
+        PluginFrontendLoadFailed = 22131,
+        PluginExitFailed = 22132,
+        PluginUnloadFailed = 22133,
+        PluginStateIllegal = 22134,
         // ---- StaticIf 模块（static if 编译期条件编译 / global.macro 宏）----
         ProjectMacroManagerIssue = 23000,
         ProjectMacroManagerMacroUndefined = 23001,

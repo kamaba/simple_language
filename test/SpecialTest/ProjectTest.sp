@@ -5,6 +5,16 @@ Project
         SystemPrintln( "Hello World" );
         nowMs = Environment.sys.nowMillis()
 
+        # ---- 插件回声测试（plugins.echo → capability systemCall "echo"，原样回显）----
+        er = Echo( 3.5 );
+        SystemPrintln( "Echo(3.5)=$er.toString()" );
+
+        # ---- 插件 csharp_mono 测试（P1-e/P1-f：SL systemCall → C# 静态方法）----
+        # 用例集见 CSharpTest.sl（int/string 往返 + 混合实参 + 方法缓存）；
+        # systemCall 注册见 ProjectTest.jsonc systemCalls 段（plugin:csharp）。
+        CSharpTest.fun();
+
+        #!
         # AOT 测试用例（自 test/AOTTest/ProjectTest.sp 合并）
         r1 = AOTMath.Add( 1, 2 );
         r2 = AOTMath.Mul( 3, 4 );
@@ -91,7 +101,8 @@ Project
 
         # FFI 测试用例（动态库加载/调用/回调/Float8 struct 等）
         FFITest.fun();
-
+        !#
+        
         #!
         # ---- AOT GPU 矩阵乘测试（大张量，矩阵用一维数组） ----
         gM = 512
@@ -172,7 +183,8 @@ Project
         !#
 
         # Std.OS.Process 外部进程执行测试（设计：csimple_lang/md/design/PROCESS_DESIGN.md）
-        ProcessTest.fun();
+        #ProcessTest.fun();
+        
 
         nowMs = Environment.sys.nowMillis() - nowMs
         SystemPrintln("===== BenchMark _main_ end [$nowMs.toString() ms] =====")

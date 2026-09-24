@@ -65,6 +65,36 @@
       "commandLineArgs": "ARCTest",
       "nativeDebugging": true
     },
+    "CoroGCProbe": {
+      "commandName": "Project",
+      "commandLineArgs": "CoroGCProbe",
+      "nativeDebugging": true
+    },
+    "MiProbe": {
+      "commandName": "Project",
+      "commandLineArgs": "MiProbe",
+      "nativeDebugging": true
+    },
+    "NestedGCProbe": {
+      "commandName": "Project",
+      "commandLineArgs": "NestedGCProbe",
+      "nativeDebugging": true
+    },
+    "OOMProbe": {
+      "commandName": "Project",
+      "commandLineArgs": "OOMProbe",
+      "nativeDebugging": true
+    },
+    "SBAProbe": {
+      "commandName": "Project",
+      "commandLineArgs": "SBAProbe",
+      "nativeDebugging": true
+    },
+    "TLSFProbe": {
+      "commandName": "Project",
+      "commandLineArgs": "TLSFProbe",
+      "nativeDebugging": true
+    },
     "GameTank": {
       "commandName": "Project",
       "commandLineArgs": "GameTank",

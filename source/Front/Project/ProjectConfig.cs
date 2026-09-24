@@ -186,6 +186,13 @@ namespace SimpleLanguage.Project
         /// package 目录预加载这些 DLL，供 systemCalls 的 "DllName!symbol" 解析。
         /// </summary>
         public List<VmDllSection> VmDlls { get; set; } = new List<VmDllSection>();
+        /// <summary>
+        /// 插件声明配置（jsonc 顶层 "plugins" 段，PLUGIN_SYSTEM_DESIGN.md §0.1/§5.3）：
+        /// key=插件 id，值含 path/lib/enabled/signLabelHandle/capabilities 等。
+        /// P0 骨架：只解析 + 随 module.json 的 plugins 字段导出（CVM 登记），
+        /// 平台求值/plugin.jsonc 权威源校验/库拷贝属 P1 PluginManager。
+        /// </summary>
+        public List<PluginSection> Plugins { get; set; } = new List<PluginSection>();
         public List<SystemCallItem> systemCalls { get; set; } = new List<SystemCallItem>();
         public ExportSection Export { get; set; } = new ExportSection();
         /// <summary>
@@ -506,6 +513,77 @@ namespace SimpleLanguage.Project
             public string Configuration { get; set; } = "Debug";
             /// <summary>MSBuild Platform，缺省 x64。</summary>
             public string Platform { get; set; } = "x64";
+        }
+
+        /// <summary>
+        /// 插件能力点声明（jsonc "plugins".&lt;id&gt;.capabilities[] 元素，或
+        /// signLabelHandle 语法糖展开产物）。
+        /// </summary>
+        public class PluginCapabilitySection
+        {
+            /// <summary>能力点类型：signLabel/systemCall/device/backend/tool/custom
+            ///（跨界字符串协议名，与 CVM sl_plugin_cap_type_from_name 同名对齐）。</summary>
+            public string Type { get; set; } = string.Empty;
+            /// <summary>能力点名（如 @csharp{} 的 "csharp"）。</summary>
+            public string Name { get; set; } = string.Empty;
+        }
+
+        /// <summary>
+        /// lib 对象声明（PLUGIN_SYSTEM_DESIGN.md §4.2）：
+        /// {dir, select, files, delay}，导出期由 PluginLibExportManager
+        /// 按四级目录回退（lib/&lt;os&gt;-&lt;arch&gt;/ → &lt;os&gt;/ → &lt;arch&gt;/ → lib/）
+        /// 求值并拷贝命中库到 out/export/&lt;M&gt;/plugins/&lt;id&gt;/。
+        /// </summary>
+        public class PluginLibSection
+        {
+            /// <summary>相对插件目录的库根，缺省 "lib"。</summary>
+            public string Dir { get; set; } = "lib";
+            /// <summary>auto（缺省）= 宿主 OS/arch 四级回退；"&lt;os&gt;-&lt;arch&gt;" 显式指定。</summary>
+            public string Select { get; set; } = "auto";
+            /// <summary>选中目录内的库文件；空 = 缺省 ["*"]（全部动态库，平台后缀过滤，字典序）。</summary>
+            public List<string> Files { get; set; } = new List<string>();
+            /// <summary>加载时机：activate（缺省，惰性）| load（模块装载即载）。</summary>
+            public string Delay { get; set; } = "activate";
+        }
+
+        /// <summary>插件声明条目（jsonc 顶层 "plugins" 段，key=插件 id）。</summary>
+        public class PluginSection
+        {
+            /// <summary>插件 id（jsonc "plugins" 对象的 key，缺省 = 目录名）。</summary>
+            public string Id { get; set; } = string.Empty;
+            /// <summary>插件全名（诊断展示）。</summary>
+            public string Name { get; set; } = string.Empty;
+            /// <summary>期望版本（P0 骨架仅存储；与 plugin.jsonc 比对属 P1）。</summary>
+            public string Version { get; set; } = string.Empty;
+            /// <summary>插件目录（相对 jsonc 所在目录或 SLPlugin/，或绝对路径；P0 骨架仅存储）。</summary>
+            public string Path { get; set; } = string.Empty;
+            /// <summary>总开关（false = 整插件不参与，导出为 enabled=false）。</summary>
+            public bool Enabled { get; set; } = true;
+            /// <summary>导出到 module.json 的运行期库相对包路径：lib 段字符串直给，
+            /// 或对象 {dir,select,files} 经 PluginLibExportManager 四级回退求值后
+            /// 写回 "plugins/&lt;id&gt;/&lt;file&gt;"（多文件时 = 首个主库）。</summary>
+            public string Lib { get; set; } = string.Empty;
+            /// <summary>lib 对象声明原始字段（{dir,select,files,delay}）；
+            /// lib 段为字符串直给时为 null（不求值不拷贝）。</summary>
+            public PluginLibSection LibSpec { get; set; }
+            /// <summary>求值命中的全部库相对包路径（"plugins/&lt;id&gt;/&lt;file&gt;"，字典序或
+            /// files 显式序；Lib 为其中首个主库）。CVM 按 libs 全量加载（P0.5 起导出）。</summary>
+            public List<string> Libs { get; set; } = new List<string>();
+            /// <summary>系统方法路由前缀（缺省 = id）。</summary>
+            public string Prefix { get; set; } = string.Empty;
+            /// <summary>C VM ABI 版本（缺省 1；P1 起以插件目录 plugin.jsonc 的 abi.cvm 为权威）。</summary>
+            public int Abi { get; set; } = 1;
+            /// <summary>插件级平台条件（jsonc "plugins".&lt;id&gt;.platform 短写形，
+            /// 字段表与模块级 platform.require 同构，PLUGIN_SYSTEM_DESIGN.md §4.1/§9.2）：
+            /// 编译为条件 AST 随 module.json 导出，CVM 装配期 sl_require_check 求值，
+            /// 按 onUnavailable 决定登记/降级/拒绝。null = 未声明（不限制平台）。</summary>
+            public PlatformReqExpr Platform { get; set; }
+            /// <summary>平台不满足时的策略（§9.1 三级降级）：disable=摘除 capability
+            /// 静默降级（缺省）/ warn=降级+诊断 / error=拒绝装载。
+            /// 非法值编译期报错并回退 disable。</summary>
+            public string OnUnavailable { get; set; } = "disable";
+            /// <summary>能力点列表（signLabelHandle 语法糖展开后并入此处）。</summary>
+            public List<PluginCapabilitySection> Capabilities { get; set; } = new List<PluginCapabilitySection>();
         }
 
         /// <summary>

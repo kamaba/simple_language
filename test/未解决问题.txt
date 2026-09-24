@@ -29,6 +29,10 @@ TankGame.sl 引入Math类。把一些 二维的都使用Int32_2 Int32_3
 我现在代码里边要增加 @标签{} 的一种逻辑，大概意思是，如果在jsonc 定义过这种标签，我在代码里边直接使用 比如  我在 jsonc 的配置里边  增加了 "atSignLabel":[ { "name":"asm", "handle":{}, "platform":{ "os":"window","cpu":"amd-x86" }  }, { "name":"csharp", "handle":{}, "platform":{ "os":"window","cpu":"amd-x86", "lib":"mono-static.dll" }  } ]  还有就是一些特殊注册，比如注册了csharp 可能识别代码 在@csharp(){ } 
 13. 研究 -> <- 的符号的支持  这两符号为通道赋值的过程，也就是说，不是简单的赋值，而是检查当前的进程线程协程后，决定使用那种赋值的方式，如果需要中断的，或者是需要等待处理的，都要有相关的对应方法。
 
+1. 接入 quickjs 
+2. 接入python
+3. 接入java
+
 改二进制的大工程
 
 官方第三方库:

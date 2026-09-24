@@ -1,4 +1,3 @@
-﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
 VisualStudioVersion = 18.2.11415.280
@@ -38,6 +37,12 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSimpleVMTest", "project\CSimpleVMTest\CSimpleVMTest.csproj", "{D1D74AB2-B6A9-AAAA-0098-3FA9C19B0816}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cvm_math_lib", "project\cvm_math_lib\cvm_math_lib.vcxproj", "{251046F2-C183-4704-9894-A31841E12766}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "plugins", "plugins", "{3F8C7A1D-9E2B-4C64-A5D3-7B1E0F2A8C95}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cvm_csharp_mono", "..\SLPlugin\csharp_mono\cvm_csharp_mono.vcxproj", "{6D5B4C2E-8F1A-4A9D-B3C7-2E8F5A1D9B04}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "csharp_mono", "csharp_mono", "{67EF910E-9A6F-478C-9946-F07DE1CFDD95}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -211,6 +216,16 @@ Global
 		{251046F2-C183-4704-9894-A31841E12766}.Release|x64.Build.0 = Release|x64
 		{251046F2-C183-4704-9894-A31841E12766}.Release|x86.ActiveCfg = Release|Win32
 		{251046F2-C183-4704-9894-A31841E12766}.Release|x86.Build.0 = Release|Win32
+		{6D5B4C2E-8F1A-4A9D-B3C7-2E8F5A1D9B04}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{6D5B4C2E-8F1A-4A9D-B3C7-2E8F5A1D9B04}.Debug|Any CPU.Build.0 = Debug|x64
+		{6D5B4C2E-8F1A-4A9D-B3C7-2E8F5A1D9B04}.Debug|x64.ActiveCfg = Debug|x64
+		{6D5B4C2E-8F1A-4A9D-B3C7-2E8F5A1D9B04}.Debug|x64.Build.0 = Debug|x64
+		{6D5B4C2E-8F1A-4A9D-B3C7-2E8F5A1D9B04}.Debug|x86.ActiveCfg = Debug|x64
+		{6D5B4C2E-8F1A-4A9D-B3C7-2E8F5A1D9B04}.Release|Any CPU.ActiveCfg = Release|x64
+		{6D5B4C2E-8F1A-4A9D-B3C7-2E8F5A1D9B04}.Release|Any CPU.Build.0 = Release|x64
+		{6D5B4C2E-8F1A-4A9D-B3C7-2E8F5A1D9B04}.Release|x64.ActiveCfg = Release|x64
+		{6D5B4C2E-8F1A-4A9D-B3C7-2E8F5A1D9B04}.Release|x64.Build.0 = Release|x64
+		{6D5B4C2E-8F1A-4A9D-B3C7-2E8F5A1D9B04}.Release|x86.ActiveCfg = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -230,6 +245,8 @@ Global
 		{0363038E-BD23-8BFA-C876-3CDA620582A9} = {3E7E43D1-D1CB-4712-8576-9B0FD22E4F09}
 		{D1D74AB2-B6A9-AAAA-0098-3FA9C19B0816} = {3E7E43D1-D1CB-4712-8576-9B0FD22E4F09}
 		{251046F2-C183-4704-9894-A31841E12766} = {55CA2A87-5ABC-4B11-B2DA-5D327AB2D1E9}
+		{6D5B4C2E-8F1A-4A9D-B3C7-2E8F5A1D9B04} = {67EF910E-9A6F-478C-9946-F07DE1CFDD95}
+		{67EF910E-9A6F-478C-9946-F07DE1CFDD95} = {3F8C7A1D-9E2B-4C64-A5D3-7B1E0F2A8C95}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {2E6F70B2-4E69-4F66-B6A4-8867DCF18D03}

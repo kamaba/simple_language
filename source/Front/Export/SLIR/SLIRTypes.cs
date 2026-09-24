@@ -51,6 +51,47 @@ namespace SimpleLanguage.Export.SLIR.Types
         public string name { get; set; } = string.Empty;
     }
 
+    /// <summary>
+    /// 插件能力点条目（module.json "plugins[].capabilities[]" 元素）。
+    /// type 为跨界字符串协议名（signLabel/systemCall/device/backend/tool/custom，
+    /// 与 CVM sl_plugin_cap_type_from_name 同名对齐，未知名 CVM 侧保留 -1 不匹配）。
+    /// </summary>
+    public sealed class SLCapabilityPackage
+    {
+        public string type { get; set; } = string.Empty;
+        public string name { get; set; } = string.Empty;
+    }
+
+    /// <summary>
+    /// 插件声明条目（project.jsonc 顶层 "plugins" 段；PLUGIN_SYSTEM_DESIGN.md §5.3 ②）。
+    /// CVM 加载 module.json 时读入 sl_parse_plugins → registry 登记（惰性激活，
+    /// 登记不加载）。lib 为相对包路径（平台解析后，如 "plugins/echo/cvm_echo.dll"）；
+    /// enabled=false 的条目 CVM 跳过登记。
+    /// </summary>
+    public sealed class SLPluginPackage
+    {
+        public string id { get; set; } = string.Empty;
+        public string lib { get; set; } = string.Empty;
+        /// <summary>命中平台的全量库相对包路径（§4.2 files:["*"] 可多库，字典序或显式序）；
+        /// lib 为其中首个主库。CVM 先 lib 后 libs 逐个加载（空数组 = 单 lib）。</summary>
+        public List<string> libs { get; set; } = new();
+        /// <summary>系统方法路由前缀（缺省 = id；CVM 侧 find_by_capability 前缀匹配用）。</summary>
+        public string prefix { get; set; } = string.Empty;
+        public bool enabled { get; set; } = true;
+        /// <summary>C VM ABI 版本（plugin.jsonc 的 abi.cvm；P0 骨架由 jsonc 直接声明，缺省 1）。</summary>
+        public int abi { get; set; }
+        /// <summary>插件级平台条件 AST 根（jsonc plugins.&lt;id&gt;.platform 短写编译为
+        /// PlatformReqExpr；null 序列化省略 = 无平台要求）。节点形态与模块级
+        /// platform.root 同构（SLPlatformNodePackage），CVM 装配期用 sl_require_check
+        /// 按运行环境求值（§9.2 先模块后插件），未通过按 onUnavailable 三态降级。</summary>
+        public SLPlatformNodePackage? platform { get; set; }
+        /// <summary>平台或库不满足时的插件级策略（§9.1）：disable（缺省）/ warn / error。
+        /// CVM 装配期 platform 求值未通过时按此处理（disable=摘除静默降级 /
+        /// warn=降级+诊断 / error=拒绝装载模块）。</summary>
+        public string onUnavailable { get; set; } = "disable";
+        public List<SLCapabilityPackage> capabilities { get; set; } = new();
+    }
+
     public sealed class SLMethodMeta { public string id { get; set; } = string.Empty; public string name { get; set; } = string.Empty; public int index { get; set; } }
 
     public sealed class SLRuntimeCallPackage
@@ -524,6 +565,11 @@ namespace SimpleLanguage.Export.SLIR.Types
         /// 解析；引用方透传声明即可复用。
         /// </summary>
         public List<SLVmDllImportPackage> vmDllImports { get; set; } = new();
+        /// <summary>
+        /// 插件声明（project.jsonc 顶层 "plugins" 段；PLUGIN_SYSTEM_DESIGN.md §5.3 ②）。
+        /// CVM 加载模块时逐条登记进 plugin registry（登记不加载，惰性激活）。
+        /// </summary>
+        public List<SLPluginPackage> plugins { get; set; } = new();
         public List<SLModuleReferencePackage> moduleReferences { get; set; } = new();
         public List<IRStringItem> irStringDict { get; set; } = new();
         public List<SLNamespacePackage> namespaceList { get; set; } = new();

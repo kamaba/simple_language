@@ -917,6 +917,47 @@ namespace SimpleLanguage.Export.SLIR
                     }
                 }
 
+                // 从项目配置的 plugins 段填充插件声明（PLUGIN_SYSTEM_DESIGN.md §5.3 ②）。
+                // Front 侧只导出声明：enabled 透传（P0 无平台求值，P1 起由 PluginResolver
+                // 按 platform 求值改写），lib 为相对包路径；CVM 加载 module.json 时经
+                // sl_parse_plugins → registry 登记不加载（惰性激活 §6.4.2）
+                if (config.Plugins != null)
+                {
+                    foreach (var p in config.Plugins)
+                    {
+                        if (p == null || string.IsNullOrWhiteSpace(p.Id)) continue;
+                        var pluginPkg = new SLPluginPackage
+                        {
+                            id = p.Id,
+                            lib = p.Lib ?? string.Empty,
+                            /* prefix 必须含尾下划线（CVM resolve_symbol 直接
+                             * 拼接），缺省 = id + "_"（与 §5.2 约定一致） */
+                            prefix = string.IsNullOrWhiteSpace(p.Prefix) ? p.Id + "_" : p.Prefix,
+                            enabled = p.Enabled,
+                            abi = p.Abi,
+                        };
+                        // lib 对象求值命中的全量库（PluginLibExportManager 写回；
+                        // 字符串直给时为空数组，CVM 只读 lib）
+                        pluginPkg.libs.AddRange(p.Libs);
+                        // 插件级平台条件（p05a 短写编译为 PlatformReqExpr）随包导出：
+                        // 节点形态与模块级 platform.root 同构（ToPlatformNode 复用），
+                        // CVM 装配期 sl_require_check 按运行环境求值（§9.2 先模块后
+                        // 插件），未通过按 onUnavailable 三态降级。null = 无平台要求
+                        pluginPkg.platform = ToPlatformNode(p.Platform);
+                        pluginPkg.onUnavailable = p.OnUnavailable;
+                        foreach (var c in p.Capabilities)
+                        {
+                            if (c == null || string.IsNullOrWhiteSpace(c.Name)) continue;
+                            pluginPkg.capabilities.Add(new SLCapabilityPackage
+                            {
+                                type = c.Type ?? string.Empty,
+                                name = c.Name,
+                            });
+                        }
+                        pkg.plugins.Add(pluginPkg);
+                    }
+                }
+
                 // 从项目配置的 references 填充引用关系（含 uuid、name、path、版本号）
                 if (config.References != null)
                 {

@@ -252,6 +252,121 @@ namespace SimpleLanguage.Project
                 }
             }
 
+            // 插件声明：顶层 "plugins" 段 { "<id>": { path/lib/enabled/signLabelHandle/... } }
+            //（PLUGIN_SYSTEM_DESIGN.md §0.1/§5.3：解析结果一源两用——装配 Front（P1
+            // PluginManager）与导出 module.json.plugins[]（本处填充）。P0 骨架只解析+导出：
+            // signLabelHandle 语法糖展开为 capabilities 一项，lib 字符串直给/对象展开为
+            // "plugins/<id>/<file>"，平台求值与 plugin.jsonc 权威源校验属 P1。）
+            if (root.TryGetProperty("plugins", out var plugins) && plugins.ValueKind == JsonValueKind.Object)
+            {
+                foreach (var p in plugins.EnumerateObject())
+                {
+                    if (p.Value.ValueKind != JsonValueKind.Object)
+                    {
+                        continue;
+                    }
+                    var sec = new ProjectConfig.PluginSection()
+                    {
+                        Id = p.Name,
+                        Name = GetStr(p.Value, "name", string.Empty),
+                        Version = GetStr(p.Value, "version", string.Empty),
+                        Path = GetStr(p.Value, "path", string.Empty),
+                        Enabled = GetBool(p.Value, "enabled", true),
+                        Abi = GetInt(p.Value, "abi", 1),
+                    };
+                    // prefix 缺省 = id + "_"：CVM 侧 resolve_symbol 直接
+                    // prefix+suffix 拼符号名（sl_plugin_manager.c），故 prefix
+                    // 必须含尾下划线（缺省约定同 SL_PLUGIN_SYMBOL_PREFIX_DEFAULT
+                    // "sl_plugin_"，PLUGIN_SYSTEM_DESIGN.md §5.2）
+                    sec.Prefix = GetStr(p.Value, "prefix", sec.Id + "_");
+                    // onUnavailable（§9.1 三级降级）：disable/warn/error，缺省
+                    // disable；非法值报错并回退 disable（同 require 值校验严格性）
+                    var onUnavail = GetStr(p.Value, "onUnavailable", "disable");
+                    if (onUnavail != "disable" && onUnavail != "warn" && onUnavail != "error")
+                    {
+                        Log.AddProjectLog(LID.ProjectPlatformRequireValueInvalid, "",
+                            "plugins." + sec.Id + ".onUnavailable", onUnavail,
+                            "允许 disable/warn/error（缺省 disable）", "已回退 disable");
+                        onUnavail = "disable";
+                    }
+                    sec.OnUnavailable = onUnavail;
+                    // platform（§4.1）：短写形 {os:"windows", arch:"x86_64"}（String=eq
+                    // 简写）或 {os:{any:["windows"]}}（集合），字段表与模块级
+                    // platform.require 同构，复用 ParseRequireField 编译为条件 AST
+                    //（§9.2：CVM 装配期 sl_require_check 求值）。network.probe 等
+                    // 落段级行为开关对插件级无意义，传临时 section 吞掉。
+                    if (TryGetObj(p.Value, "platform", out var pluginPlat))
+                    {
+                        var atoms = new List<PlatformReqAtom>();
+                        var scratch = new ProjectConfig.PlatformSection();
+                        foreach (var kv in pluginPlat.EnumerateObject())
+                        {
+                            ParseRequireField(kv.Name, kv.Value, atoms, scratch);
+                        }
+                        sec.Platform = PlatformReqExpr.AndOf(ToExprList(atoms));
+                    }
+                    // lib：字符串 = 相对包路径直给（不求值不拷贝）；对象 {dir,select,files,delay}
+                    // 存为 LibSpec，导出期由 PluginLibExportManager 按四级目录回退
+                    //（lib/<os>-<arch>/ → <os>/ → <arch>/ → lib/）求值+拷贝并写回 Lib/Libs
+                    //（PLUGIN_SYSTEM_DESIGN.md §4.2/§5.3②）
+                    if (p.Value.TryGetProperty("lib", out var libNode))
+                    {
+                        if (libNode.ValueKind == JsonValueKind.String)
+                        {
+                            sec.Lib = libNode.GetString() ?? string.Empty;
+                        }
+                        else if (libNode.ValueKind == JsonValueKind.Object)
+                        {
+                            var spec = new ProjectConfig.PluginLibSection
+                            {
+                                Dir = GetStr(libNode, "dir", "lib"),
+                                Select = GetStr(libNode, "select", "auto"),
+                                Delay = GetStr(libNode, "delay", "activate"),
+                            };
+                            if (libNode.TryGetProperty("files", out var libFiles) && libFiles.ValueKind == JsonValueKind.Array)
+                            {
+                                foreach (var f in libFiles.EnumerateArray())
+                                {
+                                    var fn = f.ValueKind == JsonValueKind.String ? (f.GetString() ?? string.Empty) : string.Empty;
+                                    if (!string.IsNullOrWhiteSpace(fn))
+                                    {
+                                        spec.Files.Add(fn);
+                                    }
+                                }
+                            }
+                            sec.LibSpec = spec;
+                        }
+                    }
+                    // capabilities[]：[{ type, name }] 直接条目
+                    if (p.Value.TryGetProperty("capabilities", out var caps) && caps.ValueKind == JsonValueKind.Array)
+                    {
+                        foreach (var c in caps.EnumerateArray())
+                        {
+                            if (c.ValueKind != JsonValueKind.Object)
+                            {
+                                continue;
+                            }
+                            var capType = GetStr(c, "type", string.Empty);
+                            var capName = GetStr(c, "name", string.Empty);
+                            if (!string.IsNullOrWhiteSpace(capName))
+                            {
+                                sec.Capabilities.Add(new ProjectConfig.PluginCapabilitySection() { Type = capType, Name = capName });
+                            }
+                        }
+                    }
+                    // signLabelHandle 语法糖：等价于 capabilities[] 里 type=signLabel 的一项
+                    if (p.Value.TryGetProperty("signLabelHandle", out var slh) && slh.ValueKind == JsonValueKind.Object)
+                    {
+                        var slhName = GetStr(slh, "name", string.Empty);
+                        if (!string.IsNullOrWhiteSpace(slhName))
+                        {
+                            sec.Capabilities.Add(new ProjectConfig.PluginCapabilitySection() { Type = "signLabel", Name = slhName });
+                        }
+                    }
+                    cfg.Plugins.Add(sec);
+                }
+            }
+
             if( root.TryGetProperty("systemCalls", out var systemCalls ) && systemCalls.ValueKind == JsonValueKind.Array )
             {
                 foreach (var r in systemCalls.EnumerateArray())
