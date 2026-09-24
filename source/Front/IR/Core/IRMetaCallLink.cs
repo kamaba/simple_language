@@ -8,9 +8,7 @@
 
 using SimpleLanguage.IR;
 using SimpleLanguage.Logging;
-using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Text;
 
 
@@ -18,12 +16,10 @@ namespace SimpleLanguage.Core.IR
 {
     public class IRMetaCallLink
     {
-        private IRMethod m_IRMethod = null;
         public List<IRBase> irList = new List<IRBase>();
 
         public void ParseToIRDataList(IRMethod _irMethod, List<MetaVisitNode> cnlist)
         {
-            m_IRMethod = _irMethod;
             irList.AddRange(ProcessVisitNodeList(_irMethod, cnlist, 0));
         }
 

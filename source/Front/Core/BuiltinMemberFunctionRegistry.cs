@@ -105,11 +105,9 @@ namespace SimpleLanguage.Core
             AddRule(new BuiltinMemberFunctionRule("_setItem_", 2, EBuiltinParamCheckMode.Any, EBuiltinReturnCheckMode.Void));
 
             // 资源管理(预留): 0个参数, _enter_返回当前类类型, _exit_返回void
-            // 同时收录 _enter_/_exit_ 与 __enter_/__exit_ 两种写法
+            // 同时收录 _enter_ 与 __enter_ 两种写法
             AddRule(new BuiltinMemberFunctionRule("_enter_", 0, EBuiltinParamCheckMode.Any, EBuiltinReturnCheckMode.CurrentClass));
             AddRule(new BuiltinMemberFunctionRule("_exit_", 0, EBuiltinParamCheckMode.Any, EBuiltinReturnCheckMode.Void));
-            AddRule(new BuiltinMemberFunctionRule("__enter_", 0, EBuiltinParamCheckMode.Any, EBuiltinReturnCheckMode.CurrentClass));
-            AddRule(new BuiltinMemberFunctionRule("__exit_", 0, EBuiltinParamCheckMode.Any, EBuiltinReturnCheckMode.Void));
         }
 
         private static void AddRule(BuiltinMemberFunctionRule rule)

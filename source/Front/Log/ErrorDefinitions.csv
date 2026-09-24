@@ -598,6 +598,7 @@ id,logType,enableAssert,pass,paramCount,domesticTips,zhMessage,,zhFixedTips,enMe
 12285,Error,TRUE,FALSE,0,,"系统内部方法参数不符合规则",,Auto-generated LID mapping,,
 12286,Error,TRUE,FALSE,0,,"系统内部方法返回类型不符合规则",,Auto-generated LID mapping,,
 12287,Error,TRUE,FALSE,0,,"父类final系统内部方法不允许再定义",,Auto-generated LID mapping,,
+12288,Warning,FALSE,FALSE,0,,IRMetaClass 类型无源文件绑定,,jsonc data 段合成的类型无 boundFileMetaClass 属正常场景、仅提示不阻断编译,,
 
 20000,Info,FALSE,TRUE,0,,Error [{}] node is null,,,,
 20001,Info,FALSE,TRUE,0,,Error 解析namespace添加命名空间节点时，发现已有定义类11!!,,,,

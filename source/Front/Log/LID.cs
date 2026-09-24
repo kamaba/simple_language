@@ -94,6 +94,7 @@ namespace SimpleLanguage.Logging
         MetaCoreBuiltinFunctionParamError = 12285,
         MetaCoreBuiltinFunctionReturnTypeError = 12286,
         MetaCoreBuiltinFinalFunctionCannotOverride = 12287,
+        MetaCoreIRMetaClassNoSourcePathBinding = 12288,
 
 
         // ==== 自动生成的 LID 索引（LidIndexer 生成：模块/子模块/语义） ====

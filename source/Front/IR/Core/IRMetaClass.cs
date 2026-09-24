@@ -70,26 +70,13 @@ namespace SimpleLanguage.IR
         /// 导出时：如果只有 1 个名称则用原 name，多个则用逗号分隔。
         /// 导入时：按逗号拆分，分别注册到 MetaNode。
         /// </summary>
-        public List<string> exportNameList => m_ExportNameList;
         private List<string> m_ExportNameList = new List<string>();
 
         /// <summary>导出用的合并名称（逗号分隔），供 SLIR 序列化使用。</summary>
         public string exportNames => m_ExportNameList.Count <= 1 ? null : string.Join(",", m_ExportNameList);
 
-
-        //public int byteCount => m_ByteCount;
-        //public int templateCount => m_TemplateCount;
-        //private int allocSize = 0;
-        //private List<EType> m_MetaTypeList = new List<EType>();
-        //private int m_ByteCount = 0;
-
-        //static int s_TypeLength = 1000;
         public IRMetaClass(MetaClass mc)
         {
-            if (mc == null)
-            {
-                throw new System.ArgumentNullException(nameof(mc));
-            }
             InitFromMetaOwner(mc, mc.isInterfaceClass ? IRMetaClassKind.Interface : IRMetaClassKind.Class);
             m_NeedInitMemberVariable = mc.needInitMemberVariables;
         }
@@ -146,41 +133,43 @@ namespace SimpleLanguage.IR
 
         void InitFromMetaOwner(MetaBase owner, IRMetaClassKind kind)
         {
-            m_TypeOwner = owner ?? throw new System.ArgumentNullException(nameof(owner));
+            m_TypeOwner = owner;
             m_MetaClassKind = kind;
             id = owner.classId;
             m_IRName =owner.allName;
 
-            try
+            if (owner is MetaClass mc)
             {
-                if (owner is MetaClass mc)
+                foreach (var kv in mc.fileMetaClassDict)
                 {
-                    foreach (var kv in mc.fileMetaClassDict)
+                    var fmc = kv.Value;
+                    if (fmc != null && !string.IsNullOrEmpty(fmc.fileMeta?.path))
                     {
-                        var fmc = kv.Value;
-                        if (fmc != null && !string.IsNullOrEmpty(fmc.fileMeta?.path))
-                        {
-                            m_SourcePath = fmc.fileMeta.path;
-                            break;
-                        }
+                        m_SourcePath = fmc.fileMeta.path;
+                        break;
                     }
                 }
-                else if (owner is MetaData md && md.boundFileMetaClass != null)
-                {
-                    var fp = md.boundFileMetaClass.fileMeta?.path;
-                    if (!string.IsNullOrEmpty(fp))
-                        m_SourcePath = fp;
-                }
-                else if (owner is MetaEnum me && me.boundFileMetaClass != null)
-                {
-                    var fp = me.boundFileMetaClass.fileMeta?.path;
-                    if (!string.IsNullOrEmpty(fp))
-                        m_SourcePath = fp;
-                }
             }
-            catch
+            else if (owner is MetaData md && md.boundFileMetaClass != null)
             {
-                m_SourcePath = "";
+                var fp = md.boundFileMetaClass.fileMeta?.path;
+                if (!string.IsNullOrEmpty(fp))
+                    m_SourcePath = fp;
+            }
+            else if (owner is MetaEnum me && me.boundFileMetaClass != null)
+            {
+                var fp = me.boundFileMetaClass.fileMeta?.path;
+                if (!string.IsNullOrEmpty(fp))
+                    m_SourcePath = fp;
+            }
+            else
+            {
+                // jsonc data 段对象值会合成无源文件绑定的 MetaData（PorjectClass.CreateMetaDataByJsonObject，
+                // 命名形如 ___ProjectGlobalData_xxx___），boundFileMetaClass == null 属正常场景，
+                // 仅记 Warning 不阻断编译（旧版此处为静默容忍）。
+                string ownerType = owner?.GetType().Name ?? "null";
+                string ownerAllName = owner?.allName ?? "null";
+                Log.AddMetaCoreLog(LID.MetaCoreIRMetaClassNoSourcePathBinding, $"no source path binding: clrType={ownerType} allName={ownerAllName}");
             }
 
             // 收集类级别的 @Nickname 别名到 exportNameList

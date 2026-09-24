@@ -1,4 +1,5 @@
 import Std;
+import Core;
 
 # ============================================================================
 # CSharpTest — csharp_mono 插件端到端测试（P1-f）
@@ -180,6 +181,67 @@ class CSharpTest
         check( "at-sign mono: void block keeps outer d", d == 123 )
     }
 
+    # ---------------- 协程内 @csharp_mono(){}（spawn + await 往返） ----------------
+    # 协程体即普通静态方法：块脱糖为 CSharpCallInt 后在协程私有帧上同步执行
+    # （协作式单线程调度，mono 调用不含让出点，天然无重入）；外层 spawn 拿
+    # Task 句柄、await 取回 ret 值。
+    static int coroMonoAdd( int a, int b )
+    {
+        int c = 0
+        @csharp_mono(){
+            var a <- $a
+            var b <- $b
+            import SLCSharp;
+            var c = MathUtil.Add( a, b );
+            $c <- c;
+        }
+        ret c
+    }
+
+    static testAtSignCoro()
+    {
+        Console.println( "===== CSharpTest.testAtSignCoro =====" )
+        int x = 20
+        int y = 22
+        # 裸方法名不是函数值（无方法组转换），经包装闭包转发
+        function addFn = function( int a, int b )
+        {
+            ret coroMonoAdd( a, b )
+        }
+        Task h = spawn addFn( x, y )
+        int r = await h as int
+        check( "at-sign coro: spawn+await mono 20+22 == 42", r == 42 )
+    }
+
+    # ---------------- isolate 线程内 @csharp_mono(){}（Isolate.run 返回结果） ----------------
+    # P2 (1:1) 线程模型：worker isolate 独占一条 OS 线程真并行执行；Isolate.run
+    # 一次性计算语义（同步等待 worker 结束、深拷贝回传返回值）。块脱糖后的
+    # CSharpCallInt 在 worker 线程上经插件 mono 链路执行。
+    static int isoMonoAdd( int a, int b )
+    {
+        int c = 0
+        @csharp_mono(){
+            var a <- $a
+            var b <- $b
+            import SLCSharp;
+            var c = MathUtil.Add( a, b );
+            $c <- c;
+        }
+        ret c
+    }
+
+    static testAtSignIsolate()
+    {
+        Console.println( "===== CSharpTest.testAtSignIsolate =====" )
+        function fn = function( int a, int b )
+        {
+            ret isoMonoAdd( a, b )
+        }
+        object r = Isolate.run( fn( 15, 27 ) )
+        int n = r as int
+        check( "at-sign isolate: Isolate.run mono 15+27 == 42", n == 42 )
+    }
+
     static fun()
     {
         Console.println( "========== CSharpTest start ==========" )
@@ -189,6 +251,8 @@ class CSharpTest
         testMethodCache()
         testDegradation()
         testAtSignMono()
+        testAtSignCoro()
+        testAtSignIsolate()
         Console.println( "========== CSharpTest end: passed=" + passed.toString() + " failed=" + failed.toString() + " ==========" )
     }
 }
