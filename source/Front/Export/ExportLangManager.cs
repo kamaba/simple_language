@@ -49,6 +49,12 @@ namespace SimpleLanguage.ExportLanguage
             // 失败仅记日志不中断导出。
             VmDllBuildManager.Run(outDir);
 
+            // @csharp_mono(){} 块体 C# 源码（CSharpMonoBlockCollector 登记）：
+            // 用 .NET Framework csc 编译为 SLAtSign.dll 并部署到 csharp_mono
+            // 插件 lib 目录（运行期 assemblies_path 兜底加载）。
+            // 失败仅记日志不中断导出。
+            CscAtSignBuildManager.Run(outDir);
+
             // plugins[].lib 对象：按四级目录回退（lib/<os>-<arch>/ → <os>/ →
             // <arch>/ → lib/）求值平台库并拷到 outDir/plugins/<id>/，写回
             // PluginSection.Lib/Libs 供下方 module.json 导出（§4.2/§5.3②）。

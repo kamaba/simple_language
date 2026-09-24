@@ -146,6 +146,40 @@ class CSharpTest
         check( "after-catch stack clean: Add(2,3) == 5", ok == 5 )
     }
 
+    # ---------------- @csharp_mono(){} 内联块（通道脱糖 → csc 融合 SLAtSign.dll） ----------------
+    # 块体行分类：var x <- $x 入通道（$ 引外层 SL 变量）；import NS; 提升 using；
+    # 其余为 C# 中段原样保留；$x <- expr 出通道（ret_kind=1 取 Run 返回值写回）。
+    # Front 改写（CSharpMonoSourceRewriter）脱糖为裸赋值
+    #   c = CSharpCallInt( "SLAtSign.dll", "SLAtSign", "Entry_N", "Run", 1, a, b )
+    # 导出期 CscAtSignBuildManager 用 .NET csc 把块体编译为 SLAtSign.dll 部署到
+    # csharp_mono 插件 lib 目录；运行期复用上面 CSharpCallInt 的 mono 链路。
+    static testAtSignMono()
+    {
+        Console.println( "===== CSharpTest.testAtSignMono =====" )
+        int a = 30
+        int b = 12
+        int c = 0
+        @csharp_mono()
+        {
+            var a <- $a
+            var b <- $b
+            import SLCSharp;
+            var c = MathUtil.Add( a, b );
+            $c <- c;
+        }
+        check( "at-sign mono: 30+12 == 42", c == 42 )
+
+        # 无出通道块（中段副作用 + ret_kind=0 CSharpCallVoid）
+        int d = 0
+        d = CSharpCallInt( "SLCSharpTestLib.dll", "SLCSharp", "MathUtil", "Add", 1, 100, 23 )
+        @csharp_mono(){
+            var x <- $d
+            import SLCSharp;
+            var r = MathUtil.Add( x, 1 );
+        }
+        check( "at-sign mono: void block keeps outer d", d == 123 )
+    }
+
     static fun()
     {
         Console.println( "========== CSharpTest start ==========" )
@@ -154,6 +188,7 @@ class CSharpTest
         testMixedArgs()
         testMethodCache()
         testDegradation()
+        testAtSignMono()
         Console.println( "========== CSharpTest end: passed=" + passed.toString() + " failed=" + failed.toString() + " ==========" )
     }
 }

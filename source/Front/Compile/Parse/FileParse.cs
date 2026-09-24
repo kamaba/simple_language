@@ -97,6 +97,10 @@ namespace SimpleLanguage.Compile
                 //（隐藏 Func 字段 + 静态 wrapper），后续 Token~Meta 全管线自然处理
                 m_ContentBuffer = DllImportSourceRewriter.Rewrite( m_ContentBuffer, m_FilePath );
 
+                // @csharp_mono(){} 内联块改写为 CSharpCallXxx 系统调用；
+                // 块体 C# 源码登记到 CSharpMonoBlockCollector 供导出期 csc 编译
+                m_ContentBuffer = CSharpMonoSourceRewriter.Rewrite( m_ContentBuffer, m_FilePath );
+
                 SaveCodeToFile();
 
                 m_LexerParse = new LexerParse( m_FilePath, m_ContentBuffer );

@@ -147,6 +147,10 @@ namespace SimpleLanguage.Logging
         ProcessSystemMethodCallNotFoundImportSystem = 20051,
         ProcessSystemMethodCallNotFoundImportSystem2 = 20052,
         ProcessSystemMethodCallImportSystemMethod = 20053,
+        // CSharpMono @csharp_mono(){} 内联块改写器
+        ProcessCSharpMonoSourceRewriterRewrittenBlocks = 20054,
+        ProcessCSharpMonoChannelSyntaxError = 20055,
+        ProcessCSharpMonoOutChannelMultiple = 20056,
         // ---- Token 模块 ----
         // Lexer
         TokenLexerCannotUndoChar = 20100,
@@ -1020,6 +1024,11 @@ namespace SimpleLanguage.Logging
         PluginExitFailed = 22132,
         PluginUnloadFailed = 22133,
         PluginStateIllegal = 22134,
+        // CscAtSign @csharp_mono(){} 块导出期 csc 编译（CscAtSignBuildManager）
+        ExportCscAtSignCompilerNotFound = 22135,
+        ExportCscAtSignBuildFailed = 22136,
+        ExportCscAtSignDeployFailed = 22137,
+        ExportCscAtSignBuildSuccess = 22138,
         // ---- StaticIf 模块（static if 编译期条件编译 / global.macro 宏）----
         ProjectMacroManagerIssue = 23000,
         ProjectMacroManagerMacroUndefined = 23001,

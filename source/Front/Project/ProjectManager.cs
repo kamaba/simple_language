@@ -6,6 +6,7 @@
 //  Description:  manager project enter and compile 
 //****************************************************************************
 
+using SimpleLanguage.Compile;
 using SimpleLanguage.Core;
 
 
@@ -55,6 +56,9 @@ namespace SimpleLanguage.Project
 
         public static void Run( string path, CommandInputArgs cinputArgs )
          {
+            // 每个项目编译开始时重置 @csharp_mono(){} 块收集器
+            CSharpMonoBlockCollector.Clear();
+
             // apply CLI optimize level before any IR generation happens
             if (cinputArgs != null)
             {
