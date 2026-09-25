@@ -128,6 +128,18 @@ namespace SimpleLanguage.IR
                 return;
             }
 
+            // atsign label fast-call payload: JSON SLAtSignLabelCallPackage
+            // (entryIndex/paramCount/tryCatch/methodName); the CVM assembly
+            // build locates the module atSignLabel[] entry by entryIndex and
+            // rewrites the payload into a 4-byte binding index once resolved.
+            // Missing this branch makes FinalizePack fall back to ToString(),
+            // exporting the bare type name and forcing the VM to report -86.
+            if (opValue is SLAtSignLabelCallPackage labelPkg)
+            {
+                Payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(labelPkg));
+                return;
+            }
+
             // runtime def type payload: write full IRMetaType tree at SetOpValue stage
             if (opValue is IRMetaType imt)
             {

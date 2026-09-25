@@ -38,8 +38,8 @@
     }
   },
   "references": [
-    { "path": "../../out/export/Core", "uuid":"123123123213", "name": "Core.module.json" },
-    { "path": "../../out/export/Std", "uuid":"456456456456", "name": "Std.module.json" }
+    { "path": "../../../out/export/Core", "uuid":"123123123213", "name": "Core.module.json" },
+    { "path": "../../../out/export/Std", "uuid":"456456456456", "name": "Std.module.json" }
   ],
   "struct": [
   ],

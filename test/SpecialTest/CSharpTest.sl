@@ -243,6 +243,24 @@ class CSharpTest
         check( "at-sign isolate: Isolate.run mono 15+27 == 42", n == 42 )
     }
 
+    # ---------------- 中段字面量 '<-' 豁免（字符串/行注释内的 <- 不算通道） ----------------
+    # 中段三态扫描（SLCSharpMonoFrontend.MiddleScanner，C# 词法感知）：
+    # 字符串/字符字面量/行注释/块注释内的 <- 回传 exemptArrows 豁免段号，
+    # Front 朴素复核跳过——只有代码区 <- 才报 20055。
+    # "a <- b" 长度 6 + 注释豁免行 u=7 → 出通道 13。
+    static testAtSignExemptArrow()
+    {
+        Console.println( "===== CSharpTest.testAtSignExemptArrow =====" )
+        int r = 0
+        @csharp_mono()
+        {
+            var s = "a <- b";
+            int u = 7;   // <- line-comment arrow is exempt, not a channel
+            $r <- s.Length + u;
+        }
+        check( "at-sign exempt: literal/comment '<-' skipped (6+7)", r == 13 )
+    }
+
     static fun()
     {
         Console.println( "========== CSharpTest start ==========" )
@@ -254,6 +272,7 @@ class CSharpTest
         testAtSignMono()
         testAtSignCoro()
         testAtSignIsolate()
+        testAtSignExemptArrow()
         Console.println( "========== CSharpTest end: passed=" + passed.toString() + " failed=" + failed.toString() + " ==========" )
     }
 }

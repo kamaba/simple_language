@@ -11,9 +11,6 @@ using SimpleLanguage.Core;
 using SimpleLanguage.Logging;
 using SimpleLanguage.Project;
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Text;
 
 namespace SimpleLanguage.IR
@@ -161,7 +158,6 @@ namespace SimpleLanguage.IR
             }
             else if (mv.variableFrom == MetaVariable.EVariableFrom.DataMember)
             {
-                Debug.Assert(irmc != null, "DataMember should have a valid owner class");
                 int index = -1;
                 if (irmc != null)
                 {

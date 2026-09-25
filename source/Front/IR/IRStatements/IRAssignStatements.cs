@@ -9,7 +9,6 @@
 using SimpleLanguage.Core;
 using SimpleLanguage.Core.IR;
 using SimpleLanguage.Logging;
-using System;
 
 namespace SimpleLanguage.IR
 {
