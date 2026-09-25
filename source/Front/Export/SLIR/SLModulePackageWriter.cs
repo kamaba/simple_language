@@ -875,6 +875,41 @@ namespace SimpleLanguage.Export.SLIR
             pkg.globalStaticVariableList = module.globalStaticVariableList;
             pkg.methodList = module.methodList;
 
+            // atSignLabel[]：@<tag>(){} 内联块条目表（CallAtSignLabel payload 按
+            // entryIndex 寻址；CVM 装配期绑定到插件 labelExec capability 统一收发，
+            // 通道 slType 留空 = 运行期按栈槽 kind 编组）。
+            foreach( var block in SimpleLanguage.Compile.AtSignLabelBlockCollector.Blocks )
+            {
+                var entryPkg = new SLAtSignLabelEntryPackage
+                {
+                    entryIndex = block.EntryIndex,
+                    pluginId = block.Label,
+                    tag = block.Label,
+                    entry = block.EntryClassName,
+                    entryMethod = block.EntryMethod ?? string.Empty,
+                    lib = block.DllName ?? string.Empty,
+                };
+                foreach( var ch in block.InChannels )
+                {
+                    entryPkg.channels.Add(new SLAtSignLabelChannelPackage
+                    {
+                        dir = "in",
+                        slVar = ch[1],
+                        target = ch[0],
+                    });
+                }
+                if (block.OutSlVar != null)
+                {
+                    entryPkg.channels.Add(new SLAtSignLabelChannelPackage
+                    {
+                        dir = "out",
+                        slVar = block.OutSlVar,
+                        target = block.OutExpr ?? string.Empty,
+                    });
+                }
+                pkg.atSignLabel.Add(entryPkg);
+            }
+
             // 从项目配置填充版本号
             var config = Project.ProjectManager.config;
             if (config != null)

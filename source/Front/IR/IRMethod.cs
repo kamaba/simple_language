@@ -391,7 +391,7 @@ namespace SimpleLanguage.IR
             MetaBlockStatements mbs = mmf.metaBlockStatements;
             if (mbs == null)
             {
-                Debug.Write("----------------  Info 空函数!! --------------------");
+                Log.AddIRLog(LID.MetaCoreAssertShowMessage, "error ");
                 return;
             }
 

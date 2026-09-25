@@ -5,7 +5,6 @@
 //****************************************************************************
 
 using SimpleLanguage.Core;
-using SimpleLanguage.CSharp;
 using SimpleLanguage.Logging;
 using System;
 using System.Collections.Generic;
@@ -252,29 +251,29 @@ namespace SimpleLanguage.Compile
                     allname = allname + "." + name;
                 }
 
-                if (CSharpManager.IsFindMetaCSharpNamespace(allname))
-                {
-                    var findmb = mb.GetChildrenMetaNodeByName(name);
+                //if (CSharpManager.IsFindMetaCSharpNamespace(allname))
+                //{
+                //    var findmb = mb.GetChildrenMetaNodeByName(name);
 
-                    if (findmb != null)
-                    {
-                        if (findmb.metaNamespace is MetaNamespaceCSharp)
-                        {
-                            mb = findmb;
-                        }
-                        else
-                        {
-                            Log.AddFileMetaLog(LID.FileMetaGlobalSyntaxImport5, "解析Import语句发生错误，没有找到对应的命名空间路径: " + allname
-                                + "Token: " + m_NamespaceStatement.tokenList[i].sourceBeginLine.ToString());
-                            return null;
-                        }
-                    }
-                    else
-                    {
-                        MetaNamespaceCSharp mn = new MetaNamespaceCSharp(name);
-                        mb = mb.AddMetaNamespace(mn);
-                    }
-                }
+                //    if (findmb != null)
+                //    {
+                //        if (findmb.metaNamespace is MetaNamespaceCSharp)
+                //        {
+                //            mb = findmb;
+                //        }
+                //        else
+                //        {
+                //            Log.AddFileMetaLog(LID.FileMetaGlobalSyntaxImport5, "解析Import语句发生错误，没有找到对应的命名空间路径: " + allname
+                //                + "Token: " + m_NamespaceStatement.tokenList[i].sourceBeginLine.ToString());
+                //            return null;
+                //        }
+                //    }
+                //    else
+                //    {
+                //        MetaNamespaceCSharp mn = new MetaNamespaceCSharp(name);
+                //        mb = mb.AddMetaNamespace(mn);
+                //    }
+                //}
             }
 
             if (mb == null)

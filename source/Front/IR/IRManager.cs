@@ -8,6 +8,7 @@
 
 using SimpleLanguage.Core;
 using SimpleLanguage.Logging;
+using SimpleLanguage.Project;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -22,7 +23,6 @@ namespace SimpleLanguage.IR
     {
         public static IRManager instance = new IRManager();
 
-        public List<IRData> irDataList => m_IRDataList;
         public Dictionary<string, IRMethod> IRMethodDict = new Dictionary<string, IRMethod>();
         public Dictionary<int, string> IRStringDict = new Dictionary<int,string>();
         public List<IRMetaVariable> globalStaticVariableList => m_GlobalStaticVariableList;
@@ -37,13 +37,11 @@ namespace SimpleLanguage.IR
         }
         public void AddIRMetaClass(IRMetaClass irmc)
         {
-            if (irmc == null) return;
             if (m_IRMetaClassList.Find(a => a.id == irmc.id) == null)
             {
                 m_IRMetaClassList.Add(irmc);
             }
         }
-        private List<IRData>  m_IRDataList = new List<IRData>();
         public void TranslateIR()
         {
             Log.AddIRLog(LID.IRManagerStartTranslatingIR, "Start translating IR...");
@@ -82,7 +80,11 @@ namespace SimpleLanguage.IR
             }
 
             ParseIRMethod();
-            ExportIRDebugData();
+
+            if( ProjectManager.config.Export.DebugText.IR == true )
+            {
+                ExportIRDebugData();
+            }
 
             Log.AddIRLog(LID.IRManagerEndTranslatingIR, "End translating IR...");
         }
@@ -513,17 +515,6 @@ namespace SimpleLanguage.IR
 
             Log.AddIRLog(LID.IRManagerEndTranslatingIRMetaClass, "End translating IRMetaClass...");
         }
-        //public void TranslateIRAutoAdd( MetaFunction mf )
-        //{
-        //    if (IRMethodDict.ContainsKey(mf.functionAllName))
-        //    {
-        //        return;
-        //    }
-        //    var irm = TranslateIRByFunction(mf);
-
-        //    IRMethodDict.Add(mf.functionAllName, irm);
-
-        //}
         public IRMethod TranslateIRByFunction( MetaFunction mf )
         {
             var hmf = mf;

@@ -1,13 +1,17 @@
 //****************************************************************************
-//  File:      CscAtSignBuildManager.cs
+//  File:      AtSignLabelBuildManager.cs
 //  ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
-//  DateTime: 2026/9/24 12:00:00
-//  Description:  @csharp_mono(){} 内联块的导出期 csc 编译管理器：
-//                把 CSharpMonoBlockCollector 登记的全部 C# 入口源码用
-//                .NET Framework csc.exe 编译为 SLAtSign.dll 并部署到
-//                csharp_mono 插件 lib 目录（运行期靠 assemblies_path 兜底
-//                加载，CSharpCallXxx 按 "SLAtSign.dll" 裸名命中）。
+//  DateTime: 2026/9/25 12:00:00
+//  Description:  @<tag>(){} 内联块的导出期构建管理器（语言无关分发，
+//                PLUGIN_SYSTEM_DESIGN.md §A20 通用化）。
+//                把 AtSignLabelBlockCollector 登记的插件临时代码按块 Label
+//                （= 插件 id）分组，分发给对应构建 handler 生成目标库：
+//                首期仅 csharp_mono（.NET Framework csc.exe 把全部 C# 条目
+//                合并编译为 SLAtSign.dll 并部署到插件 lib 目录，运行期靠
+//                assemblies_path 兜底加载）；Source 为空的块不进构建器
+//                （插件自管）；无 handler 的标签记告警不中断导出。
+//                后续 C/CUDA/Vulkan 插件 handler 按各自工具链在此追加。
 //                任何失败仅记日志不中断导出（运行期再告警）。
 //****************************************************************************
 
@@ -23,32 +27,71 @@ using System.Text;
 namespace SimpleLanguage.Export
 {
     /// <summary>
-    /// cscAtSign 构建管理器：
-    /// 导出 module.json 前，把改写器登记的 @csharp_mono(){} 块体 C# 源码
-    /// （namespace SLAtSign.Entry_N）合并编译为 SLAtSign.dll（/target:library），
-    /// 拷到 csharp_mono 插件 lib 目录。块内中段代码引用的外部程序集
-    /// （如 MathUtil）需用户自行放到同目录或 mono 4.5 GAC。
+    /// @<tag>(){} 块构建管理器：导出 module.json 前，按块 Label 分发
+    /// AtSignLabelBlockCollector 登记的临时代码到对应构建 handler。
+    /// csharp_mono handler：块内中段代码引用的外部程序集（如 MathUtil）
+    /// 需用户自行放到插件 lib 目录或 mono 4.5 GAC。
     /// </summary>
-    public static class CscAtSignBuildManager
+    public static class AtSignLabelBuildManager
     {
-        private const string PluginId = "csharp_mono";
-        private const string DllName = "SLAtSign.dll";
+        /// <summary>csharp_mono handler（.NET Framework csc 编译 SLAtSign.dll）。</summary>
+        private const string CSharpMonoLabel = "csharp_mono";
+        private const string CSharpMonoDllName = "SLAtSign.dll";
         /// <summary>csc.exe 路径覆盖环境变量（优先于自动探测）。</summary>
         private const string CscEnv = "SIMPLELANG_CSC";
 
         public static void Run( string outDir )
         {
-            var blocks = SimpleLanguage.Compile.CSharpMonoBlockCollector.Blocks;
+            var blocks = SimpleLanguage.Compile.AtSignLabelBlockCollector.Blocks;
             if (blocks.Count == 0 || string.IsNullOrWhiteSpace(outDir))
             {
                 return;
             }
 
+            // 按标签分组（Source 空 = 插件自管，不进构建器）
+            var groups = new Dictionary<string, List<SimpleLanguage.Compile.AtSignLabelBlock>>(StringComparer.Ordinal);
+            foreach (var block in blocks)
+            {
+                if (string.IsNullOrEmpty(block.Source))
+                {
+                    continue;
+                }
+                if (!groups.TryGetValue(block.Label, out var list))
+                {
+                    list = new List<SimpleLanguage.Compile.AtSignLabelBlock>();
+                    groups[block.Label] = list;
+                }
+                list.Add(block);
+            }
+
+            foreach (var pair in groups)
+            {
+                if (string.Equals(pair.Key, CSharpMonoLabel, StringComparison.OrdinalIgnoreCase))
+                {
+                    BuildCSharpMono(pair.Value, outDir);
+                }
+                else
+                {
+                    // 无 handler 的标签：记告警不中断（该标签条目运行期由
+                    // 插件 labelExec capability 自行定位产物或报错）
+                    Log.AddIRLog(LID.ExportCscAtSignBuildFailed,
+                        "AtSignLabel: no build handler for label '" + pair.Key
+                            + "', " + pair.Value.Count + " block(s) skipped (plugin manages its own artifacts)");
+                }
+            }
+        }
+
+        // ------------------------------------------------------------------
+        // csharp_mono handler：csc 合并编译全部 C# 条目为 SLAtSign.dll 并部署
+        // ------------------------------------------------------------------
+
+        private static void BuildCSharpMono( List<SimpleLanguage.Compile.AtSignLabelBlock> blocks, string outDir )
+        {
             var csc = ResolveCsc();
             if (csc == null)
             {
                 Log.AddIRLog(LID.ExportCscAtSignCompilerNotFound,
-                    "cscAtSign: csc.exe not found (set " + CscEnv + " to override), skip @csharp_mono build");
+                    "AtSignLabel: csc.exe not found (set " + CscEnv + " to override), skip @csharp_mono build");
                 return;
             }
 
@@ -63,12 +106,12 @@ namespace SimpleLanguage.Export
                 foreach (var block in blocks)
                 {
                     var srcPath = Path.Combine(tempDir, block.EntryClassName + ".cs");
-                    File.WriteAllText(srcPath, block.CSharpSource, new UTF8Encoding(true));
+                    File.WriteAllText(srcPath, block.Source, new UTF8Encoding(true));
                     srcFiles.Add(srcPath);
                 }
 
                 // 2) csc 编译为 SLAtSign.dll（C#5 兼容，v4.0.30319）
-                var dllPath = Path.Combine(tempDir, DllName);
+                var dllPath = Path.Combine(tempDir, CSharpMonoDllName);
                 var args = new StringBuilder();
                 args.Append("/target:library /optimize+ /nologo /warn:0 /out:").Append(Quote(dllPath));
                 // 引用部署目录中已有的用户程序集（如 SLCSharpTestLib.dll），
@@ -78,7 +121,7 @@ namespace SimpleLanguage.Export
                 {
                     foreach (var refDll in Directory.GetFiles(deployDir, "*.dll"))
                     {
-                        if (string.Equals(Path.GetFileName(refDll), DllName, StringComparison.OrdinalIgnoreCase))
+                        if (string.Equals(Path.GetFileName(refDll), CSharpMonoDllName, StringComparison.OrdinalIgnoreCase))
                         {
                             continue;
                         }
@@ -101,7 +144,7 @@ namespace SimpleLanguage.Export
                 if (output == null || !File.Exists(dllPath))
                 {
                     Log.AddIRLog(LID.ExportCscAtSignBuildFailed,
-                        "cscAtSign: csc build failed: " + (output ?? "cannot start process"));
+                        "AtSignLabel: csc build failed: " + (output ?? "cannot start process"));
                     return;
                 }
 
@@ -109,13 +152,13 @@ namespace SimpleLanguage.Export
                 if (deployDir == null)
                 {
                     Log.AddIRLog(LID.ExportCscAtSignDeployFailed,
-                        "cscAtSign: csharp_mono lib dir not found, skip deploy " + DllName);
+                        "AtSignLabel: csharp_mono lib dir not found, skip deploy " + CSharpMonoDllName);
                     return;
                 }
-                var dstPath = Path.Combine(deployDir, DllName);
+                var dstPath = Path.Combine(deployDir, CSharpMonoDllName);
                 File.Copy(dllPath, dstPath, overwrite: true);
                 Log.AddIRLog(LID.ExportCscAtSignBuildSuccess,
-                    "cscAtSign: build success (" + blocks.Count + " block(s)): " + dstPath);
+                    "AtSignLabel: build success (" + blocks.Count + " block(s)): " + dstPath);
             }
             finally
             {
@@ -184,7 +227,7 @@ namespace SimpleLanguage.Export
             {
                 foreach (var p in plugins)
                 {
-                    if (p == null || !string.Equals(p.Id, PluginId, StringComparison.OrdinalIgnoreCase))
+                    if (p == null || !string.Equals(p.Id, CSharpMonoLabel, StringComparison.OrdinalIgnoreCase))
                     {
                         continue;
                     }

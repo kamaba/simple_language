@@ -390,12 +390,6 @@ namespace SimpleLanguage
         Not
     }
 
-    public enum EParseState
-    {
-        Null,
-        Begin,
-        End
-    }
     public class SignComputePriority
     {
         public const int Level1 = 1;                         //(a+b) [] . 优先操作，对象操作等

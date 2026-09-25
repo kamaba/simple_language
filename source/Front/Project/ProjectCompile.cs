@@ -8,7 +8,6 @@
 
 using SimpleLanguage.Compile;
 using SimpleLanguage.Core;
-using SimpleLanguage.CSharp;
 using SimpleLanguage.IR;
 using SimpleLanguage.Logging;
 using SimpleLanguage.Project;
@@ -106,7 +105,7 @@ namespace SimpleLanguage.Project
                 // 这里的 path 现在视为 .sp 文件路径
                 LoadProject(path);
             }
-            CSharpManager.InitCanSearchAssemblyList();
+            //CSharpManager.InitCanSearchAssemblyList();
 
             CoreMetaClassManager.instance.Init();
             SystemMethodCallDeclarationRegistry.LoadConfigSystemCall();

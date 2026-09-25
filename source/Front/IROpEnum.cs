@@ -204,6 +204,16 @@ namespace SimpleLanguage
         // lifetimes (non-escaping new / block exits).
         ArcRetain,                          // = 122
         ArcRelease,                         // = 123
+
+        // @<tag>(){...} inline label block fast-call opcode (PLUGIN_SYSTEM_DESIGN.md
+        // §A20). Front lowers a desugared AtSignLabelCall/AtSignLabelCallVoid
+        // sentinel system call into this opcode; the CVM assembly build rewrites
+        // the payload to [binding index:4] using the module's "atSignLabel"[]
+        // entry table (plugin preloaded per project.jsonc "plugins"). At runtime
+        // the handler pops the pushed in-channel values, marshals them through
+        // the plugin's labelExec capability and pushes the out-channel result
+        // back (Int32 first phase); entries without an out channel push nothing.
+        CallAtSignLabel,                    // = 124
     }
 
     /// <summary>

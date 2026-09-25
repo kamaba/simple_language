@@ -93,6 +93,7 @@
 | [syntax/coroutine.md](./syntax/coroutine.md) | 协程（Coroutine）与通道（Channel） |
 | [syntax/isolate.md](./syntax/isolate.md) | 隔离岛（Isolate）：跨堆并行、端口消息通信（深拷贝）、生命周期控制、TransferableData 零拷贝转移 |
 | [syntax/inline_lambda.md](./syntax/inline_lambda.md) | 内联体：`=>` 内联表达式（调用点编译期就地展开、参数可选类型标注 + 调用点类型校验）+ `inline` 方法修饰符（语义层普通函数规则、IR 层体替换无 Call、实例隐含 final、Result 兜底）、禁止项与错误码（spawn/isolate/await/try/递归/跨边界/类型不匹配 21456/体超限 21453/throws 互斥 21457/初始化器禁调 21458）、与 function 闭包边界 |
+| [syntax/csharp_mono.md](./syntax/csharp_mono.md) | `@csharp_mono(){}` 内联 C# 块：`<-` 通道（仅块体头区/尾区）、小括号参数占位校验、csharp_mono 插件 frontendLibs 解析器（SLLabelParser）生成 C# `Main`（import 提升 using）、Front 圈地+脱糖为 CSharpCallInt、导出期 csc 融合 `SLAtSign.dll`、运行期 mono 链路执行（LID 20054-20057 / 22135-22138） |
 
 ### 3.6 集合与容器（`md/syntax/contraint/`）
 

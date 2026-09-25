@@ -13,8 +13,6 @@ namespace SimpleLanguage.Core
     public enum RefFromType
     {
         Local,
-        CSharp,
-        Javascript,
         RefModule,
     }
     public class MetaBase

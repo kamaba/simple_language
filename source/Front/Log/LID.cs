@@ -148,10 +148,11 @@ namespace SimpleLanguage.Logging
         ProcessSystemMethodCallNotFoundImportSystem = 20051,
         ProcessSystemMethodCallNotFoundImportSystem2 = 20052,
         ProcessSystemMethodCallImportSystemMethod = 20053,
-        // CSharpMono @csharp_mono(){} 内联块改写器
-        ProcessCSharpMonoSourceRewriterRewrittenBlocks = 20054,
-        ProcessCSharpMonoChannelSyntaxError = 20055,
-        ProcessCSharpMonoOutChannelMultiple = 20056,
+        // @<tag>(){} 内联块改写器（语言无关，标签 = 插件 id）
+        ProcessAtSignLabelRewrittenBlocks = 20054,
+        ProcessAtSignLabelChannelSyntaxError = 20055,
+        ProcessAtSignLabelOutChannelMultiple = 20056,
+        ProcessAtSignLabelPluginParserLoadFailed = 20057,
         // ---- Token 模块 ----
         // Lexer
         TokenLexerCannotUndoChar = 20100,

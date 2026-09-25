@@ -1,8 +1,5 @@
-using SimpleLanguage.Core;
 using SimpleLanguage.Project;
-using SimpleLanguage.Compile;
 using System;
-using System.Collections.Generic;
 
 namespace SimpleLanguage
 {

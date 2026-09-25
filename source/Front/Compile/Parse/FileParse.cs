@@ -97,9 +97,11 @@ namespace SimpleLanguage.Compile
                 //（隐藏 Func 字段 + 静态 wrapper），后续 Token~Meta 全管线自然处理
                 m_ContentBuffer = DllImportSourceRewriter.Rewrite( m_ContentBuffer, m_FilePath );
 
-                // @csharp_mono(){} 内联块改写为 CSharpCallXxx 系统调用；
-                // 块体 C# 源码登记到 CSharpMonoBlockCollector 供导出期 csc 编译
-                m_ContentBuffer = CSharpMonoSourceRewriter.Rewrite( m_ContentBuffer, m_FilePath );
+                // @<tag>(){} 内联块（语言无关，标签 = SLPlugin/<tag> 插件 id）改写为
+                // AtSignLabelCall/AtSignLabelCallVoid 哨兵系统调用；<- 通道 Front 初判，
+                // 块体中段整编在插件 frontendLibs 解析器，产物登记到
+                // AtSignLabelBlockCollector 供导出期构建器与 atSignLabel[] 导出
+                m_ContentBuffer = AtSignLabelSourceRewriter.Rewrite( m_ContentBuffer, m_FilePath );
 
                 SaveCodeToFile();
 

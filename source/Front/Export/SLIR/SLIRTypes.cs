@@ -146,6 +146,52 @@ namespace SimpleLanguage.Export.SLIR.Types
         public bool tryCatch { get; set; }
     }
 
+    /// <summary>
+    /// CallAtSignLabel(124) 前端 payload：@<tag>(){...} 内联标签块快速调用。
+    /// cvm assembly build 期按 entryIndex 在模块 "atSignLabel"[] 表中定位
+    /// AtSignLabelEntryPackage，解析 plugin/lib 得到 labelExec 绑定并把指令
+    /// payload 改写为 4 字节绑定表索引；绑定失败保留 JSON 原文，运行期
+    /// handler 报 atsign:label 未知。entryIndex = Front 块收集器列表位置。
+    /// </summary>
+    public sealed class SLAtSignLabelCallPackage
+    {
+        public int entryIndex { get; set; }
+        public int paramCount { get; set; }
+        public bool tryCatch { get; set; }
+        public string methodName { get; set; } = string.Empty;
+    }
+
+    /// <summary>atSignLabel[] 单个变量通道（dir: "in"=SL→插件 / "out"=插件→SL）。
+    /// 通道行形态：入 "var target &lt;- $sl"（slVar=sl 值来源，target=插件侧形参名）、
+    /// 出 "$sl &lt;- expr"（slVar=sl 写回目标，target=插件侧表达式原文）。</summary>
+    public sealed class SLAtSignLabelChannelPackage
+    {
+        public string dir { get; set; } = "in";
+        /// <summary>SL 侧变量名（$ 后的标识符）。</summary>
+        public string slVar { get; set; } = string.Empty;
+        /// <summary>通道 SL 类型名（Int32 首期；空 = 运行期按栈槽 kind 编组）。</summary>
+        public string slType { get; set; } = string.Empty;
+        /// <summary>目标语言侧标识：入通道 = 形参名，出通道 = 表达式原文。</summary>
+        public string target { get; set; } = string.Empty;
+    }
+
+    /// <summary>atSignLabel[] 单个内联块条目：一个 @<tag>(){...} 块的运行期绑定元数据。</summary>
+    public sealed class SLAtSignLabelEntryPackage
+    {
+        public int entryIndex { get; set; }
+        /// <summary>插件 id（= 标签 tag，如 "csharp_mono"）</summary>
+        public string pluginId { get; set; } = string.Empty;
+        /// <summary>同 pluginId（SLPlugin/&lt;tag&gt; 目录名）</summary>
+        public string tag { get; set; } = string.Empty;
+        /// <summary>条目名（Entry_N）</summary>
+        public string entry { get; set; } = string.Empty;
+        /// <summary>目标语言端入口方法/符号名（插件解析器回传）</summary>
+        public string entryMethod { get; set; } = string.Empty;
+        /// <summary>承载该条目的库文件名（插件解析器回传，空=由插件运行期自决）</summary>
+        public string lib { get; set; } = string.Empty;
+        public List<SLAtSignLabelChannelPackage> channels { get; set; } = new();
+    }
+
     /// <summary>Optional debug snapshot (from <see cref="SimpleLanguage.IR.IRData.debugInfo"/> / token), deserialized into VM <see cref="SimpleLanguage.VM.DebugInfo"/>.</summary>
     public sealed class SLInstructionDebugInfo
     {
@@ -570,6 +616,10 @@ namespace SimpleLanguage.Export.SLIR.Types
         /// CVM 加载模块时逐条登记进 plugin registry（登记不加载，惰性激活）。
         /// </summary>
         public List<SLPluginPackage> plugins { get; set; } = new();
+        /// <summary>@<tag>(){...} 内联标签块条目表（PLUGIN_SYSTEM_DESIGN.md §A20）。
+        /// Front 块收集器按收集顺序导出；CallAtSignLabel(124) 指令 payload 中的
+        /// entryIndex 指向本表位置，CVM 装配期据此建立 labelExec 绑定。</summary>
+        public List<SLAtSignLabelEntryPackage> atSignLabel { get; set; } = new();
         public List<SLModuleReferencePackage> moduleReferences { get; set; } = new();
         public List<IRStringItem> irStringDict { get; set; } = new();
         public List<SLNamespacePackage> namespaceList { get; set; } = new();

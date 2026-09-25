@@ -148,12 +148,13 @@ class CSharpTest
     }
 
     # ---------------- @csharp_mono(){} 内联块（通道脱糖 → csc 融合 SLAtSign.dll） ----------------
-    # 块体行分类：var x <- $x 入通道（$ 引外层 SL 变量）；import NS; 提升 using；
-    # 其余为 C# 中段原样保留；$x <- expr 出通道（ret_kind=1 取 Run 返回值写回）。
-    # Front 改写（CSharpMonoSourceRewriter）脱糖为裸赋值
-    #   c = CSharpCallInt( "SLAtSign.dll", "SLAtSign", "Entry_N", "Run", 1, a, b )
-    # 导出期 CscAtSignBuildManager 用 .NET csc 把块体编译为 SLAtSign.dll 部署到
-    # csharp_mono 插件 lib 目录；运行期复用上面 CSharpCallInt 的 mono 链路。
+    # 块体行分类（由 csharp_mono 插件 frontendLibs 解析器 SLCSharpMonoFrontend 判定）：
+    # var x <- $x 入通道（$ 引外层 SL 变量）；import NS; 提升 using；
+    # 其余为 C# 中段原样保留；$x <- expr 出通道（ret_kind=1 取 Main 返回值写回）。
+    # Front 只圈地（括号/块配平+原文截取）并按插件解析结果脱糖为裸赋值
+    #   c = CSharpCallInt( "SLAtSign.dll", "SLAtSign", "Entry_N", "Main", 1, a, b )
+    # 导出期 CscAtSignBuildManager 用 .NET csc 把块体（含 Main 包装）编译为
+    # SLAtSign.dll 部署到 csharp_mono 插件 lib 目录；运行期复用上面 CSharpCallInt 的 mono 链路。
     static testAtSignMono()
     {
         Console.println( "===== CSharpTest.testAtSignMono =====" )

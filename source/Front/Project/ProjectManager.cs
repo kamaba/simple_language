@@ -56,8 +56,8 @@ namespace SimpleLanguage.Project
 
         public static void Run( string path, CommandInputArgs cinputArgs )
          {
-            // 每个项目编译开始时重置 @csharp_mono(){} 块收集器
-            CSharpMonoBlockCollector.Clear();
+            // 每个项目编译开始时重置 @<tag>(){} 内联块收集器
+            AtSignLabelBlockCollector.Clear();
 
             // apply CLI optimize level before any IR generation happens
             if (cinputArgs != null)

@@ -150,43 +150,43 @@ namespace SimpleLanguage.IR
             }
             return data;
         }
-        public static int GetTypeSize(EType etype)
-        {
-            switch (etype)
-            {
-                case EType.Bit:
-                    return 1;
-                case EType.UInt8:
-                case EType.Boolean:
-                case EType.Float8:
-                case EType.Float8_E5M2:
-                    return 1;
-                //case EType.Char:
-                //    return 2;
-                case EType.Int16:
-                case EType.UInt16:
-                case EType.Float16:
-                case EType.Float16_Brain:
-                    return 2;
-                case EType.Int32:
-                case EType.UInt32:
-                case EType.Class:
-                case EType.String:
-                case EType.Float32:
-                    return 4;
-                case EType.Int64:
-                case EType.UInt64:
-                case EType.Float64:
-                    return 8;
-                case EType.Int128:
-                case EType.UInt128:
-                    return 16;
-                case EType.Float2:
-                    return 8;
+        //public static int GetTypeSize(EType etype)
+        //{
+        //    switch (etype)
+        //    {
+        //        case EType.Bit:
+        //            return 1;
+        //        case EType.UInt8:
+        //        case EType.Boolean:
+        //        case EType.Float8:
+        //        case EType.Float8_E5M2:
+        //            return 1;
+        //        //case EType.Char:
+        //        //    return 2;
+        //        case EType.Int16:
+        //        case EType.UInt16:
+        //        case EType.Float16:
+        //        case EType.Float16_Brain:
+        //            return 2;
+        //        case EType.Int32:
+        //        case EType.UInt32:
+        //        case EType.Class:
+        //        case EType.String:
+        //        case EType.Float32:
+        //            return 4;
+        //        case EType.Int64:
+        //        case EType.UInt64:
+        //        case EType.Float64:
+        //            return 8;
+        //        case EType.Int128:
+        //        case EType.UInt128:
+        //            return 16;
+        //        case EType.Float2:
+        //            return 8;
 
-            }
-            return 1;
-        }
+        //    }
+        //    return 1;
+        //}
     }
 
 }

@@ -788,82 +788,59 @@ namespace SimpleLanguage.Core
                 {
                     if (frontCNT == ECallNodeType.MetaNode)
                     {
-                        MetaNode mn = null;
-                        if (m_FrontCallNode.m_MetaNode.isMetaNamespace)
+                        MetaNode mn =  m_FrontCallNode.m_MetaNode.GetChildrenMetaNodeByName(m_Name);
+                        if (mn != null)
                         {
-                            if (m_FrontCallNode.m_MetaNode.metaNamespace.refFromType == RefFromType.CSharp)
+                            m_MetaNode = mn;
+                            m_CallNodeType = ECallNodeType.MetaNode;
+                            if( mn.isMetaNamespace )
+                            { }
+                            else if (mn.isMetaData)
                             {
-                                mn = SimpleLanguage.CSharp.CSharpManager.FindAndCreateMetaNode(m_FrontCallNode.m_MetaNode, m_Name);
-                                if (mn.IsMetaClass())
+                                m_MetaData = mn.metaData;
+                                m_MetaType = new MetaType(m_MetaData);
+                                m_CallNodeType = ECallNodeType.DataName;
+                            }
+                            else if (mn.isMetaEnum)
+                            {
+                                m_MetaEnum = mn.metaEnum;
+                                m_MetaType = new MetaType(m_MetaEnum);
+                                m_CallNodeType = ECallNodeType.EnumName;
+                            }
+                            else if (mn.IsMetaClass())
+                            {
+                                m_MetaClass = mn.GetMetaClassByTemplateCount(this.m_FileMetaCallNode.inputTemplateNodeList.Count);
+                                // Keep in sync with GetFirstNode's class branch: a mid-link element
+                                // that resolves to a class (e.g. `Map` in `Std.Map<int,int>(8)`) must
+                                // also be flagged ClassName when it carries template args. Otherwise
+                                // callNodeType stays MetaNode, the generic instantiation branch below
+                                // (ClassName + metaTemplateParamsList) never runs, and New falls back
+                                // to the raw template class id; the VM then resolves that id to the
+                                // FIRST registered instantiation (e.g. Map<Int32,String>) and builds
+                                // an object with wrong generic arguments.
+                                if (m_MetaClass != null
+                                    && this.m_FileMetaCallNode.inputTemplateNodeList.Count > 0)
                                 {
-                                    m_MetaClass = mn.GetMetaClassByTemplateCount(0);
                                     m_CallNodeType = ECallNodeType.ClassName;
-                                    m_MetaType = new MetaType(m_MetaClass);
                                 }
-                                else if (mn.isMetaNamespace)
-                                {
-                                    m_MetaNode = mn;
-                                    m_CallNodeType = ECallNodeType.MetaNode;
-                                }
+                                m_MetaType = new MetaType(m_MetaClass);
+                            }
+                            else
+                            {
+                                Log.AddMetaCoreLog(LID.MetaCoreCallNotFoundNotFound, m_Token, "Error not found type");
                             }
                         }
-
-                        if (mn == null)
+                        else if(m_FrontCallNode.m_MetaClass != null )
                         {
-                            mn = m_FrontCallNode.m_MetaNode.GetChildrenMetaNodeByName(m_Name);
-                            if (mn != null)
-                            {
-                                m_MetaNode = mn;
-                                m_CallNodeType = ECallNodeType.MetaNode;
-                                if( mn.isMetaNamespace )
-                                { }
-                                else if (mn.isMetaData)
-                                {
-                                    m_MetaData = mn.metaData;
-                                    m_MetaType = new MetaType(m_MetaData);
-                                    m_CallNodeType = ECallNodeType.DataName;
-                                }
-                                else if (mn.isMetaEnum)
-                                {
-                                    m_MetaEnum = mn.metaEnum;
-                                    m_MetaType = new MetaType(m_MetaEnum);
-                                    m_CallNodeType = ECallNodeType.EnumName;
-                                }
-                                else if (mn.IsMetaClass())
-                                {
-                                    m_MetaClass = mn.GetMetaClassByTemplateCount(this.m_FileMetaCallNode.inputTemplateNodeList.Count);
-                                    // Keep in sync with GetFirstNode's class branch: a mid-link element
-                                    // that resolves to a class (e.g. `Map` in `Std.Map<int,int>(8)`) must
-                                    // also be flagged ClassName when it carries template args. Otherwise
-                                    // callNodeType stays MetaNode, the generic instantiation branch below
-                                    // (ClassName + metaTemplateParamsList) never runs, and New falls back
-                                    // to the raw template class id; the VM then resolves that id to the
-                                    // FIRST registered instantiation (e.g. Map<Int32,String>) and builds
-                                    // an object with wrong generic arguments.
-                                    if (m_MetaClass != null
-                                        && this.m_FileMetaCallNode.inputTemplateNodeList.Count > 0)
-                                    {
-                                        m_CallNodeType = ECallNodeType.ClassName;
-                                    }
-                                    m_MetaType = new MetaType(m_MetaClass);
-                                }
-                                else
-                                {
-                                    Log.AddMetaCoreLog(LID.MetaCoreCallNotFoundNotFound, m_Token, "Error not found type");
-                                }
-                            }
-                            else if(m_FrontCallNode.m_MetaClass != null )
-                            {
-                                HandleMetaClass( m_CallNodeType, templateCount);
-                            }
-                            else if( m_FrontCallNode.m_MetaNode.isMetaModule )
-                            {
-                                // ModuleName.name：模块根下的 enum/data/class/namespace 未命中时，
-                                // 继续遍历该模块 Project 类定义的静态成员（变量/函数）。
-                                // 例如引用 Std 模块后，Std.Pi 取 Std 工程 Project 定义的静态成员 Pi。
-                                HandleModuleProjectMember();
-                            }
+                            HandleMetaClass( m_CallNodeType, templateCount);
                         }
+                        else if( m_FrontCallNode.m_MetaNode.isMetaModule )
+                        {
+                            // ModuleName.name：模块根下的 enum/data/class/namespace 未命中时，
+                            // 继续遍历该模块 Project 类定义的静态成员（变量/函数）。
+                            // 例如引用 Std 模块后，Std.Pi 取 Std 工程 Project 定义的静态成员 Pi。
+                            HandleModuleProjectMember();
+                        }                        
                     }
                     //else if (frontCNT == ECallNodeType.TypeName)
                     //{

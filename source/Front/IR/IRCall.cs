@@ -56,6 +56,12 @@ namespace SimpleLanguage.IR
 
             var mf = mfc.GetTemplateMemberFunction();
             string systemName = mf?.name ?? string.Empty;
+            // @<tag>(){...} 哨兵拦截 (PLUGIN_SYSTEM_DESIGN.md §A20)：
+            // AtSignLabelCall/AtSignLabelCallVoid 命中时发射 CallAtSignLabel(124)，
+            // 第一个实参 entryIndex (int 常量) 只做 Front 侧寻址不发射；
+            // 提取失败（手写误用）回退下方普通 systemCall 路径（栈保持平衡）。
+            if (TryParseAtSignLabelCall(mfc, systemName))
+                return;
             int systemKind = -1;
             // Unique int id from the declaration (module "systemCalls"): the C VM
             // registers id -> implementation at load time and dispatches by id.
@@ -107,6 +113,84 @@ namespace SimpleLanguage.IR
                 string.IsNullOrEmpty(systemName) ? "CallSystemMethod" : $"CallSystemMethod {systemName}");
             AddIRData(datacall2);
         }
+
+        // ────────────────────────────────────────────────────────────────
+        // @<tag>(){...} 内联标签块哨兵拦截 (PLUGIN_SYSTEM_DESIGN.md §A20)
+        // ────────────────────────────────────────────────────────────────
+
+        /// <summary>哨兵系统调用名（出通道：绑定条目带 Int32 返回）。</summary>
+        private const string AtSignLabelCallSentinelName = "AtSignLabelCall";
+        /// <summary>哨兵系统调用名（无出通道：裸调用）。</summary>
+        private const string AtSignLabelCallVoidSentinelName = "AtSignLabelCallVoid";
+
+        /// <summary>
+        /// 哨兵拦截：脱糖产物 AtSignLabelCall/AtSignLabelCallVoid 的第一个实参是
+        /// 块收集器位置 entryIndex（int 常量，AtSignLabelSourceRewriter 生成）。
+        /// 提取成功：arg0 不发射（仅 Front 侧寻址），其余通道实参照 systemCall
+        /// 变参路径发射（按实际类型压栈，不做固定形参矫正），发射
+        /// CallAtSignLabel(124) 携带 SLAtSignLabelCallPackage{entryIndex,
+        /// paramCount, tryCatch, methodName}；CVM 装配期按 entryIndex 在模块
+        /// atSignLabel[] 表定位绑定并重写 payload 为 4 字节绑定索引。
+        /// 提取失败（手写误用/实参非常量）：记 IRCallIssue 后返回 false，
+        /// 由调用方回退普通 CallSystemMethod 路径（栈保持平衡，CVM 运行期
+        /// 按 cvmFunction "atsign:label" 报未知系统方法）。
+        /// </summary>
+        private bool TryParseAtSignLabelCall( MetaMethodCall mfc, string systemName )
+        {
+            if (systemName != AtSignLabelCallSentinelName && systemName != AtSignLabelCallVoidSentinelName)
+                return false;
+
+            if (mfc.metaInputParamList.Count < 1)
+            {
+                Log.AddIRLog(LID.IRCallIssue, mfc.token,
+                    "AtSignLabelCall 哨兵需要 entryIndex 常量实参, 回退 CallSystemMethod!!");
+                return false;
+            }
+            if (!(mfc.metaInputParamList[0] is MetaConstExpressNode mcen) || mcen.value == null)
+            {
+                Log.AddIRLog(LID.IRCallIssue, mfc.token,
+                    "AtSignLabelCall 哨兵第一个实参必须是 int 常量(entryIndex), 回退 CallSystemMethod!!");
+                return false;
+            }
+            int entryIndex;
+            try
+            {
+                entryIndex = Convert.ToInt32(mcen.value);
+            }
+            catch (Exception)
+            {
+                Log.AddIRLog(LID.IRCallIssue, mfc.token,
+                    "AtSignLabelCall 哨兵 entryIndex 常量提取失败, 回退 CallSystemMethod!!");
+                return false;
+            }
+
+            // 通道实参（跳过 arg0 的 entryIndex）照常发射；变参语义不做形参矫正
+            paramCount = mfc.metaInputParamList.Count - 1;
+            for (int j = 1; j < mfc.metaInputParamList.Count; j++)
+            {
+                var argNode = mfc.metaInputParamList[j];
+                IRExpressBase irexpress = IRExpressManager.CreateExpress(m_IRMethod, argNode);
+                AddIRRangeData(irexpress.IRDataList);
+                TryAddDataTypeLiteralFallback(argNode, irexpress);
+            }
+            bool tryCatch = m_IRMethod != null && m_IRMethod.isInTryCatch;
+            var labelPkg = new SLAtSignLabelCallPackage
+            {
+                entryIndex = entryIndex,
+                paramCount = paramCount,
+                tryCatch = tryCatch,
+                methodName = m_IRMethod?.onlyFunctionName ?? string.Empty,
+            };
+            IRData datacallLabel = new IRData();
+            datacallLabel.opCode = EIROpCode.CallAtSignLabel;
+            // pops this many in-channel stack slots; payload carries full metadata.
+            datacallLabel.index = paramCount;
+            datacallLabel.SetOpValue(labelPkg);
+            ApplyCallInstructionDebug(datacallLabel, mfc.GetTemplateMemberFunction(), mfc);
+            AddIRData(datacallLabel);
+            return true;
+        }
+
         public void Parse(MetaMethodCall mfc)
         {
             IRMetaType irmt = null;

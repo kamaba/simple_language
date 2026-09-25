@@ -111,6 +111,12 @@
   // 注意：returnType/params 类型名须用 ResolveTypeName 支持的写法（float64 等，"double" 不识别）。
   "systemCalls": [
     { "name": "Echo", "returnType": "Float64", "params": ["Float64"], "isVariadic": false, "cvmFunction": "plugin:echo" },
+    // @<tag>(){} 内联块哨兵（调用方工程须可见，Meta 层 SystemMethodCallDeclarationRegistry
+    // 只装载当前工程 systemCalls；Core.jsonc 那份供 Core 模块自编译时使用）。
+    // IRCall.TryParseAtSignLabelCall 拦截改写为 CallAtSignLabel(124)：首参 entryIndex
+    // 常量不发射，CVM 经模块 atSignLabel[] 绑定 entryIndex 走插件 labelExec capability。
+    { "name": "AtSignLabelCall",     "returnType": "Int32", "params": ["Int32"], "isVariadic": true,  "cvmFunction": "atsign:label" },
+    { "name": "AtSignLabelCallVoid", "returnType": "Void",  "params": ["Int32"], "isVariadic": true,  "cvmFunction": "atsign:label" },
     // csharp_mono（P1-e）：SL 调 C# 静态方法，共用 csharp_exec 入口（cvm_csharp_mono.c
     // 栈协议：前 4 参 = asm/ns/class/method（String），第 5 参 = ret_kind（整型变参：
     // 0=void/1=int/2=string），其后为 C# 实参——变参按实际类型压栈不矫正

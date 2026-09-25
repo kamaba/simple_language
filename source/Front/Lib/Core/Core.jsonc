@@ -121,6 +121,13 @@
   //   Float32, Float64, Type, Array<object>, UInt8Array
   // =====================================================================
   "systemCalls": [
+    // ---- @<tag>(){} inline label block sentinels ----
+    // Rewritten by IRCall.TryParseAtSignLabelCall to CallAtSignLabel: first arg
+    // (entryIndex constant) is not emitted; CVM binds entryIndex via module
+    // "atSignLabel"[] and dispatches through the plugin labelExec capability.
+    { "name": "AtSignLabelCall",     "returnType": "Int32", "params": ["Int32"], "isVariadic": true,  "cvmFunction": "atsign:label" },
+    { "name": "AtSignLabelCallVoid", "returnType": "void",  "params": ["Int32"], "isVariadic": true,  "cvmFunction": "atsign:label" },
+
     // ---- Bridge calls ----
     { "name": "SystemCallCLRMethod",    "returnType": "object", "params": ["object"], "isVariadic": true, "cvmFunction": "vm_sys_call_clr_method" },
     { "name": "SystemCallNativeMethod", "returnType": "object", "params": ["object"], "isVariadic": true, "cvmFunction": "vm_sys_call_native_method" },

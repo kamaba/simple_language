@@ -6,7 +6,6 @@
 //  Description: 
 //****************************************************************************
 using SimpleLanguage.Core;
-using SimpleLanguage.CSharp;
 using SimpleLanguage.Project;
 using SimpleLanguage.Logging;
 using System;
@@ -164,16 +163,9 @@ namespace SimpleLanguage.Compile
                 MetaNode mn = GetMetaNodeFileMetaClass(fmcv.stringList);
                 if (mn == null) continue;
                 if (mn.isMetaNamespace == false ) { continue; }
-                if (mn.metaNamespace.refFromType == RefFromType.CSharp)
-                {
-                    Object obj = CSharpManager.GetObject(fmcv, mn.metaNamespace);
-                }
-                else
-                {
-                    mb = fmcv.GetChildrenMetaNode(mn);
-                    if (mb != null)
-                        return mb;
-                }
+                mb = fmcv.GetChildrenMetaNode(mn);
+                if (mb != null)
+                    return mb;
             }
             return null;
         }
