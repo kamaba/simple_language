@@ -8,15 +8,11 @@ public class UInt32 extends Num
     override get int size() { ret 32 }
     override get int byteLength() { ret 4 }
 
-    public static UInt32 parse( string s )
-    {
-        ret SystemConvertUInt32(s)
-    }
     _init_( UInt32 _val )
     {
         this._value = _val
     }
-    public override Byte compareTo( Num other )
+    public override Int8 compareTo( Num other )
     {
         if (other == null) { ret 1 }
         UInt32 ov = SystemConvertUInt32(other)

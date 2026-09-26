@@ -119,7 +119,7 @@ namespace SimpleLanguage.Compile
                     }
                     else
                     {
-                        Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 命名空间有误，必须为X.xx.X 类似的格式!");
+                        Log.AddFileMetaLog(LID.FileMetaCommonX, "Error 命名空间有误，必须为X.xx.X 类似的格式!");
                         return null;
                     }
                 }
@@ -127,7 +127,7 @@ namespace SimpleLanguage.Compile
                 {
                     if( token[i].type != ETokenType.Period )
                     {
-                        Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 命名空间有误，必须为X.xx.X 类似的格式!");
+                        Log.AddFileMetaLog(LID.FileMetaCommonX2, "Error 命名空间有误，必须为X.xx.X 类似的格式!");
                         return null;
                     }
                     isIdentifier = true;
@@ -169,6 +169,7 @@ namespace SimpleLanguage.Compile
     {
         public FileMeta fileMeta => m_FileMeta;
         public FileMetaCallLink defineClassCallLink => m_DefineClassCallLink;
+        public Node node => m_Node;
         public List<string> nameList
         {
             get
@@ -276,7 +277,7 @@ namespace SimpleLanguage.Compile
             }
             if (_node.parNode != null)      //  Func( a, (b+20.0f) )
             {
-                //Log.AddFileMetaLog( LID.ShowExtendMessage, m_FileMetaParTerm?.name + "已经有解析()" );
+                //Log.AddFileMetaLog( LID.FileMetaCommonIssue, m_FileMetaParTerm?.name + "已经有解析()" );
 
                 m_IsCallFunction = true;
                 m_FileMetaParTerm = new FileMetaParTerm(m_FileMeta, _node.parNode, FileMetaTermExpress.EExpressType.Common);
@@ -288,7 +289,7 @@ namespace SimpleLanguage.Compile
             }
             if (_node.angleNode != null)      // LinkCall.Call<int,string, NS.Class1>()
             {
-                //Log.AddFileMetaLog( LID.MetaCoreAssertShowMessage, _node.token, $"[DBG FileMetaCallNode] node='{_node.token?.lexeme}' nodeType={_node.nodeType} angleNode children={_node.angleNode.childList.Count}");
+                //Log.AddFileMetaLog( LID.FileMetaCommonDBGFileMetaCallNodeNode, _node.token, $"[DBG FileMetaCallNode] node='{_node.token?.lexeme}' nodeType={_node.nodeType} angleNode children={_node.angleNode.childList.Count}");
                 m_IsTemplate = true;
                 m_BeginAngleToken = _node.angleNode.token;
                 m_EndAngleToken = _node.angleNode.endToken;
@@ -315,6 +316,14 @@ namespace SimpleLanguage.Compile
             }
             // if this call node was created from a '?.' link, keep the token in m_QuestionMarkDotToken
             // note: in FileMetaCallLink.AddChildExtendLinkList we set this when constructing the call node
+        }
+        /// <summary>
+        /// 清空模板实参列表（&lt;T1,T2&gt; 语法糖消费后调用，使后续按非模板
+        /// 调用解析——如 FFI lookupFunction&lt;Ret,P...&gt; 改写为 getFunction）。
+        /// </summary>
+        public void ClearInputTemplateNodeList()
+        {
+            m_InputTemplateNodeList.Clear();
         }
         public string ToFormatString()
         {
@@ -624,14 +633,27 @@ namespace SimpleLanguage.Compile
             else
                 m_ClassNameToken = null;
 
-            if (node.angleNode != null)
+            // For IdentifierLink nodes, the angle node (template args like <T>) may be
+            // set on the last identifier child or extend link node rather than on the link itself.
+            Node angleNode = node.angleNode;
+            if (angleNode == null && node.identifierNode != null)
+                angleNode = node.identifierNode.angleNode;
+            if (angleNode == null && node.extendLinkNodeList != null && node.extendLinkNodeList.Count > 0)
+            {
+                // Check last extend link node and its parNode
+                var lastLink = node.extendLinkNodeList[node.extendLinkNodeList.Count - 1];
+                angleNode = lastLink?.angleNode ?? lastLink?.parNode?.angleNode;
+            }
+            if (angleNode == null && node.parNode != null)
+                angleNode = node.parNode.angleNode;
+            if (angleNode != null)
             {
                 m_IsInputTemplateData = true;
-                m_AngleTokenBegin = node.angleNode.token;
-                m_AngleTokenEnd = node.angleNode.endToken;
-                for (int i = 0; i < node.angleNode.childList.Count; i++)
+                m_AngleTokenBegin = angleNode.token;
+                m_AngleTokenEnd = angleNode.endToken;
+                for (int i = 0; i < angleNode.childList.Count; i++)
                 {
-                    var cnode = node.angleNode.childList[i];
+                    var cnode = angleNode.childList[i];
                     if (cnode.nodeType == ENodeType.Comma)
                         continue;
                     FileInputTemplateNode fmcn = new FileInputTemplateNode(fm, cnode);
@@ -687,7 +709,7 @@ namespace SimpleLanguage.Compile
             }
             if (m_ArrayDimsionLengthList.Count != m_FileMetaBracketTermList.Count)
             {
-                Log.AddFileMetaLog(LID.ShowExtendMessage, "数组获取长度文件的时候，有异常!");
+                Log.AddFileMetaLog(LID.FileMetaCommonArray, "数组获取长度文件的时候，有异常!");
             }
         }
         public override string ToString()
@@ -761,7 +783,7 @@ namespace SimpleLanguage.Compile
             m_FileMeta = fm;
             if ( nodeList.Count == 0 )
             {
-                Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 在<>中没有发现元素!!");
+                Log.AddFileMetaLog(LID.FileMetaCommonIssue2, "Error 在<>中没有发现元素!!");
                 return;
             }
             m_Token = nodeList[0].token;
@@ -772,7 +794,7 @@ namespace SimpleLanguage.Compile
             //}
             //else if( nodeList.Count == 2 )
             //{
-            //    Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 在<T in> or <T []> or <T ClassName> 使用方法不正确,请使用 <T in []>或者是 <T in ClassName> !!");
+            //    Log.AddFileMetaLog(LID.FileMetaCommonTClassName, "Error 在<T in> or <T []> or <T ClassName> 使用方法不正确,请使用 <T in []>或者是 <T in ClassName> !!");
             //}
         }
         public void Parse()

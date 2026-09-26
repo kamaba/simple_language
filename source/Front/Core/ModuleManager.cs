@@ -35,7 +35,14 @@ namespace SimpleLanguage.Core
         public void InitSelfModuleManager( string moduleName )
         {
             m_SelfModule = new MetaModule(moduleName);
-            m_CoreModule = m_SelfModule;
+            if( moduleName == "Core" )
+            {
+                m_CoreModule = m_SelfModule;
+            }
+            else
+            {
+                m_CoreModule = new MetaModule("Core");
+            }
             m_CSharpLangRegisterModule = new MetaModule("CSharp");
             m_CLangRegisterModule = new MetaModule("CLang");
             m_JavaLangRegisterModule = new MetaModule("Java");
@@ -56,7 +63,7 @@ namespace SimpleLanguage.Core
         {
             if( string.IsNullOrEmpty( name ) )
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 严重错误，获取模式不传名称!!");
+                Log.AddMetaCoreLog(LID.MetaCoreModuleIssue, "Error 严重错误，获取模式不传名称!!");
                 return null;
             }
             if(m_AllMetaModuleDict.ContainsKey( name ) )
@@ -86,19 +93,92 @@ namespace SimpleLanguage.Core
             }
             return null;
         }
+
+        /// <summary>
+        /// 跨模块命名空间合并查找：同一逻辑命名空间可分布在多个模块
+        /// （如 Std 模块贡献 SLang.Log，插件 refModule 贡献 SLang.Plugin.CSharpMono）。
+        /// 从当前命中的命名空间节点出发，收集其不含模块名的逻辑路径，
+        /// 再到 selfModule 与各引用模块的同名命名空间路径下查找 childName。
+        /// 供调用链中段未命中时级联使用（如解析 SLang.Plugin.CSharpMono 的 Plugin 段）。
+        /// </summary>
+        public MetaNode FindChildrenInSameNamespaceAcrossModules( MetaNode fromNamespace, string childName )
+        {
+            if( fromNamespace == null || !fromNamespace.isMetaNamespace || string.IsNullOrEmpty(childName) )
+                return null;
+
+            /* 收集命名空间逻辑路径（不含模块名）：自身在最前，向外逐级追加 */
+            var nsParts = new List<string>();
+            MetaNode cur = fromNamespace;
+            while( cur != null )
+            {
+                nsParts.Add(cur.name);
+                var parent = cur.parentNode;
+                if( parent == null || parent.isMetaModule )
+                    break;
+                cur = parent;
+            }
+            if( nsParts.Count == 0 )
+                return null;
+
+            MetaNode found = FindChildrenByNamespacePath(selfModule?.metaNode, nsParts, childName);
+            if( found != null )
+                return found;
+
+            foreach( var v in m_ImportMetaModuleDict )
+            {
+                found = FindChildrenByNamespacePath(v.Value?.metaNode, nsParts, childName);
+                if( found != null )
+                    return found;
+            }
+            return null;
+        }
+
+        private static MetaNode FindChildrenByNamespacePath( MetaNode moduleRoot, List<string> nsParts, string childName )
+        {
+            if( moduleRoot == null )
+                return null;
+
+            /* nsParts[0] 是最内层命名空间名，从模块根按外→内顺序下钻 */
+            MetaNode node = moduleRoot;
+            for( int i = nsParts.Count - 1; i >= 0 && node != null; i-- )
+            {
+                node = node.GetChildrenMetaNodeByName(nsParts[i]);
+            }
+            return node?.GetChildrenMetaNodeByName(childName);
+        }
         public void AddMetaMdoule( MetaModule mm )
         {
-            if(m_ImportMetaModuleDict.ContainsKey( mm.name ) )
+            if( mm == null ) return;
+
+            // Replace existing module with the same name (e.g. default Core
+            // module created by InitSelfModuleManager gets replaced by the
+            // real one loaded from references).
+            if( m_ImportMetaModuleDict.ContainsKey( mm.name ) )
             {
-                return;
+                m_ImportMetaModuleDict[mm.name] = mm;
             }
-            m_ImportMetaModuleDict.Add(mm.name, mm);
+            else
+            {
+                m_ImportMetaModuleDict.Add(mm.name, mm);
+            }
+
             if( m_AllMetaModuleDict.ContainsKey( mm.name ) )
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 严重错误，模块有重名!!!");
-                return;
+                m_AllMetaModuleDict[mm.name] = mm;
+                Log.AddMetaCoreLog(LID.MetaCoreModuleModuleReplacedReference,
+                    $"Module '{mm.name}' replaced by reference loading.");
             }
-            m_AllMetaModuleDict.Add(mm.name, mm);
+            else
+            {
+                m_AllMetaModuleDict.Add(mm.name, mm);
+            }
+
+            // If a "Core" module is loaded from references, update coreModule
+            // to point to the real one (instead of the self module stub).
+            if( mm.name == "Core" && mm != m_SelfModule )
+            {
+                m_CoreModule = mm;
+            }
         }
 
         public string ToFormatString()

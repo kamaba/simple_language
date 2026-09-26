@@ -1,0 +1,1452 @@
+[19:50:00] [Info] [Project] [LID=10002] Resolved input path: F:\project\lang\simple_language\out\export\TankGame\TankGame.module.json
+[19:50:01] [Info] [Project] [LID=10002] Warning: could not load module reference '../../../source/Front/Lib/Core' (resolved: F:\project\lang\simple_language\out\export\TankGame/../Std/../../../source/Front/Lib/Core), skipping
+[19:50:01] [Info] [Project] [LID=10002] Runtime load success. root=F:\project\lang\simple_language\out\export\TankGame\TankGame.module.json packageCount=3
+[19:50:01] [Info] [Project] [LID=10002] SLIR loaded. root=F:\project\lang\simple_language\out\export\TankGame\TankGame.module.json, format=json, packageCount=3
+[19:50:01] [Info] [Project] [LID=10002] Selected entry method: TankGame.Project._main_ instructionCount=8 codeLength=636
+[19:50:01] [Warning] [Process] [LID=10003] system call not registered in cvm. name=SystemCallExternalFunction id=-171135730
+[19:50:01] [Warning] [Process] [LID=10003] system call not registered in cvm. name=SystemListInit id=2076290368
+[19:50:01] [Warning] [Process] [LID=10003] system call not registered in cvm. name=SystemListGetValueThis id=-189438755
+[19:50:01] [Warning] [Process] [LID=10003] system call not registered in cvm. name=SystemListSetValueThis id=-1777067416
+[19:50:01] [Warning] [Process] [LID=10003] system call not registered in cvm. name=SystemListGetCapacity id=-867337391
+[19:50:01] [Warning] [Process] [LID=10003] system call not registered in cvm. name=SystemListSetCapacity id=-1945706885
+[19:50:01] [Warning] [Process] [LID=10003] system call not registered in cvm. name=SystemListRemoveValueThis id=88900750
+[19:50:01] [Warning] [Process] [LID=10003] system call not registered in cvm. name=SystemListRemoveIndexValueThis id=230419442
+[19:50:01] [Warning] [Process] [LID=10003] system call not registered in cvm. name=SystemListClearValueThis id=212565473
+[19:50:01] [Info] [Runtime] [LID=10002] Runtime assembly ready. classCount=253 methodCount=6427
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.Project] begin. code_length=336
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.Project] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.UInt8] begin. code_length=30
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.UInt8] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.Int8] begin. code_length=42
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.Int8] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.Int16] begin. code_length=43
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.Int16] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.UInt16] begin. code_length=32
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.UInt16] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.Int32] begin. code_length=49
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.Int32] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.UInt32] begin. code_length=36
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.UInt32] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.Int64] begin. code_length=44
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.Int64] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.UInt64] begin. code_length=44
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.UInt64] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.Float8] begin. code_length=69
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.Float8] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.Float8_E5M2] begin. code_length=69
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.Float8_E5M2] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.Float16] begin. code_length=73
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.Float16] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.Float16_Brain] begin. code_length=73
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.Float16_Brain] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.Float32] begin. code_length=81
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.Float32] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.Float64] begin. code_length=97
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.Float64] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.NativeBridge] begin. code_length=154
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.BridgeKind] begin. code_length=1406
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.BridgeKind] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.NativeBridge] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.CoroutineStatus] begin. code_length=90
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.CoroutineStatus] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.CoroutineBlockReason] begin. code_length=108
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.CoroutineBlockReason] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.EAttributeHandleType] begin. code_length=914
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.EAttributeHandleType] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.Environment.Platform.os] begin. code_length=5162
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.Environment.Platform.os] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.Environment.Platform.osVersion] begin. code_length=11075
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.Environment.Platform.osVersion] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.Environment.Platform.form] begin. code_length=2664
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.Environment.Platform.form] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.Environment.Platform.arch] begin. code_length=3808
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.Environment.Platform.arch] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.Environment.Platform.cpu] begin. code_length=2076
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.Environment.Platform.cpu] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.Environment.Platform.isa] begin. code_length=5219
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.Environment.Platform.isa] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.Environment.Platform.device] begin. code_length=2100
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.Environment.Platform.device] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.Environment.Platform.ai] begin. code_length=4880
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.Environment.Platform.ai] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.Environment.Platform.render] begin. code_length=2961
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.Environment.Platform.render] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.Environment.Platform.shaderModel] begin. code_length=2132
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.Environment.Platform.shaderModel] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.Environment.Platform.network] begin. code_length=2100
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.Environment.Platform.network] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.Environment.Platform.link] begin. code_length=1224
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.Environment.Platform.link] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.Environment.Platform.embedded] begin. code_length=4428
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.Environment.Platform.embedded] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.Environment.Platform.rtos] begin. code_length=2939
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.Environment.Platform.rtos] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.Environment.Platform.runtime] begin. code_length=1820
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.Environment.Platform.runtime] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.Environment.Platform.build] begin. code_length=940
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.Environment.Platform.build] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.Environment.Platform.endian] begin. code_length=1244
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.Environment.Platform.endian] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.Environment.Platform.DefKind] begin. code_length=4988
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.Environment.Platform.DefKind] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.CoreError] begin. code_length=611
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.CoreError] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.MathOpError] begin. code_length=1701
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.MathOpError] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.BufferError] begin. code_length=1424
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.BufferError] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.StreamIOError] begin. code_length=2544
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.StreamIOError] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.SeekOrigin] begin. code_length=1154
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.SeekOrigin] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.Lz4Error] begin. code_length=876
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.Lz4Error] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.EPbWireType] begin. code_length=1834
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.EPbWireType] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Std.Project] begin. code_length=438
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Std.___DllImportGlobal___] begin. code_length=496
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Std.FFI.Library] begin. code_length=18
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Std.FFI.Library] end. error_code=0
+[19:50:01] [Warning] [Runtime] [LID=10003] FFI: failed to load library 'F:\project\lang\simple_language\samples\Game\Lib\Std.dll'
+[19:50:01] [Warning] [Runtime] [LID=10003] FFI LoadLibrary: failed to load '../Lib/Std.dll'
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Std.___DllImportGlobal___] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Std.Project] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Std.Console] begin. code_length=288
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Std.Console] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Std.StdInStream] begin. code_length=14
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Std.StdInStream] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Std.StdOutStream] begin. code_length=14
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Std.StdOutStream] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Std.StdErrStream] begin. code_length=14
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Std.StdErrStream] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Std.IsolateStatus] begin. code_length=108
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Std.IsolateStatus] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Std.IsolateError] begin. code_length=162
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Std.IsolateError] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Std.FFI.StaticLibrary] begin. code_length=847
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.List<T>] begin. code_length=62
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.List<T>] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Std.FFI.StaticLibrary] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Std.IO.SearchOption] begin. code_length=600
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Std.IO.SearchOption] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Std.FileError] begin. code_length=611
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Std.FileError] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Std.FileMode] begin. code_length=1932
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Std.FileMode] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Std.FileAccess] begin. code_length=1149
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Std.FileAccess] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Std.OS.ProcessStdio] begin. code_length=1174
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Std.OS.ProcessStdio] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Std.OS.ProcessError] begin. code_length=1722
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Std.OS.ProcessError] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Std.Http.EMethod] begin. code_length=1049
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Std.Http.EMethod] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Std.DB.SQLITE_OPEN] begin. code_length=2611
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Std.DB.SQLITE_OPEN] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Std.DB.SqliteErrorCode] begin. code_length=3974
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Std.DB.SqliteErrorCode] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Std.ZlibError] begin. code_length=876
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Std.ZlibError] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Std.GZipError] begin. code_length=876
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Std.GZipError] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Std.Base64Error] begin. code_length=884
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Std.Base64Error] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Std.EncodingCode] begin. code_length=3584
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Std.EncodingCode] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Std.EncodingError] begin. code_length=1159
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Std.EncodingError] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__TankGame.Project] begin. code_length=368
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__TankGame.___DllImportGlobal___] begin. code_length=501
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Std.FFI.Library] begin. code_length=18
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Std.FFI.Library] end. error_code=0
+[19:50:01] [Warning] [Runtime] [LID=10003] FFI: failed to load library 'F:\project\lang\simple_language\samples\Game\Lib\Std.dll'
+[19:50:01] [Warning] [Runtime] [LID=10003] FFI LoadLibrary: failed to load '../Lib/Std.dll'
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__TankGame.___DllImportGlobal___] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__TankGame.Project] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [(null)] begin. code_length=636
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__TankGame.TankGame] begin. code_length=12353
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Random] begin. code_length=14
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Random] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] vm_run=[__new_object__TankGame.TankGame] end. error_code=0
+[19:50:01] [Info] [Runtime] [LID=10002] 坦克大战开始！w/a/s/d 移动，f/空格 开火，q 退出。
+[19:50:01] [Info] [Runtime] [LID=10002] 
+
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] 坦克大战  
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] 分数: 0    生命: 3    剩余敌人: 6        
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] w/a/s/d 或方向键移动    f/空格 开火    q 退出            
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] ############################################
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] #  ##                                  ##  #
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] #  ##                                  ##  #
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] #  ##                                  ##  #
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] #  ##                                  ##  #
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] #      ######                  ######      #
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] #      ######                  ######      #
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] #                  ######                  #
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] #                  ######                  #
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] #              ##          ##              #
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] #              ##          ##              #
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] ############################################
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] EEE
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] EEE
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002]  e 
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] EEE
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] EEE
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002]  e 
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] EEE
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] EEE
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002]  e 
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] EEE
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] EEE
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002]  e 
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] EEE
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] EEE
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002]  e 
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] e  
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] EEE
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] e  
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002]  ^ 
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] ###
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] ###
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] 坦克大战  
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] 分数: 0    生命: 3    剩余敌人: 6        
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] w/a/s/d 或方向键移动    f/空格 开火    q 退出            
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] ############################################
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] #  ##                                  ##  #
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] #  ##                                  ##  #
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] #  ##                                  ##  #
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] #  ##                                  ##  #
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] #      ######                  ######      #
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] #      ######                  ######      #
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] #                  ######                  #
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] #                  ######                  #
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] #              ##          ##              #
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] #              ##          ##              #
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] ############################################
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] EEE
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] EEE
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002]  e 
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] EEE
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] EEE
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002]  e 
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] EEE
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] EEE
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002]  e 
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] EEE
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] EEE
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002]  e 
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] EEE
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] EEE
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002]  e 
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] e  
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] EEE
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] e  
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002]  ^ 
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] ###
+[19:50:01] [Info] [Runtime] [LID=10002] 
+[19:50:01] [Info] [Runtime] [LID=10002] ###
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] 坦克大战  
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] 分数: 0    生命: 3    剩余敌人: 6        
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] w/a/s/d 或方向键移动    f/空格 开火    q 退出            
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] ############################################
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #  ##                                  ##  #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #  ##                                  ##  #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #  ##                                  ##  #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #  ##                                  ##  #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #      ######                  ######      #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #      ######                  ######      #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #                  ######                  #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #                  ######                  #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #              ##          ##              #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #              ##          ##              #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] ############################################
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] EEE
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] EEE
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002]  e 
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] EEE
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] EEE
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002]  e 
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] EEE
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] EEE
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002]  e 
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] EEE
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] EEE
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002]  e 
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] EEE
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] EEE
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002]  e 
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] e  
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] EEE
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] e  
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002]  ^ 
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] ###
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] ###
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] 坦克大战  
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] 分数: 0    生命: 3    剩余敌人: 6        
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] w/a/s/d 或方向键移动    f/空格 开火    q 退出            
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] ############################################
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #  ##                                  ##  #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #  ##                                  ##  #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #  ##                                  ##  #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #  ##                                  ##  #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #      ######                  ######      #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #      ######                  ######      #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #                  ######                  #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #                  ######                  #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #              ##          ##              #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #              ##          ##              #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] ############################################
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] EEE
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] EEE
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002]  e 
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] EEE
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] EEE
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002]  e 
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] EEE
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] EEE
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002]  e 
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] EEE
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] EEE
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002]  e 
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] EEE
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] EEE
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002]  e 
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] e  
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] EEE
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] e  
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002]  ^ 
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] ###
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] ###
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] 坦克大战  
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] 分数: 0    生命: 3    剩余敌人: 6        
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] w/a/s/d 或方向键移动    f/空格 开火    q 退出            
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] ############################################
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #  ##                                  ##  #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #  ##                                  ##  #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #  ##                                  ##  #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #  ##                                  ##  #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #      ######                  ######      #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #      ######                  ######      #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #                  ######                  #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #                  ######                  #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #              ##          ##              #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #              ##          ##              #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] ############################################
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] EEE
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] EEE
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002]  e 
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] EEE
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] EEE
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002]  e 
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] EEE
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] EEE
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002]  e 
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] EEE
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] EEE
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002]  e 
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] EEE
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] EEE
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002]  e 
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] e  
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] EEE
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] e  
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002]  ^ 
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] ###
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] ###
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] 坦克大战  
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] 分数: 0    生命: 3    剩余敌人: 6        
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] w/a/s/d 或方向键移动    f/空格 开火    q 退出            
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] ############################################
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #  ##                                  ##  #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #  ##                                  ##  #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #  ##                                  ##  #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #  ##                                  ##  #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #      ######                  ######      #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #      ######                  ######      #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #                  ######                  #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #                  ######                  #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #              ##          ##              #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #              ##          ##              #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:02] [Info] [Runtime] [LID=10002] 
+[19:50:02] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:03] [Info] [Runtime] [LID=10002] 
+[19:50:03] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:03] [Info] [Runtime] [LID=10002] 
+[19:50:03] [Info] [Runtime] [LID=10002] ############################################
+[19:50:03] [Info] [Runtime] [LID=10002] 
+[19:50:03] [Info] [Runtime] [LID=10002] EEE
+[19:50:03] [Info] [Runtime] [LID=10002] 
+[19:50:03] [Info] [Runtime] [LID=10002] EEE
+[19:50:03] [Info] [Runtime] [LID=10002] 
+[19:50:03] [Info] [Runtime] [LID=10002]  e 
+[19:50:03] [Info] [Runtime] [LID=10002] 
+[19:50:03] [Info] [Runtime] [LID=10002] EEE
+[19:50:03] [Info] [Runtime] [LID=10002] 
+[19:50:03] [Info] [Runtime] [LID=10002] EEE
+[19:50:03] [Info] [Runtime] [LID=10002] 
+[19:50:03] [Info] [Runtime] [LID=10002]  e 
+[19:50:03] [Info] [Runtime] [LID=10002] 
+[19:50:03] [Info] [Runtime] [LID=10002] EEE
+[19:50:03] [Info] [Runtime] [LID=10002] 
+[19:50:03] [Info] [Runtime] [LID=10002] EEE
+[19:50:03] [Info] [Runtime] [LID=10002] 
+[19:50:03] [Info] [Runtime] [LID=10002]  e 
+[19:50:03] [Info] [Runtime] [LID=10002] 
+[19:50:03] [Info] [Runtime] [LID=10002] EEE
+[19:50:03] [Info] [Runtime] [LID=10002] 
+[19:50:03] [Info] [Runtime] [LID=10002] EEE
+[19:50:03] [Info] [Runtime] [LID=10002] 
+[19:50:03] [Info] [Runtime] [LID=10002]  e 
+[19:50:03] [Info] [Runtime] [LID=10002] 
+[19:50:03] [Info] [Runtime] [LID=10002] EEE
+[19:50:03] [Info] [Runtime] [LID=10002] 
+[19:50:03] [Info] [Runtime] [LID=10002] EEE
+[19:50:03] [Info] [Runtime] [LID=10002] 
+[19:50:03] [Info] [Runtime] [LID=10002]  e 
+[19:50:03] [Info] [Runtime] [LID=10002] 
+[19:50:03] [Info] [Runtime] [LID=10002] e  
+[19:50:03] [Info] [Runtime] [LID=10002] 
+[19:50:03] [Info] [Runtime] [LID=10002] EEE
+[19:50:03] [Info] [Runtime] [LID=10002] 
+[19:50:03] [Info] [Runtime] [LID=10002] e  
+[19:50:03] [Info] [Runtime] [LID=10002] 
+[19:50:03] [Info] [Runtime] [LID=10002]  ^ 
+[19:50:03] [Info] [Runtime] [LID=10002] 
+[19:50:03] [Info] [Runtime] [LID=10002] ###
+[19:50:03] [Info] [Runtime] [LID=10002] 
+[19:50:03] [Info] [Runtime] [LID=10002] ###
+[19:50:03] [Info] [Runtime] [LID=10002] 
+[19:50:03] [Info] [Runtime] [LID=10002] 坦克大战  
+[19:50:03] [Info] [Runtime] [LID=10002] 
+[19:50:03] [Info] [Runtime] [LID=10002] 分数: 0    生命: 3    剩余敌人: 6        
+[19:50:03] [Info] [Runtime] [LID=10002] 
+[19:50:03] [Info] [Runtime] [LID=10002] w/a/s/d 或方向键移动    f/空格 开火    q 退出            
+[19:50:03] [Info] [Runtime] [LID=10002] 
+[19:50:03] [Info] [Runtime] [LID=10002] ############################################
+[19:50:03] [Info] [Runtime] [LID=10002] 
+[19:50:03] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:03] [Info] [Runtime] [LID=10002] 
+[19:50:03] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:03] [Info] [Runtime] [LID=10002] 
+[19:50:03] [Info] [Runtime] [LID=10002] #                                          #
+[19:50:03] [Info] [Runtime] [LID=10002] 
+[19:50:03] [Info] [Runtime] [LID=10002] #  ##                                  ##  #
+[19:50:03] [Info] [Runtime] [LID=10002] 
+[19:50:03] [Info] [Runtime] [LID=10002] #  ##                                  ##  #
+[19:50:03] [Info] [Runtime] [LID=10002] 
+[19:50:03] [Info] [Runtime] [LID=10002] #  ##                                  ##  #
+[19:50:03] [Info] [Runtime] [LID=10002] 
+[19:50:03] [Info] [Runtime] [LID=10002] #  ##                                  ##  #
+[19:50:03] [Info] [Runtime] [LID=10002] 

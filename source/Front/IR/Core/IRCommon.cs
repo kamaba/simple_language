@@ -8,30 +8,4 @@
 
 namespace SimpleLanguage.IR
 {
-    /*
-    public enum EArrayType
-    {
-        None,
-        Boolean,
-        Byte,
-        SByte,
-        Int16,
-        Int32,
-        Int64,
-        UInt16,
-        UInt32,
-        UInt64,
-        Single,
-        Double,
-        String,
-        Array,
-        Any,
-        Class,
-    }
-    */
-    public class IRNewArray
-    {
-        public IRMetaType irMetaType;
-        public int length;
-    }
 }

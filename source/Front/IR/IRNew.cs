@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      IRNew.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -16,7 +16,9 @@ namespace SimpleLanguage.IR
             data.opCode = EIROpCode.NewObject;
             // VM side reads NewObject payload as Int32 classId.
             data.SetOpValue(irmc != null ? irmc.id : 0);
-            data.debugInfo = new DebugInfo() { name = irmc.irName, info = "IRNew" };
+            data.debugInfo = new DebugInfo() { name = irmc?.irName ?? string.Empty, info = "IRNew" };
+            // Fill source location from the bound method's token so IRNew carries a real path/line.
+            data.SetDebugInfoByToken(irMethod?.bindMetaFunction?.token);
             AddIRData(data);
         }
         public IRNew(IRMethod irMethod, IRMetaType opvalue ) : base(irMethod)
@@ -24,7 +26,8 @@ namespace SimpleLanguage.IR
             IRData data = new IRData();
             data.opCode = EIROpCode.NewTemplateObject;
             data.SetOpValue(opvalue);
-            data.debugInfo = new DebugInfo() { name = "", info = "NewCallClass" };
+            data.debugInfo = new DebugInfo() { name = opvalue?.irMetaClass?.irName ?? string.Empty, info = "NewCallClass" };
+            data.SetDebugInfoByToken(irMethod?.bindMetaFunction?.token);
             AddIRData(data);
         }
         public IRNew(IRMethod irMethod, IRMetaType opvalue, int type ) : base(irMethod)
@@ -32,7 +35,8 @@ namespace SimpleLanguage.IR
             IRData data = new IRData();
             data.opCode = EIROpCode.NewArray;
             data.SetOpValue(opvalue);
-            data.debugInfo = new DebugInfo() { name = "", info = "NewArray" };
+            data.debugInfo = new DebugInfo() { name = opvalue?.irMetaClass?.irName ?? string.Empty, info = "NewArray" };
+            data.SetDebugInfoByToken(irMethod?.bindMetaFunction?.token);
             AddIRData(data);
         }
     }

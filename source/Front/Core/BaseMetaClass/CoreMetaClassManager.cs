@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      CoreMetaClassManager.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -8,7 +8,6 @@
 
 using System.Collections.Generic;
 using System.Diagnostics;
-
 
 namespace SimpleLanguage.Core
 {
@@ -28,6 +27,10 @@ namespace SimpleLanguage.Core
         UInt32,
         Int64,
         UInt64,
+        Float8,
+        Float8_E5M2,
+        Float16,
+        Float16_Brain,
         Float32,
         Float64,
         String,
@@ -40,6 +43,12 @@ namespace SimpleLanguage.Core
         Data,
         Enum,
         Member,
+        Error,
+        Ptr,
+        Result,
+        ResultT,
+        Function,
+        InlineLambda,
     }
     class CoreMetaClassManager
     {
@@ -73,6 +82,10 @@ namespace SimpleLanguage.Core
         public static MetaClass uint32MetaClass { get; private set; } = null;
         public static MetaClass int64MetaClass { get; private set; } = null;
         public static MetaClass uint64MetaClass { get; private set; } = null;
+        public static MetaClass float8MetaClass { get; private set; } = null;
+        public static MetaClass float8_E5M2MetaClass { get; private set; } = null;
+        public static MetaClass float16_BrainMetaClass { get; private set; } = null;
+        public static MetaClass float16MetaClass { get; private set; } = null;
         public static MetaClass float32MetaClass { get; private set; } = null;
         public static MetaClass float64MetaClass { get; private set; } = null;
         public static MetaClass arrayMetaClass { get; private set; } = null;
@@ -85,6 +98,12 @@ namespace SimpleLanguage.Core
         public static MetaClass enumMetaData { get; private set; } = null;
         public static MetaClass iteratorMetaClass { get; set; } = null;
         public static MetaClass iterableMetaClass { get; set; } = null;
+        public static MetaClass errorMetaClass { get; private set; } = null;
+        public static MetaClass ptrMetaClass { get; private set; } = null;
+        public static MetaClass resultMetaClass { get; private set; } = null;
+        public static MetaClass resultTMetaClass { get; private set; } = null;
+        public static MetaClass functionMetaClass { get; private set; } = null;
+        public static MetaClass inlineLambdaMetaClass { get; private set; } = null;
 
         public static List<MetaClass> s_InnerDefineMetaClassList = new List<MetaClass>();
 
@@ -105,6 +124,10 @@ namespace SimpleLanguage.Core
             uint32MetaClass = UInt32MetaClass.CreateMetaClass();
             int64MetaClass = Int64MetaClass.CreateMetaClass();
             uint64MetaClass = UInt64MetaClass.CreateMetaClass();
+            float8MetaClass = Float8MetaClass.CreateMetaClass();
+            float8_E5M2MetaClass = Float8_E5M2MetaClass.CreateMetaClass();
+            float16MetaClass = Float16MetaClass.CreateMetaClass();
+            float16_BrainMetaClass = Float16_BrainMetaClass.CreateMetaClass();
             float32MetaClass = Float32MetaClass.CreateMetaClass();
             float64MetaClass = Float64MetaClass.CreateMetaClass();
             stringMetaClass = StringMetaClass.CreateMetaClass();
@@ -116,6 +139,12 @@ namespace SimpleLanguage.Core
             enumMetaData = EnumMetaClass.CreateMetaClass();
             memberMetaClass = MemberMetaClass.CreateMetaClass();
             typeMetaClass = TypeMetaClass.CreateMetaClass();
+            errorMetaClass = ErrorMetaClass.CreateMetaClass();
+            ptrMetaClass = PtrMetaClass.CreateMetaClass();
+            resultMetaClass = ResultMetaClass.CreateMetaClass();
+            resultTMetaClass = ResultTMetaClass.CreateMetaClass();
+            functionMetaClass = FunctionMetaClass.CreateMetaClass();
+            inlineLambdaMetaClass = InlineLambdaMetaClass.CreateMetaClass();
 
             s_InnerDefineMetaClassList.Add(objectMetaClass);
             s_InnerDefineMetaClassList.Add(voidMetaClass);
@@ -131,6 +160,10 @@ namespace SimpleLanguage.Core
             s_InnerDefineMetaClassList.Add(uint32MetaClass);
             s_InnerDefineMetaClassList.Add(int64MetaClass);
             s_InnerDefineMetaClassList.Add(uint64MetaClass);
+            s_InnerDefineMetaClassList.Add(float8MetaClass);
+            s_InnerDefineMetaClassList.Add(float8_E5M2MetaClass);
+            s_InnerDefineMetaClassList.Add(float16MetaClass);
+            s_InnerDefineMetaClassList.Add(float16_BrainMetaClass);
             s_InnerDefineMetaClassList.Add(float32MetaClass);
             s_InnerDefineMetaClassList.Add(float64MetaClass);
             s_InnerDefineMetaClassList.Add(stringMetaClass);
@@ -141,17 +174,21 @@ namespace SimpleLanguage.Core
             s_InnerDefineMetaClassList.Add(dynamicMetaData);
             s_InnerDefineMetaClassList.Add(enumMetaData);
             s_InnerDefineMetaClassList.Add(typeMetaClass);
+            s_InnerDefineMetaClassList.Add(errorMetaClass);
             s_InnerDefineMetaClassList.Add(memberMetaClass);
+            s_InnerDefineMetaClassList.Add(ptrMetaClass);
+            s_InnerDefineMetaClassList.Add(resultMetaClass);
+            s_InnerDefineMetaClassList.Add(resultTMetaClass);
+            s_InnerDefineMetaClassList.Add(functionMetaClass);
+            s_InnerDefineMetaClassList.Add(inlineLambdaMetaClass);
         }
         public void Init()
         {
             foreach( var v in s_InnerDefineMetaClassList )
             {
                 v.ParseInner();
-                //ModuleManager.instance.coreModule.metaNode.AddMetaClass(v);
                 ClassManager.instance.AddMetaClass(v, ModuleManager.instance.coreModule);
                 v.UpdateClassAllName();
-                ClassManager.instance.AddExportMetaClass(v);
             }
         }
         public static bool IsIncludeMetaClass( MetaClass metaclass )
@@ -161,6 +198,19 @@ namespace SimpleLanguage.Core
                 return true;
             }
             return false;
+        }
+
+        /// <summary>
+        /// 判断一个 MetaType 是否为 Result / Result&lt;T&gt; 类型（用于 result 关键字支持）。
+        /// </summary>
+        public static bool IsResultMetaType( MetaType mt )
+        {
+            if( mt == null )
+            {
+                return false;
+            }
+            var mc = mt.GetTemplateMetaClass();
+            return mc != null && (mc == resultMetaClass || mc == resultTMetaClass);
         }
 
         public static EType GetETypeByMetaClass(MetaClass mc)
@@ -209,6 +259,22 @@ namespace SimpleLanguage.Core
             {
                 return EType.UInt64;
             }
+            else if (mc == float8MetaClass)
+            {
+                return EType.Float8;
+            }
+            else if (mc == float8_E5M2MetaClass)
+            {
+                return EType.Float8_E5M2;
+            }
+            else if (mc == float16MetaClass)
+            {
+                return EType.Float16;
+            }
+            else if (mc == float16_BrainMetaClass)
+            {
+                return EType.Float16_Brain;
+            }
             else if (mc == float32MetaClass)
             {
                 return EType.Float32;
@@ -240,6 +306,26 @@ namespace SimpleLanguage.Core
             else if (mc == rangeMetaClass )
             {
                 return EType.Range;
+            }
+            else if (mc == ptrMetaClass)
+            {
+                return EType.Ptr;
+            }
+            else if (mc == resultMetaClass)
+            {
+                return EType.Result;
+            }
+            else if (mc == resultTMetaClass)
+            {
+                return EType.ResultT;
+            }
+            else if (mc is FunctionMetaClass) // 兼容 FunctionSignatureMetaClass 子类
+            {
+                return EType.Function;
+            }
+            else if (mc == inlineLambdaMetaClass)
+            {
+                return EType.InlineLambda;
             }
             else
             {
@@ -276,6 +362,14 @@ namespace SimpleLanguage.Core
                     return int64MetaClass;
                 case EType.UInt64:
                     return uint64MetaClass;
+                case EType.Float8:
+                    return float8MetaClass;
+                case EType.Float8_E5M2:
+                    return float8_E5M2MetaClass;
+                case EType.Float16:
+                    return float16MetaClass;
+                case EType.Float16_Brain:
+                    return float16_BrainMetaClass;
                 case EType.Float32:
                     return float32MetaClass;
                 case EType.Float64:
@@ -286,6 +380,12 @@ namespace SimpleLanguage.Core
                     return arrayMetaClass;
                 case EType.Range:
                     return rangeMetaClass;
+                case EType.Ptr:
+                    return ptrMetaClass;
+                case EType.Function:
+                    return functionMetaClass;
+                case EType.InlineLambda:
+                    return inlineLambdaMetaClass;
                 default:
                     {
                         Debug.WriteLine("Warning ClassManager GetMetaClassByEType 1111");
@@ -344,12 +444,13 @@ namespace SimpleLanguage.Core
                 case "SByte":
                     return DefaultObject.Int8.ToString();
                 case "half":
-                    return null;
+                    return DefaultObject.Float16.ToString();
                 case "float":
                 case "Float32":
                     return DefaultObject.Float32.ToString();
                 case "double":
                 case "Float64":
+                case "Core.Float64":
                     return DefaultObject.Float64.ToString();
                 case "range":
                 case "Range":
@@ -360,6 +461,9 @@ namespace SimpleLanguage.Core
                     return DefaultObject.Data.ToString();
                 case "array":
                     return DefaultObject.Array.ToString();
+                case "Function":
+                case "function":
+                    return DefaultObject.Function.ToString();
                 default:return name;
             }
         }

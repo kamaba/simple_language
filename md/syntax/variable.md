@@ -97,3 +97,21 @@ const data ProjectConfig{
 ```
 
 ### 规则，在函数每个{}区间对应的变量的范围，如果超出范围，不能使用该变量， 在函数变量定义中，不允许有重复名称，如果重复名称，则一般会报错。
+
+## 变量命名规则（禁止关键字）
+
+变量的名称不允许使用关键字，Front 解析阶段会直接报错（LID `NodeStructParseNameIsKeyword`）。适用于所有变量定义（对象变量、函数内变量、for 循环变量）以及函数/闭包/lambda 参数命名。
+
+```python
+var new = 5        # 错误: new 是关键字
+string string = "x" # 错误: string 是基本类型关键字
+var var = 5        # 错误: var 是关键字
+int global = 5     # 错误: global 是关键字
+static f( int if ) # 错误: 参数名 if 是关键字
+var ok = 1         # 正确
+```
+
+注意：
+1. 基本类型词（int/string/object/bool/float/double/byte/short/long 等）也是关键字，不允许作为变量名或参数名。
+2. `this`、`base`、`local`、`global` 作为限定前缀使用（如 `this._value = b`、`global.x = 5`）是合法的；但单独作为变量名（如 `int global = 5`）会报错。
+3. `$` 开头的变量（`$xxx`）不受影响。

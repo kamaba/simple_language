@@ -39,7 +39,7 @@ namespace SimpleLanguage.Compile
 
             if (!FileMetatUtil.SplitNodeList(inputNodeList, listDefieNode, valueNodeList, ref m_AssignToken))
             {
-                Log.AddFileMetaLog(LID.ShowExtendMessage, m_AssignToken, "Error 解析NodeList出现错误~~~");
+                Log.AddFileMetaLog(LID.FileMetaMemberFunctionNodeList, m_AssignToken, "Error 解析NodeList出现错误~~~");
                 return false;
             }
             if(valueNodeList.Count > 0 )
@@ -50,12 +50,21 @@ namespace SimpleLanguage.Compile
             Node typeNode = null;
             if (!GetNameAndTypeNode(listDefieNode, ref nameNode, ref typeNode, ref m_ParamsToken ))
             {
-                Log.AddFileMetaLog( LID.ShowExtendMessage, m_AssignToken, "Error 没有找到该定义名称 必须使用例: X = 102; 的格式");
+                Log.AddFileMetaLog( LID.FileMetaMemberFunctionParseBuildMetaParamterTypeNameParamName, m_AssignToken, "ParseBuildMetaParamter Error 定义参数的格式为 TypeName ParamName or param object[] ParamName");
                 return false;
             }
             if (nameNode == null)
             {
-                Log.AddFileMetaLog(LID.ShowExtendMessage, m_AssignToken, "Error 没有找到该定义名称 必须使用例: X = 101; 的格式");
+                Log.AddFileMetaLog(LID.FileMetaMemberFunctionX, m_AssignToken, "Error 没有找到该定义名称 必须使用例: X = 101; 的格式");
+                return false;
+            }
+            if (nameNode.nodeType == ENodeType.Key
+                || nameNode.token?.type == ETokenType.Type)
+            {
+                // 参数名位置是关键字(如 f( int if ) / f( string string )):
+                // Key 节点 = 普通关键字; Type token = 基本类型关键字(int/string/object...)
+                Log.AddFileMetaLog(LID.NodeStructParseNameIsKeyword, nameNode.token,
+                    "Error 参数定义的名称不允许使用关键字!! " + nameNode.token?.ToLexemeAllString());
                 return false;
             }
             m_Token = nameNode?.token;
@@ -168,18 +177,22 @@ namespace SimpleLanguage.Compile
 
         public Token interfaceToken => m_InterfaceToken;
         public Token staticToken => m_StaticToken;
+        public Token inlineToken => m_InlineToken;
         public Token overrideToken => m_OverrideToken;
         public Token abstractToken => m_AbstractToken;
         public Token permissionToken => m_PermissionToken;
         public Token getToken => m_GetToken;
         public Token setToken => m_SetToken;
         public Token finalToken => m_FinalToken;
+        public Token throwsToken => m_ThrowsToken;
         public bool canParse => m_CanParse;
 
         private Token m_InterfaceToken = null;
         private Token m_StaticToken = null;
+        private Token m_InlineToken = null;
         private Token m_AbstractToken = null;
         private Token m_FinalToken = null;
+        private Token m_ThrowsToken = null;
         private Token m_GetToken = null;
         private Token m_SetToken = null;
         private Token m_OverrideToken = null;
@@ -229,6 +242,7 @@ namespace SimpleLanguage.Compile
             Node returnClassNameNode = null;
             Token interfaceToken = null;
             Token staticToken = null;
+            Token inlineToken = null;
             Token getToken = null;
             Token setToken = null;
             Token finalToken = null;
@@ -249,7 +263,7 @@ namespace SimpleLanguage.Compile
                     {
                         if(funNameNode != null )
                         {
-                            Log.AddFileMetaLog( LID.ShowExtendMessage, token, "Error 已有函数实体，不能同时出现两个函数实体!");
+                            Log.AddFileMetaLog( LID.FileMetaMemberFunctionNotAllowFunction, token, "Error 已有函数实体，不能同时出现两个函数实体!");
                         }
                         funNameNode = cnode;
                     }
@@ -299,6 +313,15 @@ namespace SimpleLanguage.Compile
                     {
                         staticToken = token;
                     }
+                    else if (token.type == ETokenType.Inline)
+                    {
+                        if (inlineToken != null)
+                        {
+                            isError = true;
+                            Log.AddFileMetaLog(LID.FileFunctionDefineConflict, token, $"inline:[{inlineToken.lexeme.ToString()}]");
+                        }
+                        inlineToken = token;
+                    }
                     else if (token.type == ETokenType.Get)
                     {
                         if (getToken != null)
@@ -339,6 +362,15 @@ namespace SimpleLanguage.Compile
                         }
                         finalToken = token;
                     }
+                    else if (token.type == ETokenType.Throws)
+                    {
+                        if (m_ThrowsToken != null)
+                        {
+                            isError = true;
+                            Log.AddFileMetaLog(LID.FileFunctionDefineConflict, token, $"throws:[{m_ThrowsToken.lexeme.ToString()}]");
+                        }
+                        m_ThrowsToken = token;
+                    }
                     else
                     {
                         isError = true;
@@ -365,11 +397,12 @@ namespace SimpleLanguage.Compile
             }
             if( isError )
             {
-                Log.AddFileMetaLog(LID.ShowExtendMessage, m_Token, "ParseFileMetaMemberFunction have Error");
+                Log.AddFileMetaLog(LID.FileMetaMemberFunctionParseFileMetaMemberFunction, m_Token, "ParseFileMetaMemberFunction have Error");
             }
             m_OverrideToken = overrideToken;            
             m_PermissionToken = permissionToken;
             m_StaticToken = staticToken;
+            m_InlineToken = inlineToken;
             m_GetToken = getToken;
             m_SetToken = setToken;
             m_FinalToken = finalToken;
@@ -403,6 +436,10 @@ namespace SimpleLanguage.Compile
             for (int i = 0; i < parNode.childList.Count; i++)
             {
                 var pnode = parNode.childList[i];
+                if (pnode.nodeType == ENodeType.LineEnd)
+                {
+                    continue;   // 参数列表跨行时的换行符不参与参数定义
+                }
                 if (pnode.nodeType == ENodeType.Comma)
                 {
                     tparamList.Add(tempList);
@@ -426,7 +463,7 @@ namespace SimpleLanguage.Compile
                 FileMetaParamterDefine cdp = new FileMetaParamterDefine(m_FileMeta, nodelist);
                 if (nameSet.Contains(cdp.name))
                 {
-                    Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 参数名称有重名!!!");
+                    Log.AddFileMetaLog(LID.FileMetaMemberFunctionParam, "Error 参数名称有重名!!!");
                 }
                 AddMetaParamter(cdp);
             }
@@ -448,7 +485,7 @@ namespace SimpleLanguage.Compile
                     FileMetaTemplateDefine cdp = new FileMetaTemplateDefine(m_FileMeta, cnode);
                     if (m_MetaTemplatesList.Find( a=> a.name == cdp.name ) != null )
                     {
-                        Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 参数名称有重名!!!");
+                        Log.AddFileMetaLog(LID.FileMetaMemberFunctionParam2, "Error 参数名称有重名!!!");
                         continue;
                     }
                     AddMetaTemplate(cdp);
@@ -488,6 +525,10 @@ namespace SimpleLanguage.Compile
             if ( m_OverrideToken != null)
             {
                 sb.Append(" " + m_OverrideToken.lexeme.ToString());
+            }
+            if ( m_ThrowsToken != null)
+            {
+                sb.Append(" " + m_ThrowsToken.lexeme.ToString());
             }
             if (m_DefineMetaClass != null)
             {

@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\source\Front\SimpleLanguageFront.csproj" />
+  </ItemGroup>
+
+  <!-- 用 CMake 的 Visual Studio 生成器构建 C VM（产物：csimple_lang\build\<Config>\bin\）：
+       csimple_lang_dll.dll —— Debug 配置 P/Invoke 加载；
+       csimple_lang.exe     —— Release 配置进程模式调用。
+       仓库整体搬迁（换盘符/换机器）后，旧机器的 clang / NINJA_PATH / winget ninja 路径全部失效，
+       故改走 VS 生成器 + MSBuild：由 VS 实例自带工具链驱动构建，无需 vcvars/clang/ninja；
+       构建逻辑集中在 cmake-build-msvc.ps1（cmake 定位 + 旧缓存健康检测 + configure/build）。 -->
+  <Target Name="BuildCVM" BeforeTargets="Build">
+    <PropertyGroup>
+      <CVMRoot>$(MSBuildThisFileDirectory)..\..\..\csimple_lang</CVMRoot>
+      <CVMConfig Condition="'$(Configuration)' == 'Release'">Release</CVMConfig>
+      <CVMConfig Condition="'$(CVMConfig)' == ''">Debug</CVMConfig>
+    </PropertyGroup>
+    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -File &quot;$(CVMRoot)\scripts\cmake-build-msvc.ps1&quot; -Configuration $(CVMConfig)" />
+  </Target>
+
+</Project>

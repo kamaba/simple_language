@@ -18,12 +18,16 @@ namespace SimpleLanguage.IR
         {
             switch (etype)
             {
-                case EType.UInt8: return EIROpCode.LoadConstUInt8;
-                case EType.Int8: return EIROpCode.LoadConstInt8;
                 case EType.Boolean: return EIROpCode.LoadConstBoolean;
+                case EType.Int8: return EIROpCode.LoadConstInt8;
+                case EType.UInt8: return EIROpCode.LoadConstUInt8;
+                case EType.Float8: return EIROpCode.LoadConstFloat8_E4M3;
+                case EType.Float8_E5M2: return EIROpCode.LoadConstFloat8_E5M2;
                 //case EType.Char: return EIROpCode.LoadConstChar;
                 case EType.Int16: return EIROpCode.LoadConstInt16;
                 case EType.UInt16: return EIROpCode.LoadConstUInt16;
+                case EType.Float16: return EIROpCode.LoadConstFloat16;
+                case EType.Float16_Brain: return EIROpCode.LoadConstFloat16_Brain;
                 case EType.Int32: return EIROpCode.LoadConstInt32;
                 case EType.UInt32: return EIROpCode.LoadConstUInt32;
                 case EType.Int64: return EIROpCode.LoadConstInt64;
@@ -140,45 +144,49 @@ namespace SimpleLanguage.IR
                 default:
                     {
                         isHave = false;
-                        //Log.AddIRLog(LID.ShowExtendMessage, "Error 未支持表达式中的IR代码" + opSign.ToString());
+                        //Log.AddIRLog(LID.IRUtilIR, "Error 未支持表达式中的IR代码" + opSign.ToString());
                     }
                     break;
             }
             return data;
         }
-        public static int GetTypeSize(EType etype)
-        {
-            switch (etype)
-            {
-                case EType.Bit:
-                    return 1;
-                case EType.UInt8:
-                case EType.Boolean:
-                    return 1;
-                //case EType.Char:
-                //    return 2;
-                case EType.Int16:
-                case EType.UInt16:
-                    return 2;
-                case EType.Int32:
-                case EType.UInt32:
-                case EType.Class:
-                case EType.String:
-                case EType.Float32:
-                    return 4;
-                case EType.Int64:
-                case EType.UInt64:
-                case EType.Float64:
-                    return 8;
-                case EType.Int128:
-                case EType.UInt128:
-                    return 16;
-                case EType.Float2:
-                    return 8;
+        //public static int GetTypeSize(EType etype)
+        //{
+        //    switch (etype)
+        //    {
+        //        case EType.Bit:
+        //            return 1;
+        //        case EType.UInt8:
+        //        case EType.Boolean:
+        //        case EType.Float8:
+        //        case EType.Float8_E5M2:
+        //            return 1;
+        //        //case EType.Char:
+        //        //    return 2;
+        //        case EType.Int16:
+        //        case EType.UInt16:
+        //        case EType.Float16:
+        //        case EType.Float16_Brain:
+        //            return 2;
+        //        case EType.Int32:
+        //        case EType.UInt32:
+        //        case EType.Class:
+        //        case EType.String:
+        //        case EType.Float32:
+        //            return 4;
+        //        case EType.Int64:
+        //        case EType.UInt64:
+        //        case EType.Float64:
+        //            return 8;
+        //        case EType.Int128:
+        //        case EType.UInt128:
+        //            return 16;
+        //        case EType.Float2:
+        //            return 8;
 
-            }
-            return 1;
-        }
+        //    }
+        //    return 1;
+        //}
     }
 
 }

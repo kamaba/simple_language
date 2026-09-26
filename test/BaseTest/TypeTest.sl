@@ -1,5 +1,3 @@
-import Std
-import CSharp.System
         
 typealias AliasIntArray = Array<int>
 typealias AliasObjArray = Array<Object>
@@ -20,7 +18,7 @@ TypeTest
             this.value = v
         }
 
-        string toString()
+        override string toString()
         {
             ret "Box(" + this.value.toString() + ")"
         }
