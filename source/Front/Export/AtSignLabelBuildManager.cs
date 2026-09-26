@@ -6,42 +6,62 @@
 //  Description:  @<tag>(){} 内联块的导出期构建管理器（语言无关分发，
 //                PLUGIN_SYSTEM_DESIGN.md §A20 通用化）。
 //                把 AtSignLabelBlockCollector 登记的插件临时代码按块 Label
-//                （= 插件 id）分组，分发给对应构建 handler 生成目标库：
-//                首期仅 csharp_mono（.NET Framework csc.exe 把全部 C# 条目
-//                合并编译为 SLAtSign.dll 并部署到插件 lib 目录，运行期靠
-//                assemblies_path 兜底加载）；Source 为空的块不进构建器
-//                （插件自管）；无 handler 的标签记告警不中断导出。
-//                后续 C/CUDA/Vulkan 插件 handler 按各自工具链在此追加。
-//                任何失败仅记日志不中断导出（运行期再告警）。
+//                （= plugin.jsonc 声明的 plugin.id）分组，统一经
+//                PluginFrontendParser.Build 转调对应插件的 frontend
+//                构建器（编译工具链与部署过程
+//                全在插件内，Front 不感知目标语言：csharp_mono 插件内为
+//                .NET Framework csc 合并编译 SLAtSign.dll 并部署到插件
+//                lib 目录，运行期靠 assemblies_path 兜底加载；后续
+//                C/CUDA/Vulkan 插件按各自工具链在插件侧实现）。
+//                Front 只组装上下文：outDir（模块包输出目录）与 libDir
+//                （与运行期 CVM 同语义解析出的插件 lib 部署目录），
+//                连同条目清单 entries[{entryName, source}] 打包下发。
+//                响应按 kind 四态分流 LID 22135~22138；Source 为空的块
+//                不进构建器（插件自管）；无构建入口的标签记告警不中断
+//                导出。任何失败仅记日志不中断导出（运行期再告警）。
+//                成功部署的产物按标签登记（DeployedDlls），供随后运行的
+//                PluginLibExportManager 把 frontend 构建产物拷入模块包
+//                plugins/<id>/ 并在 module.json plugins[].libs 做路径关联
+//                （导出管线顺序保证先构建后拷贝，见 ExportLangManager）。
 //****************************************************************************
 
 using SimpleLanguage.Logging;
 using SimpleLanguage.Project;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Reflection;
-using System.Text;
+using System.Text.Json;
 
 namespace SimpleLanguage.Export
 {
     /// <summary>
-    /// @<tag>(){} 块构建管理器：导出 module.json 前，按块 Label 分发
-    /// AtSignLabelBlockCollector 登记的临时代码到对应构建 handler。
-    /// csharp_mono handler：块内中段代码引用的外部程序集（如 MathUtil）
-    /// 需用户自行放到插件 lib 目录或 mono 4.5 GAC。
+    /// @<tag>(){} 块构建管理器：导出 module.json 前，按块 Label 分组
+    /// AtSignLabelBlockCollector 登记的临时代码，统一转调对应插件
+    /// frontend 工程的构建入口（builderType.builderMethod）。
+    /// 插件块内中段代码引用的外部程序集（如 MathUtil）需用户自行放到
+    /// 插件 lib 目录或对应运行时（如 mono 4.5 GAC）。
     /// </summary>
     public static class AtSignLabelBuildManager
     {
-        /// <summary>csharp_mono handler（.NET Framework csc 编译 SLAtSign.dll）。</summary>
-        private const string CSharpMonoLabel = "csharp_mono";
-        private const string CSharpMonoDllName = "SLAtSign.dll";
-        /// <summary>csc.exe 路径覆盖环境变量（优先于自动探测）。</summary>
-        private const string CscEnv = "SIMPLELANG_CSC";
+        // 插件构建响应 kind 协议值（与 SLLabelBuilder 等 frontend
+        // 构建器约定一致；Front 按 kind 分流日志；buildFailed/contract
+        // 及未知 kind 走 else 兜底 = LID 22136）
+        private const string KindSuccess = "success";
+        private const string KindNotFound = "notFound";
+        private const string KindDeployFailed = "deployFailed";
+
+        /// <summary>本趟导出的 frontend 构建产物登记（标签 → 部署后 dll
+        /// 全路径；KindSuccess 时记录）。每趟 Run 起始清空，供随后运行的
+        /// PluginLibExportManager 拷入模块包 plugins/&lt;id&gt;/ 并在
+        /// module.json plugins[].libs 做路径关联。</summary>
+        private static readonly Dictionary<string, string> s_DeployedDlls =
+            new Dictionary<string, string>(StringComparer.Ordinal);
 
         public static void Run( string outDir )
         {
+            // 每趟导出重置部署登记（静态字典跨导出会话防残留）
+            s_DeployedDlls.Clear();
+
             var blocks = SimpleLanguage.Compile.AtSignLabelBlockCollector.Blocks;
             if (blocks.Count == 0 || string.IsNullOrWhiteSpace(outDir))
             {
@@ -66,168 +86,120 @@ namespace SimpleLanguage.Export
 
             foreach (var pair in groups)
             {
-                if (string.Equals(pair.Key, CSharpMonoLabel, StringComparison.OrdinalIgnoreCase))
-                {
-                    BuildCSharpMono(pair.Value, outDir);
-                }
-                else
-                {
-                    // 无 handler 的标签：记告警不中断（该标签条目运行期由
-                    // 插件 labelExec capability 自行定位产物或报错）
-                    Log.AddIRLog(LID.ExportCscAtSignBuildFailed,
-                        "AtSignLabel: no build handler for label '" + pair.Key
-                            + "', " + pair.Value.Count + " block(s) skipped (plugin manages its own artifacts)");
-                }
+                Dispatch(pair.Key, pair.Value, outDir);
             }
         }
 
         // ------------------------------------------------------------------
-        // csharp_mono handler：csc 合并编译全部 C# 条目为 SLAtSign.dll 并部署
+        // 统一分发：组装上下文（outDir/libDir）+ 条目清单，转调插件构建器，
+        // 按响应 kind 分流 LID 22135~22138
         // ------------------------------------------------------------------
 
-        private static void BuildCSharpMono( List<SimpleLanguage.Compile.AtSignLabelBlock> blocks, string outDir )
+        private static void Dispatch( string label, List<SimpleLanguage.Compile.AtSignLabelBlock> blocks, string outDir )
         {
-            var csc = ResolveCsc();
-            if (csc == null)
+            var request = new SimpleLanguage.Compile.PluginLabelBuildRequest
             {
-                Log.AddIRLog(LID.ExportCscAtSignCompilerNotFound,
-                    "AtSignLabel: csc.exe not found (set " + CscEnv + " to override), skip @csharp_mono build");
+                Label = label,
+                OutDir = outDir,
+                LibDir = ResolvePluginLibDir(label, outDir, blocks[0].FilePath),
+            };
+            foreach (var block in blocks)
+            {
+                request.Entries.Add(new SimpleLanguage.Compile.PluginLabelBuildEntry
+                {
+                    EntryName = block.EntryClassName,
+                    Source = block.Source,
+                });
+            }
+
+            var build = SimpleLanguage.Compile.PluginFrontendParser.Build(
+                label, blocks[0].FilePath, JsonSerializer.Serialize(request));
+            if (build == null)
+            {
+                // 无构建入口（builder 未声明/程序集未加载成功，宿主已报）：
+                // 记告警不中断（该标签条目运行期由插件 labelExec capability
+                // 自行定位产物或报错）
+                Log.AddIRLog(LID.ExportCscAtSignBuildFailed,
+                    "AtSignLabel: no build handler for label '" + label
+                        + "', " + blocks.Count + " block(s) skipped (plugin manages its own artifacts)");
                 return;
             }
 
-            var tempDir = Path.Combine(Path.GetTempPath(),
-                "sl_csharp_mono_" + Guid.NewGuid().ToString("N").Substring(0, 8));
-            try
+            // 按 kind 分流（error/dllPath/count 为插件侧诊断详情）
+            if (string.Equals(build.Kind, KindSuccess, StringComparison.Ordinal))
             {
-                Directory.CreateDirectory(tempDir);
-
-                // 1) 逐块写 .cs（UTF-8 带 BOM：csc 对无 BOM 文件按 ANSI 读，中文乱码）
-                var srcFiles = new List<string>();
-                foreach (var block in blocks)
+                // 登记部署产物，供随后运行的 PluginLibExportManager 拷入
+                // 模块包并做 plugins[].libs 路径关联
+                if (!string.IsNullOrEmpty(build.DllPath))
                 {
-                    var srcPath = Path.Combine(tempDir, block.EntryClassName + ".cs");
-                    File.WriteAllText(srcPath, block.Source, new UTF8Encoding(true));
-                    srcFiles.Add(srcPath);
+                    s_DeployedDlls[label] = build.DllPath;
                 }
-
-                // 2) csc 编译为 SLAtSign.dll（C#5 兼容，v4.0.30319）
-                var dllPath = Path.Combine(tempDir, CSharpMonoDllName);
-                var args = new StringBuilder();
-                args.Append("/target:library /optimize+ /nologo /warn:0 /out:").Append(Quote(dllPath));
-                // 引用部署目录中已有的用户程序集（如 SLCSharpTestLib.dll），
-                // 块内 import 的命名空间类型才可解析（跳过自身旧版与 native dll）
-                var deployDir = ResolvePluginLibDir(outDir);
-                if (deployDir != null)
-                {
-                    foreach (var refDll in Directory.GetFiles(deployDir, "*.dll"))
-                    {
-                        if (string.Equals(Path.GetFileName(refDll), CSharpMonoDllName, StringComparison.OrdinalIgnoreCase))
-                        {
-                            continue;
-                        }
-                        try
-                        {
-                            _ = AssemblyName.GetAssemblyName(refDll);
-                        }
-                        catch
-                        {
-                            continue; // native（cvm_csharp_mono / mono-2.0-sgen）等非程序集
-                        }
-                        args.Append(" /r:").Append(Quote(refDll));
-                    }
-                }
-                foreach (var f in srcFiles)
-                {
-                    args.Append(' ').Append(Quote(f));
-                }
-                var output = RunCapture(csc, args.ToString(), tempDir);
-                if (output == null || !File.Exists(dllPath))
-                {
-                    Log.AddIRLog(LID.ExportCscAtSignBuildFailed,
-                        "AtSignLabel: csc build failed: " + (output ?? "cannot start process"));
-                    return;
-                }
-
-                // 3) 部署到 csharp_mono 插件 lib 目录（运行期 assemblies_path 兜底加载）
-                if (deployDir == null)
-                {
-                    Log.AddIRLog(LID.ExportCscAtSignDeployFailed,
-                        "AtSignLabel: csharp_mono lib dir not found, skip deploy " + CSharpMonoDllName);
-                    return;
-                }
-                var dstPath = Path.Combine(deployDir, CSharpMonoDllName);
-                File.Copy(dllPath, dstPath, overwrite: true);
                 Log.AddIRLog(LID.ExportCscAtSignBuildSuccess,
-                    "AtSignLabel: build success (" + blocks.Count + " block(s)): " + dstPath);
+                    "AtSignLabel: build success (" + build.Count + " block(s)): " + build.DllPath);
             }
-            finally
+            else if (string.Equals(build.Kind, KindNotFound, StringComparison.Ordinal))
             {
-                try
-                {
-                    Directory.Delete(tempDir, true);
-                }
-                catch
-                {
-                    // temp 清理失败无害
-                }
+                Log.AddIRLog(LID.ExportCscAtSignCompilerNotFound,
+                    "AtSignLabel: build skipped for label '" + label + "': " + build.Error);
+            }
+            else if (string.Equals(build.Kind, KindDeployFailed, StringComparison.Ordinal))
+            {
+                Log.AddIRLog(LID.ExportCscAtSignDeployFailed,
+                    "AtSignLabel: deploy failed for label '" + label + "': " + build.Error);
+            }
+            else
+            {
+                // buildFailed / contract / 空·未知 kind（协议演进兜底）：
+                // 构建失败不中断导出
+                Log.AddIRLog(LID.ExportCscAtSignBuildFailed,
+                    "AtSignLabel: build failed for label '" + label + "' (kind=" + build.Kind + "): " + build.Error);
             }
         }
 
         // ------------------------------------------------------------------
-        // csc 探测：env 覆盖 -> Framework64 v4.0.30319 -> Framework v4.0.30319
+        // 部署登记查询：供随后运行的 PluginLibExportManager 把本趟构建的
+        // frontend 产物拷入模块包 plugins/<id>/ 并在 module.json
+        // plugins[].libs 做路径关联（pluginId = 块 Label = plugin.jsonc 的
+        // plugin.id，忽略大小写，与 libDir 解析的 id 匹配同口径）
         // ------------------------------------------------------------------
 
-        private static string ResolveCsc()
+        /// <summary>查本趟导出中该插件 frontend 构建并已部署的 dll 全路径；未构建返回 null。</summary>
+        public static string FindDeployedDll( string pluginId )
         {
-            // 1) 显式覆盖
-            var env = Environment.GetEnvironmentVariable(CscEnv);
-            if (!string.IsNullOrWhiteSpace(env) && File.Exists(env))
+            if (string.IsNullOrEmpty(pluginId))
             {
-                return env;
+                return null;
             }
-
-            // 2) .NET Framework 自带 csc（64 位优先）
-            var windir = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
-            foreach (var root in new[]
-                     {
-                         Path.Combine(windir, "Microsoft.NET", "Framework64"),
-                         Path.Combine(windir, "Microsoft.NET", "Framework"),
-                     })
+            foreach (var pair in s_DeployedDlls)
             {
-                if (string.IsNullOrWhiteSpace(root))
+                if (string.Equals(pair.Key, pluginId, StringComparison.OrdinalIgnoreCase))
                 {
-                    continue;
-                }
-                foreach (var ver in Directory.Exists(root)
-                             ? Directory.GetDirectories(root, "v*", SearchOption.TopDirectoryOnly)
-                             : Array.Empty<string>())
-                {
-                    var exe = Path.Combine(ver, "csc.exe");
-                    if (File.Exists(exe))
-                    {
-                        return exe;
-                    }
+                    return pair.Value;
                 }
             }
             return null;
         }
 
         // ------------------------------------------------------------------
-        // 部署目录解析：与运行期 CVM 同语义（lib 直给值按包目录 outDir 解析），
-        // 兜底从 outDir 逐级上溯找 SLPlugin\csharp_mono\lib\windows-x64
+        // libDir 解析（上下文组装，归 Front）：与运行期 CVM 同语义
+        // （lib 直给值按包目录 outDir 解析），其次按插件清单声明的
+        // plugin.id 路由插件根（与 @<tag> 路由同真源
+        // PluginFrontendParser.FindPluginRootById），兜底从 outDir 逐级
+        // 上溯找 simple_language_plugins\<label>\cvm\lib\windows-x64
+        // （三目录标准布局，兼容旧扁平布局 <label>\lib\windows-x64）
         // ------------------------------------------------------------------
 
-        private static string ResolvePluginLibDir( string outDir )
+        private static string ResolvePluginLibDir( string label, string outDir, string filePath )
         {
-            // 1) jsonc plugins 段 csharp_mono 的 lib 直给值（如
-            //    "../../../../SLPlugin/csharp_mono/lib/windows-x64/cvm_csharp_mono.dll"）：
+            // 1) jsonc plugins 段该插件的 lib 直给值（如
+            //    "../../../../simple_language_plugins/csharp_mono/cvm/lib/windows-x64/cvm_csharp_mono.dll"）：
             //    运行期 CVM 按 module.json 所在包目录解析，这里取同语义解析出 dll 目录
             var plugins = ProjectManager.config?.Plugins;
             if (plugins != null)
             {
                 foreach (var p in plugins)
                 {
-                    if (p == null || !string.Equals(p.Id, CSharpMonoLabel, StringComparison.OrdinalIgnoreCase))
+                    if (p == null || !string.Equals(p.Id, label, StringComparison.OrdinalIgnoreCase))
                     {
                         continue;
                     }
@@ -236,13 +208,18 @@ namespace SimpleLanguage.Export
                     {
                         return dir;
                     }
-                    // 插件目录（Path）下的 lib\windows-x64
+                    // 插件目录（Path）下：三目录布局 cvm\lib\windows-x64 优先，旧扁平 lib\windows-x64 兼容
                     if (!string.IsNullOrWhiteSpace(p.Path))
                     {
                         var pluginDir = Path.IsPathRooted(p.Path)
                             ? Path.GetFullPath(p.Path)
                             : Path.GetFullPath(Path.Combine(outDir, p.Path));
-                        var d = Path.Combine(pluginDir, "lib", "windows-x64");
+                        var d = Path.Combine(pluginDir, "cvm", "lib", "windows-x64");
+                        if (Directory.Exists(d))
+                        {
+                            return d;
+                        }
+                        d = Path.Combine(pluginDir, "lib", "windows-x64");
                         if (Directory.Exists(d))
                         {
                             return d;
@@ -251,11 +228,35 @@ namespace SimpleLanguage.Export
                 }
             }
 
-            // 2) 兜底：从 outDir 逐级上溯找 SLPlugin\csharp_mono\lib\windows-x64
+            // 2) 插件清单 id 索引解析插件根（plugin.id 路由，与 @<tag>
+            //    路由同真源 FindPluginRootById，目录名仅缺 id 时兜底）：
+            //    cvm\lib\windows-x64（三目录标准布局）优先，旧扁平兼容
+            var pluginRoot = SimpleLanguage.Compile.PluginFrontendParser.FindPluginRootById(label, filePath);
+            if (pluginRoot != null)
+            {
+                var pluginLib = Path.Combine(pluginRoot, "cvm", "lib", "windows-x64");
+                if (Directory.Exists(pluginLib))
+                {
+                    return pluginLib;
+                }
+                pluginLib = Path.Combine(pluginRoot, "lib", "windows-x64");
+                if (Directory.Exists(pluginLib))
+                {
+                    return pluginLib;
+                }
+            }
+
+            // 3) 兜底：从 outDir 逐级上溯找 simple_language_plugins\<label>\cvm\lib\windows-x64
+            //    （三目录标准布局；旧扁平 <label>\lib\windows-x64 兼容，如 echo）
             var cur = outDir;
             while (!string.IsNullOrEmpty(cur))
             {
-                var d = Path.Combine(cur, "SLPlugin", "csharp_mono", "lib", "windows-x64");
+                var d = Path.Combine(cur, "simple_language_plugins", label, "cvm", "lib", "windows-x64");
+                if (Directory.Exists(d))
+                {
+                    return d;
+                }
+                d = Path.Combine(cur, "simple_language_plugins", label, "lib", "windows-x64");
                 if (Directory.Exists(d))
                 {
                     return d;
@@ -295,46 +296,6 @@ namespace SimpleLanguage.Export
                 // malformed path
             }
             return null;
-        }
-
-        // ------------------------------------------------------------------
-        // Process helpers
-        // ------------------------------------------------------------------
-
-        private static string Quote( string s )
-        {
-            return "\"" + s + "\"";
-        }
-
-        /// <summary>运行并合并 stdout/stderr；无法启动返回 null（非零退出码仍返回输出，供诊断）。</summary>
-        private static string RunCapture( string fileName, string args, string workingDirectory )
-        {
-            try
-            {
-                var psi = new ProcessStartInfo
-                {
-                    FileName = fileName,
-                    Arguments = args,
-                    WorkingDirectory = workingDirectory,
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    CreateNoWindow = true,
-                };
-                using var p = Process.Start(psi);
-                if (p == null)
-                {
-                    return null;
-                }
-                string stdout = p.StandardOutput.ReadToEnd();
-                string stderr = p.StandardError.ReadToEnd();
-                p.WaitForExit();
-                return p.ExitCode == 0 ? stdout + "\n" + stderr : "exit=" + p.ExitCode + "\n" + stdout + "\n" + stderr;
-            }
-            catch
-            {
-                return null;
-            }
         }
     }
 }

@@ -2,7 +2,7 @@
   "project":
   {
     "name": "AtSignNegativeTest",
-    "desc": "AtSign label negative cases - Front compile MUST fail with LID 20055 x5 / 20056 x1 (see atsign-negative-test.ps1)",
+    "desc": "AtSign label negative cases - Front compile MUST fail with LID 20055 x6 / 20056 x1 (see atsign-negative-test.ps1)",
     "mainVersion": 0,
     "subVersion": 0,
     "buildVersion": 1,
@@ -31,7 +31,7 @@
   },
   "export": {
     "moduleName": "AtSignNegativeTest",
-    "outputDir": "..\\..\\out\\export",
+    "outputDir": "..\\..\\..\\out\\export",
     "versionMain": 0,
     "versionSub": 0,
     "versionPatch": 1,

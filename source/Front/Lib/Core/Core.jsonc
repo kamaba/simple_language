@@ -128,6 +128,19 @@
     { "name": "AtSignLabelCall",     "returnType": "Int32", "params": ["Int32"], "isVariadic": true,  "cvmFunction": "atsign:label" },
     { "name": "AtSignLabelCallVoid", "returnType": "void",  "params": ["Int32"], "isVariadic": true,  "cvmFunction": "atsign:label" },
 
+    // ---- @<tag>(){} channel primitives (<- desugaring targets) ----
+    // Wrappers are plugin refModule slang functions (CSharpMono.sl
+    // ChannelInInt/ChannelInString/ChannelOutInt/ChannelOutString); these
+    // bare system calls hand values to the CVM atsign channel session
+    // manager (sl_atsign_channel.c), which routes by execution environment
+    // (MAIN stack assign / COROUTINE private stack / ISOLATE deep-copy).
+    // In: fixed entryIndex + variadic value (CSharpCallInt-like shape, int
+    // and string both pass); Out: fixed single entryIndex, Int32/String
+    // variants keyed by the out-channel type marker ("string $c <- expr").
+    { "name": "AtSignChannelIn",        "returnType": "void",   "params": ["Int32"], "isVariadic": true,  "cvmFunction": "sl_atsign_channel_in" },
+    { "name": "AtSignChannelOutInt",    "returnType": "Int32",  "params": ["Int32"], "isVariadic": false, "cvmFunction": "sl_atsign_channel_out_int" },
+    { "name": "AtSignChannelOutString", "returnType": "String", "params": ["Int32"], "isVariadic": false, "cvmFunction": "sl_atsign_channel_out_string" },
+
     // ---- Bridge calls ----
     { "name": "SystemCallCLRMethod",    "returnType": "object", "params": ["object"], "isVariadic": true, "cvmFunction": "vm_sys_call_clr_method" },
     { "name": "SystemCallNativeMethod", "returnType": "object", "params": ["object"], "isVariadic": true, "cvmFunction": "vm_sys_call_native_method" },

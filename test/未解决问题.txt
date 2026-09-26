@@ -1,9 +1,6 @@
 函数名称和类名冲突时候的处理  
 
-首先，要解析C# 也就是@csharp_mon(){} 大括号里边的内容的时候  只有在前边几行 和后边几行，可以解析 <- 这个符号 其它地方是不可以的，解析大括号里边的逻辑，大概分 这么几个点  首先要解析具体内容，不能在我的语文中解析， 把我定义的<-符号，你认为是给C#层，或者是其它语言层中，进行变量的先定义 ，然后在cvm里边传值的过程，<-符号是一个通道，而不是简单的一个赋值，因为这个过程可能是我的语言对另一个语言的传值，也可能是内存到显存的传值，也可能是两个硬件之间的传值。 是要在cvm层，专门走一套流程，这个流程大概是，先检查当前的变量，然后再检查 是否是协程或者是isolate环境，看是否要加channel或者是 isolate的接入机制，  然后做一个 变量传值的桥接层，用来，把这个值，通过api的方式，传入到另一个语言的runtime中，然后再走 大括号里边的其它代码 ，其实代码 定义的参数 其实是桥接层，两边已经对好的，然后就能直接使用这个语言的 逻辑执行了 ，还有一个要注意的， 像C# 可以需要把代码罗列到一个Main函数中，所以在前边解析 这个代码 的时候，要把using 一类的，提出来外边，再有就是，大括号中的解析过程 不要写在FrontEnd 里边，而是要把解析过程，写在plugin的一各专门定制的逻辑里边， 这个逻辑 其实解析，在csharp_mono() 这个小括号里边的一些参数 ，然后就是大括号{} 里边的具体内容  
-
 把VM_MIMALLOC_DISABLE 变成常开吧
-在linux wsl上跑起来，然后在ssh一台linux上跑下
 
 编码相关的
 Tcp/Udp/HttpClient/Websocket/NetStream相关接口
@@ -12,25 +9,6 @@ Yaml/Xml/RegExp
 
 TankGame.sl 引入Math类。把一些 二维的都使用Int32_2 Int32_3
 
-我现在要以plugins的形式 把F:\project\lang\SLPlugin\csharp_mono 接入进来，这个主要是用来跑csharp的源码的，我接入规则是这样的，在jsonc配置文件中，配置一个plugins的的字段，然后 里边{ "csharp_mono":{} } 来配置这个具体的过程 
-"csharp_mono":
-{
-	"name":"csharp_runtime_use_mono_engine",
-	"version": "2.0.1",
-	"path":"csharp_mono",		//这个目录是插件的目录，需要加载lib下所有的库 因平台自动选择，如果选择导出的是android,则在lib/android/xxx.so的库  frontendLibs这个下边的是Frontend前端处理预加载的dll，可以是多个，主要是为了配合signLabel符号内代码解析的过程
-	"signLabelHandle":{									//这个是否支持atSignLabel的用法，也就是@csharp(){} 的用法
-		"name":"csharp",
-		"params":[ {"version":"string","sync":true } ]	//这里边是 @csharp( 这里是参数的传入 version="8.0.0", sync = true ){},
-	},
-	"platform":{ "os":windows","cpu":"amd-x86" },
-}
-
-然后就是对 at sign label 的机制的判断  @gpu.amd 会在跑的平台， 在FrontEnd层要建一套 注册机制，在有这个标记的时候，会把当前使用的平台或者是机制信息，注册到刚才搭建的那个里边， 建一套，检查机制，只有遇到这个标记的才会跑，否则提示报错，不让代码跑起来，类推，如果我设计 的 带渲染的，但现在是在一套linux 不带图型的机器上，也跑不起来，只能通过运行屏蔽模块来限制这部分代码的运行，当然，也就不检查这部分的内容了。
-
-
-使用 @csharp{ } 调用相关的接口 在{}内是中转逻辑   a = 0; @csharp {     a = TestCSharp.TTC.getIndex( 10, a ) }   @js{ a = Test.calc( a, a ) }  需要在工程里边配置 C#版本
-我现在代码里边要增加 @标签{} 的一种逻辑，大概意思是，如果在jsonc 定义过这种标签，我在代码里边直接使用 比如  我在 jsonc 的配置里边  增加了 "atSignLabel":[ { "name":"asm", "handle":{}, "platform":{ "os":"window","cpu":"amd-x86" }  }, { "name":"csharp", "handle":{}, "platform":{ "os":"window","cpu":"amd-x86", "lib":"mono-static.dll" }  } ]  还有就是一些特殊注册，比如注册了csharp 可能识别代码 在@csharp(){ } 
-13. 研究 -> <- 的符号的支持  这两符号为通道赋值的过程，也就是说，不是简单的赋值，而是检查当前的进程线程协程后，决定使用那种赋值的方式，如果需要中断的，或者是需要等待处理的，都要有相关的对应方法。
 
 1. 接入 quickjs 
 2. 接入python

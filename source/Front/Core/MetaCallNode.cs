@@ -787,9 +787,17 @@ namespace SimpleLanguage.Core
                 else
                 {
                     if (frontCNT == ECallNodeType.MetaNode)
+                {
+                    MetaNode mn =  m_FrontCallNode.m_MetaNode.GetChildrenMetaNodeByName(m_Name);
+                    if (mn == null && m_FrontCallNode.m_MetaNode.isMetaNamespace)
                     {
-                        MetaNode mn =  m_FrontCallNode.m_MetaNode.GetChildrenMetaNodeByName(m_Name);
-                        if (mn != null)
+                        // 跨模块命名空间合并：同一逻辑命名空间（如 SLang）可分布在多个模块
+                        // （Std 贡献 SLang.Log，插件 refModule 贡献 SLang.Plugin.CSharpMono）。
+                        // 当前命中命名空间下未命中时，到其它模块的同名命名空间路径下级联查找。
+                        mn = ModuleManager.instance.FindChildrenInSameNamespaceAcrossModules(
+                            m_FrontCallNode.m_MetaNode, m_Name);
+                    }
+                    if (mn != null)
                         {
                             m_MetaNode = mn;
                             m_CallNodeType = ECallNodeType.MetaNode;
@@ -2839,6 +2847,22 @@ namespace SimpleLanguage.Core
                 mmf = mc.GetMetaMemberFunctionByNameAndInputTemplateInputParamCount(inputname, this.m_FileMetaCallNode.inputTemplateNodeList.Count, m_MetaInputParamCollection, true);
                 if (mmf == null)
                 {
+                    // 类路径 systemCall 回退（声明式注册，jsonc systemCalls 带 "class" 归属标记）：
+                    // SLang.Plugin.CSharpMono.CSharpCallInt(...) 这类调用在 SL 侧没有桩方法体，
+                    // 成员函数未命中时按 (类路径, 方法名) 查 registry；命中即与全局裸调用
+                    //（GetFirstNode）同一 MetaBuiltinFunction + SystemFunctionCall 出口，
+                    // IR 层零改动（IRCall.ParseSystemCall 按 CallNodeType 发射）。
+                    // 匹配基准用 metaNode.allName（不含模块名前缀，与 jsonc "class" 字段
+                    // 约定的统一路径一致）；mc.allName 含模块名（CSharpMono.SLang.Plugin.CSharpMono）。
+                    var ownerClassPath = mc.metaNode != null ? mc.metaNode.allName : mc.allName;
+                    if (SystemMethodCallDeclarationRegistry.TryGetDeclarationByClass(ownerClassPath, inputname, out var ownerClassDecl))
+                    {
+                        m_MetaFunction = new MetaMemberFunction.MetaBuiltinFunction(mc, ownerClassDecl);
+                        var retMt = m_MetaFunction.GetFinalMetaType();
+                        m_MetaType = retMt != null ? new MetaType(retMt) : null;
+                        m_CallNodeType = ECallNodeType.SystemFunctionCall;
+                        return true;
+                    }
                     // 函数调用形态未命中成员函数时回退查同名成员变量：
                     // 函数类型变量直调（如 dllImports 注入的 global.libaddfunc(1,2)，
                     // 与局部变量 addf(20,22)、@DllImport wrapper 的 __dll_name(a1,a2)

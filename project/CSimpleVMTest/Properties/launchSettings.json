@@ -95,6 +95,11 @@
       "commandLineArgs": "TLSFProbe",
       "nativeDebugging": true
     },
+    "AtSignLabel": {
+      "commandName": "Project",
+      "commandLineArgs": "AtSignLabel",
+      "nativeDebugging": true
+    },
     "GameTank": {
       "commandName": "Project",
       "commandLineArgs": "GameTank",

@@ -81,7 +81,7 @@ namespace SimpleLanguage.IR
 
             ParseIRMethod();
 
-            if( ProjectManager.config.Export.DebugText.IR == true )
+            if (Common.ShouldExportDebugText("IR.txt"))
             {
                 ExportIRDebugData();
             }

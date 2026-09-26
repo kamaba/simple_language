@@ -129,16 +129,31 @@ namespace SimpleLanguage.IR
         /// 提取成功：arg0 不发射（仅 Front 侧寻址），其余通道实参照 systemCall
         /// 变参路径发射（按实际类型压栈，不做固定形参矫正），发射
         /// CallAtSignLabel(124) 携带 SLAtSignLabelCallPackage{entryIndex,
-        /// paramCount, tryCatch, methodName}；CVM 装配期按 entryIndex 在模块
-        /// atSignLabel[] 表定位绑定并重写 payload 为 4 字节绑定索引。
+        /// paramCount, tryCatch, methodName, isVoid}；CVM 装配期按 entryIndex
+        /// 在模块 atSignLabel[] 表定位绑定并重写 payload 为 4 字节绑定索引。
+        /// Void 哨兵（isVoid=true，脱糖 "&lt;-" 路径）无通道实参：入值已由
+        /// AtSignChannelIn* 系统方法原语经通道会话预暂存，出值由
+        /// AtSignChannelOut* 原语事后消费，opcode 124 不内联弹参/推栈。
         /// 提取失败（手写误用/实参非常量）：记 IRCallIssue 后返回 false，
         /// 由调用方回退普通 CallSystemMethod 路径（栈保持平衡，CVM 运行期
         /// 按 cvmFunction "atsign:label" 报未知系统方法）。
+        /// 位置限制（20059）：AtSignLabel 机制只允许在方法体内使用——
+        /// 成员变量（实例/静态）、全局变量与 enum 成员的初始化表达式都走
+        /// CreateExpress(null, ...)（无宿主 IRMethod，见 IRMetaClass/
+        /// SLModulePackageWriter），通道会话的入值预暂存/出值事后消费
+        /// 在单条初始化表达式里无法成立，m_IRMethod == null 一并拒绝。
         /// </summary>
         private bool TryParseAtSignLabelCall( MetaMethodCall mfc, string systemName )
         {
             if (systemName != AtSignLabelCallSentinelName && systemName != AtSignLabelCallVoidSentinelName)
                 return false;
+
+            if (m_IRMethod == null)
+            {
+                Log.AddIRLog(LID.ProcessAtSignLabelFieldInitializerForbidden, mfc.token,
+                    "AtSignLabelCall 哨兵不允许出现在成员变量/全局变量初始化表达式 (仅支持方法体内使用), 回退 CallSystemMethod!!");
+                return false;
+            }
 
             if (mfc.metaInputParamList.Count < 1)
             {
@@ -180,6 +195,7 @@ namespace SimpleLanguage.IR
                 paramCount = paramCount,
                 tryCatch = tryCatch,
                 methodName = m_IRMethod?.onlyFunctionName ?? string.Empty,
+                isVoid = systemName == AtSignLabelCallVoidSentinelName,
             };
             IRData datacallLabel = new IRData();
             datacallLabel.opCode = EIROpCode.CallAtSignLabel;

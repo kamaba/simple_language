@@ -112,6 +112,10 @@ internal static class Program
             {
                 projectPath = Path.Combine(repoRoot, "test", "Other", "TLSFProbe", "TLSFProbe");
             }
+            else if (arg == "AtSignLabel")
+            {
+                projectPath = Path.Combine(repoRoot, "test", "Other", "AtSignLabel", "AtSignNegativeTest");
+            }
             else if (arg == "GameTank")
             {
                 projectPath = Path.Combine(repoRoot, "samples", "Game", "TankGame", "TankGame");

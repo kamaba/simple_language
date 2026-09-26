@@ -27,6 +27,7 @@
       { "path": "AOTGPUTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "FFITest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "CSharpTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "CSharpTest2.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "ProcessTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "AOT.sl", "group": "core", "tag": "base", "ignore": true, "priority": 0 },
       { "path": "MapTest.sl", "group": "core", "tag": "base", "ignore": true, "priority": 0 },
@@ -69,7 +70,7 @@
     "echo": {
       "name": "echo_test_plugin",
       "version": "0.1.0",
-      "path": "SLPlugin/echo",
+      "path": "simple_language_plugins/echo",
       "enabled": true,
       "abi": 1,
       "lib": { "dir": "lib", "select": "auto" },
@@ -84,7 +85,7 @@
     },
     // csharp_mono（P1-e，MONO_INTEGRATION_DESIGN.md §4.3 / PLUGIN_SYSTEM_DESIGN.md §10.1）：
     // lib 用字符串直给（相对包路径，CVM 侧基准 = module.json 所在目录拼
-    // sl_plugin_resolver_join_lib_path），从 SLPlugin 原位加载——不走
+    // sl_plugin_resolver_join_lib_path），从 simple_language_plugins 原位加载——不走
     // PluginLibExportManager 拷贝（其 TopDirectoryOnly 不递归 lib/mono/4.5/
     // BCL 目录树，对象形态会缺 BCL）；原位同目录天然齐备 mono-2.0-sgen.dll + BCL。
     // prefix 必须显式 = 实际符号前缀 "sl_csharp_mono_"（plugin.jsonc entry.prefix），
@@ -93,11 +94,11 @@
     "csharp_mono": {
       "name": "csharp_runtime_use_mono_engine",
       "version": "0.1.0",
-      "path": "SLPlugin/csharp_mono",
+      "path": "simple_language_plugins/csharp_mono",
       "enabled": true,
       "abi": 1,
       "prefix": "sl_csharp_mono_",
-      "lib": "../../../../SLPlugin/csharp_mono/lib/windows-x64/cvm_csharp_mono.dll",
+      "lib": "../../../../simple_language_plugins/csharp_mono/cvm/lib/windows-x64/cvm_csharp_mono.dll",
       "platform": { "os": "windows", "arch": "x86_64" },
       "onUnavailable": "warn",
       "capabilities": [
@@ -117,14 +118,14 @@
     // 常量不发射，CVM 经模块 atSignLabel[] 绑定 entryIndex 走插件 labelExec capability。
     { "name": "AtSignLabelCall",     "returnType": "Int32", "params": ["Int32"], "isVariadic": true,  "cvmFunction": "atsign:label" },
     { "name": "AtSignLabelCallVoid", "returnType": "Void",  "params": ["Int32"], "isVariadic": true,  "cvmFunction": "atsign:label" },
-    // csharp_mono（P1-e）：SL 调 C# 静态方法，共用 csharp_exec 入口（cvm_csharp_mono.c
-    // 栈协议：前 4 参 = asm/ns/class/method（String），第 5 参 = ret_kind（整型变参：
-    // 0=void/1=int/2=string），其后为 C# 实参——变参按实际类型压栈不矫正
-    //（IRCall.cs ParseSystemCall 只矫正固定形参），int 字面量即 INT32 槽。
-    // 按返回形态注册三入口，调用侧形如 CSharpCallInt(asm, ns, cls, m, 1, 40, 2)。
-    { "name": "CSharpCallVoid",   "returnType": "Void",   "params": ["String","String","String","String"], "isVariadic": true,  "cvmFunction": "plugin:csharp" },
-    { "name": "CSharpCallInt",    "returnType": "Int32",  "params": ["String","String","String","String"], "isVariadic": true,  "cvmFunction": "plugin:csharp" },
-    { "name": "CSharpCallString", "returnType": "String", "params": ["String","String","String","String"], "isVariadic": true,  "cvmFunction": "plugin:csharp" }
+    // csharp_mono（P1-e）：SL 调 C# 静态方法——CSharpCallVoid/Int/String 三条声明已
+    // 移到插件 refModule（CSharpMono 模块的 CSharpMono.jsonc systemCalls 段，带
+    // "class": "SLang.Plugin.CSharpMono" 归属标记），经 plugins.csharp_mono 的
+    // plugin.jsonc refModule 段在 RefModule 阶段自动加载，无需在此重复声明。
+    // 栈协议不变（cvm_csharp_mono.c）：前 4 参 = asm/ns/class/method（String），
+    // 第 5 参 = ret_kind（整型变参：0=void/1=int/2=string），其后为 C# 实参——
+    // 变参按实际类型压栈不矫正（IRCall.cs ParseSystemCall 只矫正固定形参）。
+    // 调用侧形如 SLang.Plugin.CSharpMono.CSharpCallInt(asm, ns, cls, m, 1, 40, 2)。
   ],
   "dllImports": [
     {

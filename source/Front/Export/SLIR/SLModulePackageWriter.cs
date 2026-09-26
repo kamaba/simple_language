@@ -860,6 +860,8 @@ namespace SimpleLanguage.Export.SLIR
                     // C VM implementation symbol so the VM resolves the builtin
                     // by name instead of a hardcoded mapping table.
                     cvmFunction = v.cvmFunction ?? string.Empty,
+                    // 归属类路径（类路径形态声明），Front↔Front 透传，CVM 逐字段读天然忽略
+                    className = v.className ?? string.Empty,
                 };
                 foreach( var v2 in v.paramMetaTypeList )
                 {
@@ -877,7 +879,8 @@ namespace SimpleLanguage.Export.SLIR
 
             // atSignLabel[]：@<tag>(){} 内联块条目表（CallAtSignLabel payload 按
             // entryIndex 寻址；CVM 装配期绑定到插件 labelExec capability 统一收发，
-            // 通道 slType 留空 = 运行期按栈槽 kind 编组）。
+            // 通道 slType = 入/出通道行类型标记原文（语言无关，可空；空 = 运行期
+            // 按栈槽 kind 编组，非空供插件/文档侧识别声明意图）。
             foreach( var block in SimpleLanguage.Compile.AtSignLabelBlockCollector.Blocks )
             {
                 var entryPkg = new SLAtSignLabelEntryPackage
@@ -896,6 +899,7 @@ namespace SimpleLanguage.Export.SLIR
                         dir = "in",
                         slVar = ch[1],
                         target = ch[0],
+                        slType = ch.Length > 2 ? (ch[2] ?? string.Empty) : string.Empty,
                     });
                 }
                 if (block.OutSlVar != null)
@@ -905,6 +909,7 @@ namespace SimpleLanguage.Export.SLIR
                         dir = "out",
                         slVar = block.OutSlVar,
                         target = block.OutExpr ?? string.Empty,
+                        slType = block.OutType ?? string.Empty,
                     });
                 }
                 pkg.atSignLabel.Add(entryPkg);
@@ -1210,7 +1215,21 @@ namespace SimpleLanguage.Export.SLIR
                 if (Directory.Exists(refAbsPath))
                 {
                     var files = Directory.GetFiles(refAbsPath, "*.module.json");
-                    if (files.Length > 0) refAbsPath = files[0];
+                    if (files.Length > 0)
+                    {
+                        refAbsPath = files[0];
+                    }
+                    else
+                    {
+                        /* 目录下无产物（如 plugin refModule 指向源目录）：按编译期
+                         * Strategy 2 同款推导（读目录 .jsonc 的 export.outputDir +
+                         * moduleName）定位编译包，保证 CVM 装配期能按此 path 装载 */
+                        var exportPkg = ProjectReferenceModuleLoader.ResolveExportModulePathFromDir(refAbsPath);
+                        if (!string.IsNullOrWhiteSpace(exportPkg))
+                        {
+                            refAbsPath = exportPkg;
+                        }
+                    }
                 }
                 /* 计算从导出目录到引用模块的相对路径 */
                 if (!string.IsNullOrWhiteSpace(exportDir))

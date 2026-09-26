@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 
 namespace SimpleLanguage.Project
 {
@@ -60,6 +61,12 @@ namespace SimpleLanguage.Project
 
         public static void LoadReferences(ProjectConfig config, string projectDir)
         {
+            // plugins refModule 收集（PLUGIN_SYSTEM_DESIGN.md）：读 enabled 插件目录
+            // plugin.jsonc 的 refModule 段，声明的 SL 模块追加为当前工程的 reference
+            //（复用下方三级加载策略；其 systemCalls 声明随包注册进 Front registry，
+            // 带 "class" 归属标记的条目可被 SLang.Plugin.<Class>.<Method>(...) 命中）。
+            AppendPluginRefModules(config, projectDir);
+
             if (config?.References == null || config.References.Count == 0)
             {
                 return;
@@ -69,6 +76,440 @@ namespace SimpleLanguage.Project
             {
                 LoadReference(config.References[i], projectDir);
             }
+        }
+
+        /// <summary>
+        /// 遍历工程 plugins 段（enabled 条目），读插件目录 plugin.jsonc 的 refModule
+        /// 段，把声明的 SL 引用模块追加为当前工程的 reference（按解析后目录去重）。
+        /// 插件 refModule 可为空（无 refModule 段/无 path 字段即跳过）。
+        /// </summary>
+        private static void AppendPluginRefModules(ProjectConfig config, string projectDir)
+        {
+            if (config?.Plugins == null || config.Plugins.Count == 0)
+            {
+                return;
+            }
+            foreach (var plugin in config.Plugins)
+            {
+                if (plugin == null || !plugin.Enabled || string.IsNullOrWhiteSpace(plugin.Path))
+                {
+                    continue;
+                }
+                var pluginRoot = ResolvePluginRoot(plugin.Path, projectDir);
+                if (pluginRoot == null)
+                {
+                    continue;
+                }
+                // r4: 插件环境校验（PLUGIN_SYSTEM_DESIGN.md §9，两维：当前环境 +
+                // 输出 targets）。不满足按 onUnavailable 三态降级；即使摘除
+                // （Enabled=false）refModule 仍加载——SL 包装层照常编译（Linux 侧
+                // SpecialTest 编译期不失败），运行期由 CVM 按导出 enabled:false 拦截。
+                ValidatePluginPlatform(config, plugin, pluginRoot);
+                var refModulePath = ReadManifestRefModule(pluginRoot);
+                if (string.IsNullOrWhiteSpace(refModulePath))
+                {
+                    continue;
+                }
+                string refDir;
+                try
+                {
+                    refDir = Path.IsPathRooted(refModulePath)
+                        ? Path.GetFullPath(refModulePath)
+                        : Path.GetFullPath(Path.Combine(pluginRoot, refModulePath));
+                }
+                catch (Exception)
+                {
+                    continue;
+                }
+                if (!Directory.Exists(refDir))
+                {
+                    Log.AddProjectLog(LID.ProjectReferenceModuleNotFoundReferenceModule,
+                        $"Plugin '{plugin.Id}' refModule directory not found: " + refDir);
+                    continue;
+                }
+                // 去重：工程 references 已声明同目录则跳过（相对路径按 projectDir 解析后比较）
+                var refFullPath = Path.GetFullPath(refDir);
+                bool alreadyDeclared = false;
+                foreach (var r in config.References)
+                {
+                    if (r == null || string.IsNullOrWhiteSpace(r.Path))
+                    {
+                        continue;
+                    }
+                    try
+                    {
+                        var rp = Path.IsPathRooted(r.Path)
+                            ? Path.GetFullPath(r.Path)
+                            : Path.GetFullPath(Path.Combine(projectDir ?? string.Empty, r.Path));
+                        if (string.Equals(rp, refFullPath, StringComparison.OrdinalIgnoreCase))
+                        {
+                            alreadyDeclared = true;
+                            break;
+                        }
+                    }
+                    catch (Exception)
+                    {
+                    }
+                }
+                if (!alreadyDeclared)
+                {
+                    config.References.Add(new ProjectConfig.ReferenceSection
+                    {
+                        Path = refFullPath,
+                        Name = Path.GetFileName(refFullPath) + ".module.json",
+                    });
+                }
+            }
+        }
+
+        /// <summary>
+        /// 解析插件目录：plugins.&lt;id&gt;.path 绝对路径直接用；相对路径先按工程
+        /// jsonc 目录解析，未命中则从工程目录逐级上溯拼接（覆盖
+        /// "simple_language_plugins/&lt;id&gt;" 相对仓库根的写法，与
+        /// PluginFrontendParser.FindPluginRoot 的上溯策略同源）。以 plugin.jsonc
+        /// 存在为准，未命中返回 null。
+        /// </summary>
+        private static string ResolvePluginRoot(string pluginPath, string projectDir)
+        {
+            try
+            {
+                if (Path.IsPathRooted(pluginPath))
+                {
+                    var rooted = Path.GetFullPath(pluginPath);
+                    return File.Exists(Path.Combine(rooted, "plugin.jsonc")) ? rooted : null;
+                }
+                var direct = Path.GetFullPath(Path.Combine(projectDir ?? string.Empty, pluginPath));
+                if (File.Exists(Path.Combine(direct, "plugin.jsonc")))
+                {
+                    return direct;
+                }
+                var dir = string.IsNullOrEmpty(projectDir) ? null : Path.GetFullPath(projectDir);
+                while (dir != null)
+                {
+                    var candidate = Path.Combine(dir, pluginPath);
+                    if (File.Exists(Path.Combine(candidate, "plugin.jsonc")))
+                    {
+                        return candidate;
+                    }
+                    dir = Path.GetDirectoryName(dir);
+                }
+            }
+            catch (Exception)
+            {
+            }
+            return null;
+        }
+
+        /// <summary>读 plugin.jsonc 的 refModule.path（JSONC：跳注释与尾逗号）；
+        /// 无 refModule 段或无 path 字段返回 null（插件 refModule 可为空）。</summary>
+        private static string ReadManifestRefModule(string pluginRoot)
+        {
+            try
+            {
+                var manifest = File.ReadAllText(Path.Combine(pluginRoot, "plugin.jsonc"));
+                var options = new JsonDocumentOptions
+                {
+                    CommentHandling = JsonCommentHandling.Skip,
+                    AllowTrailingCommas = true
+                };
+                using (var doc = JsonDocument.Parse(manifest, options))
+                {
+                    var root = doc.RootElement;
+                    if (root.TryGetProperty("refModule", out var rm) && rm.ValueKind == JsonValueKind.Object &&
+                        rm.TryGetProperty("path", out var p) && p.ValueKind == JsonValueKind.String)
+                    {
+                        return p.GetString();
+                    }
+                }
+            }
+            catch (Exception)
+            {
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// 读 plugin.jsonc 的 platform 段 → 条件 AST（短写形，§4.5，与工程
+        /// jsonc plugins.&lt;id&gt;.platform 同构）。解析风格同 ReadManifestRefModule
+        /// （JSONC 容错），无 platform 段返回 null（无平台要求）。
+        /// </summary>
+        private static PlatformReqExpr ReadManifestPlatform(string pluginRoot)
+        {
+            try
+            {
+                var manifest = File.ReadAllText(Path.Combine(pluginRoot, "plugin.jsonc"));
+                var options = new JsonDocumentOptions
+                {
+                    CommentHandling = JsonCommentHandling.Skip,
+                    AllowTrailingCommas = true
+                };
+                using (var doc = JsonDocument.Parse(manifest, options))
+                {
+                    var root = doc.RootElement;
+                    if (root.TryGetProperty("platform", out var pf) && pf.ValueKind == JsonValueKind.Object)
+                    {
+                        return ProjectJsoncLoader.ParsePlatformShortForm(pf);
+                    }
+                }
+            }
+            catch (Exception)
+            {
+            }
+            return null;
+        }
+
+        /// <summary>条件求值三态（§9.2 语义在 Front 侧的编译期子集）：
+        /// 仅 os/arch 可确定性判定；其它 kind（lib/sdk/env/…）Front 无法探测
+        /// → Unknown，不触发编译期动作，留给 CVM 运行期 sl_require_check。</summary>
+        private enum EReqEval
+        {
+            Satisfied,
+            Mismatch,
+            Unknown
+        }
+
+        /// <summary>
+        /// r4: 插件平台校验主入口。条件 = plugin.jsonc 权威 platform AND 工程
+        /// jsonc plugins 段 platform（都声明时 AndOf 组合；都 null 跳过）。
+        /// 两维求值：① 当前环境（Front 宿主 os/arch）② 输出环境（工程
+        /// platform.targets 每个标签）。任一维确定 Mismatch → 按 onUnavailable
+        /// 三态处理（error→Error 日志 / warn→Warning / disable→Info）并置
+        /// Enabled=false（导出 enabled:false，CVM 运行期拦截）；Unknown 不动作。
+        /// </summary>
+        private static void ValidatePluginPlatform(ProjectConfig config, ProjectConfig.PluginSection plugin, string pluginRoot)
+        {
+            if (plugin == null)
+            {
+                return;
+            }
+            var manifestExpr = ReadManifestPlatform(pluginRoot);
+            var combined = manifestExpr;
+            if (plugin.Platform != null)
+            {
+                combined = combined == null ? plugin.Platform : PlatformReqExpr.AndOf(new[] { combined, plugin.Platform });
+            }
+            if (combined == null)
+            {
+                return;
+            }
+
+            // 维度1：当前环境（Front 宿主 os/arch）
+            var (hostOs, hostArch) = SimpleLanguage.Export.PluginLibExportManager.HostPlatform();
+            var hostResult = EvaluateOsArch(combined, hostOs, hostArch);
+
+            // 维度2：输出环境（工程 platform.targets，任一 target 确定不满足即失败）
+            bool targetFailed = false;
+            string failedTarget = null;
+            if (config?.Platform?.Targets != null && config.Platform.Targets.Count > 0)
+            {
+                foreach (var target in config.Platform.Targets)
+                {
+                    if (TryParseTargetLabel(target, out var tOs, out var tArch) &&
+                        EvaluateOsArch(combined, tOs, tArch) == EReqEval.Mismatch)
+                    {
+                        targetFailed = true;
+                        failedTarget = target;
+                        break;
+                    }
+                }
+            }
+
+            if (hostResult != EReqEval.Mismatch && !targetFailed)
+            {
+                // 满足，或编译期不可判定（Unknown 留给 CVM 运行期）
+                return;
+            }
+
+            var reason = hostResult == EReqEval.Mismatch
+                ? $"host {hostOs}/{hostArch} does not satisfy plugin platform requirement"
+                : $"output target '{failedTarget}' does not satisfy plugin platform requirement";
+            switch (plugin.OnUnavailable)
+            {
+                case "error":
+                    Log.AddProjectLog(LID.PluginPlatformMismatchFatal,
+                        $"plugin '{plugin.Id}' platform mismatch: {reason} (onUnavailable=error)");
+                    // 中止编译：本错误发生在 NotifyOnly 的 RefModule 阶段（r3 语义：
+                    // 外部模块问题不阻止编译），Error 日志不会阻止该阶段"视为完成"，
+                    // 需显式请求跳过后续 File/MetaCore/IR/Export，产物不导出
+                    SimpleLanguage.Compile.Process.ProcessManager.instance.RequestAbort(
+                        $"plugin '{plugin.Id}' platform mismatch");
+                    break;
+                case "warn":
+                    Log.AddProjectLog(LID.PluginPlatformMismatch,
+                        $"plugin '{plugin.Id}' platform mismatch: {reason} (disabled)");
+                    break;
+                default:
+                    Log.AddProjectLog(LID.PluginPlatformSkipped,
+                        $"plugin '{plugin.Id}' platform mismatch: {reason} (disabled)");
+                    break;
+            }
+            plugin.Enabled = false;
+        }
+
+        /// <summary>条件 AST 三值求值（os/arch 维度）：and 短路 Mismatch、
+        /// or 短路 Satisfied；无 Mismatch 且有 Unknown → Unknown。</summary>
+        private static EReqEval EvaluateOsArch(PlatformReqExpr expr, string os, string arch)
+        {
+            if (expr == null)
+            {
+                return EReqEval.Satisfied;
+            }
+            switch (expr.Op)
+            {
+                case PlatformReqNames.OpAtom:
+                    return EvaluateAtom(expr.Atom, os, arch);
+                case PlatformReqNames.OpAnd:
+                    {
+                        bool hasUnknown = false;
+                        foreach (var child in expr.Children)
+                        {
+                            var r = EvaluateOsArch(child, os, arch);
+                            if (r == EReqEval.Mismatch)
+                            {
+                                return EReqEval.Mismatch;
+                            }
+                            if (r == EReqEval.Unknown)
+                            {
+                                hasUnknown = true;
+                            }
+                        }
+                        return hasUnknown ? EReqEval.Unknown : EReqEval.Satisfied;
+                    }
+                case PlatformReqNames.OpOr:
+                    {
+                        bool hasUnknown = false;
+                        foreach (var child in expr.Children)
+                        {
+                            var r = EvaluateOsArch(child, os, arch);
+                            if (r == EReqEval.Satisfied)
+                            {
+                                return EReqEval.Satisfied;
+                            }
+                            if (r == EReqEval.Unknown)
+                            {
+                                hasUnknown = true;
+                            }
+                        }
+                        return hasUnknown ? EReqEval.Unknown : EReqEval.Mismatch;
+                    }
+                case PlatformReqNames.OpNot:
+                    {
+                        if (expr.Children.Count == 0)
+                        {
+                            return EReqEval.Unknown;
+                        }
+                        var r0 = EvaluateOsArch(expr.Children[0], os, arch);
+                        return r0 == EReqEval.Satisfied ? EReqEval.Mismatch
+                            : r0 == EReqEval.Mismatch ? EReqEval.Satisfied
+                            : EReqEval.Unknown;
+                    }
+                default:
+                    return EReqEval.Unknown;
+            }
+        }
+
+        /// <summary>单 atom 三值求值：仅 os/arch 确定性可判（arch 双方归一化后
+        /// 比对，§4.5 别名口径）；其它 kind → Unknown。optional 软要求不参与
+        /// 摘除判定（§6.3，视为满足）。arch 参数为 null（target 未带 arch）时
+        /// arch atom → Unknown。</summary>
+        private static EReqEval EvaluateAtom(PlatformReqAtom atom, string os, string arch)
+        {
+            if (atom == null)
+            {
+                return EReqEval.Satisfied;
+            }
+            if (atom.Optional)
+            {
+                return EReqEval.Satisfied;
+            }
+            if (atom.Kind != PlatformReqNames.Os && atom.Kind != PlatformReqNames.Arch)
+            {
+                return EReqEval.Unknown;
+            }
+            if (atom.Kind == PlatformReqNames.Arch && arch == null)
+            {
+                return EReqEval.Unknown;
+            }
+            var actual = atom.Kind == PlatformReqNames.Os
+                ? os
+                : SimpleLanguage.Export.PluginLibExportManager.NormalizeArch(arch);
+            switch (atom.Cmp)
+            {
+                case PlatformReqNames.CmpExists:
+                    // os/arch 在宿主/目标环境恒存在
+                    return EReqEval.Satisfied;
+                case PlatformReqNames.CmpEq:
+                    {
+                        var expect = atom.Kind == PlatformReqNames.Os
+                            ? atom.Value
+                            : SimpleLanguage.Export.PluginLibExportManager.NormalizeArch(atom.Value);
+                        return string.Equals(actual, expect, StringComparison.OrdinalIgnoreCase)
+                            ? EReqEval.Satisfied : EReqEval.Mismatch;
+                    }
+                case PlatformReqNames.CmpNe:
+                    {
+                        var expect = atom.Kind == PlatformReqNames.Os
+                            ? atom.Value
+                            : SimpleLanguage.Export.PluginLibExportManager.NormalizeArch(atom.Value);
+                        return string.Equals(actual, expect, StringComparison.OrdinalIgnoreCase)
+                            ? EReqEval.Mismatch : EReqEval.Satisfied;
+                    }
+                case PlatformReqNames.CmpAny:
+                    {
+                        // 集合内默认 OR（§4.5）：任一命中即满足（arch 候选各自归一化）
+                        foreach (var v in atom.Set)
+                        {
+                            var expect = atom.Kind == PlatformReqNames.Os
+                                ? v
+                                : SimpleLanguage.Export.PluginLibExportManager.NormalizeArch(v);
+                            if (string.Equals(actual, expect, StringComparison.OrdinalIgnoreCase))
+                            {
+                                return EReqEval.Satisfied;
+                            }
+                        }
+                        return EReqEval.Mismatch;
+                    }
+                default:
+                    // all（cpu 特性集语义）与 ge/gt/le/lt（定序比较）对 os/arch 编译期不可判
+                    return EReqEval.Unknown;
+            }
+        }
+
+        /// <summary>输出环境标签 "&lt;os&gt;[-&lt;arch&gt;]" 解析（如 windows /
+        /// linux-x86_64）。os 白名单（§4.5 受控值）外的标签（如 any）返回
+        /// false=不可判定；arch 可缺省（null=对 arch 不设要求）。</summary>
+        private static bool TryParseTargetLabel(string label, out string os, out string arch)
+        {
+            os = null;
+            arch = null;
+            if (string.IsNullOrWhiteSpace(label))
+            {
+                return false;
+            }
+            var idx = label.IndexOf('-');
+            var osPart = idx < 0 ? label : label.Substring(0, idx);
+            var archPart = idx < 0 ? null : label.Substring(idx + 1);
+            switch (osPart)
+            {
+                case "windows":
+                case "linux":
+                case "macos":
+                case "android":
+                case "ios":
+                case "freebsd":
+                case "unix":
+                case "browser":
+                case "wasi":
+                    os = osPart;
+                    break;
+                default:
+                    return false;
+            }
+            if (!string.IsNullOrWhiteSpace(archPart))
+            {
+                arch = archPart;
+            }
+            return true;
         }
 
         private static void LoadReference(ProjectConfig.ReferenceSection reference, string projectDir)
@@ -138,16 +579,42 @@ namespace SimpleLanguage.Project
                     ? Path.GetFullPath(reference.Path)
                     : Path.GetFullPath(Path.Combine(projectDir ?? string.Empty, reference.Path));
 
-                if (!Directory.Exists(resolvedDir))
+                return ResolveExportModulePathFromDir(resolvedDir);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// 从引用模块源目录（含 .jsonc）推导其编译产物 .module.json 全路径：
+        /// 读目录下 .jsonc 的 export.outputDir + moduleName，按被引用模块 jsonc
+        /// 所在目录解析相对 outputDir。产物存在返回全路径，否则 null。
+        /// 编译期 Strategy 2 与导出期 ResolveReferencePath 兜底共用（保证
+        /// moduleReferences[].path 指向实际加载的编译包，而非源目录——
+        /// CVM 装配期按该 path 递归装载引用模块，源目录无产物会被跳过）。
+        /// </summary>
+        internal static string ResolveExportModulePathFromDir(string resolvedDir)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(resolvedDir) || !Directory.Exists(resolvedDir))
+                {
                     return null;
+                }
 
                 var jsoncFiles = Directory.GetFiles(resolvedDir, "*.jsonc", SearchOption.TopDirectoryOnly);
                 if (jsoncFiles.Length == 0)
+                {
                     return null;
+                }
 
                 var refConfig = ProjectJsoncLoader.FromJsonc(File.ReadAllText(jsoncFiles[0]));
                 if (refConfig?.Export == null || string.IsNullOrWhiteSpace(refConfig.Export.OutputDir) || string.IsNullOrWhiteSpace(refConfig.Export.ModuleName))
+                {
                     return null;
+                }
 
                 /* 相对 outputDir 按被引用模块 jsonc 所在目录解析（与 ProjectOutputEnvironment.ApplyFromConfig 同语义） */
                 var refJsoncDir = Path.GetDirectoryName(jsoncFiles[0]);
@@ -194,7 +661,7 @@ namespace SimpleLanguage.Project
              * verbatim in the package at export time) into the FrontEnd registry. */
             foreach( var v in package.systemCalls )
             {
-                SystemMethodCallDeclarationRegistry.AddDeclByMt(v.name, v.returnType, v.@params, v.isVariadic, false, v.cvmFunction );
+                SystemMethodCallDeclarationRegistry.AddDeclByMt(v.name, v.returnType, v.@params, v.isVariadic, false, v.cvmFunction, v.className );
             }
 
             /* Merge the referenced module's dll imports (alias -> path, embedded

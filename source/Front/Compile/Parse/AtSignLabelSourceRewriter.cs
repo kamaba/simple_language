@@ -5,27 +5,32 @@
 //  DateTime: 2026/9/25 12:00:00
 //  Description:  @<tag>(){} 内联标签块的源码文本预改写器 + 块收集器
 //                （PLUGIN_SYSTEM_DESIGN.md §A20 通用化实现，语言无关：
-//                tag = 插件 id = SLPlugin/<tag> 目录名，块体中段整编在
-//                对应插件 frontendLibs 解析器，Front 不感知目标语言，
-//                C#/C/CUDA/Vulkan 插件一视同仁）。
+//                tag = plugin.jsonc 声明的 plugin.id（与插件目录名解耦），
+//                块体中段整编与条目构建在对应插件 frontend 工程，
+//                Front 不感知目标语言，C#/C/CUDA/Vulkan 插件一视同仁）。
 //                三层分工（与 csharp_mono 旧链 CSharpCallXxx 的关键差异）：
 //                1) <- 通道统一在 Front 解析：头区入通道 "var target <- $sl"
 //                   与尾区出通道 "$sl <- expr" 只由 Front 初判与复核
-//                   （双出通道 20056；中段 <- 铁律 20055，插件可回传
-//                   exemptArrows 豁免目标语言字符串/注释内的 <-）；
-//                2) 块体中段整编（import 提升、临时代码生成）在插件：
-//                   请求携带通道表（单 JSON 契约，见 PluginFrontendParser），
-//                   插件回传 headExtra（头区额外吸收行）与 Source/Dll；
-//                3) 脱糖为哨兵系统调用 AtSignLabelCall/AtSignLabelCallVoid
-//                   （首个实参 = 块收集器位置 entryIndex），IRCall 拦截发射
-//                   CallAtSignLabel(124)，CVM 装配期按模块 atSignLabel[] 表
-//                   经插件 labelExec capability 统一接收/传出变量。
+//                   （双出通道 20056）；
+//                2) 代码段（首个非 <- 行起到末行前）为目标语言原文：
+//                   整编归插件 frontend（单 JSON 契约，见
+//                   PluginFrontendParser），Front 零处理，代码段内的
+//                   语言规则（含 <-）由插件自决；
+//                3) 脱糖三段式（通道独立原语，<- 赋值不再写死进 opcode）：
+//                   入通道每条一个 <channelClassPath>.ChannelIn<Kind>( entry,
+//                   slVar )（plugin.jsonc refModule.channelClassPath 类路径，
+//                   函数体在插件 refModule，内部转调 Core 域系统方法
+//                   AtSignChannelIn）→ 块执行哨兵 AtSignLabelCallVoid( entry )
+//                   （IRCall 拦截发射 CallAtSignLabel(124)，CVM 按模块
+//                   atSignLabel[] 表经插件 labelExec capability 执行，
+//                   出值捕获进通道会话）→ 出通道 outVar =
+//                   <channelClassPath>.ChannelOut<Kind>( entry )
+//                   （AtSignChannelOut* 经会话取值，环境三态路由栈赋值）。
 //****************************************************************************
 
 using SimpleLanguage.Logging;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Text;
 using System.Text.Json;
 
@@ -38,7 +43,7 @@ namespace SimpleLanguage.Compile
         public string FilePath { get; set; } = string.Empty;
         /// <summary>块起始行（1-based，'@' 标签行，用于诊断）。</summary>
         public int Line { get; set; }
-        /// <summary>标签名（= 插件 id = SLPlugin/&lt;tag&gt; 目录名）。</summary>
+        /// <summary>标签名（= plugin.jsonc 声明的 plugin.id，与插件目录名解耦）。</summary>
         public string Label { get; set; } = string.Empty;
         /// <summary>块收集器列表位置（CallAtSignLabel payload 的 entryIndex 寻址）。</summary>
         public int EntryIndex { get; set; }
@@ -50,12 +55,15 @@ namespace SimpleLanguage.Compile
         public string DllName { get; set; } = string.Empty;
         /// <summary>目标语言端入口方法/符号名。</summary>
         public string EntryMethod { get; set; } = string.Empty;
-        /// <summary>入通道 [target(插件侧形参), slVar(SL 变量)] 序列（与脱糖调用实参同序）。</summary>
+        /// <summary>入通道 [target(插件侧形参), slVar(SL 变量), slType(类型标记，可 null)]
+        /// 序列（与脱糖调用实参同序）。</summary>
         public List<string[]> InChannels { get; set; } = new List<string[]>();
         /// <summary>出通道 SL 变量名（null = 无出通道）。</summary>
         public string OutSlVar { get; set; }
         /// <summary>出通道目标语言侧表达式原文。</summary>
         public string OutExpr { get; set; } = string.Empty;
+        /// <summary>出通道类型标记原文（null = 缺省 int；脱糖选 ChannelOutInt/String 变体）。</summary>
+        public string OutType { get; set; }
         /// <summary>小括号参数 [name, value] 序列（插件解析回传）。</summary>
         public List<string[]> LabelParams { get; set; } = new List<string[]>();
     }
@@ -113,36 +121,44 @@ namespace SimpleLanguage.Compile
     /// <summary>
     /// 把 @<tag>(){} 内联块改写为等价的哨兵系统调用（Token 解析前执行，
     /// Lexer~Meta 全管线零感知）。Front 只做"圈地 + 通道"：
-    /// 识别标签（SLPlugin/&lt;tag&gt;/plugin.jsonc 存在即路由）、配平小括号
+    /// 识别标签（插件清单声明的 plugin.id 命中即路由，见
+    /// PluginFrontendParser.FindPluginRootById）、配平小括号
     /// 与大括号、原文截取参数表与块体、初判头尾区 &lt;- 通道行、转调插件
-    /// 解析器整编中段并复核铁律、脱糖为
+    /// 解析器整编代码段（Front 零处理）、脱糖为
     /// <code>
-    ///     outVar = AtSignLabelCall( entryIndex, inVar1, inVar2, ... )
-    ///     AtSignLabelCallVoid( entryIndex, inVar1, ... )   # 无出通道
+    ///     <channelClassPath>.ChannelInInt( entryIndex, inVar1 )   # 每入通道一条（Kind 按类型标记）
+    ///     AtSignLabelCallVoid( entryIndex )                        # 块执行哨兵（零通道实参）
+    ///     outVar = <channelClassPath>.ChannelOutInt( entryIndex )  # 有出通道时（裸赋值）
     /// </code>
-    /// （裸赋值：SL 变量未声明时 Meta 层按右侧表达式自动定义，已声明则赋值）。
+    /// （出通道裸赋值：SL 变量未声明时 Meta 层按右侧表达式自动定义，
+    /// 已声明则赋值；入通道 Kind = 类型标记映射，"string"→String，
+    /// double/float/float64/f64→Double，缺省/其他→Int；出通道 Kind
+    /// "string"→String，缺省/其他→Int（float 族同构扩展点）；
+    /// 块执行出值不再经哨兵返回值，改经通道会话由 ChannelOut 取回）。
     /// <code>
     ///     @csharp_mono( 源=gpu )          # 小括号参数：语义由插件自决
     ///     {
     ///         var a <- $a                   # 头区：入通道（Front 初判）
     ///         var b <- $b
-    ///         import SLCSharp;              # 头区延伸行：插件回传 headExtra=1 协商吸收
-    ///         var c = MathUtil.Add( a, b );  # 中段：目标语言代码，<- 只允许出现在头尾区/豁免行
-    ///         $c <- c;                      # 尾区：出通道（Front 初判）
+    ///         import SLCSharp;              # 代码段起始：插件 frontend 吸收提升
+    ///         var c = MathUtil.Add( a, b );  # 代码段：目标语言原文，Front 零处理
+    ///         $c <- c;                      # 尾区：出通道（Front 初判，返回值写回）
     ///     }
     /// </code>
     /// 行号保持：多行块替换为单行脱糖语句后补齐原换行数（Lexer 的 '\r' 按
     /// 空白处理，只补 '\n' 不产生脏 Token）。解析错误报 20055/20056/20057
     /// 后整块原样透传（本错误在前更精确，符合"看最早 Error"）。
-    /// 首期类型边界：通道值运行期按栈槽 kind 编组（atSignLabel[] 通道
-    /// slType 留空），出通道 Int32 返回（AtSignLabelCall 哨兵 returnType）。
+    /// 首期类型边界：入通道类型标记语言无关原文传插件（atSignLabel[] 通道
+    /// slType），出通道类型标记 "slType $sl &lt;- expr" 的可选前缀决定
+    /// ChannelOut 变体（"string"→ChannelOutString，缺省/其他→ChannelOutInt；
+    /// float 族同构扩展点）；运行期出值按通道会话捕获的 SLLabelValue 实际
+    /// 类型由 AtSignChannelOut* 侧管理机制路由栈赋值。
     /// </summary>
     public static class AtSignLabelSourceRewriter
     {
-        /// <summary>进程级缓存：标签名 -> 是否存在 SLPlugin/&lt;tag&gt;/plugin.jsonc
-        /// （编译期插件目录内容不变，且按源文件路径缓存 SLPlugin 父目录定位结果）。</summary>
+        /// <summary>进程级缓存：标签名 -> 是否命中插件清单声明的 plugin.id
+        /// （编译期插件目录内容不变；id 索引缓存见 PluginFrontendParser）。</summary>
         private static readonly Dictionary<string, bool> s_LabelCache = new Dictionary<string, bool>(StringComparer.Ordinal);
-        private static readonly Dictionary<string, string> s_RootParentCache = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>改写 m_ContentBuffer 中的全部 @<tag>(){} 块；无匹配时原 buffer 返回。</summary>
         public static char[] Rewrite( char[] buffer, string filePath )
@@ -205,44 +221,16 @@ namespace SimpleLanguage.Compile
             return sb.ToString().ToCharArray();
         }
 
-        /// <summary>标签路由：SLPlugin/&lt;tag&gt;/plugin.jsonc 存在即内联块标签（结果按标签名缓存）。</summary>
+        /// <summary>标签路由：插件清单声明的 plugin.id 命中即内联块标签
+        /// （转调 PluginFrontendParser.FindPluginRootById；缺 plugin.id 的
+        /// 清单退回目录名匹配。结果按标签名缓存）。</summary>
         private static bool IsPluginLabel( string tag, string filePath )
         {
             if (s_LabelCache.TryGetValue(tag, out bool known))
                 return known;
-            bool exists = false;
-            string parent = FindPluginRootParent(filePath);
-            if (parent != null && File.Exists(Path.Combine(parent, tag, "plugin.jsonc")))
-                exists = true;
+            bool exists = PluginFrontendParser.FindPluginRootById(tag, filePath) != null;
             s_LabelCache[tag] = exists;
             return exists;
-        }
-
-        /// <summary>从 SL 源文件目录逐级上溯定位 SLPlugin 父目录（按文件路径缓存）。</summary>
-        private static string FindPluginRootParent( string sourceFilePath )
-        {
-            if (s_RootParentCache.TryGetValue(sourceFilePath, out string cached))
-                return cached;
-            string result = null;
-            try
-            {
-                string dir = Path.GetDirectoryName(Path.GetFullPath(sourceFilePath));
-                while (dir != null)
-                {
-                    string candidate = Path.Combine(dir, "SLPlugin");
-                    if (Directory.Exists(candidate))
-                    {
-                        result = candidate;
-                        break;
-                    }
-                    dir = Path.GetDirectoryName(dir);
-                }
-            }
-            catch (Exception)
-            {
-            }
-            s_RootParentCache[sourceFilePath] = result;
-            return result;
         }
 
         private class MatchResult
@@ -254,8 +242,9 @@ namespace SimpleLanguage.Compile
         /// <summary>
         /// 尝试匹配 atPos 处开始的完整块：@tag ( 参数 ) { ...块体... }。
         /// 参数表与块体均原文截取；&lt;- 头尾通道由 Front 初判（ScanHeadTail），
-        /// 中段整编转调插件前端解析器（PluginFrontendParser 单 JSON 契约），
-        /// Front 按 headExtra/exemptArrows 复核铁律后报错（20055/20056）与脱糖。
+        /// 代码段（首个非 &lt;- 行起到末行前）原文随请求下发给插件前端
+        /// 解析器（PluginFrontendParser 单 JSON 契约），Front 零处理；
+        /// 插件业务错误报 20055、双出通道报 20056。
         /// 基础设施失败由解析器宿主报 20057。任何失败均返回 null（整块透传）。
         /// </summary>
         private static MatchResult TryMatchBlock( string s, int atPos, int pos, string label, string filePath )
@@ -310,11 +299,21 @@ namespace SimpleLanguage.Compile
                 InChannels = new List<PluginLabelChannel>(scan.InChannels.Count),
                 OutChannel = scan.OutSlVar == null
                     ? null
-                    : new PluginLabelChannel { SlVar = scan.OutSlVar, Target = scan.OutExpr },
+                    : new PluginLabelChannel
+                    {
+                        SlVar = scan.OutSlVar,
+                        Target = scan.OutExpr,
+                        SlType = scan.OutType,
+                    },
             };
             foreach (var ch in scan.InChannels)
             {
-                request.InChannels.Add(new PluginLabelChannel { Target = ch[0], SlVar = ch[1] });
+                request.InChannels.Add(new PluginLabelChannel
+                {
+                    Target = ch[0],
+                    SlVar = ch[1],
+                    SlType = ch.Length > 2 ? ch[2] : null,
+                });
             }
             var parse = PluginFrontendParser.Parse(label, filePath, JsonSerializer.Serialize(request));
             if (parse == null)
@@ -330,50 +329,6 @@ namespace SimpleLanguage.Compile
                 return null;
             }
 
-            // ── headExtra 复核：插件协商吸收的头区延伸行不得越过中段、不得含 <- ──
-            int headExtra = parse.HeadExtra > 0 ? parse.HeadExtra : 0;
-            int midStart = scan.HeadLineCount + headExtra;
-            int midEnd = scan.Lines.Length - scan.TailLineCount;
-            if (midStart > midEnd)
-            {
-                int errLine = lbraceLine + scan.HeadLineCount;
-                Log.AddProcessLog(LID.ProcessAtSignLabelChannelSyntaxError,
-                    "@<" + label + ">(){} 块 headExtra=" + headExtra + " 越界 (headLineCount="
-                        + scan.HeadLineCount + ", tailLineCount=" + scan.TailLineCount
-                        + ", 块体共 " + scan.Lines.Length + " 行): '" + filePath + "'",
-                    filePath, errLine, "headExtra out of range");
-                return null;
-            }
-            for (int bi = scan.HeadLineCount; bi < midStart; bi++)
-            {
-                if (scan.Lines[bi].Contains("<-"))
-                {
-                    int errLine = lbraceLine + bi;
-                    Log.AddProcessLog(LID.ProcessAtSignLabelChannelSyntaxError,
-                        "@<" + label + ">(){} 块 headExtra 区含 '<-'（<- 只允许出现在头尾区）: '"
-                            + filePath + "' 行 " + errLine,
-                        filePath, errLine, "headExtra line contains '<-'");
-                    return null;
-                }
-            }
-
-            // ── 中段复核：朴素扫 "<-"，跳过插件豁免行（目标语言字符串/注释内）──
-            var exempt = new HashSet<int>(parse.ExemptArrows ?? (IEnumerable<int>)Array.Empty<int>());
-            for (int bi = midStart; bi < midEnd; bi++)
-            {
-                if (exempt.Contains(bi))
-                    continue;
-                if (scan.Lines[bi].Contains("<-"))
-                {
-                    int errLine = lbraceLine + bi;
-                    Log.AddProcessLog(LID.ProcessAtSignLabelChannelSyntaxError,
-                        "@<" + label + ">(){} 块中段含 '<-'（<- 只允许出现在头尾区）: '"
-                            + filePath + "' 行 " + errLine,
-                        filePath, errLine, "body middle line contains '<-'");
-                    return null;
-                }
-            }
-
             // ── 登记块（条目名已预分配）并回填插件产物 ──
             var block = AtSignLabelBlockCollector.Add(filePath, startLine, label, entryName);
             block.Source = parse.Source ?? string.Empty;
@@ -382,24 +337,51 @@ namespace SimpleLanguage.Compile
             block.InChannels = scan.InChannels;
             block.OutSlVar = scan.OutSlVar;
             block.OutExpr = scan.OutExpr;
+            block.OutType = scan.OutType;
             block.LabelParams = parse.LabelParams;
 
-            // ── 脱糖 SL 语句（单行；裸赋值/裸调用，不带分号与现有无分号风格一致）──
-            var call = new StringBuilder();
-            if (scan.OutSlVar != null)
-                call.Append(scan.OutSlVar).Append(" = AtSignLabelCall( ");
-            else
-                call.Append("AtSignLabelCallVoid( ");
-            call.Append(block.EntryIndex.ToString());
+            // ── 脱糖 SL 语句序列（通道独立原语三段式；<- 赋值不再写死进
+            //    opcode 124：入/出通道按 plugin.jsonc refModule.channelClassPath
+            //    类路径调通道包装函数（函数体在插件 refModule，内部转调 Core 域
+            //    AtSignChannelIn/Out 系统方法，CVM 通道会话路由栈赋值），
+            //    块执行只留 AtSignLabelCallVoid 哨兵（零通道实参））──
+            string channelClass = PluginFrontendParser.GetChannelClassPath(label, filePath);
+            if (channelClass == null && (scan.InChannels.Count > 0 || scan.OutSlVar != null))
+            {
+                Log.AddProcessLog(LID.ProcessAtSignLabelChannelClassMissing,
+                    "@<" + label + ">(){} 块通道原语缺 channelClassPath: '" + filePath + "' 行 " + startLine
+                        + "（plugin.jsonc refModule.channelClassPath 未配置：通道包装函数宿主类全名）",
+                    filePath, startLine);
+                return null;
+            }
+            var stmts = new List<string>();
             foreach (var ch in scan.InChannels)
             {
-                call.Append(", ").Append(ch[1]);   // 实参 = SL 变量名（$ 后标识符）
+                bool isString = ch.Length > 2 && ch[2] == "string";
+                bool isDouble = ch.Length > 2 && ch[2] is "double" or "float" or "float64" or "f64";
+                stmts.Add(channelClass + ".ChannelIn" + (isString ? "String" : isDouble ? "Double" : "Int")
+                    + "( " + block.EntryIndex.ToString() + ", " + ch[1] + " )");
             }
-            call.Append(" )");
+            stmts.Add("AtSignLabelCallVoid( " + block.EntryIndex.ToString() + " )");
+            if (scan.OutSlVar != null)
+            {
+                bool isString = scan.OutType == "string";
+                stmts.Add(scan.OutSlVar + " = " + channelClass + ".ChannelOut"
+                    + (isString ? "String" : "Int") + "( " + block.EntryIndex.ToString() + " )");
+            }
 
-            // ── 行号保持：补齐原块换行数（'\r' 在 Lexer 按空白处理） ──
+            // ── 行号保持：语句间 '\n' 已计内，末尾补齐原块换行数差额
+            //    （'\r' 在 Lexer 按空白处理；语句数超过原换行数的单行块
+            //    极端场景允许后续行号微偏，功能不受影响） ──
+            var call = new StringBuilder();
+            for (int k = 0; k < stmts.Count; k++)
+            {
+                if (k > 0)
+                    call.Append('\n');
+                call.Append(stmts[k]);
+            }
             int newlines = CountNewlines(s, atPos, bodyEnd);
-            for (int k = 0; k < newlines; k++)
+            for (int k = stmts.Count - 1; k < newlines; k++)
                 call.Append('\n');
 
             return new MatchResult { replacement = call.ToString(), end = bodyEnd };
@@ -414,12 +396,15 @@ namespace SimpleLanguage.Compile
             public string[] Lines;
             public int HeadLineCount;
             public int TailLineCount;
-            /// <summary>入通道 [target, slVar] 序列（与脱糖调用实参同序）。</summary>
+            /// <summary>入通道 [target, slVar, slType(可 null)] 序列（与脱糖调用实参同序）。</summary>
             public List<string[]> InChannels = new List<string[]>();
             /// <summary>出通道 SL 变量名（null = 无出通道）。</summary>
             public string OutSlVar;
             /// <summary>出通道目标语言侧表达式原文。</summary>
             public string OutExpr;
+            /// <summary>出通道 SL 侧类型标记（"string $c &lt;- expr" 的 string；
+            /// null = 缺省，脱糖选 Int 变体；"string" 选 String 变体）。</summary>
+            public string OutType;
             /// <summary>双出通道：后遇到的出通道行（body 0-based；-1 = 无）。</summary>
             public int OutDupBodyLine = -1;
             /// <summary>双出通道：后遇到的出通道 SL 变量名。</summary>
@@ -428,9 +413,9 @@ namespace SimpleLanguage.Compile
 
         /// <summary>
         /// 头尾区初判：头区从段首连续消费空白行与入通道行，尾区倒序连续消费
-        /// 空白行与出通道行（不越过头区，防空块体重复计数）。中段
-        /// [HeadLineCount, Lines.Length-TailLineCount) 的整编归插件，
-        /// &lt;- 铁律由调用方复核（20055）。
+        /// 空白行与出通道行（不越过头区，防空块体重复计数）。代码段
+        /// [HeadLineCount, Lines.Length-TailLineCount) 原样透传插件，
+        /// Front 不做任何处理（目标语言规则由插件自决）。
         /// </summary>
         private static HeadTailScan ScanHeadTail( string bodyText )
         {
@@ -475,14 +460,17 @@ namespace SimpleLanguage.Compile
                 }
                 scan.OutSlVar = och[0];
                 scan.OutExpr = och[1];
+                scan.OutType = och.Length > 2 ? och[2] : null;
                 k--;
             }
             scan.TailLineCount = lines.Length - 1 - k;
             return scan;
         }
 
-        /// <summary>入通道行匹配：[var] target &lt;- $sl [;]（var 后须空白，防 varx）。
-        /// 匹配返回 [target(插件形参), slVar(SL 变量)]，否则 null。</summary>
+        /// <summary>入通道行匹配：[var] [slType] target &lt;- $sl [;]（var 后须空白，
+        /// 防变体；slType 为可选类型标记标识符，语义由插件按目标语言映射）。
+        /// 匹配返回 [target(插件形参), slVar(SL 变量), slType(类型标记，可 null)]，
+        /// 否则 null。</summary>
         private static string[] TryMatchInChannelLine( string line )
         {
             string t = line.Trim();
@@ -495,24 +483,49 @@ namespace SimpleLanguage.Compile
                 return null;
             string left = t.Substring(0, arrow).Trim();
             string right = t.Substring(arrow + 2).Trim();
-            if (left.StartsWith("var", StringComparison.Ordinal))
+            // 左值分段：1 段 = target；2 段 = [var]target 或 slType target；
+            // 3 段（首段 var）= var slType target；类型标记原文传递（语言无关）。
+            string[] segs = left.Split( (char[])null, StringSplitOptions.RemoveEmptyEntries );
+            string target = null;
+            string slType = null;
+            if (segs.Length == 1)
             {
-                if (left.Length == 3 || !char.IsWhiteSpace(left[3]))
-                    return null;
-                left = left.Substring(3).Trim();
+                target = segs[0];
             }
-            if (!IsIdent(left))
+            else if (segs.Length == 2)
+            {
+                if (segs[0] == "var")
+                {
+                    target = segs[1];
+                }
+                else
+                {
+                    slType = segs[0];
+                    target = segs[1];
+                }
+            }
+            else if (segs.Length == 3 && segs[0] == "var")
+            {
+                slType = segs[1];
+                target = segs[2];
+            }
+            if (target == null || !IsIdent(target))
+                return null;
+            if (slType != null && !IsIdent(slType))
                 return null;
             if (right.Length < 2 || right[0] != '$')
                 return null;
             string slVar = right.Substring(1);
             if (!IsIdent(slVar))
                 return null;
-            return new string[] { left, slVar };
+            return new string[] { target, slVar, slType };
         }
 
-        /// <summary>出通道行匹配：$sl &lt;- expr [;]（expr 非空且不以 $ 开头，
-        /// 防误吞入通道形态）。匹配返回 [slVar(SL 写回目标), expr]，否则 null。</summary>
+        /// <summary>出通道行匹配：[slType] $sl &lt;- expr [;]（expr 非空且不以 $
+        /// 开头，防误吞入通道形态；slType 为可选类型前缀标识符，与入通道
+        /// "var string s &lt;- $x" 的 slType 对称："string" 脱糖选
+        /// ChannelOutString 变体，缺省/其他选 ChannelOutInt）。匹配返回
+        /// [slVar(SL 写回目标), expr, slType(类型标记，可 null)]，否则 null。</summary>
         private static string[] TryMatchOutChannelLine( string line )
         {
             string t = line.Trim();
@@ -525,14 +538,33 @@ namespace SimpleLanguage.Compile
                 return null;
             string left = t.Substring(0, arrow).Trim();
             string right = t.Substring(arrow + 2).Trim();
-            if (left.Length < 2 || left[0] != '$')
+            // 左值分段：1 段 = $sl；2 段 = slType $sl（类型前缀）。
+            string[] segs = left.Split( (char[])null, StringSplitOptions.RemoveEmptyEntries );
+            string slType = null;
+            string dollar = null;
+            if (segs.Length == 1)
+            {
+                dollar = segs[0];
+            }
+            else if (segs.Length == 2)
+            {
+                slType = segs[0];
+                dollar = segs[1];
+            }
+            else
+            {
                 return null;
-            string slVar = left.Substring(1);
+            }
+            if (slType != null && !IsIdent(slType))
+                return null;
+            if (dollar.Length < 2 || dollar[0] != '$')
+                return null;
+            string slVar = dollar.Substring(1);
             if (!IsIdent(slVar))
                 return null;
             if (right.Length == 0 || right[0] == '$')
                 return null;
-            return new string[] { slVar, right };
+            return new string[] { slVar, right, slType };
         }
 
         /// <summary>SL 标识符校验（通道变量名：字母/下划线开头，仅字母数字下划线）。</summary>

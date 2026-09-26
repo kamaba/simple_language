@@ -387,8 +387,11 @@ namespace SimpleLanguage.Project
                     }
                     var isVariadic = GetBool(r, "isVariadic", true );
                     var cvmFunction = GetStr(r, "cvmFunction", string.Empty);
+                    // 归属类路径（类路径形态调用 SLang.Plugin.<Class>.<Method>），
+                    // jsonc 键 "class"；空 = 全局裸调用声明
+                    var className = GetStr(r, "class", string.Empty);
 
-                    cfg.systemCalls.Add(new ProjectConfig.SystemCallItem() { name = name, returnType = returnType, @params = mtStr.ToArray(), isVariadic = isVariadic, cvmFunction = cvmFunction });
+                    cfg.systemCalls.Add(new ProjectConfig.SystemCallItem() { name = name, returnType = returnType, @params = mtStr.ToArray(), isVariadic = isVariadic, cvmFunction = cvmFunction, className = className });
 
                     //SystemMethodCallDeclarationRegistry.AddDeclByMt( name, returnType, mtStr, isVariadic, true );
                 }
@@ -532,6 +535,26 @@ namespace SimpleLanguage.Project
             return list;
         }
 
+        /// <summary>
+        /// 平台短写段（plugin.jsonc 的 platform / 工程 jsonc plugins.&lt;id&gt;.platform）
+        /// → 条件 AST：复用 require 字段表逐字段编译（§4.5 短写形与模块级
+        /// platform.require 同构），AND 组合；无 atom 返回 null（无平台要求）。
+        /// </summary>
+        internal static PlatformReqExpr ParsePlatformShortForm(JsonElement platformObj)
+        {
+            if (platformObj.ValueKind != JsonValueKind.Object)
+            {
+                return null;
+            }
+            var atoms = new List<PlatformReqAtom>();
+            var scratch = new ProjectConfig.PlatformSection();
+            foreach (var kv in platformObj.EnumerateObject())
+            {
+                ParseRequireField(kv.Name, kv.Value, atoms, scratch);
+            }
+            return PlatformReqExpr.AndOf(ToExprList(atoms));
+        }
+
         // 单个 require 字段 → 0..n 个 atom（§6.2 映射表）；
         // section 用于落段级行为开关（如 network.probe，不产 atom）
         static void ParseRequireField(string name, JsonElement value, List<PlatformReqAtom> atoms, ProjectConfig.PlatformSection section)
@@ -665,6 +688,28 @@ namespace SimpleLanguage.Project
             {
                 // {"arch": "x86_64"} 简写 = eq
                 atoms.Add(new PlatformReqAtom { Kind = kind, Cmp = PlatformReqNames.CmpEq, Value = value.GetString() ?? string.Empty });
+                return;
+            }
+            if (value.ValueKind == JsonValueKind.Array)
+            {
+                // {"os": ["windows","linux"]} 数组简写 = any 集合（§4.5 数组内默认 OR；
+                // plugin.jsonc platform 段即此形态，原实现静默忽略数组，此处补齐）
+                var set = new List<string>();
+                foreach (var s in value.EnumerateArray())
+                {
+                    if (s.ValueKind == JsonValueKind.String)
+                    {
+                        var v = s.GetString();
+                        if (!string.IsNullOrWhiteSpace(v))
+                        {
+                            set.Add(v);
+                        }
+                    }
+                }
+                if (set.Count > 0)
+                {
+                    atoms.Add(new PlatformReqAtom { Kind = kind, Cmp = PlatformReqNames.CmpAny, Set = set, Optional = defaultOptional });
+                }
                 return;
             }
             if (value.ValueKind != JsonValueKind.Object)

@@ -159,6 +159,11 @@ namespace SimpleLanguage.Export.SLIR.Types
         public int paramCount { get; set; }
         public bool tryCatch { get; set; }
         public string methodName { get; set; } = string.Empty;
+        /// <summary>脱糖 Void 哨兵（AtSignLabelCallVoid）：入通道实参已由
+        /// AtSignChannelIn* 原语经 CVM 通道会话预暂存，opcode 124 不内联弹参
+        /// （paramCount 恒 0）；出值由 AtSignChannelOut* 原语事后消费。
+        /// 缺省 false 向后兼容旧 module.json。</summary>
+        public bool isVoid { get; set; }
     }
 
     /// <summary>atSignLabel[] 单个变量通道（dir: "in"=SL→插件 / "out"=插件→SL）。
@@ -380,6 +385,10 @@ namespace SimpleLanguage.Export.SLIR.Types
         /// <summary>C VM builtin implementation symbol name (e.g. "vm_sys_ptr_alloc").
         /// The VM resolves it by symbol lookup at module load; empty when no C implementation exists.</summary>
         public string cvmFunction { get; set; } = string.Empty;
+        /// <summary>Owner class path for class-path style calls (e.g. "SLang.Plugin.CSharpMono").
+        /// Front↔Front metadata only — the C VM reads fields one by one and ignores this one.
+        /// Lets a referencing project re-register the declaration with its class marker.</summary>
+        public string className { get; set; } = string.Empty;
 
         public override string ToString()
         {

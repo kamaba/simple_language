@@ -282,6 +282,10 @@ namespace SimpleLanguage.Project
 
             /// <summary>C VM builtin implementation symbol name (e.g. "vm_sys_ptr_alloc"); empty when no C implementation exists.</summary>
             public string cvmFunction;
+
+            /// <summary>Owner class path for class-path style calls (e.g. "SLang.Plugin.CSharpMono");
+            /// jsonc key "class". Empty = global-only systemCall.</summary>
+            public string className;
         }
 
         public class StructTreeNode

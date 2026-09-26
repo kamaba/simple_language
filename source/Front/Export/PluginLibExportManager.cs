@@ -24,8 +24,10 @@ namespace SimpleLanguage.Export
     /// 插件平台库导出管理器（project.jsonc "plugins".&lt;id&gt;.lib 对象）：
     /// 导出 module.json 前，按四级目录回退选中平台库目录，把命中库拷到
     /// outDir/plugins/&lt;id&gt;/，并写回 PluginSection.Lib（首个主库）与
-    /// Libs（全量，module.json 的 plugins[].libs 供 CVM 逐个加载）。
-    /// lib 为字符串直给时不经此处（不读磁盘不拷贝）。
+    /// Libs（全量，module.json 的 plugins[].libs 为包内路径关联记录，
+    /// CVM 装配只消费 lib 主库）。本趟 AtSignLabelBuildManager 部署的
+    /// frontend 构建产物（如 SLAtSign.dll）同样拷入 plugins/&lt;id&gt;/
+    /// 并追加进 Libs 关联。lib 为字符串直给时不经此处（不读磁盘不拷贝）。
     /// 任何失败仅记日志不中断导出（CVM 运行期按 onUnavailable 降级）。
     /// </summary>
     public static class PluginLibExportManager
@@ -157,6 +159,39 @@ namespace SimpleLanguage.Export
             }
             p.Lib = p.Libs[0];
 
+            // 5) frontend 构建产物路径关联：本趟 AtSignLabelBuildManager 构建
+            //    并部署的插件 frontend dll（如 csharp_mono 的 SLAtSign.dll）
+            //    拷入模块包同目录并追加进 plugins[].libs（纯关联记录，CVM
+            //    装配只消费 lib 主库；运行期插件 dll 从包内加载后，同目录
+            //    的 frontend 产物即可被其运行时按裸名定位）
+            try
+            {
+                var deployed = AtSignLabelBuildManager.FindDeployedDll(p.Id);
+                if (deployed != null)
+                {
+                    var dllName = Path.GetFileName(deployed);
+                    var dstPath = Path.Combine(dstDir, dllName);
+                    // 同路径守卫：lib 直给值已指向包内目录时部署即落位，跳过拷贝
+                    if (!string.Equals(Path.GetFullPath(deployed), Path.GetFullPath(dstPath),
+                            StringComparison.OrdinalIgnoreCase))
+                    {
+                        File.Copy(deployed, dstPath, overwrite: true);
+                    }
+                    var rel = "plugins/" + p.Id + "/" + dllName;
+                    if (!p.Libs.Contains(rel))
+                    {
+                        p.Libs.Add(rel);
+                    }
+                    Log.AddIRLog(LID.ExportPluginLibResolved,
+                        "plugin: frontend dll linked: " + p.Id + " " + deployed + " -> " + rel);
+                }
+            }
+            catch (Exception e)
+            {
+                Log.AddIRLog(LID.ExportPluginLibCopyFailed,
+                    "plugin: frontend dll link failed: " + p.Id + " " + e.Message);
+            }
+
             Log.AddIRLog(LID.ExportPluginLibResolved,
                 "plugin: lib resolved: " + p.Id + " " + chosenDir
                 + " -> " + dstDir + " (" + files.Count + " file(s))");
@@ -198,7 +233,7 @@ namespace SimpleLanguage.Export
         }
 
         /// <summary>宿主 OS/arch（§4.5 归一化受控值：windows/linux/macos…；x86_64/arm64…）。</summary>
-        private static (string os, string arch) HostPlatform()
+        internal static (string os, string arch) HostPlatform()
         {
             string os = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "windows"
                 : RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "macos"
@@ -215,7 +250,7 @@ namespace SimpleLanguage.Export
         }
 
         /// <summary>arch 归一化（§4.5：amd64/x64 是 x86_64 的别名，aarch64 是 arm64 的别名）。</summary>
-        private static string NormalizeArch(string arch)
+        internal static string NormalizeArch(string arch)
         {
             switch (arch)
             {

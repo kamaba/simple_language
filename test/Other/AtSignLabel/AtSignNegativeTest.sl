@@ -8,8 +8,9 @@
 //    negImportBeforeIn import 在入通道之前  → LID 20055（入通道行被挤进中段 → CodeArrow）
 //    negDollarInMid    $ 行出尾区（中段）    → LID 20055（出通道行只能出现在尾区）
 //    negBadParams      坏参数形态           → LID 20055（参数表须 name=value）
+//    negBadSlType      类型标记无法映射      → LID 20055（slType 须在插件映射表内）
 //  全部块解析失败后整块原样透传，Lexer 随之报错（本错误在前，符合"看最早 Error"）。
-//  驱动：test/SpecialTest/atsign-negative-test.ps1（断言 Front.txt LID 计数）。
+//  驱动：test/Other/AtSignLabel/atsign-negative-test.ps1（断言 Front.txt LID 计数）。
 //  本工程独立编译，不进 ProjectTest.jsonc 清单（负例必失败，不能混入主回归）。
 //****************************************************************************
 
@@ -89,6 +90,20 @@ class AtSignNegativeTest
         {
             var x <- $a
             int r = x + 6;
+            $a <- r;
+        }
+    }
+
+    # 20055：入通道类型标记无法映射（slType 须在插件 MapCSType 映射表内；
+    # 语言无关原文由插件判定，Front 不解释语义）
+    static negBadSlType()
+    {
+        string name = "sl"
+        int a = 7
+        @csharp_mono()
+        {
+            var unknown_tp name <- $name
+            int r = name.Length + 7;
             $a <- r;
         }
     }

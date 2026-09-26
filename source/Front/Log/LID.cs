@@ -153,6 +153,8 @@ namespace SimpleLanguage.Logging
         ProcessAtSignLabelChannelSyntaxError = 20055,
         ProcessAtSignLabelOutChannelMultiple = 20056,
         ProcessAtSignLabelPluginParserLoadFailed = 20057,
+        ProcessAtSignLabelChannelClassMissing = 20058,
+        ProcessAtSignLabelFieldInitializerForbidden = 20059,
         // ---- Token 模块 ----
         // Lexer
         TokenLexerCannotUndoChar = 20100,
@@ -1031,6 +1033,9 @@ namespace SimpleLanguage.Logging
         ExportCscAtSignBuildFailed = 22136,
         ExportCscAtSignDeployFailed = 22137,
         ExportCscAtSignBuildSuccess = 22138,
+        // 平台校验（r4：Front 编译期两维校验——当前环境 + 输出 targets，§9.1/§9.3③）
+        PluginPlatformMismatchFatal = 22139,
+        PluginPlatformSkipped = 22140,
         // ---- StaticIf 模块（static if 编译期条件编译 / global.macro 宏）----
         ProjectMacroManagerIssue = 23000,
         ProjectMacroManagerMacroUndefined = 23001,

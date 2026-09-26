@@ -259,6 +259,35 @@ namespace SimpleLanguage.Compile.Process
             return allOk;
         }
 
+        /// <summary>
+        /// 请求中止编译：当前阶段照常完成（NotifyOnly 语义），其后所有 Pending 阶段
+        /// 标记跳过。用于 NotifyOnly 阶段内出现用户显式声明的致命错误
+        /// （如插件 onUnavailable=error 的平台不满足）：Error 日志本身无法
+        /// 阻止 NotifyOnly 阶段"视为完成"，需由此显式中止后续阶段、不导出产物。
+        /// </summary>
+        public void RequestAbort(string reason)
+        {
+            bool afterCurrent = false;
+            foreach (var ph in PhaseOrder)
+            {
+                if (ph == currentPhase)
+                {
+                    afterCurrent = true;
+                    continue;
+                }
+                if (!afterCurrent)
+                {
+                    continue;
+                }
+                var ps = m_PhaseMap[ph];
+                if (ps != null && ps.isPending)
+                {
+                    ps.MarkSkipped("编译中止: " + reason);
+                    Log.AddProcessLog(LID.ProcessPhaseSkipped, "", ph.ToString());
+                }
+            }
+        }
+
         private void MarkLaterPhasesSkipped(ECompilePhase failedPhase)
         {
             bool after = false;

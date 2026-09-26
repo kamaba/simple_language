@@ -129,11 +129,12 @@ namespace SimpleLanguage.IR
             }
 
             // atsign label fast-call payload: JSON SLAtSignLabelCallPackage
-            // (entryIndex/paramCount/tryCatch/methodName); the CVM assembly
-            // build locates the module atSignLabel[] entry by entryIndex and
-            // rewrites the payload into a 4-byte binding index once resolved.
-            // Missing this branch makes FinalizePack fall back to ToString(),
-            // exporting the bare type name and forcing the VM to report -86.
+            // (entryIndex/paramCount/tryCatch/methodName/isVoid); the CVM
+            // assembly build locates the module atSignLabel[] entry by
+            // entryIndex and rewrites the payload into a 4-byte binding
+            // index once resolved. Missing this branch makes FinalizePack
+            // fall back to ToString(), exporting the bare type name and
+            // forcing the VM to report -86.
             if (opValue is SLAtSignLabelCallPackage labelPkg)
             {
                 Payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(labelPkg));

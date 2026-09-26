@@ -14,6 +14,9 @@ Project
         # systemCall 注册见 ProjectTest.jsonc systemCalls 段（plugin:csharp）。
         CSharpTest.fun();
 
+        # CSharpTest2：SampleCompute.cs 六步计算链端到端移植（double 入通道 + F6 字符串出通道 + 异常 -95 链路）
+        CSharpTest2.fun();
+
         #!
         # AOT 测试用例（自 test/AOTTest/ProjectTest.sp 合并）
         r1 = AOTMath.Add( 1, 2 );

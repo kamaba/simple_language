@@ -42,6 +42,12 @@ namespace SimpleLanguage.Core
         /// implementation by symbol name instead of a hardcoded mapping table.</summary>
         public string cvmFunction { get; }
 
+        /// <summary>Owner class path for class-path style calls (e.g. "SLang.Plugin.CSharpMono").
+        /// Empty = global-only systemCall (bare name). When set, the declaration can
+        /// also be resolved as <c>OwnerClass.Method(...)</c> even though no stub member
+        /// function exists on the class (declared registration, see CSharpMono.jsonc).</summary>
+        public string className { get; }
+
         /// <summary>Unique int id of this system method (MD5-based hash of <see cref="name"/>).
         /// Exported with the module's "systemCalls" and CallSystemMethod payloads so the
         /// VM can dispatch by int id instead of by name string.</summary>
@@ -55,12 +61,13 @@ namespace SimpleLanguage.Core
             return GetIndex();
         }
 
-        public SystemMethodCallDeclaration( string name, MetaType ret, bool variadic, MetaType[] paramTypes, string cvmFunction = null)
+        public SystemMethodCallDeclaration( string name, MetaType ret, bool variadic, MetaType[] paramTypes, string cvmFunction = null, string className = null)
         {
             this.name = name;
             returnMetaType = ret;
             isVariadic = variadic;
             this.cvmFunction = cvmFunction ?? string.Empty;
+            this.className = className ?? string.Empty;
             paramMetaTypeList = new List<MetaType>();
             if (paramTypes != null)
             {
@@ -178,10 +185,10 @@ namespace SimpleLanguage.Core
         {
             foreach( var sc in ProjectManager.config.systemCalls )
             {
-                AddDeclByMt(sc.name, sc.returnType, new List<string>(sc.@params), sc.isVariadic, true, sc.cvmFunction);
+                AddDeclByMt(sc.name, sc.returnType, new List<string>(sc.@params), sc.isVariadic, true, sc.cvmFunction, sc.className);
             }
         }
-        public static void AddDeclByMt(string name, string rt, List<string> mtList, bool variadic, bool isProjectDefine, string cvmFunction = null)
+        public static void AddDeclByMt(string name, string rt, List<string> mtList, bool variadic, bool isProjectDefine, string cvmFunction = null, string className = null)
         {
             var retType = ResolveTypeName(rt);
             var paramTypes = new List<MetaType>();
@@ -201,10 +208,18 @@ namespace SimpleLanguage.Core
                 paramTypes.Add(mtadc);
             }
             var decl = new SystemMethodCallDeclaration(
-                name, retType, variadic, paramTypes.ToArray(), cvmFunction);
+                name, retType, variadic, paramTypes.ToArray(), cvmFunction, className);
             if( s_Decl.ContainsKey(name ) )
             {
-                Log.AddProcessLog(LID.ProcessSystemMethodCallImportSystemMethod, "import system method call name had define!");
+                /* Same-name re-registration is idempotent when the full signature
+                 * matches (e.g. the atsign sentinel AtSignLabelCall declared locally
+                 * in the caller project and re-exported by a referenced module such
+                 * as Core): keep the first silently, only a genuine signature
+                 * conflict is an error. */
+                if( !IsSameDecl( s_Decl[name], decl ) )
+                {
+                    Log.AddProcessLog(LID.ProcessSystemMethodCallImportSystemMethod, $"import system method call name had define! name={name}, class={className}");
+                }
                 return;
             }
             s_Decl[name] = decl;
@@ -212,6 +227,22 @@ namespace SimpleLanguage.Core
             {
                 s_ProjectDefine.Add(decl);
             }
+        }
+
+        private static bool IsSameDecl( SystemMethodCallDeclaration a, SystemMethodCallDeclaration b )
+        {
+            if (a.isVariadic != b.isVariadic || a.cvmFunction != b.cvmFunction)
+                return false;
+            if (a.returnMetaType?.metaClass != b.returnMetaType?.metaClass)
+                return false;
+            if (a.paramMetaTypeList.Count != b.paramMetaTypeList.Count)
+                return false;
+            for (int i = 0; i < a.paramMetaTypeList.Count; i++)
+            {
+                if (a.paramMetaTypeList[i]?.metaClass != b.paramMetaTypeList[i]?.metaClass)
+                    return false;
+            }
+            return true;
         }
         /// <summary>
         /// 通过 string name 查找 SystemMethodCallDeclaration（含返回类型、参数类型等元数据）。
@@ -228,6 +259,32 @@ namespace SimpleLanguage.Core
                 name = aliasName;
             }
             return s_Decl.TryGetValue(name, out decl);
+        }
+
+        /// <summary>
+        /// 类路径形态查找：按 (ownerClassAllName, 方法名) 匹配带 class 归属标记的声明。
+        /// 用于 MetaCallNode.GetFunctionOrVariableByOwnerClass 的成员函数未命中回退——
+        /// SLang.Plugin.CSharpMono.CSharpCallInt(...) 这类"声明式注册"调用
+        /// （jsonc systemCalls 带 "class" 字段，SL 侧不写桩方法体）。
+        /// className 为空或方法名未注册时一律不命中，不影响全局裸调用路径。
+        /// </summary>
+        public static bool TryGetDeclarationByClass(string className, string name, out SystemMethodCallDeclaration decl)
+        {
+            decl = null;
+            if (string.IsNullOrEmpty(className) || string.IsNullOrEmpty(name))
+            {
+                return false;
+            }
+            if (!s_Decl.TryGetValue(name, out decl))
+            {
+                return false;
+            }
+            if (decl.className != className)
+            {
+                decl = null;
+                return false;
+            }
+            return true;
         }
     }
 }
