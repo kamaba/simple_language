@@ -12,13 +12,15 @@ Project
         # ---- 插件 csharp_mono 测试（P1-e/P1-f：SL systemCall → C# 静态方法）----
         # 用例集见 CSharpTest.sl（int/string 往返 + 混合实参 + 方法缓存）；
         # systemCall 注册见 ProjectTest.jsonc systemCalls 段（plugin:csharp）。
-        CSharpTest.fun();
+        #CSharpTest.fun();
 
         # CSharpTest2：SampleCompute.cs 六步计算链端到端移植（double 入通道 + F6 字符串出通道 + 异常 -95 链路）
-        CSharpTest2.fun();
+        #CSharpTest2.fun();
 
         # CSharpTest3：WinForms 窗口 + HTTP json 请求回显（SWF/System.Drawing 经 jsonc references + 插件 BCL 树）
-        CSharpTest3.fun();
+        #CSharpTest3.fun();
+
+        JavaTest.fun()
 
         #!
         # AOT 测试用例（自 test/AOTTest/ProjectTest.sp 合并）

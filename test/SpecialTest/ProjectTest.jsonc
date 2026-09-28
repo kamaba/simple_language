@@ -29,6 +29,7 @@
       { "path": "CSharpTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "CSharpTest2.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "CSharpTest3.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "JavaTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "ProcessTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "AOT.sl", "group": "core", "tag": "base", "ignore": true, "priority": 0 },
       { "path": "MapTest.sl", "group": "core", "tag": "base", "ignore": true, "priority": 0 },
@@ -118,6 +119,28 @@
       "onUnavailable": "warn",
       "capabilities": [
         { "type": "systemCall", "name": "csharp" }
+      ]
+    },
+    // java_hotspot（HOTSPOT_JNI_INTEGRATION_DESIGN.md）：lib 用字符串直给原位
+    // 相对路径（同 csharp_mono 口径，不走 PluginLibExportManager 拷贝）——
+    // 插件 dll 同目录树天然齐备 ..\..\runtime\jvm.dll 与 SLAtSign.jar（C 侧
+    // SLJH_JVM_RELATIVE/SLJH_JAR_RELATIVE 相对插件 dll 定位）。prefix 必须显式
+    // = "sl_java_hotspot_"（plugin.jsonc entry.prefix）。块体 .java 源码由
+    // SLLabelBuilder 经 javac --release 17 编译部署到 <libDir>\classes\，
+    // 运行期 bridge 以 SLAtSign 组前缀 + 裸类名 loadClass。本机无 JDK 时
+    // Build 返回 notFound/kind=notFound 降级（onUnavailable=warn 不阻断）。
+    "java_hotspot": {
+      "name": "java_runtime_use_hotspot_engine",
+      "version": "0.1.0",
+      "path": "simple_language_plugins/java_hotspot",
+      "enabled": true,
+      "abi": 1,
+      "prefix": "sl_java_hotspot_",
+      "lib": "../../../../simple_language_plugins/java_hotspot/cvm/lib/windows-x64/cvm_java_hotspot.dll",
+      "platform": { "os": "windows", "arch": "x86_64" },
+      "onUnavailable": "warn",
+      "capabilities": [
+        { "type": "signLabel", "name": "signLabel" }
       ]
     }
   },
