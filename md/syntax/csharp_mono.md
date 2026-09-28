@@ -1,6 +1,6 @@
 # @csharp\_mono(){} 内联 C# 块
 
-> **本文档以「当前实现」为准**（IR 路线 + 通道会话机制 + string 出通道，2026-09-26），对应五层：
+> **本文档以「当前实现」为准**（IR 路线 + 通道会话机制 + string 出通道；2026-09-27 起入通道类型标记**显式必填**（禁 var/缺省）+ SL data/class → C# **镜像 class** 对象编组），对应五层：
 > Front 圈地层（语言无关通用改写器）`source/Front/Compile/Parse/AtSignLabelSourceRewriter.cs`
 >
 > - 反射宿主 `source/Front/Compile/Parse/PluginFrontendParser.cs`（**统一接口化转调**：Parse 契约 + Build 契约，均为单 JSON 请求）；
@@ -19,7 +19,9 @@
 >   插件接收端 `simple_language_plugins/csharp_mono/cvm/src/cvm_csharp_mono/cvm_csharp_mono.c`（labelExec capability）；
 >   通道包装层 `simple_language_plugins/csharp_mono/slang/CSharpMono.sl`
 >   （`ChannelIn/Out<Kind>`，plugin.jsonc `refModule.channelClassPath` 指向）。
->   用例见 `test/SpecialTest/CSharpTest.sl`（7 个 `testAtSign*` 方法）与负向套件
+>   用例见 `test/SpecialTest/CSharpTest.sl`（7 个 `testAtSign*` 方法）+
+>   `test/SpecialTest/CSharpTest2.sl`（计算链 + 镜像 class 三用例）+
+>   `test/SpecialTest/CSharpTest3.sl`（WinForms 窗口 + HTTP json 回显）与负向套件
 >   `test/Other/AtSignLabel/AtSignNegativeTest.sl`。
 >   通道语法铁律与调度模型的设计规格见
 >   `csimple_lang/md/design/PLUGIN_SYSTEM_DESIGN.md` §A4.5 / §A20——
@@ -49,8 +51,8 @@ int a = 30
 int b = 12
 int c = 0
 @csharp_mono(){
-    var a <- $a
-    var b <- $b
+    Int32 a <- $a
+    Int32 b <- $b
     using SLCSharp;
     var c = MathUtil.Add( a, b );
     $c <- c;
@@ -64,26 +66,33 @@ Console.println( c.toString() )    # 42
 
 | 段           | 范围                                       | 规则                                                                                                                                                                |
 | ----------- | ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **头区**（入通道） | 块首起连续消费：空白行 / 入通道 `var [slType] x <- $y` | 首个非入通道实质行即代码段起点（Front 初判）                                                                                                                                         |
+| **头区**（入通道） | 块首起连续消费：空白行 / 入通道 `<slType> x <- $y`（类型标记**显式必填**，禁 var/缺省） | 首个非入通道实质行即代码段起点（Front 初判） |
 | **代码段**     | 头区之后到尾行（出通道行）之前                          | **目标语言原文，Front 零处理**：整段透传插件解析器自决整编——段首 `import NS;` / `using NS;` 指令行被插件吸收；代码区出现 `<-`、`$` 前缀行、指令行 → 插件报 20055；字符串/字符/行注释/块注释内的 `<-` 是合法原文直接放行（插件三态扫描自决，Front 零复核） |
 | **尾行**（出通道） | 块尾起倒序连续消费：空白行 / 出通道 `[slType] $x <- y;`  | Front 初判；**至多 1 个**出通道（第二个 → 20056）；`[slType]` 为可选类型标记（见下）                                                                                                        |
 
 通道铁律（设计档 §A4.5）：`$名称` 必须一端；箭头指向数据目的地
 （`C#形参 <- $slVar` 传入、`$slVar <- C#变量` 传出）。
 
-入通道行支持**可选类型标记**（`var` 与形参名之间的标识符）：
+入通道行**必须带显式类型标记**（2026-09-27 起 `var` 与缺省形态已禁用——
+Front `TryMatchInChannelLine` 唯一合法形态 = 2 段 `<slType> target <- $slVar`，
+var/缺省/多段一律 LID 20055 拒收整块）：
 
 ```
-var a <- $a            # 无标记 → 缺省 int（既有块全兼容）
-var string name <- $name   # slType = string → 插件映射为 C# 形参 string
-var double r <- $r     # slType = double → 脱糖 ChannelInDouble + 映射 C# 形参 double
+Int32 a <- $a          # C# 已定义类型 → 脱糖 ChannelInInt + 映射 C# 形参 int
+String name <- $name   # → ChannelInString + 形参 string
+Double r <- $r         # → ChannelInDouble + 形参 double
+Boolean ok <- $ok      # → ChannelInBoolean（CVM 侧 INT 0|1 编组）
+AtSignMetrics m <- $m  # SL 类名 → ChannelInObject 对象编组（镜像 class，见 §4 末）
 ```
 
 slType 标记是**语言无关原文**：Front 圈地时不解释语义，只随通道表
 （`channels[].slType`）下发给插件，由插件按目标语言映射——csharp\_mono
-映射表：`int/int32/i32→int`、`long/int64/i64→long`、
-`float/double/float64/f64→double`、`string→string`、`bool/boolean→bool`，
-缺省 `int`；无法映射 → LID 20055（`入通道 N 类型标记无法映射为 C# 类型`）。
+映射表（`SLLabelParser.MapCSType`）：`Int32/int/int32/i32→int`、
+`Int64/long/int64/i64→long`、`Single/float/float32/f32/Float32→float`、
+`Double/double/float64/f64/Float64→double`、`String/string→string`、
+`Boolean/bool/boolean→bool`、`Object/object→object`；**任意合法标识符
+（SL data/class 名）直通**（镜像 C# class 由 SLLabelBuilder 同批生成，
+拼错/未下发 → csc 报 CS0246 拒收整块）；无法映射 → LID 20055。
 Java/Python/CUDA 插件各自定义映射表，Front 零感知。
 
 **出通道行也支持类型标记**（`$` 之前），但首期**仅 int/string 两变体**：
@@ -116,12 +125,16 @@ AtSignLabelCallVoid( <entryIndex> )
 c = SLang.Plugin.CSharpMono.ChannelOutInt( <entryIndex> )
 ```
 
-入通道按 `channels[].slType` **三分流**选 `ChannelIn<Kind>` 变体：缺省/其它可映射
-标记 → `ChannelInInt`、`string` → `ChannelInString`、**`double/float/float64/f64` →
-`ChannelInDouble`**——Kind 只区分 SL 侧承载形态（值经会话 `SLLabelValue` 的
-INT/FLOAT/STRING/NULL 编组跨界），C# 形参类型仍由插件映射表自决（见 §3）。
+入通道按 `channels[].slType` **七分流**（`AtSignLabelSourceRewriter.MapChannelInKind`）
+选 `ChannelIn<Kind>` 变体：`Int32/int…` → `Int`、`Int64/long…` → `Long`、
+`Single/float…` → `Float`、`Double/double…` → `Double`、`String` → `String`、
+`Boolean` → `Boolean`、**`Object/object` 与 SL 类名（default）→ `Object`**
+（对象编组，见 §4 末镜像 class）——Kind 只区分 SL 侧承载形态（值经会话
+`SLLabelValue` 的 INT/FLOAT/STRING/NULL/OBJECT 编组跨界），C# 形参类型仍由
+插件映射表自决（见 §3）。
 
-- **通道包装函数**（`ChannelInInt/ChannelInString/ChannelInDouble/ChannelOutInt/ChannelOutString`）
+- **通道包装函数**（入通道七变体 `ChannelIn{Int,Long,Float,Double,String,Boolean,Object}` +
+  出通道两变体 `ChannelOut{Int,String}`）
   位于插件 slang ref module（`plugin.jsonc` 的 `refModule.channelClassPath`
   指向 `SLang.Plugin.CSharpMono`），函数体内部转调 Core 域系统方法
   `AtSignChannelIn` / `AtSignChannelOutInt` / `AtSignChannelOutString`——
@@ -166,17 +179,100 @@ namespace SLAtSign
 - 入口方法名 `Main` / 命名空间 `SLAtSign` 由插件 JSON 回传，Front 侧兜底同名常量。
 - `Main` 返回类型随出通道类型标记：缺省/`int` → `int`，`string` → `string`（§3 出通道标记），无出通道 → `void`。
 
+### SL data/class → C# 镜像 class（对象编组）
+
+入通道类型标记写 **SL data/class 名**（如 `AtSignMetrics m <- $m`）即触发
+**镜像 class 数据映射**——SL 侧结构体整树跨界成 C# 对象，块内直接点访问字段：
+
+1. **布局下发**（编译期）：`AtSignLabelBuildManager.CollectSlTypes` 扫描全部块的
+   入通道 slType，凡非 BCL 标量白名单者按名解析 SL 类型并**递归展开字段布局**
+   （data → `exportMetaDataList`；class → `ClassManager.GetClassByName` 短名兜底；
+   环字段 visiting 防无限递归，类型名仍下发——镜像类自引用/互引合法），随
+   Build 请求 `slTypes` 下发插件；
+2. **镜像类生成**（插件）：`SLLabelBuilder` 按布局生成同字段 C# class（同
+   `SLAtSign` 命名空间）合并编进 `SLAtSign.dll`，csc 编译期即校验类名/字段
+   对位（拼错/未下发 → CS0246 拒收整块）；
+3. **CVM 编组**（运行期 `ChannelInObject`）：SL 值按 REGULAR/DATA 布局**递归编组成
+   `SLLabelObject` 镜像树**（etype `Object`/`Class` 均入此路；type_name 取短名
+   ——fullName 按 `.` 截尾；嵌套 data/class 字段递归下沉，**深度限 32**，
+   环/超深 → NULL 字段；非 REGULAR/DATA 对象（TYPE_OBJECT 等）仍 -89）；
+4. **插件装配**（labelExec）：`mono_bridge` 按 type_name 找镜像类 → 逐字段装配
+   mono 实例（int/long 直传、float/double R8、bool 0|1、string MonoString、
+   嵌套对象递归装配）→ `Entry_N.Main` 形参即普通 C# 对象。
+
+```sl
+data AtSignInner { level = 0, weight = 0.0d }
+data AtSignOuter { id = 0, inner = AtSignInner() }
+
+static testAtSignDataNested()
+{
+    AtSignOuter o = new()
+    o.id = 7
+    o.inner.level = 3
+    o.inner.weight = 2.5d
+    int n = 0
+    @csharp_mono()
+    {
+        AtSignOuter o <- $o
+        using System;
+        int n = o.inner.level * 100 + (int)(o.inner.weight * 10.0);
+        $n <- n;
+    }
+    check( "dataNested: recursive mirror o.inner -> 325", n == 325 )
+}
+```
+
+- **class 同路**：SL `class`（REGULAR 元类型 + 类信息实例）走同一编组/装配链，
+  仅布局收集路径不同（class → GetClassByName，data → exportMetaDataList）；
+- 已知限制：具名 data 成员的**花括号覆盖不生效**（构造后须显式赋值，
+  `md/syntax/data.md` 既有限制）；出通道**无 OBJECT 变体**（只读跨界——
+  C# 侧改字段不回写 SL，镜像树编组后与原实例无共享内存）；
+- 用例：`CSharpTest2.sl` 的 `testAtSignDataMirror`（五标量字段 int/double/
+  string/bool 往返）、`testAtSignDataNested`（嵌套 data 递归镜像）、
+  `testAtSignClassMirror`（class 实例跨界 `total/step == 20`）。
+
+### jsonc plugins 段：references / sources（额外引用与同编源码，2026-09-27）
+
+引用方工程的 module.jsonc `plugins.csharp_mono` 段可声明两个可选键（路径相对
+jsonc 所在目录，也接受绝对路径），**无需把文件手工放进插件 lib 目录**：
+
+```jsonc
+"csharp_mono": {
+  "...": "...",
+  "references": [ "CsExtra/ExtraMathLib.dll" ],   // 预编译 managed 程序集
+  "sources":    [ "CsExtra/SlExtraUtil.cs" ]     // 与块体同批编译的 .cs 源码
+}
+```
+
+- **`references[]`（预编译程序集引用）**：导出期 Front（`AtSignLabelBuildManager.CollectBuildExtras`）
+  把 dll **拷入插件 libDir**（`windows-x64/`）——编译期 csc 自动扫描 `/r:` 引用（插件另按
+  下发的绝对路径显式 `/r:`，与扫描去重）、运行期 mono `assemblies_path` 从插件 dll 同目录
+  **按裸名解析加载**（与 SLAtSign.dll 同机制）；同时随 Build 请求下发绝对路径。改动 dll 需重编。
+- **`sources[]`（同编源码）**：导出期 Front 读文件内容随 Build 请求下发
+  （条目名 = `CsSrc_<文件名去扩展>`），插件**与全部块体条目同批合并编译进
+  SLAtSign.dll**——每趟导出自动重编，块内头区 `using` 其命名空间即可调用其中类型
+  （静态方法 / 可 new 的 class 均可）。
+- 两者可同时声明、单条目可混用两侧类型（`using SLExtra; using ExtraMathLib;`）；
+  sources 里的类型与镜像 class（SLAtSign 命名空间）同库共存，撞名由 csc 报错拒收。
+- ⚠ **命名空间勿与内部类同名**：`namespace ExtraMath { class ExtraMath }` 会使块内
+  `ExtraMath.Twice` 被 C# 解析为"在命名空间 ExtraMath 中找成员 Twice"→ **CS0234**
+  （实测踩坑）；命名空间与类分开命名即可（如 `ExtraMathLib.ExtraMath`）。
+- 文件缺失/读取失败仅记 Front 日志跳过，不中断导出（csc 缺引用自然报错）。
+- 用例：`CSharpTest2.sl` 的 `testAtSignCsExtra`（sources 两类型 + references 一 dll
+  混用：`Sum(4, Twice(5)) + |(3,-4)| == 21`）。
+
 ## 5. 约束与边界（首期）
 
 | 约束              | 说明                                                                                                                                                                                                                 |
 | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **类型边界**        | 入通道：slType 可映射标记 int/long/float/double/string/bool（映射表见 §3，缺省 int），脱糖按 Kind 三分流选 `ChannelIn<Kind>` 变体（缺省/int/long/bool → Int、`string` → String、`float/double/float64/f64` → Double）；入通道值运行期按栈槽 kind 编组 `SLLabelValue` 四态（INT/FLOAT/STRING/NULL），不支持形态报 -89；出通道：**int/string**（类型标记变体，缺省 int；long/double/bool 等标记编译期拒收 20055）；出值运行期按返回对象实际类型判型（`System.String` → 深拷贝跨界 / `null` → 空值 / 其余 unbox int） |
+| **类型边界**        | 入通道：slType **显式必填**（禁 var/缺省 → 20055），白名单 `Int32/Int64/Single/Double/String/Boolean/Object` 及别名（映射表见 §3）+ **SL data/class 名直通**（镜像 class，见 §4 末）；脱糖按 Kind 七分流选 `ChannelIn<Kind>` 变体（见 §4）；入通道值运行期按栈槽 kind 编组 `SLLabelValue` 五态（INT/FLOAT/STRING/NULL/OBJECT——OBJECT = SL data/class 的 SLLabelObject 镜像树），不支持形态报 -89；出通道：**int/string**（类型标记变体，缺省 int；long/double/bool 等标记编译期拒收 20055，**无 OBJECT 出通道**）；出值运行期按返回对象实际类型判型（`System.String` → 深拷贝跨界 / `null` → 空值 / 其余 unbox int） |
 | **出通道个数**       | 每块**至多 1 个**（第二个出通道 → LID 20056，Front 三分初判先于插件检出）                                                                                                                                                                  |
 | **`<-`** **位置** | 只允许头区/尾行；代码段代码区命中 `<-` → LID 20055（消息为插件原文透传）；字符串/字符/行注释/块注释内的 `<-` 是合法目标语言原文直接放行（插件三态扫描自决，Front 零复核）                                                                                                              |
 | **小括号参数**       | 仅**形态校验占位**：`name=value` 逗号分隔、名称须标识符、value 须简单字面量（禁 `; , ( ) { } < > $ " ' #`）；解析结果存 `labelParams` 元数据，**首期不参与代码生成**（空参数表 `()` 合法）                                                                                 |
 | **C# 语言版本**     | .NET Framework 自带 csc（v4.0.30319）= **C#5**；块内禁用 C#6+ 语法                                                                                                                                                            |
-| **外部程序集**       | 块内引用的类型所在 dll 必须已位于 `simple_language_plugins/csharp_mono/cvm/lib/windows-x64/`（如 `SLCSharpTestLib.dll`），编译期自动 `/r:` 引用、运行期 assemblies\_path 兜底                                                                     |
+| **外部程序集**       | 两条路：① 手工放 `simple_language_plugins/csharp_mono/cvm/lib/windows-x64/`（如 `SLCSharpTestLib.dll`，编译期自动 `/r:`、运行期 assemblies_path 兜底）；② jsonc `plugins.csharp_mono.references[]` 声明（Front 导出期自动拷入 libDir + 下发路径，见 §4 末 references/sources 小节）；额外 .cs 源码走 `sources[]` 同批合并编译                                                               |
 | **csc 探测**      | 环境变量 `SIMPLELANG_CSC` 覆盖 → Framework64 → Framework（64 位优先）                                                                                                                                                         |
+| **WinForms / HTTP** | 块内可用 mono BCL 的 `System.Windows.Forms` / `System.Drawing` / `System.Net`：插件 vendored BCL 树（`cvm/lib/windows-x64/lib/mono/4.5/`）已含 SWF/Drawing 五件套 + `Mono.Posix.dll`（XplatUI JIT eager 解析依赖）+ `Mono.Security.dll`（HttpWebRequest TLS 依赖）+ `machine.config`；WinForms 消息循环须 STA 子线程（块体在方法内无法标 `[STAThread]`——`SetApartmentState(ApartmentState.STA)` + `Application.Run` + `Join`），`System.Windows.Forms.Timer` 与 `System.Threading.Timer` 撞名须全限定；HTTP 等走 System.Configuration 的 BCL 路径依赖 bridge 层 `mono_domain_set_config` 挂宿主 config（`cvm_csharp_mono.config`——embedded domain 的 ConfigurationFile 缺省 null，不挂则 `WebRequest.Create` 抛 `ArgumentException: ExeConfigFilename cannot be null`）；用例 `CSharpTest3.sl` |
 | **失败策略**        | csc 缺失/编译失败/部署失败仅记 Front 日志（LID 22135-22138），**不中断导出**；无构建 handler 的标签同告警不中断                                                                                                                                       |
 | **插件解析器容错**     | 解析器加载/契约失败 → LID 20057（进程内只报一次），整块原样透传由后续词法解析暴露原始错误                                                                                                                                                                |
 | **payload 序列化** | ⚠ IR 指令 payload 类是 `IRData.PackOpValue` 的**已知类型白名单**——新增 payload 类必须同步加分支，缺失会退化为 `ToString()` 类型全名，CVM 装配期解析失败、运行期报 -86（详见排障表）                                                                                     |
@@ -252,11 +348,12 @@ CVM 运行
   实现为单 payload JSON → **装配期改写为 4 字节绑定索引**（更紧凑，绑定集中
   `sl_atsign_binding` 表管理）；
 - **编组**：蓝图走 VMS（§A11）marshalling；已落地按栈槽 kind 直编组
-  （INT/FLOAT/STRING/NULL；`channels[].slType` 仅声明意图的元数据，非空供
-  插件映射形参类型——入通道全五型、出通道仅 int/string，空 = 缺省 int）；
-  string 入通道 MAIN/COROUTINE 借用 VMObject 内部缓冲、ISOLATE 走
-  `host->alloc` 深拷贝（V3 跨界内存规则）；string 出通道深拷贝 utf8
-  跨界回 SL 栈（出值所有权独立于 mono GC 堆，V3 对称）；
+  （INT/FLOAT/STRING/NULL/OBJECT——OBJECT = SL data/class 的 `SLLabelObject`
+  镜像树递归编组，深度限 32；`channels[].slType` 显式必填，供插件映射
+  形参类型并触发 SL 类布局下发（镜像 class，见 §4 末）——入通道七变体、
+  出通道仅 int/string）；string 入通道 MAIN/COROUTINE 借用 VMObject 内部缓冲、
+  ISOLATE 走 `host->alloc` 深拷贝（V3 跨界内存规则）；string 出通道深拷贝
+  utf8 跨界回 SL 栈（出值所有权独立于 mono GC 堆，V3 对称）；
 - **调度与环境感知**：蓝图 `execForm` 三形态；已落地 **exec\_env 三态检测**
   （`sl_atsign_detect_env`：`vm->isolate` 非空且非 main → ISOLATE /
   `vm->current_coroutine` 非空且非 root → COROUTINE / 否则 MAIN），桥接层
@@ -285,19 +382,22 @@ CVM 运行
 | 运行期 **-86**（payload/绑定/通道会话畸形）    | ① 检查 module.json 中 124 指令 payload 是否为 JSON 对象（若形如类型全名字符串 → `IRData.PackOpValue` 白名单缺分支，见 §5）；② `csimple_lang\build\logs\VM.txt` 找装配期 `CallAtSignLabel: payload is not a JSON call package` / entry 缺失 / 通道数不匹配 Warning；③ **通道原语失败也是 -86**（如裸调 `ChannelOut*` 无会话、会话值与消费原语类型不符）——经 `vm_sys_throw` 派发为**可捕获 VM 异常**，SL 侧 try/catch 可拦截恢复（与 coroutine/isolate/process 系统方法同错误模型） |
 | 运行期 **-87**（插件/labelExec 不可用）     | 确认插件 dll 已构建部署（`cvm\build-csharp-mono.ps1`）且 `plugin.jsonc` 声明 labelExec capability                                                                                                                                                                                                                                                                                          |
 | 运行期 **-88**（labelExec 执行失败）       | `VM.txt`（真实位置 `csimple_lang\build\logs\VM.txt`，cli 重定向；**非** `out\export\...\Logs\`）查插件侧原始错误                                                                                                                                                                                                                                                                                 |
-| 运行期 **-89**（值编组不支持）               | 入通道/出值类型超出已支持边界（OBJECT 入通道、出通道会话值与消费原语类型不符等）                                                                                                                                                                                                                                                                                                                                 |
+| 运行期 **-89**（值编组不支持）               | 入通道/出值类型超出已支持边界（非 REGULAR/DATA 对象（TYPE_OBJECT 等）入通道、嵌套字段超深度限 32、出通道会话值与消费原语类型不符等；SL data/class 正常镜像链见 §4 末）                                                                                                                                                                                                                                                           |
+| WinForms / HTTP 运行期异常                 | WinForms 初始化失败（XplatUI 类型加载）→ BCL 树缺 `Mono.Posix.dll`；`HttpWebRequest: tlsProvider` TypeLoadException / 进程 FATAL exit 255 → 缺 `Mono.Security.dll`（mono JIT eager 解析方法体全部类型引用，Windows 走 Win32 分支也要求 X11/TLS 依赖类型可解析）；`Error Initializing the configuration system`（ExeConfigFilename null）→ 宿主 config 未挂（bridge `mono_domain_set_config` + 插件目录 `cvm_csharp_mono.config`）；HTTP 超时 → 先 `curl.exe -m 8 <url>` 验证目标可达（如 ip-api.com 当前网络不可达，用例已换 httpbin.org） |
 
 ## 8. 测试
 
-**正向用例**（`test/SpecialTest/CSharpTest.sl`，宿主 `project/CSimpleVMSpecialTest`，
-SpecialTest 全量 **26 passed / 0 failed**）：
+**正向用例**（`test/SpecialTest/CSharpTest.sl` + `test/SpecialTest/CSharpTest2.sl`
++ `test/SpecialTest/CSharpTest3.sl`，
+宿主 `project/CSimpleVMSpecialTest`，SpecialTest 全量 **CSharpTest 26 passed +
+CSharpTest2 9 passed + CSharpTest3 2 passed / 0 failed**）：
 
 - `testAtSignMono()`：入+出通道完整往返（30+12=42）、无出通道块（`AtSignLabelCallVoid`）、
   小括号参数占位（`@csharp_mono( name=value, mode=fast )` 编译通过，参数仅存元数据）
 - `testAtSignCoro()`：协程内块（spawn+await 往返 42）
 - `testAtSignIsolate()`：isolate 线程内块（Isolate.run 15+27=42）
 - `testAtSignIsoString()`：isolate 线程内 **string 入通道**（slType 标记
-  `var string name <- $name` → `Greet('sl').Length == 19`；桥接层 ISOLATE
+  `String name <- $name` → `Greet('sl').Length == 19`；桥接层 ISOLATE
   深拷贝路径 + `host->alloc` 所有权移交）
 - `testAtSignExemptArrow()`：代码段字面量放行（字符串 `"a <- b"` / 行注释内的 `<-`
   是合法 C# 原文，插件三态扫描自决；只有代码区 `<-` 才报 20055，Front 零复核）
@@ -307,6 +407,23 @@ SpecialTest 全量 **26 passed / 0 failed**）：
 - `testAtSignChannelNegative()`：**通道会话负例**（裸调 `ChannelOutInt/OutString`
   无会话 → 可捕获 VM 异常 -86，try/catch 拦截；负例后通道链路完好，正向
   出通道 6+7==13 恢复验证）
+- `testAtSignDataMirror()`（CSharpTest2）：**SL data → C# 镜像 class**
+  （`AtSignMetrics m <- $m`，int/double/string/bool 五标量字段全形态跨界
+  往返，`width*height == 24` + 三形态 intact）
+- `testAtSignDataNested()`（CSharpTest2）：**嵌套 data 递归镜像**
+  （`AtSignOuter.inner` 子对象递归编组/装配，`level*100+weight*10 == 325`）
+- `testAtSignClassMirror()`（CSharpTest2）：**SL class → C# 镜像 class**
+  （REGULAR 实例跨界，`total/step == 20`）
+- `testAtSignCsExtra()`（CSharpTest2）：**jsonc references/sources 混用**
+  （sources `SLExtra.SlExtraUtil/SlPoint` 同批合并编译 + references
+  `ExtraMathLib.dll` 预编译引用运行期裸名加载，
+  `Sum(4, Twice(5)) + |(3,-4)| == 21`）
+- `testWinFormsHttp()`（CSharpTest3）：**WinForms 窗口 + HTTP json 回显**
+  （全用 mono BCL：STA 子线程 `Form` + `Label` 初始固化文字 → `Shown` 后
+  `ThreadPool` 后台 `HttpWebRequest` GET `http://httpbin.org/get` →
+  `BeginInvoke` 回 UI 线程把响应 json 写进 Label → dwell/safety 双 Timer
+  自动关窗；`$n` 单出通道回传阶段标志和（窗口显示 1 + HTTP 响应非空 2 +
+  Label 已更新 4 == 7），SL 侧两断言；依赖见 §5 WinForms/HTTP 行）
 
 **负向套件**（独立工程 `test/Other/AtSignLabel/AtSignNegativeTest.{sl,sp,jsonc}`，
 **刻意不入** `ProjectTest.jsonc` 主回归清单——负例必须编译失败）：
@@ -319,7 +436,7 @@ SpecialTest 全量 **26 passed / 0 failed**）：
 | `negImportBeforeIn` | import 在入通道之前（截断头区初判，入通道行落入代码段）         | 20055  |
 | `negDollarInMid`    | 出通道行之后还有代码行（出通道不在块尾，行落入代码段）             | 20055  |
 | `negBadParams`      | `@csharp_mono( bad-name )` 坏参数形态        | 20055  |
-| `negBadSlType`      | `var unknown_tp name <- $name` 类型标记无法映射 | 20055  |
+| `negBadSlType`      | `var unknown_tp name <- $name` 多段形态（slType 须 2 段显式；`var x <- $y` 同被 20055 拒收——var/缺省形态已禁用） | 20055  |
 
 驱动脚本（断言 Front.txt LID 计数 20055×6 + 20056×1；Front CLI 退出码恒 0 不可作断言）：
 

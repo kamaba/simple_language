@@ -150,7 +150,8 @@ class CSharpTest
 
     # ---------------- @csharp_mono(){} 内联块（通道脱糖 → csc 融合 SLAtSign.dll） ----------------
     # 块体三分（头/尾通道归 Front 初判，代码段整编归插件 frontend 解析器
-    # SLCSharpMonoFrontend）：var x <- $x 入通道（$ 引外层 SL 变量）；
+    # SLCSharpMonoFrontend）：Int32 x <- $x 入通道（slType 类型标记开头，$
+    # 引外层 SL 变量，var 已禁用）；
     # 代码段（首个非 <- 行起到末行前）为目标语言原文，Front 零处理，
     # 插件自决整编（含段首 using/import 指令行吸收）；
     # $x <- expr 出通道（末行，ret_kind=1 取 Main 返回值写回）。
@@ -167,8 +168,8 @@ class CSharpTest
         int c = 0
         @csharp_mono()
         {
-            var a <- $a
-            var b <- $b
+            Int32 a <- $a
+            Int32 b <- $b
             using SLCSharp;
             using System;
             var c = MathUtil.Add( a, b );
@@ -181,7 +182,7 @@ class CSharpTest
         int d = 0
         d = SLang.Plugin.CSharpMono.CSharpCallInt( "SLCSharpTestLib.dll", "SLCSharp", "MathUtil", "Add", 1, 100, 23 )
         @csharp_mono(){
-            var x <- $d
+            Int32 x <- $d
             using SLCSharp;
             var r = MathUtil.Add( x, 1 );
         }
@@ -196,8 +197,8 @@ class CSharpTest
     {
         int c = 0
         @csharp_mono(){
-            var a <- $a
-            var b <- $b
+            Int32 a <- $a
+            Int32 b <- $b
             using  SLCSharp;
             var c = MathUtil.Add( a, b );
             $c <- c;
@@ -228,8 +229,8 @@ class CSharpTest
     {
         int c = 0
         @csharp_mono(){
-            var a <- $a
-            var b <- $b
+            Int32 a <- $a
+            Int32 b <- $b
             using SLCSharp;
             var c = MathUtil.Add( a, b );
             $c <- c;
@@ -253,14 +254,14 @@ class CSharpTest
     # ISOLATE 环境（非 main isolate 的 worker OS 线程）下，宿主桥接层对 string
     # 入通道走 host->alloc 深拷贝（V3 跨界内存规则，值独立于 isolate VM 堆存活
     # 整次调用）；MAIN/COROUTINE 仍借用 VMObject 内部缓冲。C# 侧 Greet 拼接后
-    # 取 Length 走 Int32 出通道。入通道行带 slType 类型标记（var string name
-    # <- $name），插件映射为 C# 形参类型；无标记缺省 int（既有块全兼容）。
+    # 取 Length 走 Int32 出通道。入通道行以 slType 类型标记开头（String name
+    # <- $name 形态），插件映射为 C# 形参类型；var 关键字已禁用。
     static int isoMonoGreet()
     {
         int n = 0
         string name = "sl"
         @csharp_mono(){
-            var string name <- $name
+            String name <- $name
             using SLCSharp;
             var g = MathUtil.Greet( name );
             $n <- g.Length;
@@ -312,7 +313,7 @@ class CSharpTest
         string s = ""
         @csharp_mono()
         {
-            var string name <- $name
+            String name <- $name
             using SLCSharp;
             var g = MathUtil.Greet( name );
             string $s <- g;
@@ -358,8 +359,8 @@ class CSharpTest
         int z = 0
         @csharp_mono()
         {
-            var p <- $p
-            var q <- $q
+            Int32 p <- $p
+            Int32 q <- $q
             using SLCSharp;
             var s = MathUtil.Add( p, q );
             $z <- s;

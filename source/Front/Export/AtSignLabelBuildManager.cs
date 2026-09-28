@@ -25,6 +25,7 @@
 //                （导出管线顺序保证先构建后拷贝，见 ExportLangManager）。
 //****************************************************************************
 
+using SimpleLanguage.Core;
 using SimpleLanguage.Logging;
 using SimpleLanguage.Project;
 using System;
@@ -112,6 +113,15 @@ namespace SimpleLanguage.Export
                 });
             }
 
+            // SL 类布局下发：收集本标签全部块入通道引用的 SL data/class，
+            // 递归展开字段布局（插件 frontend 据此生成镜像 C# class）
+            CollectSlTypes(request, blocks);
+
+            // jsonc plugins.<id>.references / sources 下发：额外程序集引用
+            //（拷入 libDir 供编译期扫描 + 运行期 assemblies_path 解析）与
+            // 额外源码文件（读内容，插件与块体同批合并编译）
+            CollectBuildExtras(request, label);
+
             var build = SimpleLanguage.Compile.PluginFrontendParser.Build(
                 label, blocks[0].FilePath, JsonSerializer.Serialize(request));
             if (build == null)
@@ -178,6 +188,308 @@ namespace SimpleLanguage.Export
                 }
             }
             return null;
+        }
+
+        // ------------------------------------------------------------------
+        // SL 类布局收集（镜像 class 下发）：Build 期 Meta 已装配，扫描本
+        // 标签全部块入通道的类型标记，非 BCL 名（SL data/class 类名）查
+        // ClassManager 递归展开字段布局，随构建请求 slTypes 下发；插件
+        // frontend 据此生成公共字段 C# class（如 csharp_mono 的 namespace
+        // SLAtSign），块内目标语言代码可直接引用。枚举/未解析名跳过
+        // （标量白名单外查不到的不下发，运行期按 Object 兜底）。
+        // ------------------------------------------------------------------
+
+        /// <summary>入通道类型标记的标量白名单（含 C# BCL 别名与 SL Meta
+        /// 标量名）；白名单外即 SL data/class 类名，进布局收集。</summary>
+        private static readonly HashSet<string> s_CSharpBclTypes = new HashSet<string>(StringComparer.Ordinal)
+        {
+            "Int32", "int", "int32", "i32",
+            "Int64", "long", "int64", "i64",
+            "Single", "float", "float32", "f32", "Float32",
+            "Double", "double", "float64", "f64", "Float64",
+            "String", "string",
+            "Boolean", "bool", "boolean",
+            "Object", "object",
+        };
+
+        /// <summary>扫描全部块入通道类型标记，收集 SL data/class 布局进请求 slTypes。</summary>
+        private static void CollectSlTypes( SimpleLanguage.Compile.PluginLabelBuildRequest request,
+            List<SimpleLanguage.Compile.AtSignLabelBlock> blocks )
+        {
+            var collected = new Dictionary<string, SimpleLanguage.Compile.PluginLabelSlType>(StringComparer.Ordinal);
+            var visiting = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var block in blocks)
+            {
+                if (block.InChannels == null)
+                {
+                    continue;
+                }
+                foreach (var ch in block.InChannels)
+                {
+                    string slType = ch != null && ch.Length > 2 ? ch[2] : null;
+                    if (string.IsNullOrEmpty(slType) || s_CSharpBclTypes.Contains(slType))
+                    {
+                        continue;
+                    }
+                    CollectSlType(slType, collected, visiting);
+                }
+            }
+            request.SlTypes.AddRange(collected.Values);
+        }
+
+        /// <summary>按名解析 SL 类型并展开布局（data → exportMetaDataList；
+        /// class → GetClassByName 短名兜底；均未命中（枚举/未知）跳过）。
+        /// visiting 只防无限递归：环字段仍下发类型名（镜像类自引用/互引合法）。</summary>
+        private static void CollectSlType( string name,
+            Dictionary<string, SimpleLanguage.Compile.PluginLabelSlType> collected, HashSet<string> visiting )
+        {
+            if (collected.ContainsKey(name) || visiting.Contains(name))
+            {
+                return;
+            }
+            SimpleLanguage.Compile.PluginLabelSlType result = null;
+            foreach (var d in ClassManager.instance.exportMetaDataList)
+            {
+                if (d == null || !string.Equals(d.name, name, StringComparison.Ordinal))
+                {
+                    continue;
+                }
+                visiting.Add(name);
+                result = BuildSlType(name, "data", d.GetMetaMemberDataList(), collected, visiting);
+                visiting.Remove(name);
+                break;
+            }
+            if (result == null)
+            {
+                // class 路径：GetClassByName 的键是 allName_模板数（含模块前缀，
+                // 如 "SpecialTest.AtSignCounter_0"），而入通道类型标记是纯类名，
+                // 全名先试（支持显式模块限定名），落空后按短名扫全局类字典兜底
+                // （引用模块 shell 无成员布局跳过；泛型类首期不支持，同
+                // FindFirstMetaClassByShortName 口径）
+                var mc = ClassManager.instance.GetClassByName(name);
+                if (mc == null)
+                {
+                    foreach (var kv in ClassManager.instance.allClassDict)
+                    {
+                        var c = kv.Value;
+                        if (c == null || c.refFromType == RefFromType.RefModule
+                            || c.metaTemplateList.Count != 0
+                            || !string.Equals(c.name, name, StringComparison.Ordinal))
+                        {
+                            continue;
+                        }
+                        mc = c;
+                        break;
+                    }
+                }
+                if (mc != null)
+                {
+                    visiting.Add(name);
+                    result = BuildSlType(name, "class", mc.metaMemberVariableDict.Values, collected, visiting);
+                    visiting.Remove(name);
+                }
+            }
+            if (result != null)
+            {
+                collected[name] = result;
+            }
+        }
+
+        /// <summary>展开单个 SL 类型布局（跳静态成员；字段类型名经
+        /// FieldSlTypeName 归一并触发嵌套类递归收集）。</summary>
+        private static SimpleLanguage.Compile.PluginLabelSlType BuildSlType( string name, string kind,
+            IEnumerable<MetaVariable> members,
+            Dictionary<string, SimpleLanguage.Compile.PluginLabelSlType> collected, HashSet<string> visiting )
+        {
+            var result = new SimpleLanguage.Compile.PluginLabelSlType { Name = name, Kind = kind };
+            foreach (var mv in members)
+            {
+                if (mv == null || mv.isStatic)
+                {
+                    continue;
+                }
+                string fieldType = FieldSlTypeName(mv, collected, visiting);
+                if (string.IsNullOrEmpty(fieldType))
+                {
+                    continue;
+                }
+                result.Fields.Add(new SimpleLanguage.Compile.PluginLabelSlField
+                {
+                    Name = mv.name,
+                    SlType = fieldType,
+                    IsArray = mv.isArray,
+                });
+            }
+            return result;
+        }
+
+        /// <summary>字段 SL 类型名归一：优先声明类型；枚举 → Int32；数组 →
+        /// 元素类型名（isArray 由调用方另行标记，CVM 首期编组传 null）；
+        /// SL data/class 名 → 递归 CollectSlType 后返回类名；标量白名单
+        /// 名原样直用（插件 MapCSType 同时识别 Float32/Float64 等 SL Meta 名）。</summary>
+        private static string FieldSlTypeName( MetaVariable mv,
+            Dictionary<string, SimpleLanguage.Compile.PluginLabelSlType> collected, HashSet<string> visiting )
+        {
+            var mt = mv.defineMetaType != null ? mv.defineMetaType : mv.realMetaType;
+            if (mt == null)
+            {
+                return "Object";
+            }
+            string name;
+            if (mt.IsArray())
+            {
+                var elems = mt.defineTemplateMetaTypeList;
+                name = elems != null && elems.Count > 0 ? PlainTypeNameOf(elems[0]) : null;
+            }
+            else
+            {
+                name = PlainTypeNameOf(mt);
+            }
+            if (string.IsNullOrEmpty(name) || s_CSharpBclTypes.Contains(name))
+            {
+                return name ?? "Object";
+            }
+            CollectSlType(name, collected, visiting);
+            return name;
+        }
+
+        /// <summary>MetaType → SL 类型名原文（枚举 Int32 化；标量 MetaClass.name
+        /// 即 "Int32"/"Int64"/"Float32"/"Float64"/"String"/"Boolean"/"Object"）。</summary>
+        private static string PlainTypeNameOf( MetaType mt )
+        {
+            if (mt == null)
+            {
+                return null;
+            }
+            if (mt.isEnum)
+            {
+                return "Int32";
+            }
+            if (mt.metaData != null)
+            {
+                return mt.metaData.name;
+            }
+            if (mt.metaClass != null)
+            {
+                return mt.metaClass.name;
+            }
+            return null;
+        }
+
+        // ------------------------------------------------------------------
+        // jsonc plugins.<id>.references / sources 组装（额外引用与源码下发）
+        // ------------------------------------------------------------------
+
+        /// <summary>把 jsonc plugins 段声明的额外引用（references：拷入 libDir
+        /// 供编译期 csc 自动扫描引用 + 运行期 mono assemblies_path 裸名解析，
+        /// 与 SLAtSign.dll 部署同机制；并随请求下发绝对路径）与额外源码
+        ///（sources：读文件内容下发，插件与块体同批合并编译）填进构建请求。
+        /// 文件缺失/读取失败记日志跳过，不中断导出（csc 缺引用自然报错）。</summary>
+        private static void CollectBuildExtras( SimpleLanguage.Compile.PluginLabelBuildRequest request, string label )
+        {
+            var section = FindPluginSection(label);
+            if (section == null)
+            {
+                return;
+            }
+            foreach (var rel in section.References)
+            {
+                var abs = ResolveExtraPath(rel);
+                if (abs == null)
+                {
+                    Log.AddIRLog(LID.ExportPluginLibCopyFailed,
+                        "AtSignLabel: reference not found (skip): " + label + " " + rel);
+                    continue;
+                }
+                request.References.Add(abs);
+                if (!string.IsNullOrEmpty(request.LibDir))
+                {
+                    try
+                    {
+                        Directory.CreateDirectory(request.LibDir);
+                        File.Copy(abs, Path.Combine(request.LibDir, Path.GetFileName(abs)), true);
+                    }
+                    catch (Exception e)
+                    {
+                        Log.AddIRLog(LID.ExportPluginLibCopyFailed,
+                            "AtSignLabel: reference copy failed: " + label + " " + abs + " " + e.Message);
+                    }
+                }
+            }
+            var usedNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var rel in section.Sources)
+            {
+                var abs = ResolveExtraPath(rel);
+                if (abs == null)
+                {
+                    Log.AddIRLog(LID.ExportPluginLibCopyFailed,
+                        "AtSignLabel: source not found (skip): " + label + " " + rel);
+                    continue;
+                }
+                string src;
+                try
+                {
+                    src = File.ReadAllText(abs);
+                }
+                catch (Exception e)
+                {
+                    Log.AddIRLog(LID.ExportPluginLibCopyFailed,
+                        "AtSignLabel: source read failed (skip): " + label + " " + abs + " " + e.Message);
+                    continue;
+                }
+                // entryName 全局唯一防与条目 Entry_N / 镜像 SLMirrorTypes 撞名
+                //（插件按 entryName + ".cs" 写盘编译）；同名文件追加序号
+                var entryName = "CsSrc_" + Path.GetFileNameWithoutExtension(abs);
+                for (int k = 2; usedNames.Contains(entryName); k++)
+                {
+                    entryName = "CsSrc_" + Path.GetFileNameWithoutExtension(abs) + "_" + k;
+                }
+                usedNames.Add(entryName);
+                request.Sources.Add(new SimpleLanguage.Compile.PluginLabelBuildEntry
+                {
+                    EntryName = entryName,
+                    Source = src,
+                });
+            }
+        }
+
+        /// <summary>按 label 找 jsonc plugins 段条目（id 忽略大小写，与
+        /// ResolvePluginLibDir / FindDeployedDll 同口径）；未声明返回 null。</summary>
+        private static ProjectConfig.PluginSection FindPluginSection( string label )
+        {
+            var plugins = ProjectManager.config?.Plugins;
+            if (plugins == null)
+            {
+                return null;
+            }
+            foreach (var p in plugins)
+            {
+                if (p != null && string.Equals(p.Id, label, StringComparison.OrdinalIgnoreCase))
+                {
+                    return p;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>额外引用/源码路径解析：绝对路径直用；相对路径按 jsonc
+        /// 目录（projectPath，缺省 CurrentDirectory，同 PluginLibExportManager
+        /// 口径）拼；文件不存在返回 null。</summary>
+        private static string ResolveExtraPath( string rel )
+        {
+            if (string.IsNullOrWhiteSpace(rel))
+            {
+                return null;
+            }
+            if (Path.IsPathRooted(rel))
+            {
+                return File.Exists(rel) ? Path.GetFullPath(rel) : null;
+            }
+            var baseDir = !string.IsNullOrWhiteSpace(ProjectManager.projectPath)
+                ? ProjectManager.projectPath
+                : Environment.CurrentDirectory;
+            var abs = Path.GetFullPath(Path.Combine(baseDir, rel));
+            return File.Exists(abs) ? abs : null;
         }
 
         // ------------------------------------------------------------------

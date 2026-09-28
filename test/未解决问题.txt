@@ -1,7 +1,5 @@
 函数名称和类名冲突时候的处理  
 
-把VM_MIMALLOC_DISABLE 变成常开吧
-
 编码相关的
 Tcp/Udp/HttpClient/Websocket/NetStream相关接口
 Yaml/Xml/RegExp

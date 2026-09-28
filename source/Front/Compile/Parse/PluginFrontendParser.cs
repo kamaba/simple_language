@@ -57,9 +57,11 @@ namespace SimpleLanguage.Compile
         /// <summary>SL 侧变量名（$ 后的标识符）。</summary>
         [JsonPropertyName("slVar")]
         public string SlVar { get; set; }
-        /// <summary>SL 侧类型标记原文（入通道 "var string s &lt;- $x" 的 string；
-        /// 语言无关：语义由插件映射为目标语言类型；null/空 = 缺省（插件自决，
-        /// csharp_mono 缺省 int，兼容无类型标记的既有块））。</summary>
+        /// <summary>SL 侧类型标记原文（入通道 "&lt;slType&gt; target &lt;- $sl" 的
+        /// slType，显式必填——C# 已定义类型名或 SL 类名，var/缺省形态已
+        /// 由 Front 拒收；出通道可 null = 缺省。语义由插件映射为目标语言
+        /// 类型：标量白名单 Int/Long/Float/Double/String/Boolean +
+        /// Object，SL data/class 类名走镜像 class 对象编组）。</summary>
         [JsonPropertyName("slType")]
         public string SlType { get; set; }
     }
@@ -135,6 +137,39 @@ namespace SimpleLanguage.Compile
     }
 
     /// <summary>
+    /// SL 类字段布局 DTO：镜像 class 单个字段（Name=SL 字段名，
+    /// SlType=SL 类型名原文——标量白名单/SL 类名；IsArray=数组字段，
+    /// CVM 首期编组传 null，示例须避开）。
+    /// </summary>
+    public class PluginLabelSlField
+    {
+        [JsonPropertyName("name")]
+        public string Name { get; set; }
+        [JsonPropertyName("slType")]
+        public string SlType { get; set; }
+        /// <summary>数组字段（元素类型见 slType；首期编组传 null）。</summary>
+        [JsonPropertyName("isArray")]
+        public bool IsArray { get; set; }
+    }
+
+    /// <summary>
+    /// SL 类布局 DTO：SL 的 data/class 跨界镜像描述（Kind = "data" /
+    /// "class"），插件 frontend 据此生成公共字段 C# class（如
+    /// csharp_mono 的 namespace SLAtSign），供块内 C# 代码直接引用。
+    /// 递归布局已展开（字段类型为 SL 类名时逐层下发，环字段只给类型名）。
+    /// </summary>
+    public class PluginLabelSlType
+    {
+        [JsonPropertyName("name")]
+        public string Name { get; set; }
+        /// <summary>布局来源："data"（exportMetaDataList）/"class"（ClassManager）。</summary>
+        [JsonPropertyName("kind")]
+        public string Kind { get; set; }
+        [JsonPropertyName("fields")]
+        public List<PluginLabelSlField> Fields { get; set; } = new List<PluginLabelSlField>();
+    }
+
+    /// <summary>
     /// 构建请求条目 DTO：单个待构建条目（source = 插件解析器生成的
     /// 目标语言临时代码全文；entryName = Front 预分配的 Entry_N）。
     /// </summary>
@@ -166,6 +201,21 @@ namespace SimpleLanguage.Compile
         /// <summary>待构建条目清单（同标签全部块，合并构建与否由插件自决）。</summary>
         [JsonPropertyName("entries")]
         public List<PluginLabelBuildEntry> Entries { get; set; } = new List<PluginLabelBuildEntry>();
+        /// <summary>SL data/class 类布局清单（本标签全部块入通道引用的 SL
+        /// 类，递归展开；供插件 frontend 生成镜像 C# class；空 = 无类引用）。</summary>
+        [JsonPropertyName("slTypes")]
+        public List<PluginLabelSlType> SlTypes { get; set; } = new List<PluginLabelSlType>();
+        /// <summary>额外引用程序集绝对路径清单（jsonc plugins.&lt;id&gt;.references，
+        /// Front 已解析为绝对路径并拷入 libDir；csharp_mono = csc /r: 引用；
+        /// 空数组 = 无声明）。键语义语言无关，内容由插件自决。</summary>
+        [JsonPropertyName("references")]
+        public List<string> References { get; set; } = new List<string>();
+        /// <summary>额外源码条目清单（jsonc plugins.&lt;id&gt;.sources，Front 读文件
+        /// 内容下发；EntryName = "CsSrc_" + 文件名去扩展（全局唯一防与
+        /// Entry_N/SLMirrorTypes 冲突）；csharp_mono = 与块体同批合并编译的
+        /// .cs 源码；空 = 无声明）。</summary>
+        [JsonPropertyName("sources")]
+        public List<PluginLabelBuildEntry> Sources { get; set; } = new List<PluginLabelBuildEntry>();
     }
 
     /// <summary>

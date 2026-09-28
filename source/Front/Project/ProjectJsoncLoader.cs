@@ -363,6 +363,33 @@ namespace SimpleLanguage.Project
                             sec.Capabilities.Add(new ProjectConfig.PluginCapabilitySection() { Type = "signLabel", Name = slhName });
                         }
                     }
+                    // references[]：额外程序集引用（语义由插件 frontend 自决；
+                    // csharp_mono = 块内 C# 引用的 managed dll，Front 拷入
+                    // libDir + 随 Build 请求下发路径）
+                    if (p.Value.TryGetProperty("references", out var pluginRefs) && pluginRefs.ValueKind == JsonValueKind.Array)
+                    {
+                        foreach (var f in pluginRefs.EnumerateArray())
+                        {
+                            var fn = f.ValueKind == JsonValueKind.String ? (f.GetString() ?? string.Empty) : string.Empty;
+                            if (!string.IsNullOrWhiteSpace(fn))
+                            {
+                                sec.References.Add(fn);
+                            }
+                        }
+                    }
+                    // sources[]：额外源码文件（csharp_mono = 与块体同批编译的 .cs；
+                    // Front 读内容随 Build 请求下发）
+                    if (p.Value.TryGetProperty("sources", out var pluginSrcs) && pluginSrcs.ValueKind == JsonValueKind.Array)
+                    {
+                        foreach (var f in pluginSrcs.EnumerateArray())
+                        {
+                            var fn = f.ValueKind == JsonValueKind.String ? (f.GetString() ?? string.Empty) : string.Empty;
+                            if (!string.IsNullOrWhiteSpace(fn))
+                            {
+                                sec.Sources.Add(fn);
+                            }
+                        }
+                    }
                     cfg.Plugins.Add(sec);
                 }
             }

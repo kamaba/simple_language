@@ -588,6 +588,17 @@ namespace SimpleLanguage.Project
             public string OnUnavailable { get; set; } = "disable";
             /// <summary>能力点列表（signLabelHandle 语法糖展开后并入此处）。</summary>
             public List<PluginCapabilitySection> Capabilities { get; set; } = new List<PluginCapabilitySection>();
+            /// <summary>额外引用清单（jsonc "plugins".&lt;id&gt;.references：字符串
+            /// 数组，相对 jsonc 目录或绝对路径；语义由插件 frontend 自决——
+            /// csharp_mono = 块内 C# 代码引用的 managed 程序集（csc /r: 引用，
+            /// Front 拷入插件 libDir 供编译期自动扫描与运行期 assemblies_path
+            /// 裸名解析）。</summary>
+            public List<string> References { get; set; } = new List<string>();
+            /// <summary>额外源码清单（jsonc "plugins".&lt;id&gt;.sources：字符串数组，
+            /// 相对 jsonc 目录或绝对路径；语义由插件 frontend 自决——csharp_mono
+            /// = 与块体同批合并编译进 SLAtSign.dll 的 .cs 源码文件，块内代码
+            /// 可直接引用其中类型）。Front 读文件内容随 Build 请求下发。</summary>
+            public List<string> Sources { get; set; } = new List<string>();
         }
 
         /// <summary>

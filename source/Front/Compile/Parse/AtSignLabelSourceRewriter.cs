@@ -9,8 +9,10 @@
 //                块体中段整编与条目构建在对应插件 frontend 工程，
 //                Front 不感知目标语言，C#/C/CUDA/Vulkan 插件一视同仁）。
 //                三层分工（与 csharp_mono 旧链 CSharpCallXxx 的关键差异）：
-//                1) <- 通道统一在 Front 解析：头区入通道 "var target <- $sl"
-//                   与尾区出通道 "$sl <- expr" 只由 Front 初判与复核
+//                1) <- 通道统一在 Front 解析：头区入通道 "<CSType> target <- $sl"
+//                   （CSType = C# 已定义类型名/SL 类名，显式必填：var 与
+//                   缺省形态已禁用，形态非法报 20055）与尾区出通道
+//                   "$sl <- expr" 只由 Front 初判与复核
 //                   （双出通道 20056）；
 //                2) 代码段（首个非 <- 行起到末行前）为目标语言原文：
 //                   整编归插件 frontend（单 JSON 契约，见
@@ -55,8 +57,8 @@ namespace SimpleLanguage.Compile
         public string DllName { get; set; } = string.Empty;
         /// <summary>目标语言端入口方法/符号名。</summary>
         public string EntryMethod { get; set; } = string.Empty;
-        /// <summary>入通道 [target(插件侧形参), slVar(SL 变量), slType(类型标记，可 null)]
-        /// 序列（与脱糖调用实参同序）。</summary>
+        /// <summary>入通道 [target(插件侧形参), slVar(SL 变量), slType(类型标记，显式必填
+        /// —— C# 已定义类型名/SL 类名，var/缺省形态已禁用)] 序列（与脱糖调用实参同序）。</summary>
         public List<string[]> InChannels { get; set; } = new List<string[]>();
         /// <summary>出通道 SL 变量名（null = 无出通道）。</summary>
         public string OutSlVar { get; set; }
@@ -131,15 +133,19 @@ namespace SimpleLanguage.Compile
     ///     outVar = <channelClassPath>.ChannelOutInt( entryIndex )  # 有出通道时（裸赋值）
     /// </code>
     /// （出通道裸赋值：SL 变量未声明时 Meta 层按右侧表达式自动定义，
-    /// 已声明则赋值；入通道 Kind = 类型标记映射，"string"→String，
-    /// double/float/float64/f64→Double，缺省/其他→Int；出通道 Kind
-    /// "string"→String，缺省/其他→Int（float 族同构扩展点）；
+    /// 已声明则赋值；入通道类型标记必须显式——唯一合法形态
+    /// "&lt;类型&gt; target &lt;- $slVar"，var/缺省形态报 20055——Kind 白名单
+    /// 分流：Int32/int→Int、Int64/long→Long、Single/float→Float、
+    /// Double/double→Double、String/string→String、Boolean/bool→Boolean、
+    /// 其余（Object 与 SL 类名）→Object（对象编组：SL data/class 跨界
+    /// 映射成 C# class）；出通道 Kind
+    /// "string"→String，缺省/其他→Int；
     /// 块执行出值不再经哨兵返回值，改经通道会话由 ChannelOut 取回）。
     /// <code>
     ///     @csharp_mono( 源=gpu )          # 小括号参数：语义由插件自决
     ///     {
-    ///         var a <- $a                   # 头区：入通道（Front 初判）
-    ///         var b <- $b
+    ///         Int32 a <- $a                  # 头区：入通道（Front 初判）
+    ///         Double b <- $b
     ///         import SLCSharp;              # 代码段起始：插件 frontend 吸收提升
     ///         var c = MathUtil.Add( a, b );  # 代码段：目标语言原文，Front 零处理
     ///         $c <- c;                      # 尾区：出通道（Front 初判，返回值写回）
@@ -148,10 +154,13 @@ namespace SimpleLanguage.Compile
     /// 行号保持：多行块替换为单行脱糖语句后补齐原换行数（Lexer 的 '\r' 按
     /// 空白处理，只补 '\n' 不产生脏 Token）。解析错误报 20055/20056/20057
     /// 后整块原样透传（本错误在前更精确，符合"看最早 Error"）。
-    /// 首期类型边界：入通道类型标记语言无关原文传插件（atSignLabel[] 通道
-    /// slType），出通道类型标记 "slType $sl &lt;- expr" 的可选前缀决定
-    /// ChannelOut 变体（"string"→ChannelOutString，缺省/其他→ChannelOutInt；
-    /// float 族同构扩展点）；运行期出值按通道会话捕获的 SLLabelValue 实际
+    /// 类型边界：入通道类型标记语言无关原文传插件（atSignLabel[] 通道
+    /// slType，显式必填），SL data/class 名在导出期由 AtSignLabelBuildManager
+    /// 收集布局随构建请求下发（插件 frontend 生成镜像 C# class 合并编译进
+    /// 承载库，CVM 对象编组按镜像布局装配）；出通道类型标记
+    /// "slType $sl &lt;- expr" 的可选前缀决定
+    /// ChannelOut 变体（"string"→ChannelOutString，缺省/其他→ChannelOutInt）；
+    /// 运行期出值按通道会话捕获的 SLLabelValue 实际
     /// 类型由 AtSignChannelOut* 侧管理机制路由栈赋值。
     /// </summary>
     public static class AtSignLabelSourceRewriter
@@ -244,7 +253,7 @@ namespace SimpleLanguage.Compile
         /// 参数表与块体均原文截取；&lt;- 头尾通道由 Front 初判（ScanHeadTail），
         /// 代码段（首个非 &lt;- 行起到末行前）原文随请求下发给插件前端
         /// 解析器（PluginFrontendParser 单 JSON 契约），Front 零处理；
-        /// 插件业务错误报 20055、双出通道报 20056。
+        /// 入通道 var/缺省形态、插件业务错误报 20055，双出通道报 20056。
         /// 基础设施失败由解析器宿主报 20057。任何失败均返回 null（整块透传）。
         /// </summary>
         private static MatchResult TryMatchBlock( string s, int atPos, int pos, string label, string filePath )
@@ -283,6 +292,15 @@ namespace SimpleLanguage.Compile
                     "@<" + label + ">(){} 块出通道变量首期仅支持 1 个: '" + filePath + "' 行 " + errLine
                         + " ($" + scan.OutSlVar + " 与 $" + scan.OutDupSlVar + " 冲突)",
                     filePath, errLine);
+                return null;
+            }
+            if (scan.InErrorBodyLine >= 0)
+            {
+                // 入通道形态非法（var/缺省/多段）：统一 20055 拒收整块
+                int errLine = lbraceLine + scan.InErrorBodyLine;
+                Log.AddProcessLog(LID.ProcessAtSignLabelChannelSyntaxError,
+                    "@<" + label + ">(){} 块入通道语法错误: '" + filePath + "' 行 " + errLine + ": " + scan.InErrorText,
+                    filePath, errLine, scan.InErrorText);
                 return null;
             }
 
@@ -357,9 +375,7 @@ namespace SimpleLanguage.Compile
             var stmts = new List<string>();
             foreach (var ch in scan.InChannels)
             {
-                bool isString = ch.Length > 2 && ch[2] == "string";
-                bool isDouble = ch.Length > 2 && ch[2] is "double" or "float" or "float64" or "f64";
-                stmts.Add(channelClass + ".ChannelIn" + (isString ? "String" : isDouble ? "Double" : "Int")
+                stmts.Add(channelClass + ".ChannelIn" + MapChannelInKind(ch.Length > 2 ? ch[2] : null)
                     + "( " + block.EntryIndex.ToString() + ", " + ch[1] + " )");
             }
             stmts.Add("AtSignLabelCallVoid( " + block.EntryIndex.ToString() + " )");
@@ -396,7 +412,8 @@ namespace SimpleLanguage.Compile
             public string[] Lines;
             public int HeadLineCount;
             public int TailLineCount;
-            /// <summary>入通道 [target, slVar, slType(可 null)] 序列（与脱糖调用实参同序）。</summary>
+            /// <summary>入通道 [target, slVar, slType] 序列（与脱糖调用实参同序；
+            /// slType 显式必填——C# 已定义类型名或 SL 类名，var/缺省形态已禁用）。</summary>
             public List<string[]> InChannels = new List<string[]>();
             /// <summary>出通道 SL 变量名（null = 无出通道）。</summary>
             public string OutSlVar;
@@ -409,6 +426,10 @@ namespace SimpleLanguage.Compile
             public int OutDupBodyLine = -1;
             /// <summary>双出通道：后遇到的出通道 SL 变量名。</summary>
             public string OutDupSlVar;
+            /// <summary>入通道形态非法：疑似通道行的 body 0-based 段号（-1 = 无）。</summary>
+            public int InErrorBodyLine = -1;
+            /// <summary>入通道形态非法的诊断文本。</summary>
+            public string InErrorText;
         }
 
         /// <summary>
@@ -423,7 +444,8 @@ namespace SimpleLanguage.Compile
             scan.Lines = bodyText.Split('\n');
             string[] lines = scan.Lines;
 
-            // 头区：连续消费空白行与入通道行（遇首个非入通道实质行停止）
+            // 头区：连续消费空白行与入通道行（遇首个非入通道实质行停止；
+            // 疑似通道行形态非法（var/缺省/多段）记 InError，由 TryMatchBlock 统一拒收）
             int i = 0;
             while (i < lines.Length)
             {
@@ -432,9 +454,16 @@ namespace SimpleLanguage.Compile
                     i++;
                     continue;
                 }
-                var ch = TryMatchInChannelLine(lines[i]);
+                var ch = TryMatchInChannelLine(lines[i], out string inErr);
                 if (ch == null)
+                {
+                    if (inErr != null)
+                    {
+                        scan.InErrorBodyLine = i;
+                        scan.InErrorText = inErr;
+                    }
                     break;
+                }
                 scan.InChannels.Add(ch);
                 i++;
             }
@@ -467,12 +496,16 @@ namespace SimpleLanguage.Compile
             return scan;
         }
 
-        /// <summary>入通道行匹配：[var] [slType] target &lt;- $sl [;]（var 后须空白，
-        /// 防变体；slType 为可选类型标记标识符，语义由插件按目标语言映射）。
-        /// 匹配返回 [target(插件形参), slVar(SL 变量), slType(类型标记，可 null)]，
-        /// 否则 null。</summary>
-        private static string[] TryMatchInChannelLine( string line )
+        /// <summary>入通道行匹配：唯一合法形态 &lt;slType&gt; target &lt;- $sl [;]
+        ///（2 段显式类型标记；slType = C# 已定义类型名或 SL 类名，var 与
+        /// 缺省形态已禁用）。右值非 $ 前缀 → 非通道行（代码段原文，null
+        /// 无错）；$ 后非标识符 → 同样按非通道行透传。形态非法（1 段缺类型
+        /// 标记 / 首段 var / 非 2 段）→ null + error（TryMatchBlock 统一
+        /// 报 20055 拒收整块）。匹配返回 [target(插件形参), slVar(SL
+        /// 变量), slType(类型标记，恒非 null)]。</summary>
+        private static string[] TryMatchInChannelLine( string line, out string error )
         {
+            error = null;
             string t = line.Trim();
             if (t.Length == 0)
                 return null;
@@ -483,42 +516,61 @@ namespace SimpleLanguage.Compile
                 return null;
             string left = t.Substring(0, arrow).Trim();
             string right = t.Substring(arrow + 2).Trim();
-            // 左值分段：1 段 = target；2 段 = [var]target 或 slType target；
-            // 3 段（首段 var）= var slType target；类型标记原文传递（语言无关）。
+            if (right.Length < 2 || right[0] != '$')
+                return null;   // 右值非 $ 前缀：非通道行（代码段原文）
+            // 左值分段：唯一合法 = 2 段 [slType, target]；var 与缺省形态已禁用
             string[] segs = left.Split( (char[])null, StringSplitOptions.RemoveEmptyEntries );
-            string target = null;
-            string slType = null;
+            if (segs.Length == 0)
+            {
+                error = "入通道形态非法 '" + t + "'（唯一合法形态: <类型> target <- $slVar）";
+                return null;
+            }
             if (segs.Length == 1)
             {
-                target = segs[0];
+                error = "入通道缺类型标记 '" + segs[0] + " <- ...'（var 与缺省形态已禁用，须写显式类型：Int32/Int64/Single/Double/String/Boolean/Object 或 SL 类名）";
+                return null;
             }
-            else if (segs.Length == 2)
+            if (segs[0] == "var")
             {
-                if (segs[0] == "var")
-                {
-                    target = segs[1];
-                }
-                else
-                {
-                    slType = segs[0];
-                    target = segs[1];
-                }
+                error = "入通道禁止使用 var '" + t + "'（var 与缺省形态已禁用，须写显式类型：Int32/Int64/Single/Double/String/Boolean/Object 或 SL 类名）";
+                return null;
             }
-            else if (segs.Length == 3 && segs[0] == "var")
+            if (segs.Length != 2)
             {
-                slType = segs[1];
-                target = segs[2];
+                error = "入通道形态非法 '" + t + "'（唯一合法形态: <类型> target <- $slVar）";
+                return null;
             }
-            if (target == null || !IsIdent(target))
+            string slType = segs[0];
+            string target = segs[1];
+            if (!IsIdent(slType) || !IsIdent(target))
+            {
+                error = "入通道类型标记或形参名非法 '" + t + "'";
                 return null;
-            if (slType != null && !IsIdent(slType))
-                return null;
-            if (right.Length < 2 || right[0] != '$')
-                return null;
+            }
             string slVar = right.Substring(1);
             if (!IsIdent(slVar))
-                return null;
+                return null;   // $ 后非标识符：按非通道行透传（代码段原文）
             return new string[] { target, slVar, slType };
+        }
+
+        /// <summary>入通道类型标记 → 通道包装 Kind 后缀（Int/Long/Float/
+        /// Double/String/Boolean/Object；决定脱糖调用 ChannelIn&lt;Kind&gt;
+        /// 变体与 CVM 侧 AtSignChannelIn 的类型编组）。白名单外
+        ///（Object 与 SL 类名）统一走 Object 对象编组（跨界镜像 class）。</summary>
+        private static string MapChannelInKind( string slType )
+        {
+            if (string.IsNullOrEmpty(slType))
+                return "Object";   // 理论不可达（TryMatchInChannelLine 已禁缺省）
+            switch (slType)
+            {
+                case "Int32": case "int": case "int32": case "i32": return "Int";
+                case "Int64": case "long": case "int64": case "i64": return "Long";
+                case "Single": case "float": case "float32": case "f32": return "Float";
+                case "Double": case "double": case "float64": case "f64": return "Double";
+                case "String": case "string": return "String";
+                case "Boolean": case "bool": case "boolean": return "Boolean";
+                default: return "Object";   // Object/object 与 SL 类名统一走对象编组
+            }
         }
 
         /// <summary>出通道行匹配：[slType] $sl &lt;- expr [;]（expr 非空且不以 $

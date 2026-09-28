@@ -28,6 +28,7 @@
       { "path": "FFITest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "CSharpTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "CSharpTest2.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "CSharpTest3.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "ProcessTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "AOT.sl", "group": "core", "tag": "base", "ignore": true, "priority": 0 },
       { "path": "MapTest.sl", "group": "core", "tag": "base", "ignore": true, "priority": 0 },
@@ -99,6 +100,20 @@
       "abi": 1,
       "prefix": "sl_csharp_mono_",
       "lib": "../../../../simple_language_plugins/csharp_mono/cvm/lib/windows-x64/cvm_csharp_mono.dll",
+      // 额外引用（references）：块内 C# 引用的预编译 managed 程序集——
+      // 导出期 Front 拷入插件 libDir（编译期 csc /r: 引用 + 运行期 mono
+      // assemblies_path 从插件 dll 同目录裸名解析）+ 随 Build 请求下发路径。
+      // 相对路径按本 jsonc 所在目录解析（同 lib/path 口径）。
+      // 注意：System.Windows.Forms / System.Drawing 不能加进来——csc 默认
+      // csc.rsp 已引用 Framework 同名程序集（同标识 4.0.0.0），显式 /r: mono
+      // 版会 CS1703 重复导入；编译期用 csc.rsp 默认引用，运行期 mono 经
+      // assemblies_path 从插件 BCL 树（lib/mono/4.5/，已补齐 mono 6.12.0.206
+      // 的 SWF/Drawing 等）解析加载，见 CSharpTest3.sl。
+      "references": [ "CsExtra/ExtraMathLib.dll" ],
+      // 额外源码（sources）：与全部 @csharp_mono(){} 块体同批合并编译进
+      // SLAtSign.dll 的 .cs 文件——导出期 Front 读文件内容随 Build 请求
+      // 下发，块内头区 using 其命名空间即可调用其中类型（无需重编 dll）。
+      "sources": [ "CsExtra/SlExtraUtil.cs" ],
       "platform": { "os": "windows", "arch": "x86_64" },
       "onUnavailable": "warn",
       "capabilities": [
