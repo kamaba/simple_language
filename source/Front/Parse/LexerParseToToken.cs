@@ -2576,14 +2576,14 @@ namespace SimpleLanguage.Compile
             }
             return sb.ToString();
         }
-        public void DumpTokensToFile()
+        public void SaveTokensToFile()
         {
             if (!Common.ShouldExportDebugText("Token.txt")) return;
+            if (string.IsNullOrEmpty(m_Path)) return;
+
             string outFile = "";
             try
             {
-                if (string.IsNullOrEmpty(m_Path)) return;
-
                 outFile = Common.GetDebugCodeFilePath(m_Path, "Token.txt");
 
                 using (var sw = new StreamWriter(outFile, false))

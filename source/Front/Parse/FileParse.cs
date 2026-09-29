@@ -23,7 +23,6 @@ namespace SimpleLanguage.Compile
 	{
 		public FileMeta file => m_File;
         public string filePath => m_FilePath;
-        public FileCompileState compileState => m_FileCompileState;
 
         private LexerParse m_LexerParse;
         private TokenParse m_TokenParse;
@@ -91,6 +90,8 @@ namespace SimpleLanguage.Compile
                     Log.AddProcessLog(LID.ProcessLoadFileFailed, "", m_FilePath);
                     return false;
                 }
+                SaveCodeToFile();
+
                 m_FileCompileState.SetStep(FileCompileState.EFileStep.Token);
 
                 // C# 风格 @DllImport 无体函数声明先改写为两段式
@@ -103,11 +104,9 @@ namespace SimpleLanguage.Compile
                 // AtSignLabelBlockCollector 供导出期构建器与 atSignLabel[] 导出
                 m_ContentBuffer = AtSignLabelSourceRewriter.Rewrite( m_ContentBuffer, m_FilePath );
 
-                SaveCodeToFile();
-
                 m_LexerParse = new LexerParse( m_FilePath, m_ContentBuffer );
                 m_LexerParse.ParseToTokenList();
-                m_LexerParse.DumpTokensToFile();
+                m_LexerParse.SaveTokensToFile();
 
             }
             catch (Exception e)

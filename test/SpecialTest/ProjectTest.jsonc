@@ -30,6 +30,7 @@
       { "path": "CSharpTest2.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "CSharpTest3.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "JavaTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "JavaTest2.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "ProcessTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "AOT.sl", "group": "core", "tag": "base", "ignore": true, "priority": 0 },
       { "path": "MapTest.sl", "group": "core", "tag": "base", "ignore": true, "priority": 0 },

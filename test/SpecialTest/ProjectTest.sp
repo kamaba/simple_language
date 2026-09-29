@@ -22,6 +22,10 @@ Project
 
         JavaTest.fun()
 
+        # JavaTest2：callSL 通道（P4 §5.7）——Java 块内 SLChannel.call 回调
+        # SL 静态方法（int/string/double/void-null/嵌套块 save/restore 回归）
+        JavaTest2.fun()
+
         #!
         # AOT 测试用例（自 test/AOTTest/ProjectTest.sp 合并）
         r1 = AOTMath.Add( 1, 2 );
