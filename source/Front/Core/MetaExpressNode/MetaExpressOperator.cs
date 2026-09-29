@@ -712,7 +712,7 @@ namespace SimpleLanguage.Core
                         {
                             if (isCompareOp)
                             {
-                                // support number-backed enum comparisons, e.g. BridgeKind param vs BridgeKind.CLR member value
+                                // support number-backed enum comparisons, e.g. enum param vs enum member value
                                 m_RealMetaType = new MetaType(CoreMetaClassManager.booleanMetaClass);
                             }
                             else

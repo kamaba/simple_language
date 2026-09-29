@@ -49,7 +49,6 @@
       { "path": "Member.sl", "group": "core", "tag": "itertor", "ignore": false, "priority": 0 },
       { "path": "Array.sl", "group": "core", "tag": "itertor", "ignore": false, "priority": 0 },
       { "path": "Range.sl", "group": "core", "tag": "itertor", "ignore": false, "priority": 0 },
-      { "path": "NativeBridge.sl", "group": "core", "tag": "bridge", "ignore": false, "priority": 0 },
       { "path": "Attribute.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "Nickname.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "AOT.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
@@ -141,11 +140,6 @@
     { "name": "AtSignChannelOutInt",    "returnType": "Int32",  "params": ["Int32"], "isVariadic": false, "cvmFunction": "sl_atsign_channel_out_int" },
     { "name": "AtSignChannelOutString", "returnType": "String", "params": ["Int32"], "isVariadic": false, "cvmFunction": "sl_atsign_channel_out_string" },
     { "name": "AtSignChannelOutObject", "returnType": "object", "params": ["Int32"], "isVariadic": false, "cvmFunction": "sl_atsign_channel_out_object" },
-
-    // ---- Bridge calls ----
-    { "name": "SystemCallCLRMethod",    "returnType": "object", "params": ["object"], "isVariadic": true, "cvmFunction": "vm_sys_call_clr_method" },
-    { "name": "SystemCallNativeMethod", "returnType": "object", "params": ["object"], "isVariadic": true, "cvmFunction": "vm_sys_call_native_method" },
-    { "name": "SystemCallJVMMethod",    "returnType": "object", "params": ["object"], "isVariadic": true, "cvmFunction": "vm_sys_call_jvm_method" },
 
     // ---- Console I/O ----
     { "name": "SystemPrint",   "returnType": "void",   "params": ["object"], "isVariadic": true, "cvmFunction": "libio_vm_system_print" },
@@ -713,7 +707,6 @@
         { "class": "Ptr<T>" },
         { "class": "Result" },
         { "class": "Result<T>" },
-        { "class": "NativeBridge" },
         { "class": "Attribute" },
         { "class": "Nickname" },
         { "class": "AOT" },

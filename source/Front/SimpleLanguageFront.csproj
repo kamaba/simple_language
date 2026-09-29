@@ -43,5 +43,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\simple_language_plugins\csharp_mono\frontend\SLCSharpMonoFrontend.csproj" />
+    <ProjectReference Include="..\..\..\simple_language_plugins\java_hotspot\frontend\SLJavaHotspotFrontend.csproj" />
   </ItemGroup>
 </Project>

@@ -314,7 +314,7 @@ enum TestError extends Error                                     # 错误枚举�
     TestError2 = { code = 2, message = "test-error2" }
 }
 
-for v in BridgeKind { }        # 枚举遍历；v.index / v.name / v.value 访问成员
+for v in SwitchColor { }      # 枚举遍历；v.index / v.name / v.value 访问成员
 for b3 in ESeason.values { }   # 值表遍历
 ```
 
@@ -453,7 +453,7 @@ for i = 0 { if i > 22 { break } i++ }   # 一段（内部自控）
 for v in arr { }
 for v in [1..4] { }
 for v in range(1, 10, 2) { }
-for v in BridgeKind { }
+for v in SwitchColor { }
 ```
 
 **while / dowhile**：
@@ -677,7 +677,7 @@ dynamic d = ...                                 # 动态类型
 | 字节     | `ByteBuffer` `ByteStream`(abstract) `MemoryStream` `LengthPrefix`                                                                                |
 | Stream | `Stream`(abstract) `Stream<T>`(abstract) `StreamIterator<T>` `StreamSubscription` `StreamController<T>` `StreamSink<T>` `StreamTransformer<S,T>` |
 | Codec  | `ChunkedConversionSink` `Converter<S,T>` `Codec<S,T>` `ProtoCodec` `ProtoCodec<T>`                                                               |
-| 其他     | `Attribute` `Nickname` `AOT` `NativeBridge` `Error` 及 `CoreError` `MathOpError` `BufferError` `StreamIOError` `SeekOrigin` `Lz4Error` 等错误枚举      |
+| 其他     | `Attribute` `Nickname` `AOT` `Error` 及 `CoreError` `MathOpError` `BufferError` `StreamIOError` `SeekOrigin` `Lz4Error` 等错误枚举      |
 
 > `_` 下划线开头的实现类（如 `_MapStream<T>`）是 Core 内部私有类，禁用。
 

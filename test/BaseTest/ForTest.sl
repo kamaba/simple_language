@@ -4,7 +4,7 @@ ForTest
     static fun()
     {
         ForTest.forInMixedArray()
-        ForTest.forInEnumBridgeKind()
+        ForTest.forInEnumAttrHandleType()
         ForTest.forInRange()
         ForTest.forInNestedRange()
         ForTest.forInitOnly()
@@ -30,24 +30,24 @@ ForTest
         }
     }
 
-    # for-in 遍历枚举 BridgeKind（含 break/continue）
-    static forInEnumBridgeKind()
+    # for-in 遍历枚举 EAttributeHandleType（含 break/continue）
+    static forInEnumAttrHandleType()
     {
-        global.println("---------------forInEnumBridgeKind--------------")
-        for v in BridgeKind
+        global.println("---------------forInEnumAttrHandleType--------------")
+        for v in EAttributeHandleType
         {
-            if v == BridgeKind.SELF 
+            if v == EAttributeHandleType.Compile
             {
-                global.println( "BridgeKind--------------SELF " )
+                global.println( "EAttributeHandleType--------------Compile " )
                 continue
             }
-            elif v == BridgeKind.JVM
+            global.println( "EAttributeHandleType= $v.name.toString() value = $v.value.toString()  " )
+            global.println(v)
+            if v == EAttributeHandleType.Runtime
             {
-                global.println( "BridgeKind--------------JVM " )
+                global.println( "EAttributeHandleType--------------Runtime " )
                 break
             }
-            global.println( "BridgeKind= $v.name.toString() value = $v.value.toString()  " )
-            global.println(v)
         }
     }
 

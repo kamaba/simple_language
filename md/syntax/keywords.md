@@ -257,7 +257,7 @@ d = f"""x=${ a + 1 }""";    # 三引号 f 形式仅支持 ${expr}
 
 ### 4.6 其他
 
-`Attribute`、`Nickname`、`AOT`、`NativeBridge`、`Error` 及 `CoreError` / `MathOpError` / `BufferError` / `StreamIOError` / `SeekOrigin` / `Lz4Error` 等错误枚举。
+`Attribute`、`Nickname`、`AOT`、`Error` 及 `CoreError` / `MathOpError` / `BufferError` / `StreamIOError` / `SeekOrigin` / `Lz4Error` 等错误枚举。
 
 > 注意：`_` 下划线开头的实现类（如 `_MapStream<T>`）是 Core 内部私有类，不应在业务代码中使用。
 

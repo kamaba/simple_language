@@ -51,7 +51,7 @@ namespace SimpleLanguage.IR
             //代码定义的成员函数
             // NOTE:
             // DebugCode 的 IR 导出需要同时包含“源码定义的成员函数”和“动态解析出来的函数”。
-            // 之前仅翻译 metaDynamicFunctionList，导致 NativeBridge / BridgeKind 等类的同级函数缺失。
+            // 之前仅翻译 metaDynamicFunctionList，导致部分类的同级函数缺失。
             var allMethods = new List<MetaMemberFunction>();
             var mmfDict = MethodManager.instance.metaOriginalFunctionList;
             foreach (var v in mmfDict)
@@ -173,8 +173,8 @@ namespace SimpleLanguage.IR
                         sb.AppendLine();
 
                             // Export methods based on the class's own resolved method lists.
-                            // This ensures derived classes show inherited/virtual methods correctly (e.g. BridgeKind should
-                            // show Byte's virtuals even when IR ownerMetaClass points to the base).
+                            // This ensures derived classes show inherited/virtual methods correctly (e.g. a UInt8-backed
+                            // enum should show Byte's virtuals even when IR ownerMetaClass points to the base).
                             var exported = new HashSet<string>(StringComparer.Ordinal);
 
                             void ExportOneMethod(IRMethod irMethod)

@@ -7,7 +7,7 @@
 - Use CSV-driven log definitions with id-based enum mapping and route Debug.Assert/Debug.Write style diagnostics through the centralized Log system.
 - Treat `simple_language/source/VM` as the source of truth before logic changes and always compare against it.
 - Maintain ongoing mapping/relationship documentation between the csimple_lang and SimpleLanguageVM projects.
-- **Sibling C VM checkout (reference path):** `F:/project/lang/csimple_lang` â€” ANSI C99 VM; wired into `SimpleLanguage.sln` as `../csimple_lang/csimple_lang.vcxproj` (keep repos as siblings under the same parent folder).
+- **Sibling C VM checkout (reference path):** `F:/project/lang/csimple_lang` â€?ANSI C99 VM; wired into `SimpleLanguage.sln` as `../csimple_lang/csimple_lang.vcxproj` (keep repos as siblings under the same parent folder).
 - Migrate VM source loading logic now; if the JSON library is missing, add a high-performance cJSON-style library under `csimple_lang/lib`, keeping the directory layout closely mirroring SimpleLanguageVM.
 - When implementing code in csimple_lang, prefer and optimize usage of existing methods under `src/base` whenever possible before adding alternative utility logic.
 - When optimizing string-related functionality in csimple_lang, prioritize reusing existing capabilities in `src/base` (especially `chars.h`/`chars.c`); if missing, supplement with equivalent functions in the current module and replace direct standard library calls (e.g., `strstr`).
@@ -46,8 +46,6 @@
 - Users require the Front layer to continue supporting `global.xx` / `global.func()` calls, but the semantic source must now read from the contents of `Project{}` instead of `global{}`.
 - VM member state should be sourced from `m_MemberDataBuffer`, with reference slots treated as object pointers; `m_SObject` should be DEBUG-only as a debugging mirror, not the primary runtime source of truth.
 - Export custom bytecode/IR container (SLIR) from Front IR, including class metadata (member vars/functions/relations) plus reader and dump tooling; export should be opt-in via env vars and not add VM->Front dependencies.
-- NativeBridge design: Front parses bridge calls into intrinsic opcodes (CallCLRMethod/CallNativeMethod/CallJVMMethod); bridge metadata is pre-registered during SLIR load; runtime call should support using instruction index as registry index, resolve/cache MethodInfo from registry data, then invoke and map return value back into VM value flow.
-- In MetaCallNode.GetFirstNode, classify CallCLRMethod/CallNativeMethod/CallJVMMethod as SystemFunctionCall; MetaCallLink should create MetaVisitNode with EVisitType.SystemCall and bind MetaMethodCall; IR conversion should continue through IRCallFunction into bridge opcodes.
 - Debug export semantics must distinguish layers: `File.txt` exports FileMeta layer data, while `Meta.txt` exports MetaCore layer data, and must include complete logic (e.g., method statements) rather than just an incomplete summary of core nodes.
 - Export `IR.txt`, aggregating all IR methods under each class for unified export.
 - `SLIRJsonModuleLoader` is the JSON SLIR reader, and `SLIRBinModuleLoader` is the binary SLIR reader.

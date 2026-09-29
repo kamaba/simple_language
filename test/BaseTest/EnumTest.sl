@@ -139,40 +139,40 @@ EnumTest
         global.println("========== EnumTest (start) ==========")
 
         
-        BridgeKind kind222 = BridgeKind.SELF
-        kind111 = BridgeKind.SELF
+        EAttributeHandleType kind222 = EAttributeHandleType.Compile
+        kind111 = EAttributeHandleType.Compile
 
         if kind222 == kind111
         {
-            global.println("BridgeKind--------------SELF11111111111")
+            global.println("EAttributeHandleType--------------Compile11111111111")
         }
 
-        if kind222 == BridgeKind.SELF
+        if kind222 == EAttributeHandleType.Compile
         {
-            global.println("BridgeKind--------------SELF1")
+            global.println("EAttributeHandleType--------------Compile1")
         }
-        elif kind222 == BridgeKind.JVM
+        elif kind222 == EAttributeHandleType.Runtime
         {
-            global.println("BridgeKind--------------JVM1")
+            global.println("EAttributeHandleType--------------Runtime1")
         }
         else
         {
-            global.println("BridgeKind--------------OTHER1")
+            global.println("EAttributeHandleType--------------OTHER1")
         }
 
         #kind111 =  EShape.r1
-        kind111 = BridgeKind.JVM
-        if kind111 == BridgeKind.SELF
+        kind111 = EAttributeHandleType.Runtime
+        if kind111 == EAttributeHandleType.Compile
         {
-            global.println("BridgeKind--------------SELF2")
+            global.println("EAttributeHandleType--------------Compile2")
         }
-        elif kind111 == BridgeKind.JVM
+        elif kind111 == EAttributeHandleType.Runtime
         {
-            global.println("BridgeKind--------------JVM2")
+            global.println("EAttributeHandleType--------------Runtime2")
         }
         else
         {
-            global.println("BridgeKind--------------OTHER2")
+            global.println("EAttributeHandleType--------------OTHER2")
         }
 
         EShape shape123 = EShape.r1
@@ -331,6 +331,6 @@ enum EnumErrorRepeat
 #
 # 预期结果：
 # - EErr.First.value == 2、EErr.Six.value == 6、EBytes.x5.value == 14 为 True。
-# - BridgeKind.SELF == BridgeKind.SELF 为 True，BridgeKind.SELF != BridgeKind.JVM 为 True。
+# - EAttributeHandleType.Compile == EAttributeHandleType.Compile 为 True，EAttributeHandleType.Compile != EAttributeHandleType.Runtime 为 True。
 # - EShape.r1 == EShape.r2 和 ERectShape.r1 == ERectShape.r2 为 False。
 # - switch GameState.Begin 命中 Begin 分支；无编译/运行时错误。
