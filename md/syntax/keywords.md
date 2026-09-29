@@ -98,10 +98,6 @@
 | `error` `errmsg` | Result 机制保留名，同上禁止作类成员声明名（见 [result.md](./result.md) §7） |
 | `async` | 已禁用，按普通标识符处理 |
 
-### 1.8 词法层已定义、主语法未启用
-
-`!if` / `!else` / `!endif`（MacroIf 系 token）在词法枚举中存在，但编译期条件的实际语法是 `static if / static elif / static else`（见 §3.3）。
-
 ---
 
 ## 2) 运算符与特殊符号

@@ -5,7 +5,6 @@ Tcp/Udp/HttpClient/Websocket/NetStream相关接口
 Yaml/Xml/RegExp
 
 
-DllImportSourceRewriter 这个要变成统一的@()处理 这样的处理，而不是每一个要增加一段逻辑。 这块逻辑要在所有 代码中对@的识别，如果有@标识，如果在代码段之外，的话就会被认为是Attribute  然后针对Attribute的进行处理， 如果在代码段里边 则认为是AtSinglLabel的逻辑  如果AtSignLabel的逻辑，原来的可以放到MetaCore层去解析AtSignLabel的处理。
 
 TankGame.sl 引入Math类。把一些 二维的都使用Int32_2 Int32_3
 
@@ -19,26 +18,14 @@ TankGame.sl 引入Math类。把一些 二维的都使用Int32_2 Int32_3
 
 改二进制的大工程
 
-写更多的使用用例，测试cvm的功能点。
+DllImportSourceRewriter 这个要变成统一的@()处理 这样的处理，而不是每一个要增加一段逻辑。 这块逻辑要在所有 代码中对@的识别，如果有@标识，如果在代码段之外，的话就会被认为是Attribute  然后针对Attribute的进行处理， 如果在代码段里边 则认为是AtSinglLabel的逻辑  如果AtSignLabel的逻辑，原来的可以放到MetaCore层去解析AtSignLabel的处理。
+
 在Frontend中，如果定义了export则默认直接导出，如果是public 则要看Export里边默认配置，是否必须export才进行导出，如果是则认为必须是export才导出，如果不是则public也会导出。
 
-EType里边Float2删除掉.
-
-/// <summary> !if </summary>
-MacroIf,
-/// <summary> !else </summary>
-MacroElse,
-/// <summary> !endif </summary>
-MacroEndif, 这些直接在代码里边删除掉吧
-        /// <summary> let </summary>
-        Let,删除掉
 
 const 关键字的使用 
 
 Final 的确定与检测
-
-CallSystemMethod,  
-CallFFIStatic,   这个放到SystemMethod后边
 
 
 _before_
@@ -49,6 +36,12 @@ project.jsonc的配置整理。
 
 NativeExportManifestReader 这里边，没有找到调用逻辑。
 
+制定规则，在配置的jsonc里边，如果配置了，是否是public就可以为导出类  有三个选项 不导出，public,extern导出  
+
+把global.data 确定了 下边的关联元素确定下，还有调用方式
+把Core.module.json还有错误.csv 打包到.exe 然后 加载std需要另再加载
+
+写更多的使用用例，测试cvm的功能点。
 jsonc整体，增加 AOT, Mix, PureCVM,
 
 官方第三方库:
@@ -58,10 +51,6 @@ ffmpeg的dll 引入
 找一个轻量级的 webview一类的，做成 dll
 
 
-制定规则，在配置的jsonc里边，如果配置了，是否是public就可以为导出类  有三个选项 不导出，public,extern导出  
-
-把global.data 确定了 下边的关联元素确定下，还有调用方式
-把Core.module.json还有错误.csv 打包到.exe 然后 加载std需要另再加载
 
 建一个统合工程，里边包括FrontEnd/Backend两部分，然后重整理cli然后把这两个都可以调用起来，并且做 编译即输出的调用。
 
@@ -98,7 +87,6 @@ bool 运算
 在aot的中，处理llvm内置的一些结构，在生成这个数据后，要有一个id的概念，也就是定义这个对象的hashCode 虽然是在llvm里边生成的，也要有这个概念，因为这个在 llvm的.struct转成VMObject一类的时候，要先检查vm里边有没有这个，如果没有，再去创建VMObject 而且这个不受内存gc管理，因为这个还属于llvm  所以Object.sl 你看下是不是要增加一个int _hashCode这样的概念呀，是不是这样更合理  你确定下，原来好像我看着是用的指针进行hash运算的，这种方式确定可以吗？
 
 
-nativeBridge移除了，以后不用这个模块了
 sl_aot_skeleton_new_inner这个函数的话，原来的llvm生成的数据，是不是可以在转换的类中 member_data可以复用，然后 这个VMObject不进行gc拖管更合理。
 
 优化：

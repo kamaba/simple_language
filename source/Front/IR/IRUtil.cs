@@ -181,8 +181,6 @@ namespace SimpleLanguage.IR
         //        case EType.Int128:
         //        case EType.UInt128:
         //            return 16;
-        //        case EType.Float2:
-        //            return 8;
 
         //    }
         //    return 1;

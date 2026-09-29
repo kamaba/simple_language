@@ -28,7 +28,7 @@ SL 源码
 编译层 Front(C#)
   │ 普通调用   -> CallStatic / CallClosure
   │ @DllImport -> 源码改写 + bindFunction 注入 -> CallStatic/CallClosure
-  │ @DllStaticImport -> CallFFIStatic(118) + SLFFIStaticCallPackage JSON
+  │ @DllStaticImport -> CallFFIStatic(77) + SLFFIStaticCallPackage JSON
   ▼
 cvm 运行层(C)
   ├─ assembly build 期：静态库预载 + 符号解析 + payload 改写为 4 字节索引
@@ -313,7 +313,7 @@ __dll_addCs = FFI.StaticLibrary.bindFunction( "CLangdll", "sl_add", "i64,i64->i6
 
 ### 6.1 是什么
 
-`@DllStaticImport` 让被标注的**静态函数**在调用点编译为专用指令 `CallFFIStatic(118)`：
+`@DllStaticImport` 让被标注的**静态函数**在调用点编译为专用指令 `CallFFIStatic(77)`：
 
 - 库在 **cvm 加载模块（assembly build 期）** 就按 `"static"` 名预载，符号**只解析一次**；
 - 指令 payload 从 JSON 改写为 **4 字节绑定表索引**；
@@ -363,7 +363,7 @@ check( "static strlen('abc123')==6", s_statStrlen( "abc123" ) == 6 )
 | 源码改写 | 有（隐藏 `__dll_x` 字段 + `if/else` wrapper） | **无**，函数体原样保留 |
 | 绑定时机 | 运行期（类加载静态初始化器） | **cvm assembly build 期** |
 | 库生命周期 | 引用计数管理，进程常驻（不 release） | 预载 + `addRef`，**永不 release**，持续到进程退出 |
-| 调用指令 | `CallStatic` + `CallClosure` | **`CallFFIStatic(118)`** |
+| 调用指令 | `CallStatic` + `CallClosure` | **`CallFFIStatic(77)`** |
 | 成功路径开销 | 建 SL 帧 + null 判断 + 闭包调用 | **零 SL 帧**，直接 marshalling 后调 native |
 | 回退判定 | 编译期生成的 `if (__dll_x != null)` | 运行期：绑定项 `native_fn == NULL` |
 | 回退目标 | `else` 分支（源码级） | `methodId` 指定的原 SL 方法（元数据级） |
@@ -531,7 +531,7 @@ C 侧调用时经 trampoline **重入 VM**：解析宿主 `RuntimeType` → 压�
    ├─ 参数按 CallStatic 完全一样顺序压栈
    ├─ 扫 mmf.attributeList 找 "DllStaticImport"
    ├─ sig = 第 3 实参 ?? BuildFFIFunctionSigFromMetaFunction( mmf )
-   ├─ IRData{ opCode = CallFFIStatic(118), payload = SLFFIStaticCallPackage JSON,
+   ├─ IRData{ opCode = CallFFIStatic(77), payload = SLFFIStaticCallPackage JSON,
    │          index  = paramCount }
    └─ 【编译期回退】args < 2 或 sig 推导失败 -> 记 Log -> 退化 CallStatic
 [Export]     module.json 的 dllImports[].static 随包导出
@@ -601,7 +601,7 @@ typedef struct _VMFFIStaticBinding {
 两张表（静态库表 + 绑定表）均为**进程级常驻**，`vm_sys_ffi_cleanup` 不清绑定表（同进程多 VM 场景下
 索引仍有效），只在进程/根 VM 退出时统一卸载动态库。
 
-### 8.10 运行期：`OpCode_CallFFIStatic`(118) handler
+### 8.10 运行期：`OpCode_CallFFIStatic`(77) handler
 
 栈约定：调用前 `[..., arg0, ..., arg_{M-1}]`（**栈顶是最后一个实参**），无 this、无闭包对象。
 
@@ -668,7 +668,7 @@ entry->native_fn == NULL（回退路径）:
 | `source/Front/Compile/Parse/DllImportSourceRewriter.cs` | `@DllImport` 源码文本改写器 |
 | `source/Front/Core/MetaMemberVariable.cs` | `bindFunction` 初始化表达式注入 |
 | `source/Front/Core/Statements/MetaDefineVarStatements.cs` | sig 推导（`BuildFFIFunctionSig*`） |
-| `source/Front/IR/IRCall.cs` | `CallFFIStatic` 发射（118） |
+| `source/Front/IR/IRCall.cs` | `CallFFIStatic` 发射（77） |
 | `source/Front/IROpEnum.cs` | opcode 定义 |
 | `source/Front/Export/SLIR/SLIRTypes.cs` | `SLDllImportPackage` / `SLFFIStaticCallPackage` |
 | `source/Front/Project/ProjectConfig.cs`、`ProjectJsoncLoader.cs` | `dllImports` 配置与别名解析 |
@@ -685,8 +685,8 @@ entry->native_fn == NULL（回退路径）:
 | `src/vm/assembly/sl_runtime_assembly.c` | 静态库预载 + payload 改写 |
 | `src/vm/assembly/slir_assembly_data.h` | `SLDllImportPackage`（含 `static_name`） |
 | `src/vm/load/slir_json_module_loader.c` | `dllImports`（含 `"static"`）解析 |
-| `src/vm/vm.h` | `OpCode_CallFFIStatic = 118` |
-| `src/vm/runtime/vm_runtime.c` | opcode 118 handler、`CallClosure` native 分支、cleanup |
+| `src/vm/vm.h` | `OpCode_CallFFIStatic = 77`（紧随 `OpCode_CallSystemMethod = 76`） |
+| `src/vm/runtime/vm_runtime.c` | opcode 77 handler、`CallClosure` native 分支、cleanup |
 
 ---
 

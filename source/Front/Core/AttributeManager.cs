@@ -154,7 +154,7 @@ namespace SimpleLanguage.Core
             // 实参: (静态库名或别名, 符号名 [, 签名 "i32,i32->i32"])。
             // 库必须在 project.jsonc dllImports 中配置 "static" 字段，
             // cvm 加载模块时预载并注册到 FFI.StaticLibrary；
-            // IRCall.Parse 在静态调用处发射 CallFFIStatic(118)，
+            // IRCall.Parse 在静态调用处发射 CallFFIStatic(77)，
             // cvm assembly build 期解析绑定并改写 payload 为绑定表索引，
             // 运行期直接整合栈上参数调用 FFI，绕过 SL 函数体/Library.Load 链路。
             RegisterCompileHandler("DllStaticImport", (attr, owner) =>

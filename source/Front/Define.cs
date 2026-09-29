@@ -52,7 +52,6 @@ namespace SimpleLanguage
         String,
         Object,
         Type,
-        Float2,
         Member,
         Ptr,
         Result,
@@ -191,12 +190,6 @@ namespace SimpleLanguage
         Else,
         /// <summary> elif </summary>
         ElseIf,
-        /// <summary> !if </summary>
-        MacroIf,
-        /// <summary> !else </summary>
-        MacroElse,
-        /// <summary> !endif </summary>
-        MacroEndif,
         /// <summary> import </summary>
         Import,
         /// <summary> as </summary>
@@ -243,8 +236,6 @@ namespace SimpleLanguage
         Get,
         /// <summary> set </summary>
         Set,
-        /// <summary> let </summary>
-        Let,
         /// <summary> new </summary>
         New,
         /// <summary> partial </summary>
@@ -349,7 +340,7 @@ namespace SimpleLanguage
         /// <summary> typealias </summary>
         TypeAlias,
 
-        Float2, Float3, Float4,
+        Float3, Float4,
         /// <summary> float extent </summary>
         Float2x2, 
         Float2x3, Float3x2, Float3x3,

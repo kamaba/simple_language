@@ -104,6 +104,16 @@ namespace SimpleLanguage
         CallDynamic,
         CallVirt,
         CallSystemMethod,
+
+        // Static FFI fast-call opcode (@DllStaticImport bound function).
+        // The CVM preloads the dll (module.json "dllImports"[].static != "") at
+        // assembly build time, resolves the symbol once and rewrites this
+        // instruction's payload to [binding index:4]. At runtime the handler
+        // pops the pushed arguments, marshals them straight into the native
+        // call and pushes the return value — no SL frame, no Library.Load.
+        // If the binding failed to resolve, the handler falls back to the
+        // original SL method body (methodId embedded in the pre-rewrite JSON).
+        CallFFIStatic,                      // = 77
         CastClass,
 
         Convert_I8,
@@ -136,31 +146,31 @@ namespace SimpleLanguage
 
         // Parameter slot store: argument/local use independent index spaces,
         // assigning to a parameter must write the argument slot (not StoreLocal).
-        StoreArgument,  // = 99
+        StoreArgument,  // = 100
 
         // Low-precision float conversions (stack top value -> target float bit pattern)
-        Convert_F8E4M3, // = 100 float -> float8(e4m3) bits(byte)
-        Convert_F8E5M2, // = 101 float -> float8(e5m2) bits(byte)
-        Convert_F16,    // = 102 float -> float16 bits(ushort)
-        Convert_F16B,   // = 103 float -> float16brain(bfloat16) bits(ushort)
+        Convert_F8E4M3, // = 101 float -> float8(e4m3) bits(byte)
+        Convert_F8E5M2, // = 102 float -> float8(e5m2) bits(byte)
+        Convert_F16,    // = 103 float -> float16 bits(ushort)
+        Convert_F16B,   // = 104 float -> float16brain(bfloat16) bits(ushort)
 
         // Closure opcodes (FrontEnd-only emit, CVM executes)
-        NewClosure,     // = 104 stack: [..., ctxArray] -> closure object; payload: JSON SLRuntimeCallPackage (methodId)
-        CallClosure,    // = 105 stack: [..., closure, arg0, arg1, ...] -> ret; payload: JSON SLRuntimeCallPackage (paramCount, methodId)
-        AllocClosureContext, // = 106 stack: [] -> Object[N] null-filled array (shared capture context); payload: count(int32)
+        NewClosure,     // = 105 stack: [..., ctxArray] -> closure object; payload: JSON SLRuntimeCallPackage (methodId)
+        CallClosure,    // = 106 stack: [..., closure, arg0, arg1, ...] -> ret; payload: JSON SLRuntimeCallPackage (paramCount, methodId)
+        AllocClosureContext, // = 107 stack: [] -> Object[N] null-filled array (shared capture context); payload: count(int32)
 
         // O3 const-fused store opcodes (only emitted when optimizeLevel >= 3).
         // Same store targets as the classic Store* set but the value is carried in
         // the payload as [etype:1][value:N] (StoreArrayIndexConstValue adds a
         // leading [flag:1]) so the VM avoids one LoadConst push + store pop.
-        StoreLocalConstValue,              // = 107 [index:4][etype:1][value:N]
-        StoreArgumentConstValue,           // = 108 [index:4][etype:1][value:N]
-        StoreReturnConstValue,             // = 109 [index:4][etype:1][value:N]
-        StoreGlobalConstValue,             // = 110 [index:4][etype:1][value:N]
-        StoreNotStaticField1ConstValue,    // = 111 [index:4][etype:1][value:N], peek instance
-        StoreNotStaticField2ConstValue,    // = 112 [index:4][etype:1][value:N], pop instance
-        StoreArrayIndexConstValue,         // = 113 [index:4][flag:1][etype:1][value:N], pop array
-        StoreStaticFieldConstValue,        // = 114 [index:4][etype:1][value:N][owner runtimeDefType("self" or JSON)]
+        StoreLocalConstValue,              // = 108 [index:4][etype:1][value:N]
+        StoreArgumentConstValue,           // = 109 [index:4][etype:1][value:N]
+        StoreReturnConstValue,             // = 110 [index:4][etype:1][value:N]
+        StoreGlobalConstValue,             // = 111 [index:4][etype:1][value:N]
+        StoreNotStaticField1ConstValue,    // = 112 [index:4][etype:1][value:N], peek instance
+        StoreNotStaticField2ConstValue,    // = 113 [index:4][etype:1][value:N], pop instance
+        StoreArrayIndexConstValue,         // = 114 [index:4][flag:1][etype:1][value:N], pop array
+        StoreStaticFieldConstValue,        // = 115 [index:4][etype:1][value:N][owner runtimeDefType("self" or JSON)]
 
         // Null-check fast branch opcodes (emitted by the O>=1 peephole in IRMethod.Parse).
         // They replace [Dup|]<value-push>, LoadConstNull, Ceq/Cne, BrFalse/BrTrue windows:
@@ -169,19 +179,9 @@ namespace SimpleLanguage
         //   BrIsNullPeek : peek top (keep on stack), jump if null  (?. / ?? 的 Dup+Cne+BrFalse)
         // The null test itself happens inside the CVM; the jump target index is
         // embedded as the first 4 payload bytes exactly like BrFalse/BrTrue.
-        BrIsNull,                           // = 115 payload: [target index:4]
-        BrNotNull,                          // = 116 payload: [target index:4]
-        BrIsNullPeek,                       // = 117 payload: [target index:4]
-
-        // Static FFI fast-call opcode (@DllStaticImport bound function).
-        // The CVM preloads the dll (module.json "dllImports"[].static != "") at
-        // assembly build time, resolves the symbol once and rewrites this
-        // instruction's payload to [binding index:4]. At runtime the handler
-        // pops the pushed arguments, marshals them straight into the native
-        // call and pushes the return value — no SL frame, no Library.Load.
-        // If the binding failed to resolve, the handler falls back to the
-        // original SL method body (methodId embedded in the pre-rewrite JSON).
-        CallFFIStatic,                      // = 118
+        BrIsNull,                           // = 116 payload: [target index:4]
+        BrNotNull,                          // = 117 payload: [target index:4]
+        BrIsNullPeek,                       // = 118 payload: [target index:4]
 
         // Debug sampling opcodes (v4 DEBUG_SYSTEM_DESIGN §7.1). Lowered by the
         // ParseSystemCall special-translation when the call target is Core.Monitor.

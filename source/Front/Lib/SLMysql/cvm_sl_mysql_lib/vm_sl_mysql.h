@@ -12,7 +12,7 @@
  *     @DllStaticImport( "sl_mysql_lib", "slm_query" )
  *     static bool query( Int64 conn, string sql ) { ret false }
  *
- * 走 opcode 118 静态绑定直调，无需任何 Adaptor / 委托转发。
+ * 走 opcode 77 静态绑定直调，无需任何 Adaptor / 委托转发。
  *
  * 导出命名约定：统一前缀 slm_（SimpleLanguage MySQL）。
  * 调用约定：x64 cdecl（Windows x64 唯一），与 cvm sl_ffi_call 的

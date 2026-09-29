@@ -125,7 +125,7 @@ namespace SimpleLanguage.Export.SLIR.Types
     }
 
     /// <summary>
-    /// CallFFIStatic(118) 前端 payload：@DllStaticImport 静态绑定 FFI 快速调用。
+    /// CallFFIStatic(77) 前端 payload：@DllStaticImport 静态绑定 FFI 快速调用。
     /// cvm assembly build 期解析 lib + symbol + sig 得到 FunctionHandle 并把
     /// 指令 payload 改写为 4 字节绑定表索引；lib 预载/符号解析失败时保留
     /// JSON 原文，运行期 handler 按 methodId 回退到 SL 函数体（慢链路）。

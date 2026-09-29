@@ -272,10 +272,10 @@ FFITest
         ret a + b
     }
 
-    # ── @DllStaticImport：静态绑定 FFI 快速调用（opcode 118 CallFFIStatic）──
+    # ── @DllStaticImport：静态绑定 FFI 快速调用（opcode 77 CallFFIStatic）──
     # project.jsonc dllImports "static" 字段注册的静态库（cvm 解析
     # module.json 时预载，句柄进程级常驻，程序关闭才释放）。
-    # 编译期调用点改写为 CallFFIStatic(118)：cvm assembly build 期解析
+    # 编译期调用点改写为 CallFFIStatic(77)：cvm assembly build 期解析
     # lib+symbol+sig -> FunctionHandle 绑定入静态绑定表，payload 改写
     # 为 4 字节索引；运行期直接整合栈上参数调 FFI——不进 SL 函数体、
     # 不走 Library.Load 链路。绑定失败（库未注册/符号缺失/sig 非法）

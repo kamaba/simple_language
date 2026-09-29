@@ -2,7 +2,7 @@
  * sl_mysql_lib.c —— SLMysql 模块原生实现（产物 sl_mysql_lib.dll）
  * ==========================================================================
  * 位于 MySQL Connector/C（libmysqlclient）之上的一层**扁平 C ABI 包装**，
- * 供 SLMysql.sl 通过 @DllStaticImport 静态绑定直接调用（opcode 118）：
+ * 供 SLMysql.sl 通过 @DllStaticImport 静态绑定直接调用（opcode 77）：
  *
  *     @DllStaticImport( "sl_mysql_lib", "slm_query" )
  *     static bool query( Int64 conn, string sql ) { ret false }

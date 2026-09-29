@@ -1580,7 +1580,7 @@ namespace SimpleLanguage.Project
             mmf.ParseDefineMetaType();
 
             /* 回填白名单 attribute（DllStaticImport）：使引用方编译时 IRCall 能在静态
-             * 调用点读到该属性，发射 opcode 118 FFI 直调（跨模块快路径，不回填则退化为
+             * 调用点读到该属性，发射 opcode 77 FFI 直调（跨模块快路径，不回填则退化为
              * CallStatic 走纯 SL fallback 函数体）。只回填白名单，避免 Nickname/AOT/GPU
              * 等属性在引用方重放编译期副作用。 */
             if (irm.refAttributeList != null)

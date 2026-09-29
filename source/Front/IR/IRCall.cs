@@ -411,7 +411,7 @@ namespace SimpleLanguage.IR
             {
                 // @DllStaticImport 静态绑定 FFI 快速调用：目标函数声明带
                 // DllStaticImport attribute 且本次为静态调用时，发射
-                // CallFFIStatic(118)。payload 为 SLFFIStaticCallPackage（JSON），
+                // CallFFIStatic(77)。payload 为 SLFFIStaticCallPackage（JSON），
                 // cvm assembly build 期解析静态库绑定（lib+symbol+sig ->
                 // FunctionHandle）并把 payload 改写为 4 字节绑定表索引，
                 // 运行期直接整合栈上参数调用 FFI；绑定失败时运行期按

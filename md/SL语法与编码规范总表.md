@@ -150,8 +150,6 @@ SL 源码内注释（见 §三 3.6）：`#` 行注释、`#! ... !#` 块注释。
 | `@Nickname`                                                                                            | Core 内注册短别名：`coro` = `Coroutine`、`Float8_E4M3` = `Float8`                     |
 | `map(...)` `list(...)` `stack(...)` `hashset(...)` `queue(...)` `tuple(...)` `array(...)` `range(...)` | 链首裸调用时展开为对应容器构造（`Map(...)` / `List(...)`…）                                    |
 
-> 注意：`!if` / `!else` / `!endif`（MacroIf token）在词法层存在但**主语法未启用**，编译期条件用 `static if`。
-
 ***
 
 ## 四、语法速查（声明与语句格式，均核对过示例）
@@ -701,7 +699,7 @@ dynamic d = ...                                 # 动态类型
 | 6  | `waitAll(params Array<Task>)` 与 `waitAny(params Task[])` 参数形式不一致是**历史现状，勿统一**（会破坏 SL 侧调用点）                          |
 | 7  | 容器糖名 / `error` / `errmsg` 禁作类成员声明名（LID 11042）；局部变量与参数不受限                                                            |
 | 8  | `next` 只用于 switch 贯穿；循环内用 `continue` / `break`                                                                      |
-| 9  | `!if` / `!else` / `!endif` 词法存在但未启用，编译期条件用 `static if`；`async` 已禁用                                                  |
+| 9  | `async` 已禁用，按普通标识符处理；`let` / `!if` / `!else` / `!endif` / `float2` 词法已移除                                                  |
 | 10 | `LinkedList<T>` 在 **Std 模块**，用前 `import Std;`                                                                       |
 | 11 | `throw` 只能抛 `enum extends Error`，且函数需 `throws` 声明；try 捕获载体是 `label{} catch{}`                                       |
 | 12 | `Tuple` 不支持匿名 `()` 字面量，须用构造                                                                                         |
