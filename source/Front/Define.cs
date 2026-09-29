@@ -356,6 +356,9 @@ namespace SimpleLanguage
         Matrix2x3, Matrix3x2, Matrix3x3,
         Matrix4x2, Matrix2x4, Matrix3x4, Matrix4x3, Matrix4x4,
 
+        /// <summary> @<tag>(...){...} 不透明内联块（统一 @ 识别：代码段内 AtSignLabel 语义，Lexer raw 捕获）</summary>
+        AtSignBlock,
+
         /// <summary> 结束 </summary>
         Finished,
     }

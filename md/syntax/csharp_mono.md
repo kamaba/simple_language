@@ -1,9 +1,13 @@
 # @csharp\_mono(){} 内联 C# 块
 
-> **本文档以「当前实现」为准**（IR 路线 + 通道会话机制 + string 出通道；2026-09-27 起入通道类型标记**显式必填**（禁 var/缺省）+ SL data/class → C# **镜像 class** 对象编组），对应五层：
-> Front 圈地层（语言无关通用改写器）`source/Front/Compile/Parse/AtSignLabelSourceRewriter.cs`
+> **本文档以「当前实现」为准**（IR 路线 + 通道会话机制 + string 出通道；2026-09-27 起入通道类型标记**显式必填**（禁 var/缺省）+ SL data/class → C# **镜像 class** 对象编组；2026-09-29 起统一 `@` 识别：`@<tag>(...){...}` 形态由 Lexer 整块捕获、AtSignLabel 块解析上移 MetaCore，源码预改写器退役），对应五层：
+> 统一 `@` 识别层 = 词法 + 语义核心：Lexer `source/Front/Parse/LexerParseToToken.cs`
+> （`ReadAt`/`TryCaptureAtSignBlock`——`@<tag>(...){...}` 形态整块捕获为不透明
+> AtSignBlock token，不匹配零成本回退 At token 走 attribute 管线）+ MetaCore
+> `source/Front/Core/AtSignLabelBlockDispatch.cs`（标签路由/三分初判/Parse 契约
+> 转调/块登记/就地脱糖，经 `Core/MetaMemberFunction.cs` 语句链接入）
 >
-> - 反射宿主 `source/Front/Compile/Parse/PluginFrontendParser.cs`（**统一接口化转调**：Parse 契约 + Build 契约，均为单 JSON 请求）；
+> - 反射宿主 `source/Front/Parse/PluginFrontendParser.cs`（**统一接口化转调**：Parse 契约 + Build 契约，均为单 JSON 请求）；
 >   插件 frontend 工程（**全部块体解析 + csc 编译部署逻辑**）
 >   `simple_language_plugins/csharp_mono/frontend/`——`SLLabelParser.cs`（块体解析）+
 >   `SLLabelBuilder.cs`（csc 合并编译与部署），经 `plugin.jsonc` 的
@@ -35,7 +39,7 @@
 
 | 阶段                | 发生了什么                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **编译期（Front 圈地）** | `AtSignLabelSourceRewriter`（语言无关，任意 `@<tag>`）只做圈地：识别 `@csharp_mono` 标签、配平 `()`/`{}`、截取参数表与块体原文，块体三分初判（头区入通道 / 尾行出通道，双出通道即报 20056；代码段原文零处理），**反射转调插件解析器**；按解析结果把整块脱糖为**三步通道序列**——入通道预暂存（`ChannelIn<Kind>( entry, slVar )`，每入通道一条）→ 哨兵 `AtSignLabelCallVoid( entry )` → 出通道消费（`outVar = ChannelOut<Kind>( entry )`，有出通道时）                                                                                                                                                                                                                                |
+| **编译期（统一 `@` 识别 + MetaCore 脱糖）** | Lexer `ReadAt`/`TryCaptureAtSignBlock`（语言无关）形态判别：`@<tag>(...)` 后紧跟块体 `{...}` 即整块原文捕获为不透明 AtSignBlock token（配平 `()`/`{}`、截取参数表与块体；不匹配零成本回退走 attribute 管线，**其余 `@` 行为完全不变**）→ Token/StructParse/FileMeta 透传拦截为块语法节点 → MetaCore `AtSignLabelBlockDispatch`：标签路由（未命中 20055）+ 块体三分初判（头区入通道 / 尾行出通道，双出通道即报 20056；代码段原文零处理）+ **反射转调插件解析器** + 块登记 + 就地脱糖为**三步通道序列**——入通道预暂存（`ChannelIn<Kind>( entry, slVar )`，每入通道一条）→ 哨兵 `AtSignLabelCallVoid( entry )` → 出通道消费（`outVar = ChannelOut<Kind>( entry )`，有出通道时）                                                                                                                                                                                                                                |
 | **编译期（插件解析）**     | csharp\_mono 插件 frontend 工程 `SLCSharpMonoFrontend.dll`（`SLLabelParser.ParseLabel`，Parse 契约单 JSON）承担**全部块体解析**：小括号参数形态校验、代码段整编（段首指令行吸收、代码区 `<-`/`$` 前缀/指令行检出、字符串/注释内 `<-` 字面量放行）、生成 C# `Main` 函数源码，结果以 JSON（小驼峰键）回传 Front；**Front 零复核**——代码段是目标语言自己的编译域，Front 不做任何处理                                                                                                                                                                                                                                                                                    |
 | **IR 期**          | `IRCall.TryParseAtSignLabelCall` 拦截哨兵调用 → 发射 `OpCode_CallAtSignLabel(124)`，payload = `SLAtSignLabelCallPackage` JSON（`{entryIndex, paramCount, tryCatch, methodName}`）；哨兵调用**只允许出现在方法体内**——成员变量/全局变量/enum 成员初始化表达式等无宿主 IRMethod 的场景被拒绝（LID 20059，回退普通 `CallSystemMethod`）                                                                                                                                                                                                                                                                              |
 | **导出期**           | 模块级 `atSignLabel[]` 绑定表（每块一条：`pluginId/tag/entry/entryMethod/lib/channels[]`）；`AtSignLabelBuildManager` **只组装构建上下文**（Build 契约单 JSON：`{label, outDir, libDir, entries[{entryName, source}]}`）反射转调插件 frontend 的 `SLLabelBuilder.BuildLabels`——由插件完成 .NET Framework `csc.exe` 合并编译（`SLAtSign.dll`）与部署（`libDir`），Front 按回传 `kind` 五态分流 LID 22135\~22138                                                                                                                                                                                                    |
@@ -125,7 +129,7 @@ AtSignLabelCallVoid( <entryIndex> )
 c = SLang.Plugin.CSharpMono.ChannelOutInt( <entryIndex> )
 ```
 
-入通道按 `channels[].slType` **七分流**（`AtSignLabelSourceRewriter.MapChannelInKind`）
+入通道按 `channels[].slType` **七分流**（`AtSignLabelBlockDispatch.MapChannelInKind`）
 选 `ChannelIn<Kind>` 变体：`Int32/int…` → `Int`、`Int64/long…` → `Long`、
 `Single/float…` → `Float`、`Double/double…` → `Double`、`String` → `String`、
 `Boolean` → `Boolean`、**`Object/object` 与 SL 类名（default）→ `Object`**
@@ -281,30 +285,48 @@ jsonc 所在目录，也接受绝对路径），**无需把文件手工放进插
 
 ```
 .sp/.sl 源码
-   │ FileParse.ParseTokenStep（Token 解析前）
-   ├─① AtSignLabelSourceRewriter.Rewrite      ← 与 DllImportSourceRewriter 同挂点
-   │     圈地：识别任意 @<tag>（按各插件清单声明的 plugin.id 路由——
-   │     FindPluginRootById id 索引，目录名仅缺 id 时兼容）、
-   │     配平 ()/{}、截取参数表/块体原文
-   │     ├─ AllocateEntryName() 先占 Entry_N（失败编号跳空无害，仅要求唯一）
-   │     ├─ ScanHeadTail 三分初判（头区入通道/尾行出通道；双出通道 → 20056；
-   │     │   代码段原文零处理）
-   │     ├─ PluginFrontendParser.Parse → 反射转调插件 frontend 工程
-   │     │   SLCSharpMonoFrontend.dll 的 SLLabelParser.ParseLabel（按 .sl 源文件
-   │     │   上溯定位插件根 → plugin.jsonc 的 parserType → frontend/ 目录
-   │     │   Assembly.LoadFrom；Parse 契约单 JSON，结果小驼峰键；代码段整编
-   │     │   全权归插件，Front 零复核）
-   │     └─ 脱糖整块（补齐换行保行号）：三步通道序列——
-   │         ChannelIn<Kind>( entry, slVar )（每入通道一条）→
-   │         AtSignLabelCallVoid( entry ) → outVar = ChannelOut<Kind>( entry )；
-   │         块体登记 AtSignLabelBlockCollector
-   │     错误分流（均带文件行号，基准 = '{' 所在行 + 块体段号 - 1）：
-   │       outCountError → 20056（出通道首期仅支持 1 个）
-   │       !Ok/error     → 20055（透传插件原始消息）
-   │       解析器加载失败 → 20057（基础设施错误，进程内只报一次）
-   │     （Lexer/TokenParseToNode/Meta 全解析层零侵入）
+   │ ① Lexer（Parse/LexerParseToToken.cs，统一 @ 识别）
+   │    ReadAt 读出 @<tag> → TryCaptureAtSignBlock 形态判别：
+   │    参数表 (...)（FindCloseParenLexer 原文截取，未闭合不接管）+
+   │    其后紧跟块体 {...}（SkipBracedBlockLexer 跳字符串/注释配平，未闭合不接管）
+   │    → 整块捕获为不透明 AtSignBlock token（params/body 各一个 children
+   │      token，行号指向 ( / { 所在行），m_Index 推进到 } 后；
+   │    不匹配（缺参数表/缺块体/未闭合）→ 零状态改动回退 At token
+   │    走 attribute 管线（其余 @ 行为完全不变）
    ▼
-Front 正常编译管线（通道调用 = 普通系统调用语句；哨兵被 IRCall 拦截）
+   │ ② TokenParseToNode → ENodeType.AtSignBlock 节点（透传）
+   │ ③ StructParseToSyntax 语句层拦截 → FileMetaAtSignBlockSyntax
+   │    （表达式位置不拦截 → FileMetatUtil.CreateFileMetaExpress 20059 守卫兜底）
+   ▼
+   │ ④ MetaCore（Core/AtSignLabelBlockDispatch.HandleDispatch，每块一次；
+   │    挂 MetaMemberFunction.HandleMetaSyntax 新 case）
+   │    ├─ IsPluginLabel 标签路由：按各插件清单声明的 plugin.id 路由——
+   │    │  FindPluginRootById id 索引，目录名仅缺 id 时兼容；
+   │    │  未命中 → 20055（"块标签未命中任何插件清单声明的 plugin.id"）
+   │    │  ScanHeadTail 三分初判（头区入通道/尾行出通道；
+   │    │    双出通道 → 20056；入通道非 2 段形态 → 20055；
+   │    │    代码段原文零处理）
+   │    ├─ AllocateEntryName() 先占 Entry_N（失败编号跳空无害，仅要求唯一）
+   │    │  + 组 Parse 契约请求 → PluginFrontendParser.Parse 反射转调插件
+   │    │  frontend 工程 SLCSharpMonoFrontend.dll 的 SLLabelParser.ParseLabel
+   │    │  （Parse 契约单 JSON，结果小驼峰键；代码段整编全权归插件，Front 零复核；
+   │    │    加载失败 → 20057（基础设施错误，进程内只报一次））
+   │    │  !Ok/error → 20055（透传插件原始消息）
+   │    ├─ AtSignLabelBlockCollector 块登记 + 回填（export atSignLabel[] 用）
+   │    │  通道原语宿主类缺失（plugin.jsonc refModule.channelClassPath
+   │    │  未配置且本块有通道）→ 20058
+   │    └─ 就地脱糖（不再改写源码文本！合成 FileMeta 语句节点，行号统一 =
+   │        块主 token 位置 → 诊断指向 '@' 块头行）：三步通道序列——
+   │        ChannelIn<Kind>( entry, slVar )（每入通道一条）→
+   │        AtSignLabelCallVoid( entry ) → outVar = ChannelOut<Kind>( entry )，
+   │        逐条经 MetaMemberFunction.HandleMetaSyntax 平铺喂回当前语句链
+   │    错误分流（行号基准：dispatch 层 = '@' 标签行；插件报错 =
+   │      '{' 所在行 + 块体 1-based 段号 - 1，无 errorLine 兜底 '@' 行）：
+   │      未知标签/入通道形态非法/!Ok/error → 20055
+   │      outCountError → 20056（出通道首期仅支持 1 个）
+   │      解析器加载失败 → 20057；channelClassPath 缺失 → 20058
+   ▼
+Front 正常编译管线（脱糖语句 = 普通系统调用语句；哨兵被 IRCall 拦截）
    │ IR 生成：IRCall.TryParseAtSignLabelCall 拦截哨兵
    │     → OpCode_CallAtSignLabel(124)，payload = SLAtSignLabelCallPackage JSON
    │       {entryIndex, paramCount, tryCatch, methodName}
@@ -365,7 +387,8 @@ CVM 运行
   `exec env MAIN/COROUTINE/ISOLATE` 三态日志）；
 - **解析/构建归属**与蓝图一致：块体/参数解析与目标产物（csc 编译）均不进 Front
   本体，在插件 frontend 工程中（`SLLabelParser` / `SLLabelBuilder`），
-  Front 只圈地+组装上下文+接口化转调+脱糖——**改写器已语言无关**，Front 侧与
+  Front 只做统一 `@` 形态判别 + 组装上下文 + 接口化转调 + 就地脱糖——
+  **Lexer 形态判别与 MetaCore 块处理已语言无关**，Front 侧与
   目标语言/工具链完全解耦，接入任意语言或特殊 SDK 只需新增插件目录（含
   frontend 实现 Parse/Build 两个单 JSON 契约），Front 零改动。
 
@@ -373,7 +396,7 @@ CVM 运行
 
 | 症状                                | 先看                                                                                                                                                                                                                                                                                                                                                                           |
 | --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 块没被识别                             | `Logs/Front.txt` 找 `AtSignLabelSourceRewriter`（LID 20054）；确认参数表为空 `()` 或合法 `name=value` 列表、花括号配平                                                                                                                                                                                                                                                                             |
+| 块没被识别                             | `Logs/Front.txt` 找 `AtSignLabelBlockDispatch`（未知标签 LID 20055，消息 = "块标签未命中任何插件清单声明的 plugin.id"）；确认块形态为 `@<tag>( ... ){ ... }`——**参数表与块体缺一不可**（缺参数表 / 缺块体 / 未闭合会整体回退 At token 走 attribute 管线，"没被识别"即此），参数表为空 `()` 或合法 `name=value` 列表、花括号配平                                                                                                                                                                                                                                                                             |
 | 解析错误（代码段 `<-`、import 位置、通道形态、坏参数） | LID 20055（带文件行号，消息为插件原文透传）；行号换算基准 = `{` 所在行 + 块体 1-based 段号 - 1                                                                                                                                                                                                                                                                                                              |
 | 多出通道                              | LID 20056；每块只留一个出通道                                                                                                                                                                                                                                                                                                                                                          |
 | 插件解析器没找到                          | LID 20057；确认 `simple_language_plugins/csharp_mono/frontend/SLCSharpMonoFrontend.dll` 存在（跑 `cvm\build-csharp-mono.ps1` 或 `dotnet build frontend\SLCSharpMonoFrontend.csproj -c Release` 生成）且 `plugin.jsonc` 已声明 `frontendLibs` + `parserType`                                                                                                                                 |

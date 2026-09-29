@@ -142,14 +142,11 @@ namespace SimpleLanguage.Logging
         ProjectPlatformRequireValueInvalid = 20036,
         ProjectPlatformAotFeatureConflict = 20037,
         // ---- Process 模块 ----
-        // DllImport
-        ProcessDllImportDllImportSourceRewriterRewrittenC = 20050,
         // SystemMethodCall
         ProcessSystemMethodCallNotFoundImportSystem = 20051,
         ProcessSystemMethodCallNotFoundImportSystem2 = 20052,
         ProcessSystemMethodCallImportSystemMethod = 20053,
-        // @<tag>(){} 内联块改写器（语言无关，标签 = 插件 id）
-        ProcessAtSignLabelRewrittenBlocks = 20054,
+        // @<tag>(){} 内联块（语言无关，标签 = 插件 id，MetaCore 层解析）
         ProcessAtSignLabelChannelSyntaxError = 20055,
         ProcessAtSignLabelOutChannelMultiple = 20056,
         ProcessAtSignLabelPluginParserLoadFailed = 20057,
@@ -926,6 +923,12 @@ namespace SimpleLanguage.Logging
         // InlineMethod 声明/调用点限制 (M2+ §2.4: throws 互斥 + 变量初始化器禁调)
         MetaCoreInlineMethodThrowsConflict = 21457,
         MetaCoreInlineMethodCallVarInitForbidden = 21458,
+        // MemberFunction @DllImport 函数式分派注入 (统一 @ 处理: attribute 在 MetaCore 层消费)
+        MetaCoreMemberFunctionDllImportStatic = 21459,
+        MetaCoreMemberFunctionDllImportBody = 21460,
+        MetaCoreMemberFunctionDllImportArgs = 21461,
+        MetaCoreMemberFunctionDllImportSig = 21462,
+        MetaCoreMemberFunctionDllImportInject = 21463,
         // SwitchStatement
         MetaCoreSwitchStatementSwitch = 21399,
         // TryCatchStatement

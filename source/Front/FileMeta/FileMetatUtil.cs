@@ -158,6 +158,17 @@ namespace SimpleLanguage.Compile
         */
         public static FileMetaBaseTerm CreateFileMetaExpress(FileMeta fm, List<Node> nodeList, FileMetaTermExpress.EExpressType expressType)
         {
+            // 20059 守卫：@<tag>(...){...} 不透明内联块只允许出现在语句/成员位置（代码段内 → AtSignLabel 语义，
+            // 由 StructParse 层拦截为 FileMetaAtSignBlockSyntax），出现在表达式位置（字段初始化/赋值右侧/实参等）报错
+            foreach (var node in nodeList)
+            {
+                if (node.nodeType == ENodeType.AtSignBlock)
+                {
+                    Log.AddNodeLog(LID.ProcessAtSignLabelFieldInitializerForbidden, node.token,
+                        "Error @<tag>(...){...} 块不能出现在表达式位置!!");
+                    return null;
+                }
+            }
             FileMetaBaseTerm fmbt = null;
             int questionIndex = -1;
             int colonIndex = -1;

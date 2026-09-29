@@ -54,6 +54,8 @@ namespace SimpleLanguage.Compile
         Key,
         Comment,
         End,
+        /// <summary> @<tag>(...){...} 不透明内联块节点（token = Lexer raw 捕获的 AtSignBlock）</summary>
+        AtSignBlock,
     }
         
     public class Node

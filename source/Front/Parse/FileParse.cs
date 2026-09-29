@@ -94,16 +94,6 @@ namespace SimpleLanguage.Compile
 
                 m_FileCompileState.SetStep(FileCompileState.EFileStep.Token);
 
-                // C# 风格 @DllImport 无体函数声明先改写为两段式
-                //（隐藏 Func 字段 + 静态 wrapper），后续 Token~Meta 全管线自然处理
-                m_ContentBuffer = DllImportSourceRewriter.Rewrite( m_ContentBuffer, m_FilePath );
-
-                // @<tag>(){} 内联块（语言无关，标签 = SLPlugin/<tag> 插件 id）改写为
-                // AtSignLabelCall/AtSignLabelCallVoid 哨兵系统调用；<- 通道 Front 初判，
-                // 块体中段整编在插件 frontendLibs 解析器，产物登记到
-                // AtSignLabelBlockCollector 供导出期构建器与 atSignLabel[] 导出
-                m_ContentBuffer = AtSignLabelSourceRewriter.Rewrite( m_ContentBuffer, m_FilePath );
-
                 m_LexerParse = new LexerParse( m_FilePath, m_ContentBuffer );
                 m_LexerParse.ParseToTokenList();
                 m_LexerParse.SaveTokensToFile();

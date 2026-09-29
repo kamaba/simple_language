@@ -622,6 +622,18 @@ namespace SimpleLanguage.Compile
 
         private FileMetaSyntax CrateFileMetaSyntaxNoKey(List<Node> pNodeList)
         {
+            // @<tag>(...){...} 不透明内联块拦截（统一 @ 识别：出现在语句/成员位置 = 代码段内 → AtSignLabel 语义）
+            // 整块 token 透传为 FileMetaAtSignBlockSyntax，由 MetaCore 层 AtSignLabelBlockDispatch 解析
+            if (pNodeList.Count > 0 && pNodeList[0].nodeType == ENodeType.AtSignBlock)
+            {
+                if (pNodeList.Count > 1)
+                {
+                    Log.AddNodeLog(LID.ProcessAtSignLabelChannelSyntaxError, pNodeList[0].token,
+                        "Error @<tag>(...){...} 块之后同句不能在跟其他语法!!");
+                }
+                return new FileMetaAtSignBlockSyntax(m_FileMeta, pNodeList[0].token);
+            }
+
             // spawn/await 关键字展开: 把 spawn f(a,b) / await expr 替换为 Coroutine.spawnClosureN(...) / Coroutine.awaitTask(...) 调用节点
             // (须在 try/checked 早退分支之前, 否则 try spawn f(a,b) 等前缀形态无法展开)
             TransformCoroutineKeywordNodes(pNodeList);

@@ -57,7 +57,8 @@ namespace SimpleLanguage.Project
         public static void Run( string path, CommandInputArgs cinputArgs )
          {
             // 每个项目编译开始时重置 @<tag>(){} 内联块收集器
-            AtSignLabelBlockCollector.Clear();
+            // （已迁 SimpleLanguage.Core; 本文件同时 using Compile/Core 两个命名空间, 非限定名会 CS0104 歧义）
+            SimpleLanguage.Core.AtSignLabelBlockCollector.Clear();
 
             // apply CLI optimize level before any IR generation happens
             if (cinputArgs != null)

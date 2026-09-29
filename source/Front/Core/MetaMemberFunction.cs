@@ -944,6 +944,11 @@ namespace SimpleLanguage.Core
                         EnsureResultVariable();
                     }
                     CreateMetaSyntax(m_FileMetaMemberFunction.fileMetaBlockSyntax, m_MetaBlockStatements);
+
+                    // @DllImport 函数式分派注入（统一 @ 处理: attribute 在 MetaCore 层消费,
+                    // 链头 if 分派 + 原体原位保留为 fallback; 必须在 CreateMetaSyntax 之后、
+                    // CheckAllPathsReturn 之前注入, 隐藏字段 IR 由 IR 相位统一收集）
+                    DllImportFunctionDispatch.TryInject(this);
                 }
                 else
                 {
@@ -1170,6 +1175,14 @@ namespace SimpleLanguage.Core
                                 HandleMetaSyntax(currentBlockStatements, ref beforeStatements, sfChild);
                             }
                         }
+                    }
+                    break;
+                case FileMetaAtSignBlockSyntax fabss:
+                    {
+                        // 统一 @ 识别：代码段内 @<tag>(...){...} 内联块 → AtSignLabel 语义,
+                        // 在 MetaCore 层解析（通道扫描/插件转调/块登记/就地脱糖合成语句
+                        // 平铺喂回, 同 static if 的不引入作用域模式）
+                        AtSignLabelBlockDispatch.HandleDispatch(fabss, currentBlockStatements, ref beforeStatements);
                     }
                     break;
                 case FileMetaKeyTrySyntax fmts:

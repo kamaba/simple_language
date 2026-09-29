@@ -168,6 +168,17 @@ namespace SimpleLanguage.Compile
 
             return null;
         }
+        private Node AddAtSignBlockNode(Token token)
+        {
+            //@<tag>(...){...} 不透明内联块：Lexer raw 捕获的整块 token，直接成节点透传，
+            //由 StructParse 语句层拦截为 FileMetaAtSignBlockSyntax，MetaCore 层解析（统一 @ 识别）
+            Node node = new Node(token);
+            node.nodeType = ENodeType.AtSignBlock;
+            m_CurrentNode.AddChild(node);
+            m_TokenIndex++;
+
+            return null;
+        }
         private Node AddDollerOpSign(Token token)
         {
             if (m_CurrentNode.linkToken != null)
@@ -797,6 +808,11 @@ namespace SimpleLanguage.Compile
                 case ETokenType.At:             //@
                     {
                         AddAtOpSign(token);
+                    }
+                    break;
+                case ETokenType.AtSignBlock:    //@<tag>(...){...} 不透明内联块
+                    {
+                        AddAtSignBlockNode(token);
                     }
                     break;
                 case ETokenType.Dollar:

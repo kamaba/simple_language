@@ -63,14 +63,14 @@ namespace SimpleLanguage.Export
             // 每趟导出重置部署登记（静态字典跨导出会话防残留）
             s_DeployedDlls.Clear();
 
-            var blocks = SimpleLanguage.Compile.AtSignLabelBlockCollector.Blocks;
+            var blocks = SimpleLanguage.Core.AtSignLabelBlockCollector.Blocks;
             if (blocks.Count == 0 || string.IsNullOrWhiteSpace(outDir))
             {
                 return;
             }
 
             // 按标签分组（Source 空 = 插件自管，不进构建器）
-            var groups = new Dictionary<string, List<SimpleLanguage.Compile.AtSignLabelBlock>>(StringComparer.Ordinal);
+            var groups = new Dictionary<string, List<SimpleLanguage.Core.AtSignLabelBlock>>(StringComparer.Ordinal);
             foreach (var block in blocks)
             {
                 if (string.IsNullOrEmpty(block.Source))
@@ -79,7 +79,7 @@ namespace SimpleLanguage.Export
                 }
                 if (!groups.TryGetValue(block.Label, out var list))
                 {
-                    list = new List<SimpleLanguage.Compile.AtSignLabelBlock>();
+                    list = new List<SimpleLanguage.Core.AtSignLabelBlock>();
                     groups[block.Label] = list;
                 }
                 list.Add(block);
@@ -96,7 +96,7 @@ namespace SimpleLanguage.Export
         // 按响应 kind 分流 LID 22135~22138
         // ------------------------------------------------------------------
 
-        private static void Dispatch( string label, List<SimpleLanguage.Compile.AtSignLabelBlock> blocks, string outDir )
+        private static void Dispatch( string label, List<SimpleLanguage.Core.AtSignLabelBlock> blocks, string outDir )
         {
             var request = new SimpleLanguage.Compile.PluginLabelBuildRequest
             {
@@ -214,7 +214,7 @@ namespace SimpleLanguage.Export
 
         /// <summary>扫描全部块入通道类型标记，收集 SL data/class 布局进请求 slTypes。</summary>
         private static void CollectSlTypes( SimpleLanguage.Compile.PluginLabelBuildRequest request,
-            List<SimpleLanguage.Compile.AtSignLabelBlock> blocks )
+            List<SimpleLanguage.Core.AtSignLabelBlock> blocks )
         {
             var collected = new Dictionary<string, SimpleLanguage.Compile.PluginLabelSlType>(StringComparer.Ordinal);
             var visiting = new HashSet<string>(StringComparer.Ordinal);

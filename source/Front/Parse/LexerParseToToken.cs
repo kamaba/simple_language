@@ -1043,6 +1043,9 @@ namespace SimpleLanguage.Compile
         /// <summary> 璇诲彇 @ </summary>
         void ReadAt()
         {
+            int atPos = m_Index;          // '@' 的 Buffer 位置（此刻 m_Index 尚未消费）
+            int atLine = m_SourceLine;
+            int atChar = m_SourceChar;
             var ch = ReadChar();
             //if ( ch == '\"' )
             //{
@@ -1053,7 +1056,7 @@ namespace SimpleLanguage.Compile
             //    ReadChar();
             //    AddToken( ETokenType.LeftBrace);
             //}
-            //else 
+            //else
             if (Char.IsLetter(ch) || ch == '_')
             {
                 var ident = new StringBuilder();
@@ -1069,14 +1072,260 @@ namespace SimpleLanguage.Compile
                     //UndoChar();
                     break;
                 }
+                string label = ident.ToString();
+                // 统一 @ 识别：@<tag>(...){...} 形态（代码段内 AtSignLabel 语义）→
+                // 整块原文捕获为不透明 AtSignBlock token；不匹配则原样走 Attribute 管线
+                if (TryCaptureAtSignBlock(atPos, atLine, atChar, label))
+                {
+                    return;
+                }
                 // For attribute syntax: store attribute name in extend.
-                AddToken(ETokenType.At, '@', ident.ToString());
+                AddToken(ETokenType.At, '@', label);
             }
             else
             {
                 Log.AddTokenLog(LID.TokenLexerToken, "@ _ token ");
             }
         }
+
+        /// <summary>
+        /// 统一 @ 识别：标签名读出后探测 @<tag>(...){...} 形态（圈地规则与旧
+        /// AtSignLabelSourceRewriter 一致，char[] 原位扫描、不动词法状态）。命中则把
+        /// 整块原文捕获为不透明 AtSignBlock token：lexeme = raw 全文（'@'..'{'..'}'）、
+        /// extend = 标签名、childrenTokensList[0][0] = paramsText（'(' 后切片）、
+        /// childrenTokensList[1][0] = bodyText（'{' 后切片），children token 行号分别记
+        /// '(' 与 '{' 所在行（MetaCore 报错行号基准），并把 m_Index/m_SourceLine/
+        /// m_SourceChar 推进到 '}' 后一字符；未命中不动任何状态（零恢复成本），
+        /// 回退 At token 路径（Attribute 管线）。
+        /// 进入时 m_Index 恰指向标签名后第一个未消费字符。
+        /// </summary>
+        bool TryCaptureAtSignBlock( int atPos, int atLine, int atChar, string label )
+        {
+            int len = m_Length;
+            // ── 参数表 ( ... )：原文截取（形态语义在插件侧）──
+            int p = SkipBlankChars(m_Buffer, m_Index, len);
+            if (p >= len || m_Buffer[p] != '(')
+                return false;
+            int close = FindCloseParenLexer(m_Buffer, p, len);
+            if (close < 0)
+                return false;   // 参数表未闭合：不接管，交由后续阶段报错
+            string paramsText = new string(m_Buffer, p + 1, close - p - 1);
+
+            // ── 块体 { ... }（花括号配平，跳字符串/注释）──
+            int lbrace = SkipBlankChars(m_Buffer, close + 1, len);
+            if (lbrace >= len || m_Buffer[lbrace] != '{')
+                return false;
+            int bodyEnd = SkipBracedBlockLexer(m_Buffer, lbrace, len);
+            if (bodyEnd < 0)
+                return false;   // 花括号未闭合：不接管，交由后续阶段报错
+            string bodyText = new string(m_Buffer, lbrace + 1, bodyEnd - 1 - (lbrace + 1));
+            string rawText = new string(m_Buffer, atPos, bodyEnd - atPos);
+
+            // ── token 组装：主 token 记 '@' 位置；children 分别记 '(' / '{' 所在行 ──
+            GetLineChar(atPos, atLine, atChar, p, out int parenLine, out int parenChar);
+            GetLineChar(atPos, atLine, atChar, lbrace, out int braceLine, out int braceChar);
+            GetLineChar(atPos, atLine, atChar, bodyEnd, out int endLine, out int endChar);
+            AddToken(ETokenType.AtSignBlock, rawText, label, atLine, atChar);
+            m_CurrentToken.AddChildrenToken(new Token(m_Path, ETokenType.AtSignBlock, paramsText, parenLine, parenChar, label));
+            m_CurrentToken.AddChildrenToken(new Token(m_Path, ETokenType.AtSignBlock, bodyText, braceLine, braceChar, label));
+            m_CurrentToken.SetSrouceEnd(endLine + 1, endChar);
+
+            // ── 状态推进：m_Index 指向 '}' 后一位置（下一未读字符），行/列同步 ──
+            m_Index = bodyEnd;
+            m_SourceLine = endLine;
+            m_SourceChar = endChar;
+            return true;
+        }
+
+        /// <summary>由 [from, pos) 内的 '\n' 推算 pos 的 0-based 行/列（from 的行列为基准）。</summary>
+        void GetLineChar( int from, int fromLine, int fromChar, int pos, out int line, out int col )
+        {
+            line = fromLine;
+            int lastNl = -1;
+            for (int i = from; i < pos; i++)
+            {
+                if (m_Buffer[i] == '\n')
+                {
+                    line++;
+                    lastNl = i;
+                }
+            }
+            col = lastNl >= 0 ? pos - lastNl - 1 : fromChar + (pos - from);
+        }
+
+        // ------------------------------------------------------------------
+        // 圈地工具（char[] 原位扫描；SL 词法语义与旧 AtSignLabelSourceRewriter 一致）
+        // ------------------------------------------------------------------
+
+        /// <summary>跳过空白与注释，返回下一个有效字符位置。</summary>
+        static int SkipBlankChars( char[] s, int i, int len )
+        {
+            while (i < len)
+            {
+                char c = s[i];
+                if (c == ' ' || c == '\t' || c == '\r' || c == '\n')
+                {
+                    i++;
+                    continue;
+                }
+                if (c == '#')
+                {
+                    i = SkipCommentOrStringLexer(s, i, len);
+                    continue;
+                }
+                return i;
+            }
+            return i;
+        }
+
+        /// <summary>从 s[p]（为 '('）起找参数表结束 ')'（首个，跳 SL 注释/字符串）；未找到返回 -1。</summary>
+        static int FindCloseParenLexer( char[] s, int p, int len )
+        {
+            int i = p + 1;
+            while (i < len)
+            {
+                char c = s[i];
+                if (c == '#' || c == '"' || c == '\'')
+                {
+                    i = SkipCommentOrStringLexer(s, i, len);
+                    continue;
+                }
+                if (c == ')')
+                    return i;
+                i++;
+            }
+            return -1;
+        }
+
+        /// <summary>从 s[lbrace]（为 '{'）开始扫描平衡花括号块（跳过字符串/注释），返回右花括号后一位置；未闭合返回 -1。</summary>
+        static int SkipBracedBlockLexer( char[] s, int lbrace, int len )
+        {
+            int depth = 0;
+            int i = lbrace;
+            while (i < len)
+            {
+                char c = s[i];
+                if (c == '#' || c == '"' || c == '\'')
+                {
+                    i = SkipCommentOrStringLexer(s, i, len);
+                    continue;
+                }
+                if (c == '{')
+                {
+                    depth++;
+                }
+                else if (c == '}')
+                {
+                    depth--;
+                    if (depth == 0)
+                        return i + 1;
+                }
+                i++;
+            }
+            return -1;
+        }
+
+        /// <summary>
+        /// 跳过 i 处开始的注释或字符串字面量，返回结束位置（不含）。
+        /// 注释/字符串词法对齐本 Lexer：'#' 行注释到 '\n'；'#'+! ... '!'+# 块注释
+        /// （'#' 数匹配，可嵌套计级）；'"' 双引号串（'\' 转义）；'"""' 三引号 f-string；
+        /// '\'' 原始串（仅 '\'' 转义）。
+        /// </summary>
+        static int SkipCommentOrStringLexer( char[] s, int i, int len )
+        {
+            char c = s[i];
+            if (c == '#')
+            {
+                int j = i + 1;
+                int nsharp = 1;
+                while (j < len && s[j] == '#')
+                {
+                    nsharp++;
+                    j++;
+                }
+                if (j < len && s[j] == '!')
+                {
+                    // 块注释：闭合标记 '!' + nsharp 个 '#'
+                    int k = j + 1;
+                    while (k < len)
+                    {
+                        if (s[k] == '!')
+                        {
+                            int m = k + 1;
+                            int cnt = 0;
+                            while (m < len && s[m] == '#' && cnt < nsharp)
+                            {
+                                cnt++;
+                                m++;
+                            }
+                            if (cnt == nsharp)
+                                return m;
+                            k++;
+                        }
+                        else
+                        {
+                            k++;
+                        }
+                    }
+                    return len;   // 未闭合：按 Lexer 行为跳到文件尾
+                }
+                // 行注释到 '\n'（不含换行）
+                j = i + 1;
+                while (j < len && s[j] != '\n')
+                    j++;
+                return j;
+            }
+            if (c == '"')
+            {
+                // f""" 三引号字符串
+                if (i + 2 < len && s[i + 1] == '"' && s[i + 2] == '"')
+                {
+                    int j = i + 3;
+                    while (j < len)
+                    {
+                        if (s[j] == '"' && j + 2 < len && s[j + 1] == '"' && s[j + 2] == '"')
+                            return j + 3;
+                        j++;
+                    }
+                    return len;
+                }
+                // 普通字符串：'\' 转义；跨行未闭合按 Lexer 容错停行尾
+                int k = i + 1;
+                while (k < len)
+                {
+                    if (s[k] == '\\')
+                    {
+                        k += 2;
+                        continue;
+                    }
+                    if (s[k] == '"')
+                        return k + 1;
+                    if (s[k] == '\n')
+                        return k;
+                    k++;
+                }
+                return len;
+            }
+            if (c == '\'')
+            {
+                // 原始字符串：仅 '\'' 转义
+                int k = i + 1;
+                while (k < len)
+                {
+                    if (s[k] == '\\')
+                    {
+                        k += 2;
+                        continue;
+                    }
+                    if (s[k] == '\'')
+                        return k + 1;
+                    k++;
+                }
+                return len;
+            }
+            return i + 1;
+        }
+
         void ReadOrigenString()
         {
             m_Builder.Clear();

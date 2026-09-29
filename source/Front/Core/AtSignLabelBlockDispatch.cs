@@ -1,42 +1,22 @@
 //****************************************************************************
-//  File:      AtSignLabelSourceRewriter.cs
-// ------------------------------------------------
-//  Copyright (c) kamaba233@gmail.com
-//  DateTime: 2026/9/25 12:00:00
-//  Description:  @<tag>(){} 内联标签块的源码文本预改写器 + 块收集器
-//                （PLUGIN_SYSTEM_DESIGN.md §A20 通用化实现，语言无关：
-//                tag = plugin.jsonc 声明的 plugin.id（与插件目录名解耦），
-//                块体中段整编与条目构建在对应插件 frontend 工程，
-//                Front 不感知目标语言，C#/C/CUDA/Vulkan 插件一视同仁）。
-//                三层分工（与 csharp_mono 旧链 CSharpCallXxx 的关键差异）：
-//                1) <- 通道统一在 Front 解析：头区入通道 "<CSType> target <- $sl"
-//                   （CSType = C# 已定义类型名/SL 类名，显式必填：var 与
-//                   缺省形态已禁用，形态非法报 20055）与尾区出通道
-//                   "$sl <- expr" 只由 Front 初判与复核
-//                   （双出通道 20056）；
-//                2) 代码段（首个非 <- 行起到末行前）为目标语言原文：
-//                   整编归插件 frontend（单 JSON 契约，见
-//                   PluginFrontendParser），Front 零处理，代码段内的
-//                   语言规则（含 <-）由插件自决；
-//                3) 脱糖三段式（通道独立原语，<- 赋值不再写死进 opcode）：
-//                   入通道每条一个 <channelClassPath>.ChannelIn<Kind>( entry,
-//                   slVar )（plugin.jsonc refModule.channelClassPath 类路径，
-//                   函数体在插件 refModule，内部转调 Core 域系统方法
-//                   AtSignChannelIn）→ 块执行哨兵 AtSignLabelCallVoid( entry )
-//                   （IRCall 拦截发射 CallAtSignLabel(124)，CVM 按模块
-//                   atSignLabel[] 表经插件 labelExec capability 执行，
-//                   出值捕获进通道会话）→ 出通道 outVar =
-//                   <channelClassPath>.ChannelOut<Kind>( entry )
-//                   （AtSignChannelOut* 经会话取值，环境三态路由栈赋值）。
+//  File:      AtSignLabelBlockDispatch.cs
+//  ------------------------------------------------
+//  DateTime: 2026/9/29
+//  Description: @<tag>(...){...} 内联块的 MetaCore 层解析器（统一 @ 处理第二步:
+//               代码段内的 @ 走 AtSignLabel 语义, 替代源码文本预改写器
+//               AtSignLabelSourceRewriter——Lexer raw 捕获整块为不透明
+//               AtSignBlock token → StructParse 透传为
+//               FileMetaAtSignBlockSyntax → 本类在 HandleMetaSyntax 消费,
+//               就地脱糖合成 FileMetaSyntax 节点平铺喂回语句链）
 //****************************************************************************
-
+using SimpleLanguage.Compile;
 using SimpleLanguage.Logging;
+
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Text.Json;
 
-namespace SimpleLanguage.Compile
+namespace SimpleLanguage.Core
 {
     /// <summary>单个 @<tag>(){} 内联块的登记产物（插件临时代码 + 通道元数据）。</summary>
     public class AtSignLabelBlock
@@ -71,7 +51,7 @@ namespace SimpleLanguage.Compile
     }
 
     /// <summary>
-    /// @<tag>(){} 块收集器：改写器登记块体生成的插件产物与通道元数据。
+    /// @<tag>(){} 块收集器：MetaCore 层解析器登记块体的插件产物与通道元数据。
     /// 导出阶段两条消费路径：SLModulePackageWriter 把全部块按 EntryIndex
     /// 导出为 module.json "atSignLabel"[] 条目表（CVM 装配期绑定）；
     /// AtSignLabelBuildManager 把 Source 非空的块按 Label 分发给对应
@@ -121,170 +101,64 @@ namespace SimpleLanguage.Compile
     }
 
     /// <summary>
-    /// 把 @<tag>(){} 内联块改写为等价的哨兵系统调用（Token 解析前执行，
-    /// Lexer~Meta 全管线零感知）。Front 只做"圈地 + 通道"：
-    /// 识别标签（插件清单声明的 plugin.id 命中即路由，见
-    /// PluginFrontendParser.FindPluginRootById）、配平小括号
-    /// 与大括号、原文截取参数表与块体、初判头尾区 &lt;- 通道行、转调插件
-    /// 解析器整编代码段（Front 零处理）、脱糖为
+    /// @<tag>(){} 内联块的 MetaCore 层解析器（HandleMetaSyntax 的
+    /// FileMetaAtSignBlockSyntax case 转调入口）。Front 只做"通道 + 插件转调"：
+    /// 标签路由（插件清单声明的 plugin.id 命中才接管, 未知标签报 20055）、
+    /// 头尾区 &lt;- 通道初判（双出通道 20056）、转调插件解析器整编代码段
+    /// （单 JSON 契约, Front 零处理）、登记块（导出期 atSignLabel[] 条目表），
+    /// 就地脱糖合成语句节点平铺喂回当前语句链（不再改写源码文本）:
     /// <code>
-    ///     <channelClassPath>.ChannelInInt( entryIndex, inVar1 )   # 每入通道一条（Kind 按类型标记）
-    ///     AtSignLabelCallVoid( entryIndex )                        # 块执行哨兵（零通道实参）
-    ///     outVar = <channelClassPath>.ChannelOutInt( entryIndex )  # 有出通道时（裸赋值）
+    ///     <channelClassPath>.ChannelIn<Kind>( entryIndex, inVar1 )   # 每入通道一条（Kind 按类型标记）
+    ///     AtSignLabelCallVoid( entryIndex )                           # 块执行哨兵（IRCall 拦截发射 CallAtSignLabel(124)）
+    ///     outVar = <channelClassPath>.ChannelOut<Kind>( entryIndex )  # 有出通道时（裸赋值, 未声明时 Meta 层自动定义）
     /// </code>
-    /// （出通道裸赋值：SL 变量未声明时 Meta 层按右侧表达式自动定义，
+    /// （出通道裸赋值：SL 变量未声明时 Meta 层按右侧表达式自动定义,
     /// 已声明则赋值；入通道类型标记必须显式——唯一合法形态
-    /// "&lt;类型&gt; target &lt;- $slVar"，var/缺省形态报 20055——Kind 白名单
+    /// "&lt;类型&gt; target &lt;- $slVar", var/缺省形态报 20055——Kind 白名单
     /// 分流：Int32/int→Int、Int64/long→Long、Single/float→Float、
     /// Double/double→Double、String/string→String、Boolean/bool→Boolean、
-    /// 其余（Object 与 SL 类名）→Object（对象编组：SL data/class 跨界
-    /// 映射成 C# class）；出通道 Kind
-    /// "string"→String，缺省/其他→Int；
-    /// 块执行出值不再经哨兵返回值，改经通道会话由 ChannelOut 取回）。
-    /// <code>
-    ///     @csharp_mono( 源=gpu )          # 小括号参数：语义由插件自决
-    ///     {
-    ///         Int32 a <- $a                  # 头区：入通道（Front 初判）
-    ///         Double b <- $b
-    ///         import SLCSharp;              # 代码段起始：插件 frontend 吸收提升
-    ///         var c = MathUtil.Add( a, b );  # 代码段：目标语言原文，Front 零处理
-    ///         $c <- c;                      # 尾区：出通道（Front 初判，返回值写回）
-    ///     }
-    /// </code>
-    /// 行号保持：多行块替换为单行脱糖语句后补齐原换行数（Lexer 的 '\r' 按
-    /// 空白处理，只补 '\n' 不产生脏 Token）。解析错误报 20055/20056/20057
-    /// 后整块原样透传（本错误在前更精确，符合"看最早 Error"）。
-    /// 类型边界：入通道类型标记语言无关原文传插件（atSignLabel[] 通道
-    /// slType，显式必填），SL data/class 名在导出期由 AtSignLabelBuildManager
-    /// 收集布局随构建请求下发（插件 frontend 生成镜像 C# class 合并编译进
-    /// 承载库，CVM 对象编组按镜像布局装配）；出通道类型标记
-    /// "slType $sl &lt;- expr" 的可选前缀决定
-    /// ChannelOut 变体（"string"→ChannelOutString，缺省/其他→ChannelOutInt）；
-    /// 运行期出值按通道会话捕获的 SLLabelValue 实际
-    /// 类型由 AtSignChannelOut* 侧管理机制路由栈赋值。
+    /// 其余（Object 与 SL 类名）→Object；出通道 Kind
+    /// "string"→String, 缺省/数值族→Int, 其余→Object）。
     /// </summary>
-    public static class AtSignLabelSourceRewriter
+    public static class AtSignLabelBlockDispatch
     {
         /// <summary>进程级缓存：标签名 -> 是否命中插件清单声明的 plugin.id
         /// （编译期插件目录内容不变；id 索引缓存见 PluginFrontendParser）。</summary>
         private static readonly Dictionary<string, bool> s_LabelCache = new Dictionary<string, bool>(StringComparer.Ordinal);
 
-        /// <summary>改写 m_ContentBuffer 中的全部 @<tag>(){} 块；无匹配时原 buffer 返回。</summary>
-        public static char[] Rewrite( char[] buffer, string filePath )
+        /// <summary>
+        /// 消费一个 @<tag>(...){...} 块语法：通道扫描 → 插件转调 → 块登记 →
+        /// 就地脱糖合成语句节点逐条喂回当前语句链（beforeStatements 平铺接入,
+        /// 与 static if 的子语句平铺同模式, 不引入作用域）。
+        /// 任何解析失败均只报错不喂语句（块降级丢弃, 已报的 LID 即本块错误）。
+        /// </summary>
+        public static void HandleDispatch( FileMetaAtSignBlockSyntax fms,
+            MetaBlockStatements currentBlockStatements, ref MetaStatements beforeStatements )
         {
-            string source = new string(buffer);
-            if (source.IndexOf('@') < 0)
-                return buffer;
+            if (fms == null)
+                return;
+            var fm = fms.fileMeta;
+            var mainToken = fms.atSignBlockToken;
+            if (fm == null || mainToken == null)
+                return;
+            string filePath = fm.path ?? "";
+            string label = fms.label ?? "";
+            int startLine = mainToken.sourceBeginLine;   // 1-based, '@' 标签行
+            int lbraceLine = fms.lbraceLine;             // 1-based, '{' 所在行
 
-            var sb = new StringBuilder(source.Length + 256);
-            int i = 0;
-            int len = source.Length;
-            int rewrites = 0;
-            while (i < len)
+            // ── 1. 标签路由：插件清单声明的 plugin.id 命中才接管 ──
+            //    （旧改写器对未命中标签原样透传走 Attribute 管线; 新链路 Lexer 已按
+            //     @<tag>(...){...} 形态整块捕获, 形态即语义, 未命中直接报 20055）
+            if (!IsPluginLabel(label, filePath))
             {
-                char c = source[i];
-                // 注释与字符串字面量：整段原样透传（内部不识别块）
-                if (c == '#' || c == '"' || c == '\'')
-                {
-                    int next = SkipCommentOrString(source, i);
-                    sb.Append(source, i, next - i);
-                    i = next;
-                    continue;
-                }
-                if (c == '@')
-                {
-                    // @ 后必须紧跟字母/下划线才构成标签（对齐 LexerParseToToken.ReadAt）
-                    int j = i + 1;
-                    if (j < len && (char.IsLetter(source[j]) || source[j] == '_'))
-                    {
-                        int nameStart = j;
-                        while (j < len && IsIdentChar(source[j]))
-                            j++;
-                        string attrName = source.Substring(nameStart, j - nameStart);
-                        if (IsPluginLabel(attrName, filePath))
-                        {
-                            var result = TryMatchBlock(source, i, j, attrName, filePath);
-                            if (result != null)
-                            {
-                                sb.Append(result.replacement);
-                                i = result.end;
-                                rewrites++;
-                                continue;
-                            }
-                        }
-                    }
-                    // 非插件标签或形态不匹配：'@' 原样透传
-                    sb.Append(c);
-                    i++;
-                    continue;
-                }
-                sb.Append(c);
-                i++;
+                Log.AddProcessLog(LID.ProcessAtSignLabelChannelSyntaxError,
+                    "@<" + label + ">(){} 块标签未命中任何插件清单声明的 plugin.id: '" + filePath + "' 行 " + startLine,
+                    filePath, startLine);
+                return;
             }
 
-            if (rewrites == 0)
-                return buffer;
-
-            Log.AddProcessLog(LID.ProcessAtSignLabelRewrittenBlocks,
-                "AtSignLabelSourceRewriter: '{0}' rewritten {1} @<tag>(){{}} block(s)", filePath, rewrites);
-            return sb.ToString().ToCharArray();
-        }
-
-        /// <summary>标签路由：插件清单声明的 plugin.id 命中即内联块标签
-        /// （转调 PluginFrontendParser.FindPluginRootById；缺 plugin.id 的
-        /// 清单退回目录名匹配。结果按标签名缓存）。</summary>
-        private static bool IsPluginLabel( string tag, string filePath )
-        {
-            if (s_LabelCache.TryGetValue(tag, out bool known))
-                return known;
-            bool exists = PluginFrontendParser.FindPluginRootById(tag, filePath) != null;
-            s_LabelCache[tag] = exists;
-            return exists;
-        }
-
-        private class MatchResult
-        {
-            public string replacement;
-            public int end;   // 替换覆盖区间 [atPos, end)
-        }
-
-        /// <summary>
-        /// 尝试匹配 atPos 处开始的完整块：@tag ( 参数 ) { ...块体... }。
-        /// 参数表与块体均原文截取；&lt;- 头尾通道由 Front 初判（ScanHeadTail），
-        /// 代码段（首个非 &lt;- 行起到末行前）原文随请求下发给插件前端
-        /// 解析器（PluginFrontendParser 单 JSON 契约），Front 零处理；
-        /// 入通道 var/缺省形态、插件业务错误报 20055，双出通道报 20056。
-        /// 基础设施失败由解析器宿主报 20057。任何失败均返回 null（整块透传）。
-        /// </summary>
-        private static MatchResult TryMatchBlock( string s, int atPos, int pos, string label, string filePath )
-        {
-            // ── 参数表 ( ... )：原文截取（形态语义在插件侧）──
-            int p = SkipSpaceAndComments(s, pos);
-            if (p >= s.Length || s[p] != '(')
-                return null;
-            int close = FindCloseParen(s, p);
-            if (close < 0)
-                return null;   // 参数表未闭合：不接管，交由后续阶段报错
-            string paramsText = s.Substring(p + 1, close - p - 1);
-            p = close + 1;
-
-            // ── 块体 { ... }（花括号配平，跳字符串/注释）──
-            int lbrace = SkipSpaceAndComments(s, p);
-            if (lbrace >= s.Length || s[lbrace] != '{')
-                return null;
-            int bodyEnd = SkipBracedBlock(s, lbrace);
-            if (bodyEnd < 0)
-                return null;   // 花括号未闭合：不接管，交由后续阶段报错
-            string bodyText = s.Substring(lbrace + 1, bodyEnd - 1 - (lbrace + 1));
-
-            int startLine = 1 + CountNewlines(s, 0, atPos);
-            // 块体行号基准 = '{' 所在行：bodyText 从 '{' 之后截取，其 Split('\n')
-            // 段 0 即 '{' 行的行尾残余，故 body 0-based 段 i 换算为文件行时用
-            // lbraceLine + i（'@' 标签与 '{' 分行时二者相差 1 行）。
-            int lbraceLine = 1 + CountNewlines(s, 0, lbrace);
-
-            // ── 头尾区初判（<- 通道铁律归 Front；双出通道直接报 20056）──
-            var scan = ScanHeadTail(bodyText);
+            // ── 2. 头尾区初判（<- 通道铁律归 Front；双出通道直接报 20056）──
+            var scan = ScanHeadTail(fms.bodyText);
             if (scan.OutDupBodyLine >= 0)
             {
                 int errLine = lbraceLine + scan.OutDupBodyLine;
@@ -292,7 +166,7 @@ namespace SimpleLanguage.Compile
                     "@<" + label + ">(){} 块出通道变量首期仅支持 1 个: '" + filePath + "' 行 " + errLine
                         + " ($" + scan.OutSlVar + " 与 $" + scan.OutDupSlVar + " 冲突)",
                     filePath, errLine);
-                return null;
+                return;
             }
             if (scan.InErrorBodyLine >= 0)
             {
@@ -301,17 +175,17 @@ namespace SimpleLanguage.Compile
                 Log.AddProcessLog(LID.ProcessAtSignLabelChannelSyntaxError,
                     "@<" + label + ">(){} 块入通道语法错误: '" + filePath + "' 行 " + errLine + ": " + scan.InErrorText,
                     filePath, errLine, scan.InErrorText);
-                return null;
+                return;
             }
 
-            // ── 先占 Entry_N（解析失败编号跳空无害，仅要求唯一），构造请求并转调插件 ──
+            // ── 3. 先占 Entry_N（解析失败编号跳空无害，仅要求唯一），构造请求并转调插件 ──
             string entryName = AtSignLabelBlockCollector.AllocateEntryName();
             var request = new PluginLabelRequest
             {
                 Label = label,
                 EntryName = entryName,
-                ParamsText = paramsText,
-                BodyText = bodyText,
+                ParamsText = fms.paramsText,
+                BodyText = fms.bodyText,
                 HeadLineCount = scan.HeadLineCount,
                 TailLineCount = scan.TailLineCount,
                 InChannels = new List<PluginLabelChannel>(scan.InChannels.Count),
@@ -335,19 +209,19 @@ namespace SimpleLanguage.Compile
             }
             var parse = PluginFrontendParser.Parse(label, filePath, JsonSerializer.Serialize(request));
             if (parse == null)
-                return null;   // 基础设施失败：已报 LID 20057，整块透传降级
+                return;   // 基础设施失败：已报 LID 20057，块降级丢弃
 
-            // ── 业务错误分流（插件侧参数/块体整合）──
+            // ── 4. 业务错误分流（插件侧参数/块体整合）──
             if (!parse.Ok || !string.IsNullOrEmpty(parse.Error))
             {
                 int errLine = parse.ErrorLine > 0 ? lbraceLine + parse.ErrorLine - 1 : startLine;
                 Log.AddProcessLog(LID.ProcessAtSignLabelChannelSyntaxError,
                     "@<" + label + ">(){} 块解析错误: '" + filePath + "' 行 " + errLine + ": " + parse.Error,
                     filePath, errLine, parse.Error);
-                return null;
+                return;
             }
 
-            // ── 登记块（条目名已预分配）并回填插件产物 ──
+            // ── 5. 登记块（条目名已预分配）并回填插件产物 ──
             var block = AtSignLabelBlockCollector.Add(filePath, startLine, label, entryName);
             block.Source = parse.Source ?? string.Empty;
             block.DllName = parse.Dll ?? string.Empty;
@@ -358,11 +232,7 @@ namespace SimpleLanguage.Compile
             block.OutType = scan.OutType;
             block.LabelParams = parse.LabelParams;
 
-            // ── 脱糖 SL 语句序列（通道独立原语三段式；<- 赋值不再写死进
-            //    opcode 124：入/出通道按 plugin.jsonc refModule.channelClassPath
-            //    类路径调通道包装函数（函数体在插件 refModule，内部转调 Core 域
-            //    AtSignChannelIn/Out 系统方法，CVM 通道会话路由栈赋值），
-            //    块执行只留 AtSignLabelCallVoid 哨兵（零通道实参））──
+            // ── 6. 通道原语宿主类路径（plugin.jsonc refModule.channelClassPath）──
             string channelClass = PluginFrontendParser.GetChannelClassPath(label, filePath);
             if (channelClass == null && (scan.InChannels.Count > 0 || scan.OutSlVar != null))
             {
@@ -370,36 +240,71 @@ namespace SimpleLanguage.Compile
                     "@<" + label + ">(){} 块通道原语缺 channelClassPath: '" + filePath + "' 行 " + startLine
                         + "（plugin.jsonc refModule.channelClassPath 未配置：通道包装函数宿主类全名）",
                     filePath, startLine);
-                return null;
+                return;
             }
-            var stmts = new List<string>();
+
+            // ── 7. 就地脱糖合成语句节点，逐条平铺喂回当前语句链 ──
+            //    （合成 token 行号统一用块主 token 位置: Token ctor 收 0-based 行
+            //     故 sourceBeginLine-1 还原, 诊断指向 '@' 块头行）
+            int line = mainToken.sourceBeginLine - 1;
+            int pos = mainToken.sourceBeginChar;
+
+            // 入通道: <channelClass>.ChannelIn<Kind>( entryIndex, slVar )
             foreach (var ch in scan.InChannels)
             {
-                stmts.Add(channelClass + ".ChannelIn" + MapChannelInKind(ch.Length > 2 ? ch[2] : null)
-                    + "( " + block.EntryIndex.ToString() + ", " + ch[1] + " )");
+                var argsPar = new Node(new Token(filePath, ETokenType.LeftPar, "(", line, pos)) { nodeType = ENodeType.Par };
+                argsPar.endToken = new Token(filePath, ETokenType.RightPar, ")", line, pos);
+                argsPar.AddChild(MakeNumberConstNode(filePath, line, pos, block.EntryIndex));
+                argsPar.AddChild(new Node(new Token(filePath, ETokenType.Comma, ",", line, pos)) { nodeType = ENodeType.Comma });
+                argsPar.AddChild(MakeIdentLinkNode(filePath, line, pos, ch[1]));
+                var callNode = BuildChannelCallChain(filePath, channelClass,
+                    "ChannelIn" + MapChannelInKind(ch.Length > 2 ? ch[2] : null), argsPar, line, pos);
+                MetaMemberFunction.HandleMetaSyntax(currentBlockStatements, ref beforeStatements,
+                    new FileMetaCallSyntax(new FileMetaCallLink(fm, callNode, true)));
             }
-            stmts.Add("AtSignLabelCallVoid( " + block.EntryIndex.ToString() + " )");
+
+            // 块执行哨兵: AtSignLabelCallVoid( entryIndex )
+            {
+                var argsPar = new Node(new Token(filePath, ETokenType.LeftPar, "(", line, pos)) { nodeType = ENodeType.Par };
+                argsPar.endToken = new Token(filePath, ETokenType.RightPar, ")", line, pos);
+                argsPar.AddChild(MakeNumberConstNode(filePath, line, pos, block.EntryIndex));
+                var callNode = MakeIdentLinkNode(filePath, line, pos, "AtSignLabelCallVoid");
+                callNode.SetParNode(argsPar);
+                MetaMemberFunction.HandleMetaSyntax(currentBlockStatements, ref beforeStatements,
+                    new FileMetaCallSyntax(new FileMetaCallLink(fm, callNode, true)));
+            }
+
+            // 出通道: outVar = <channelClass>.ChannelOut<Kind>( entryIndex )（裸赋值, 未声明时自动定义）
             if (scan.OutSlVar != null)
             {
-                stmts.Add(scan.OutSlVar + " = " + channelClass + ".ChannelOut"
-                    + MapChannelOutKind(scan.OutType) + "( " + block.EntryIndex.ToString() + " )");
+                var argsPar = new Node(new Token(filePath, ETokenType.LeftPar, "(", line, pos)) { nodeType = ENodeType.Par };
+                argsPar.endToken = new Token(filePath, ETokenType.RightPar, ")", line, pos);
+                argsPar.AddChild(MakeNumberConstNode(filePath, line, pos, block.EntryIndex));
+                var callRoot = BuildChannelCallChain(filePath, channelClass,
+                    "ChannelOut" + MapChannelOutKind(scan.OutType), argsPar, line, pos);
+                var fme = FileMetatUtil.CreateFileMetaExpress(fm, new List<Node> { callRoot },
+                    FileMetaTermExpress.EExpressType.Common);
+                if (fme != null)
+                {
+                    var leftNode = MakeIdentLinkNode(filePath, line, pos, scan.OutSlVar);
+                    var assignToken = new Token(filePath, ETokenType.Assign, "=", line, pos);
+                    MetaMemberFunction.HandleMetaSyntax(currentBlockStatements, ref beforeStatements,
+                        new FileMetaOpAssignSyntax(new FileMetaCallLink(fm, leftNode, true),
+                            assignToken, null, null, null, null, fme, true));
+                }
             }
+        }
 
-            // ── 行号保持：语句间 '\n' 已计内，末尾补齐原块换行数差额
-            //    （'\r' 在 Lexer 按空白处理；语句数超过原换行数的单行块
-            //    极端场景允许后续行号微偏，功能不受影响） ──
-            var call = new StringBuilder();
-            for (int k = 0; k < stmts.Count; k++)
-            {
-                if (k > 0)
-                    call.Append('\n');
-                call.Append(stmts[k]);
-            }
-            int newlines = CountNewlines(s, atPos, bodyEnd);
-            for (int k = stmts.Count - 1; k < newlines; k++)
-                call.Append('\n');
-
-            return new MatchResult { replacement = call.ToString(), end = bodyEnd };
+        /// <summary>标签路由：插件清单声明的 plugin.id 命中即内联块标签
+        /// （转调 PluginFrontendParser.FindPluginRootById；缺 plugin.id 的
+        /// 清单退回目录名匹配。结果按标签名缓存）。</summary>
+        private static bool IsPluginLabel( string tag, string filePath )
+        {
+            if (s_LabelCache.TryGetValue(tag, out bool known))
+                return known;
+            bool exists = PluginFrontendParser.FindPluginRootById(tag, filePath) != null;
+            s_LabelCache[tag] = exists;
+            return exists;
         }
 
         // ------------------------------------------------------------------
@@ -445,7 +350,7 @@ namespace SimpleLanguage.Compile
             string[] lines = scan.Lines;
 
             // 头区：连续消费空白行与入通道行（遇首个非入通道实质行停止；
-            // 疑似通道行形态非法（var/缺省/多段）记 InError，由 TryMatchBlock 统一拒收）
+            // 疑似通道行形态非法（var/缺省/多段）记 InError，由 HandleDispatch 统一拒收）
             int i = 0;
             while (i < lines.Length)
             {
@@ -500,7 +405,7 @@ namespace SimpleLanguage.Compile
         ///（2 段显式类型标记；slType = C# 已定义类型名或 SL 类名，var 与
         /// 缺省形态已禁用）。右值非 $ 前缀 → 非通道行（代码段原文，null
         /// 无错）；$ 后非标识符 → 同样按非通道行透传。形态非法（1 段缺类型
-        /// 标记 / 首段 var / 非 2 段）→ null + error（TryMatchBlock 统一
+        /// 标记 / 首段 var / 非 2 段）→ null + error（HandleDispatch 统一
         /// 报 20055 拒收整块）。匹配返回 [target(插件形参), slVar(SL
         /// 变量), slType(类型标记，恒非 null)]。</summary>
         private static string[] TryMatchInChannelLine( string line, out string error )
@@ -659,194 +564,56 @@ namespace SimpleLanguage.Compile
             return true;
         }
 
-        // ------------------------------------------------------------------
-        // 圈地工具（SL 词法；块体中段整编在插件 frontendLibs）
-        // ------------------------------------------------------------------
-
-        /// <summary>从 s[p]（为 '('）起找参数表结束 ')'（首个，跳 SL 注释/字符串）；未找到返回 -1。</summary>
-        private static int FindCloseParen( string s, int p )
-        {
-            int i = p + 1;
-            while (i < s.Length)
-            {
-                char c = s[i];
-                if (c == '#' || c == '"' || c == '\'')
-                {
-                    i = SkipCommentOrString(s, i);
-                    continue;
-                }
-                if (c == ')')
-                    return i;
-                i++;
-            }
-            return -1;
-        }
-
-        /// <summary>统计 [begin, end) 内 '\n' 个数（行号保持用）。</summary>
-        private static int CountNewlines( string s, int begin, int end )
-        {
-            int count = 0;
-            for (int i = begin; i < end; i++)
-            {
-                if (s[i] == '\n')
-                    count++;
-            }
-            return count;
-        }
-
-        /// <summary>从 s[lbrace]（为 '{'）开始扫描平衡花括号块（跳过字符串/注释），返回右花括号后一位置；未闭合返回 -1。</summary>
-        private static int SkipBracedBlock( string s, int lbrace )
-        {
-            int depth = 0;
-            int i = lbrace;
-            while (i < s.Length)
-            {
-                char c = s[i];
-                if (c == '#' || c == '"' || c == '\'')
-                {
-                    i = SkipCommentOrString(s, i);
-                    continue;
-                }
-                if (c == '{')
-                {
-                    depth++;
-                }
-                else if (c == '}')
-                {
-                    depth--;
-                    if (depth == 0)
-                        return i + 1;
-                }
-                i++;
-            }
-            return -1;
-        }
-
-        /// <summary>
-        /// 跳过 i 处开始的注释或字符串字面量，返回结束位置（不含）。
-        /// 注释/字符串词法对齐 LexerParseToToken：
-        /// '#' 行注释到 '\n'；'#'+! ... '!'+# 块注释（'#' 数匹配，可嵌套计级）；
-        /// '"' 双引号串（'\\' 转义）；'"""' 三引号 f-string；'\'' 原始串（仅 '\'' 转义）。
-        /// </summary>
-        private static int SkipCommentOrString( string s, int i )
-        {
-            char c = s[i];
-            if (c == '#')
-            {
-                int j = i + 1;
-                int nsharp = 1;
-                while (j < s.Length && s[j] == '#')
-                {
-                    nsharp++;
-                    j++;
-                }
-                if (j < s.Length && s[j] == '!')
-                {
-                    // 块注释：闭合标记 '!' + nsharp 个 '#'
-                    int k = j + 1;
-                    while (k < s.Length)
-                    {
-                        if (s[k] == '!')
-                        {
-                            int m = k + 1;
-                            int cnt = 0;
-                            while (m < s.Length && s[m] == '#' && cnt < nsharp)
-                            {
-                                cnt++;
-                                m++;
-                            }
-                            if (cnt == nsharp)
-                                return m;
-                            k++;
-                        }
-                        else
-                        {
-                            k++;
-                        }
-                    }
-                    return s.Length;   // 未闭合：按 Lexer 行为跳到文件尾
-                }
-                // 行注释到 '\n'（不含换行）
-                j = i + 1;
-                while (j < s.Length && s[j] != '\n')
-                    j++;
-                return j;
-            }
-            if (c == '"')
-            {
-                // f""" 三引号字符串
-                if (i + 2 < s.Length && s[i + 1] == '"' && s[i + 2] == '"')
-                {
-                    int j = i + 3;
-                    while (j < s.Length)
-                    {
-                        if (s[j] == '"' && j + 2 < s.Length && s[j + 1] == '"' && s[j + 2] == '"')
-                            return j + 3;
-                        j++;
-                    }
-                    return s.Length;
-                }
-                // 普通字符串：'\\' 转义；跨行未闭合按 Lexer 容错停行尾
-                int k = i + 1;
-                while (k < s.Length)
-                {
-                    if (s[k] == '\\')
-                    {
-                        k += 2;
-                        continue;
-                    }
-                    if (s[k] == '"')
-                        return k + 1;
-                    if (s[k] == '\n')
-                        return k;
-                    k++;
-                }
-                return s.Length;
-            }
-            if (c == '\'')
-            {
-                // 原始字符串：仅 '\'' 转义
-                int k = i + 1;
-                while (k < s.Length)
-                {
-                    if (s[k] == '\\')
-                    {
-                        k += 2;
-                        continue;
-                    }
-                    if (s[k] == '\'')
-                        return k + 1;
-                    k++;
-                }
-                return s.Length;
-            }
-            return i + 1;
-        }
-
-        /// <summary>跳过空白与注释，返回下一个有效字符位置。</summary>
-        private static int SkipSpaceAndComments( string s, int i )
-        {
-            while (i < s.Length)
-            {
-                char c = s[i];
-                if (c == ' ' || c == '\t' || c == '\r' || c == '\n')
-                {
-                    i++;
-                    continue;
-                }
-                if (c == '#')
-                {
-                    i = SkipCommentOrString(s, i);
-                    continue;
-                }
-                return i;
-            }
-            return i;
-        }
-
         private static bool IsIdentChar( char c )
         {
             return char.IsLetterOrDigit(c) || c == '_';
+        }
+
+        // ------------------------------------------------------------------
+        // 脱糖节点合成工具（节点构造同 DllImportFunctionDispatch 程序化先例;
+        // 链头 SetIdentifierNode 必须先设置, 否则 AddLinkNode 静默失效;
+        // 单节点链无需 SetIdentifierNode）
+        // ------------------------------------------------------------------
+
+        /// <summary>合成 <paramref name="channelClass"/>.<paramref name="methodName"/>(args)
+        /// 完整调用链根节点（channelClass 可含 '.' 多级命名空间; 单段类名走同一
+        /// 算法——循环不执行, 链头直接挂尾方法）。</summary>
+        private static Node BuildChannelCallChain( string path, string channelClass, string methodName,
+            Node argsPar, int line, int pos )
+        {
+            // 尾方法节点: methodName( args )
+            var methodNode = MakeIdentLinkNode(path, line, pos, methodName);
+            methodNode.SetParNode(argsPar);
+            // 类路径链: seg0.seg1....segN.methodName
+            string[] segs = channelClass.Split('.');
+            var root = MakeIdentLinkNode(path, line, pos, segs[0]);
+            root.SetIdentifierNode(root);
+            for (int i = 1; i < segs.Length; i++)
+            {
+                root.AddLinkNode(MakePeriodNode(path, line, pos));
+                root.AddLinkNode(MakeIdentLinkNode(path, line, pos, segs[i]));
+            }
+            root.AddLinkNode(MakePeriodNode(path, line, pos));
+            root.AddLinkNode(methodNode);
+            return root;
+        }
+
+        /// <summary>合成 int 数值常量节点（token 形态对齐 Lexer 的 Number 产出:
+        /// lexeme = int 值、extend = EType.Int32）。</summary>
+        private static Node MakeNumberConstNode( string path, int line, int pos, int value )
+        {
+            var numToken = new Token(path, ETokenType.Number, value, line, pos, EType.Int32);
+            return new Node(numToken) { nodeType = ENodeType.ConstValue };
+        }
+
+        private static Node MakeIdentLinkNode( string path, int line, int pos, string name )
+        {
+            return new Node(new Token(path, ETokenType.Identifier, name, line, pos)) { nodeType = ENodeType.IdentifierLink };
+        }
+
+        private static Node MakePeriodNode( string path, int line, int pos )
+        {
+            return new Node(new Token(path, ETokenType.Period, ".", line, pos)) { nodeType = ENodeType.Period };
         }
     }
 }

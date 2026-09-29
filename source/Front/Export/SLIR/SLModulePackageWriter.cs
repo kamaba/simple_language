@@ -881,7 +881,7 @@ namespace SimpleLanguage.Export.SLIR
             // entryIndex 寻址；CVM 装配期绑定到插件 labelExec capability 统一收发，
             // 通道 slType = 入/出通道行类型标记原文（语言无关，可空；空 = 运行期
             // 按栈槽 kind 编组，非空供插件/文档侧识别声明意图）。
-            foreach( var block in SimpleLanguage.Compile.AtSignLabelBlockCollector.Blocks )
+            foreach( var block in SimpleLanguage.Core.AtSignLabelBlockCollector.Blocks )
             {
                 var entryPkg = new SLAtSignLabelEntryPackage
                 {
