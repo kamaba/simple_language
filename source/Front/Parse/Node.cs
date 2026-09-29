@@ -419,23 +419,5 @@ namespace SimpleLanguage.Compile
             }
             return sb.ToString();
         }
-        //public void SetParList( List<Node> nodes )
-        //{
-        //    if( nodes.Count == 1 )
-        //    {
-        //        if( nodes[0].nodeType == ENodeType.Par )
-        //        {
-        //            parNode = nodes[0];
-        //            return;
-        //        }
-        //    }
-        //    if (parNode == null)
-        //        parNode = new Node(null);
-        //    parNode.childList = nodes;
-        //}
-        //public void SetPar( Node node )
-        //{
-        //    parNode = node;
-        //}
     }
 }

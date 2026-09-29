@@ -14,7 +14,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
-using System.Text.RegularExpressions;
 
 namespace SimpleLanguage.Project
 {

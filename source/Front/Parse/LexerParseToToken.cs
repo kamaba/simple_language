@@ -2578,21 +2578,13 @@ namespace SimpleLanguage.Compile
         }
         public void DumpTokensToFile()
         {
+            if (!Common.ShouldExportDebugText("Token.txt")) return;
             string outFile = "";
             try
             {
-                if (!Common.ShouldExportDebugText("Token.txt")) return;
                 if (string.IsNullOrEmpty(m_Path)) return;
 
-                // 浣跨敤褰撳墠杩愯鐩綍锛屽垱寤?DebugCode 鐩綍锛岀劧鍚庡湪鍏朵笅浠?m_Path 鍘绘帀鍚庣紑鐨勫悕瀛楀缓瀛愮洰褰曪紝鏈€鍚庡湪璇ョ洰褰曚笅鍐?Token.txt
-                // 渚嬪: <杩愯鐩綍>/DebugCode/<m_Path鏃犲悗缂€>/Token.txt
-
                 outFile = Common.GetDebugCodeFilePath(m_Path, "Token.txt");
-
-                //if (File.Exists(outFile))
-                //{
-                //    File.Delete(outFile);
-                //}
 
                 using (var sw = new StreamWriter(outFile, false))
                 {

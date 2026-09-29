@@ -10,8 +10,6 @@ using SimpleLanguage.Compile;
 using SimpleLanguage.Core;
 using SimpleLanguage.IR;
 using SimpleLanguage.Logging;
-using SimpleLanguage.Project;
-using SimpleLanguage.Export;
 using SimpleLanguage.ExportLanguage;
 using CompileProcess = SimpleLanguage.Compile.Process;
 using System;

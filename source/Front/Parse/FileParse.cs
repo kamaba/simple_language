@@ -107,9 +107,8 @@ namespace SimpleLanguage.Compile
 
                 m_LexerParse = new LexerParse( m_FilePath, m_ContentBuffer );
                 m_LexerParse.ParseToTokenList();
-#if DEBUG
                 m_LexerParse.DumpTokensToFile();
-#endif
+
             }
             catch (Exception e)
             {

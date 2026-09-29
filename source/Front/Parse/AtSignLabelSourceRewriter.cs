@@ -381,9 +381,8 @@ namespace SimpleLanguage.Compile
             stmts.Add("AtSignLabelCallVoid( " + block.EntryIndex.ToString() + " )");
             if (scan.OutSlVar != null)
             {
-                bool isString = scan.OutType == "string";
                 stmts.Add(scan.OutSlVar + " = " + channelClass + ".ChannelOut"
-                    + (isString ? "String" : "Int") + "( " + block.EntryIndex.ToString() + " )");
+                    + MapChannelOutKind(scan.OutType) + "( " + block.EntryIndex.ToString() + " )");
             }
 
             // ── 行号保持：语句间 '\n' 已计内，末尾补齐原块换行数差额
@@ -420,7 +419,8 @@ namespace SimpleLanguage.Compile
             /// <summary>出通道目标语言侧表达式原文。</summary>
             public string OutExpr;
             /// <summary>出通道 SL 侧类型标记（"string $c &lt;- expr" 的 string；
-            /// null = 缺省，脱糖选 Int 变体；"string" 选 String 变体）。</summary>
+            /// null = 缺省，脱糖选 Int 变体；"string" 选 String 变体；
+            /// "object"/SL 类名选 Object 变体（P4 OBJECT 树镜像））。</summary>
             public string OutType;
             /// <summary>双出通道：后遇到的出通道行（body 0-based；-1 = 无）。</summary>
             public int OutDupBodyLine = -1;
@@ -573,10 +573,35 @@ namespace SimpleLanguage.Compile
             }
         }
 
+        /// <summary>出通道类型标记 → 通道包装 Kind 后缀（Int/String/Object
+        /// 三态；决定脱糖调用 ChannelOut&lt;Kind&gt; 变体与 CVM 侧会话值
+        /// 读取）。缺省与数值族 → Int（既有行为：会话值按整型读）；
+        /// String 族 → String；Object/object 与 SL 类名 → Object
+        ///（P4 OBJECT 树镜像：会话值是 CVM 写方向构造的 SL 对象，
+        /// slType 已过插件侧出通道白名单校验，此处不重复拦截）。</summary>
+        private static string MapChannelOutKind( string slType )
+        {
+            switch (slType)
+            {
+                case "String": case "string":
+                    return "String";
+                case null:
+                case "":
+                case "Int32": case "int": case "int32": case "i32":
+                case "Int64": case "long": case "int64": case "i64":
+                case "Single": case "float": case "float32": case "f32":
+                case "Double": case "double": case "float64": case "f64":
+                    return "Int";
+                default:
+                    return "Object";   // Object/object 与 SL 类名
+            }
+        }
+
         /// <summary>出通道行匹配：[slType] $sl &lt;- expr [;]（expr 非空且不以 $
         /// 开头，防误吞入通道形态；slType 为可选类型前缀标识符，与入通道
         /// "var string s &lt;- $x" 的 slType 对称："string" 脱糖选
-        /// ChannelOutString 变体，缺省/其他选 ChannelOutInt）。匹配返回
+        /// ChannelOutString 变体，"object"/SL 类名选 ChannelOutObject，
+        /// 缺省/数值族选 ChannelOutInt）。匹配返回
         /// [slVar(SL 写回目标), expr, slType(类型标记，可 null)]，否则 null。</summary>
         private static string[] TryMatchOutChannelLine( string line )
         {

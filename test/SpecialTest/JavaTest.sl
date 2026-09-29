@@ -9,13 +9,15 @@ import Core;
 # + SLLabelBuilder javac 合并编译部署 classes 目录树）→ CVM 经模块
 # atSignLabel[] 绑定懒 resolve 到 sl_java_hotspot labelExec →
 # jvm_bridge_run_entry（URLClassLoader 挂 classes → loadClass("SLAtSign.Entry_N")
-# → GetStaticMethodID 按完整方法规格 → CallStatic*MethodA）→ 出通道四态
-# （V/J/D/String）编组回推。
+# → GetStaticMethodID 按完整方法规格 → CallStatic*MethodA）→ 出通道五态
+# （V/J/D/String/OBJECT 树镜像）编组回推。
 #
-# P0 通道白名单（MapJavaType，§5.5）：整型族 → long（JNI J，int64 全域
+# 通道类型路由（MapJavaType，§5.5）：整型族 → long（JNI J，int64 全域
 # 无窄化）、浮点族 → double（D）、String 族 → String（Ljava/lang/String;）；
-# Boolean/Object/SL 类名首期拒收。entryMethod 完整方法规格由 Parse 期
-# 下发（如 "run:(JD)Ljava/lang/String;"），C 侧零拼接（§12.7）。
+# Boolean 拒收；P4 起放行 Object/SL 类名 → sl.SLLabelValue 树镜像
+# （Lsl/SLLabelValue;，读写双向递归，深度上限 32 同步）。entryMethod
+# 完整方法规格由 Parse 期下发（如 "run:(JD)Ljava/lang/String;"），C 侧
+# 零拼接（§12.7）。
 #
 # 四用法覆盖（§8）：① 无通道纯块 ② 出通道 Int ③ 入+出通道 String
 # ④ 块内 throw 上抛 SL 异常 try-catch 捕获；附加：int64 全域往返（无窄化
@@ -25,6 +27,13 @@ import Core;
 # kind=notFound Info 跳过（块运行期报错码），本用例按需在装机后执行。
 # 注意：本文件 SL 层禁用行内注释（Lexer 单行 # 注释会吞换行，导致成员丢失）。
 # ============================================================================
+
+# OBJECT 树镜像往返载体（P4，§5.5 OBJECT 行）：普通 SL 类，两 int 字段
+class JavaPoint
+{
+    int x = 0
+    int y = 0
+}
 
 class JavaTest
 {
@@ -209,6 +218,30 @@ class JavaTest
         check( "session reuse: block2 in+out echo == 42 (cache hit)", b == 42 )
     }
 
+    # ---------------- ⑤ OBJECT 树镜像往返（P4，§5.5 OBJECT 行） ----------------
+    # 入通道 SL 类名标记（JavaPoint pv <- $p）→ sl_atsign_marshal_object
+    # 递归编组 SLLabelObject 树 → JNI 形参 sl.SLLabelValue（fieldByName/asLong
+    # 读取）；出通道 sl.SLLabelValue.ofObject 构造树 → C 侧按树重建 JavaPoint
+    # 实例（同名同型字段逐个回填）压 $q；深度上限 32 双向对称。
+    static testObjectTree()
+    {
+        Console.println( "===== JavaTest.testObjectTree =====" )
+        JavaPoint p = JavaPoint()
+        p.x = 3
+        p.y = 4
+        JavaPoint q = JavaPoint()
+        @java_hotspot()
+        {
+            JavaPoint pv <- $p
+            long sx = pv.fieldByName( "x" ).asLong();
+            long sy = pv.fieldByName( "y" ).asLong();
+            JavaPoint $q <- sl.SLLabelValue.ofObject( "JavaPoint", new String[]{ "x", "y" }, new sl.SLLabelValue[]{ sl.SLLabelValue.ofInt( sx + sy ), sl.SLLabelValue.ofInt( sx * sy ) } );
+        }
+        Console.println( "objectTree: q.x = " + q.x.toString() + " q.y = " + q.y.toString() )
+        check( "object tree: rebuilt q.x == 7 (3+4)", q.x == 7 )
+        check( "object tree: rebuilt q.y == 12 (3*4)", q.y == 12 )
+    }
+
     static fun()
     {
         Console.println( "========== JavaTest start ==========" )
@@ -220,6 +253,7 @@ class JavaTest
         testMixedChannels()
         testThrow()
         testSessionReuse()
+        testObjectTree()
         Console.println( "========== JavaTest end: passed=" + passed.toString() + " failed=" + failed.toString() + " ==========" )
     }
 }

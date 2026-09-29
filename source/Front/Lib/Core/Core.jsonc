@@ -140,6 +140,7 @@
     { "name": "AtSignChannelIn",        "returnType": "void",   "params": ["Int32"], "isVariadic": true,  "cvmFunction": "sl_atsign_channel_in" },
     { "name": "AtSignChannelOutInt",    "returnType": "Int32",  "params": ["Int32"], "isVariadic": false, "cvmFunction": "sl_atsign_channel_out_int" },
     { "name": "AtSignChannelOutString", "returnType": "String", "params": ["Int32"], "isVariadic": false, "cvmFunction": "sl_atsign_channel_out_string" },
+    { "name": "AtSignChannelOutObject", "returnType": "object", "params": ["Int32"], "isVariadic": false, "cvmFunction": "sl_atsign_channel_out_object" },
 
     // ---- Bridge calls ----
     { "name": "SystemCallCLRMethod",    "returnType": "object", "params": ["object"], "isVariadic": true, "cvmFunction": "vm_sys_call_clr_method" },

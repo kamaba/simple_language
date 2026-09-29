@@ -227,8 +227,6 @@ namespace SimpleLanguage
         Extends,
         /// <summary> bind </summary>
         Bind,
-        /// <summary> virtual </summary>
-        //Virtual,
         /// <summary> override </summary>
         Override,
         /// <summary> const </summary>
