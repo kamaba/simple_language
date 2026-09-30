@@ -945,10 +945,11 @@ namespace SimpleLanguage.Core
                     }
                     CreateMetaSyntax(m_FileMetaMemberFunction.fileMetaBlockSyntax, m_MetaBlockStatements);
 
-                    // @DllImport 函数式分派注入（统一 @ 处理: attribute 在 MetaCore 层消费,
-                    // 链头 if 分派 + 原体原位保留为 fallback; 必须在 CreateMetaSyntax 之后、
-                    // CheckAllPathsReturn 之前注入, 隐藏字段 IR 由 IR 相位统一收集）
-                    DllImportFunctionDispatch.TryInject(this);
+                    // @attribute 函数级注入统一分派（AttributeManager.MemberFunctionInject
+                    // 挂点: 当前无注册项; 旧 DllImport 链头 if 分派注入已退役——DllImport 为
+                    // 运行时 attribute, 数据随 module.json 导出、cvm 装配期绑定, 函数体原位保留为 fallback;
+                    // 必须在 CreateMetaSyntax 之后、CheckAllPathsReturn 之前注入, 隐藏字段 IR 由 IR 相位统一收集）
+                    AttributeManager.ProcessMemberFunctionAttributes(this);
                 }
                 else
                 {

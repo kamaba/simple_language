@@ -100,6 +100,11 @@
       "commandLineArgs": "AtSignLabel",
       "nativeDebugging": true
     },
+    "MyTest": {
+      "commandName": "Project",
+      "commandLineArgs": "MyTest",
+      "nativeDebugging": true
+    },
     "GameTank": {
       "commandName": "Project",
       "commandLineArgs": "GameTank",

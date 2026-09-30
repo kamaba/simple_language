@@ -131,6 +131,7 @@ namespace SimpleLanguage.Core
                     return 0; // Compile
                 case "Condition":
                 case "Route":
+                case "DllImport":
                     return 1; // Runtime
                 default:
                     return 0; // 默认 Compile

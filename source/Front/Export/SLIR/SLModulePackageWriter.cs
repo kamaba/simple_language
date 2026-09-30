@@ -795,6 +795,24 @@ namespace SimpleLanguage.Export.SLIR
                 if (m.bindMetaFunction is MetaMemberFunction mmf)
                 {
                     ExportAttributes(mp.attributeList, mmf.attributeList);
+                    // DllImport（运行时 attribute）sig 补全：cvm 装配期（run 前）完成
+                    // native 绑定的签名依据。attribute 第 3 实参可手写 sig（args.Count==3
+                    // 时不覆盖）；缺省时从函数签名推导（形参 defineMetaType + 返回类型），
+                    // 含无法映射的类型（如 Ptr）时推导失败、不追加——cvm 侧按绑定失败
+                    // 回退 SL 函数体 fallback。
+                    if (mp.attributeList != null)
+                    {
+                        foreach (var ap in mp.attributeList)
+                        {
+                            if (ap != null && ap.name == "DllImport" && ap.args != null
+                                && ap.args.Count >= 2 && ap.args.Count < 3)
+                            {
+                                var sig = Core.MetaDefineVarStatements.BuildFFIFunctionSigFromMetaFunction(mmf);
+                                if (!string.IsNullOrEmpty(sig))
+                                    ap.args.Add(sig);
+                            }
+                        }
+                    }
                 }
 
                 module.methodList.Add(mp);

@@ -6,6 +6,7 @@
 //  Description: attribute processing pipeline - dispatch by handleType
 //****************************************************************************
 
+using SimpleLanguage.Compile;
 using SimpleLanguage.Logging;
 using System;
 using System.Collections.Generic;
@@ -25,13 +26,35 @@ namespace SimpleLanguage.Core
     /// <summary>
     /// 编译时属性处理器委托。
     /// 当 attribute 的 handleType == Compile 时，由 C# 侧执行此处理器。
+    /// （ParseAttributes 步骤全局分派 + MemberFunctionInject 挂点函数级分派共用）
     /// </summary>
     public delegate void CompileAttributeHandler(MetaAttribute attr, MetaBase owner);
 
+    /// <summary>
+    /// 成员变量初始化表达式合成处理器委托（MemberVariableExpress 挂点）。
+    /// 成员变量无初始化表达式且挂有对应 attribute 时调用；
+    /// 返回 null = 不接管（交下一个 attribute / 常规校验）。
+    /// </summary>
+    public delegate FileMetaBaseTerm MemberVariableExpressAttributeHandler(MetaAttribute attr, MetaMemberVariable mmv);
+
     public static class AttributeManager
     {
-        // 编译时属性处理器：按属性名注册
+        // 编译时属性处理器：按属性名注册（ParseAttributes 步骤全局分派）
         private static Dictionary<string, CompileAttributeHandler> s_CompileHandlers
+            = new Dictionary<string, CompileAttributeHandler>(StringComparer.OrdinalIgnoreCase);
+
+        // 成员变量初始化表达式合成挂点：按属性名注册。
+        // MetaMemberVariable.CreateMetaExpress 在 express==null 时统一分派
+        //（ParseMemberExpress 步骤，成员定义类型已收集，sig 可推导）——
+        // 新增 attribute 不必再在 MetaMemberVariable 加硬编码调用点。
+        private static Dictionary<string, MemberVariableExpressAttributeHandler> s_MemberVariableExpressHandlers
+            = new Dictionary<string, MemberVariableExpressAttributeHandler>(StringComparer.OrdinalIgnoreCase);
+
+        // 函数语句解析后注入挂点：按属性名注册。
+        // MetaMemberFunction.ParseStatements 在 CreateMetaSyntax 之后统一分派
+        //（CheckAllPathsReturn 之前，注入语句须参与返回路径校验）——
+        // 新增 attribute 不必再在 MetaMemberFunction 加硬编码调用点。
+        private static Dictionary<string, CompileAttributeHandler> s_MemberFunctionInjectHandlers
             = new Dictionary<string, CompileAttributeHandler>(StringComparer.OrdinalIgnoreCase);
 
         static AttributeManager()
@@ -39,11 +62,25 @@ namespace SimpleLanguage.Core
             RegisterBuiltInHandlers();
         }
 
-        /// <summary>注册编译时属性处理器</summary>
+        /// <summary>注册编译时属性处理器（ParseAttributes 步骤全局分派）</summary>
         public static void RegisterCompileHandler(string attrName, CompileAttributeHandler handler)
         {
             if (string.IsNullOrEmpty(attrName) || handler == null) return;
             s_CompileHandlers[attrName] = handler;
+        }
+
+        /// <summary>注册成员变量初始化表达式合成处理器（CreateMetaExpress 时分派）</summary>
+        public static void RegisterMemberVariableExpressHandler(string attrName, MemberVariableExpressAttributeHandler handler)
+        {
+            if (string.IsNullOrEmpty(attrName) || handler == null) return;
+            s_MemberVariableExpressHandlers[attrName] = handler;
+        }
+
+        /// <summary>注册函数语句解析后注入处理器（ParseStatements 的 CreateMetaSyntax 之后分派）</summary>
+        public static void RegisterMemberFunctionInjectHandler(string attrName, CompileAttributeHandler handler)
+        {
+            if (string.IsNullOrEmpty(attrName) || handler == null) return;
+            s_MemberFunctionInjectHandlers[attrName] = handler;
         }
 
         /// <summary>注册内置编译时属性处理器</summary>
@@ -129,24 +166,15 @@ namespace SimpleLanguage.Core
                     $"(tile={attr.GetIntArg(0)}x{attr.GetIntArg(1)} tileNum={attr.GetIntArg(2)} groupId={attr.GetIntArg(3)})");
             });
 
-            // DllImport: C# P/Invoke 风格 FFI 函数声明标记
+            // DllImport: C# P/Invoke 风格 FFI 函数声明标记（运行时 attribute）
             //   @DllImport( "libdemo.so", "addcalc" )
-            //   static Func<int,int,int> s_add
-            // 初始化表达式的实际注入在 MetaMemberVariable.CreateMetaExpress
-            //（ParseMetaClassLink 阶段，需要成员定义类型推导 sig，早于本阶段）；
-            // 此处仅做实参校验与登记（内部仍走 FFI.Library/getFunction 现有体系）。
-            RegisterCompileHandler("DllImport", (attr, owner) =>
-            {
-                var args = attr.GetSplitStringArgs();
-                if (args.Count < 2)
-                {
-                    Log.AddMetaCoreLog(LID.MetaCoreAttributeDllImportOwner,
-                        $"DllImport: 需要 (库路径, 符号名) 两个字符串实参, owner='{owner?.allName}'");
-                    return;
-                }
-                Log.AddMetaCoreLog(LID.MetaCoreAttributeDllImportAttributeRegistered,
-                    $"DllImport: attribute registered on '{owner?.allName}' (initializer injected at member express parse)");
-            });
+            //   static int add( int a, int b ) { ret a + b }   // 函数体 = 绑定失败时的 fallback
+            // handleType = Runtime(1)：Front 不做任何代码注入（旧隐藏字段/链头分派注入已退役），
+            // 仅将 attribute 数据 (lib, symbol, sig) 随 module.json 方法级 attributeList 导出，
+            // 由 cvm 在装配期（run 前）读取并完成 native 绑定（改写 CallStatic→CallFFIStatic）。
+            // 实参: (库路径或别名, 符号名 [, 签名 "i32,i32->i32"])，sig 缺省时由导出层
+            // 从函数签名推导补全（SLModulePackageWriter 方法级导出处）。
+            // 旧 static Func<...> 变量声明形式已废弃，不再支持。
 
             // DllStaticImport: 静态绑定 FFI 快速调用声明标记
             //   @DllStaticImport( "mydll", "simplelanguage_addtest" )
@@ -334,6 +362,54 @@ namespace SimpleLanguage.Core
             }
 
             return (compileCount, runtimeCount);
+        }
+
+        /// <summary>
+        /// MemberVariableExpress 挂点统一分派：成员变量无初始化表达式时，按
+        /// attributeList 依次尝试已注册的初值合成处理器，首个非 null 生效。
+        /// 调用点 = MetaMemberVariable.CreateMetaExpress（ParseMemberExpress 步骤，
+        /// 成员定义类型已收集，sig 可推导）。
+        /// </summary>
+        public static FileMetaBaseTerm TryCreateMemberVariableExpress(MetaMemberVariable mmv)
+        {
+            var list = mmv?.attributeList;
+            if (list == null || list.Count == 0) return null;
+            for (int i = 0; i < list.Count; i++)
+            {
+                var attr = list[i];
+                if (attr == null || string.IsNullOrEmpty(attr.name)) continue;
+                if (!s_MemberVariableExpressHandlers.TryGetValue(attr.name, out var handler)) continue;
+                var term = handler(attr, mmv);
+                if (term != null) return term;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// MemberFunctionInject 挂点统一分派：函数语句解析（CreateMetaSyntax）之后，
+        /// 遍历 attributeList 执行已注册的注入处理器（如 DllImport 链头分派）。
+        /// 调用点 = MetaMemberFunction.ParseStatements（CheckAllPathsReturn 之前，
+        /// 注入语句须参与返回路径校验；异常保护同 ProcessAttributeList）。
+        /// </summary>
+        public static void ProcessMemberFunctionAttributes(MetaMemberFunction mmf)
+        {
+            var list = mmf?.attributeList;
+            if (list == null || list.Count == 0) return;
+            for (int i = 0; i < list.Count; i++)
+            {
+                var attr = list[i];
+                if (attr == null || string.IsNullOrEmpty(attr.name)) continue;
+                if (!s_MemberFunctionInjectHandlers.TryGetValue(attr.name, out var handler)) continue;
+                try
+                {
+                    handler(attr, mmf);
+                }
+                catch (Exception ex)
+                {
+                    Log.AddMetaCoreLog(LID.MetaCoreAttributeCompileAttributeAttr,
+                        $"MemberFunctionInject attribute error: attr={attr.name} owner={mmf?.allName} err={ex.Message}");
+                }
+            }
         }
 
         #endregion

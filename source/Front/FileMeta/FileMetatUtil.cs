@@ -6,11 +6,8 @@
 //  Description: 
 //****************************************************************************
 using SimpleLanguage.Logging;
-using System;
 using System.Collections.Generic;
-using System.Runtime.Intrinsics.X86;
 using System.Text.RegularExpressions;
-using System.Xml.Linq;
 
 namespace SimpleLanguage.Compile
 {

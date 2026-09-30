@@ -570,7 +570,7 @@ namespace SimpleLanguage.Core
         }
 
         // ------------------------------------------------------------------
-        // 脱糖节点合成工具（节点构造同 DllImportFunctionDispatch 程序化先例;
+        // 脱糖节点合成工具（程序化构造 FileMeta 节点链的通用约定:
         // 链头 SetIdentifierNode 必须先设置, 否则 AddLinkNode 静默失效;
         // 单节点链无需 SetIdentifierNode）
         // ------------------------------------------------------------------

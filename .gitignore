@@ -416,3 +416,6 @@
 /test/Other/SFRepro/out2.txt
 /test/ExpendTest/build
 /test/BaseTest/Export
+/test/Other/MyTest/build/logs/VM.txt
+/test/out/export/MyTest/Logs/Front.txt
+/test/out/export/MyTest/MyTest.module.json

@@ -247,9 +247,61 @@ Point back = Serialize.fromJson<Point>( json )
 
 ---
 
+## 处理时机：Compile(0) 与 Runtime(1)（handleType）
+
+对标 C# 的 `[DllImport]`（CLR 在模块加载期读元数据完成 P/Invoke 绑定）与 Java 的 `RetentionPolicy.RUNTIME` 注解：每个 attribute 实例在 Front 解析阶段即确定**处理时机**（handleType），决定元数据由谁消费、在哪个阶段生效。
+
+| handleType | 值 | 消费方 | 生效阶段 | 对标 |
+|------------|----|--------|----------|------|
+| Compile | 0 | Front 挂点处理器（`AttributeManager`） | 编译期，效果物化进 IR，module.json 里只剩结果 | Java CLASS 保留策略 |
+| Runtime | 1 | cvm 运行时 attribute 处理器（注册表） | 装配期（`run` 前），读取导出元数据完成绑定 | C# `[DllImport]` CLR 加载期绑定 / Java RUNTIME 注解 |
+
+### 判定规则（`MetaAttribute.ResolveHandleType`）
+
+1. **Attribute 子类常量优先**：子类（含继承链）定义成员变量 `_attributeHandleType` 且为常量表达式时取其值（`0` / `1`）——这是自定义运行时 attribute 的标准声明方式；
+2. **名称回退映射**：子类未定义或非常量时按名称判定——`DllImport` / `Condition` / `Route` → Runtime(1)，`Nickname` / `AOT` / `GPU` → Compile(0)，其余默认 Compile(0)。
+   - 未定义子类的裸名 attribute（如测试工程中无 class 定义直接使用的 `@DllImport`）即靠此回退生效。
+
+### Runtime(1) 的数据流
+
+Front **不做任何代码注入**，仅将 attribute 数据随 module.json 的 `attributeList` 导出（字段 / 方法 / 类三级均有，loader 侧对应解析为 `attribute_list`）：
+
+```json
+"attributeList": [ { "name": "DllImport", "args": ["<lib>", "<symbol>", "<sig>"], "handleType": 1 } ]
+```
+
+cvm 加载后在装配期（`run` 前）遍历 `handleType == 1` 的条目，按 `name` 路由到注册表（`csimple_lang/src/vm/runtime/attribute/vm_runtime_attribute.c`，上限 16、进程级常驻）中匹配的处理器，由处理器完成绑定。以 `@DllImport` 为例：解析 native 库与符号 → 建立静态绑定 → 将命中方法的 `CallStatic`(73) 调用点改写为 `CallFFIStatic`(77)。绑定失败 / 无处理器命中的调用点保持原指令，回退执行 SL 函数体 fallback。
+
+新增一种运行时 attribute 只需实现 `collect` / `rewrite_call` 两个回调并向注册表登记一条，装配主流程零改动。
+
+### 约束
+
+- **带 Runtime attribute 的方法不参与自动 inline**（`AutoInlineMarkFunctions` 排除）：调用点是 cvm 装配期改写的锚点，inline 展开会吞掉调用点、只剩 fallback 体（对标 C# P/Invoke 不可内联）。
+- 已落地的运行时 attribute：`@DllImport`（FFI native 直调绑定，用法与机制详见 [ffi.md](../project/ffi.md)）。
+
+---
+
+## 内置 Attribute 与编译期语义注入（挂点注册表）
+
+自定义 Attribute（`extends Attribute`）是**被动元数据**：只挂载、不改变语义，是否产生额外语义由后续编译阶段/运行时读取后决定。
+
+内置 attribute（如 `@Nickname` / `@AOT` / `@GPU` / `@DllStaticImport`）则由 Front 的 `AttributeManager` 通过**挂点注册表**赋予编译期语义——每个内置 attribute 向一个“挂点”注册处理器，分派时机与管线步骤对应：
+
+| 挂点 | 分派时机 | 消费示例 |
+|------|----------|----------|
+| ClassLinkComplete | 类链完成后统一扫描（ParseAttributes 步） | `@Nickname` 别名登记、`@DllStaticImport` 参数校验 |
+| MemberVariableExpress | 成员变量**无初始化表达式**时（ParseMemberExpress 步） | （暂无注册者，挂点机制保留供扩展） |
+| MemberFunctionInject | 函数体解析完成时（ParseStatements 步） | （暂无注册者，挂点机制保留供扩展） |
+
+> `@DllImport` 原先走 MemberVariableExpress / MemberFunctionInject 两挂点做编译期代码注入（隐藏字段 `__dll_<name>` + 链头 `if` 分派转发），该机制已整体退役：`@DllImport` 现为**运行时 attribute**（handleType=Runtime=1），Front 只导出数据、不做注入，绑定由 cvm 装配期处理器完成（见上节「处理时机」）。旧 `static Func<...>` 变量声明形式不再支持。
+
+新增内置编译期 attribute 只需在 `AttributeManager.RegisterBuiltInHandlers` 注册一行，无需修改成员解析的调用点。实现真源：`source/Front/Core/AttributeManager.cs`（挂点注册表）。
+
+---
+
 ## 约定与限制（Front 层解析阶段）
 
-- Attribute 只负责"挂载元数据"，不直接改变语义。
+- 自定义 Attribute 只负责“挂载元数据”，不直接改变语义（内置 attribute 的编译期注入见上节挂点注册表；运行时 attribute（handleType=1）由 cvm 装配期消费，见「处理时机」一节）。
 - 是否产生额外语义（如序列化、反射、AOT 导出等）由后续编译阶段/运行时决定。
 - `_init_( 参数 )` 与 `_init_( metaType type )` 可同时定义，编译器根据调用形式选择匹配的重载。
 - Attribute 类本身不能再被 Attribute 修饰（不支持元元数据叠加）。

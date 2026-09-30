@@ -1,8 +1,9 @@
 # FFI 外部函数接口（Foreign Function Interface）
 
 > 本文描述 SimpleLanguage **当前已落地** 的 FFI 机制：普通的动态库加载与调用、`FFI.Library` /
-> `FFI.StaticLibrary` 两个封装类、`project.jsonc` 的 `dllImports` 配置、`@DllImport` 与
-> `@DllStaticImport` 两个声明式 attribute，以及各层内部实现原理。
+> `FFI.StaticLibrary` 两个封装类、`project.jsonc` 的 `dllImports` 配置、`@DllImport`（运行时
+> attribute，cvm 装配期绑定）与 `@DllStaticImport`（编译期发射 77）两个声明式 attribute，
+> 以及各层内部实现原理。
 >
 > 设计草案（部分未落地）见 [design/ffi-design.md](../design/ffi-design.md)；本文以**实现**为准。
 > 端到端可运行样例见 [test/SpecialTest/FFITest.sl](../../test/SpecialTest/FFITest.sl)。
@@ -16,8 +17,8 @@ SL 的 FFI 按"绑定时机 + 运行期开销"分成三条路径，共用同一�
 | 路径 | 写法 | 绑定时机 | 运行期开销 | 回退 |
 |---|---|---|---|---|
 | **① 命令式（普通 FFI）** | `FFI.Library(path).getFunction(...)` / `SystemFFICallXxx(...)` | 运行期，每次 `LoadLibrary` + `GetSymbol` | 一次库查表 + 函数值闭包调用 | 无（自己判 null） |
-| **② `@DllImport` 声明式** | `@DllImport("lib","sym")` + 函数定义 | 运行期，类加载静态初始化器 | **进 SL 帧** + null 判断 + 闭包调用 | 编译期生成 `else` 分支 |
-| **③ `@DllStaticImport` 静态绑定（新）** | `@DllStaticImport("静态名","sym")` + 函数定义 | **cvm assembly build 期**（进程级一次性） | **零 SL 帧**，直调 native | 运行期按 `methodId` 回退函数体 |
+| **② `@DllImport` 声明式** | `@DllImport("lib","sym")` + 函数定义 | **cvm assembly build 期**（run 前，运行时 attribute 处理器） | **零 SL 帧**，直调 native | 运行期按 `methodId` 回退函数体 |
+| **③ `@DllStaticImport` 静态绑定** | `@DllStaticImport("静态名","sym")` + 函数定义 | **cvm assembly build 期**（进程级一次性） | **零 SL 帧**，直调 native | 运行期按 `methodId` 回退函数体 |
 
 分层：
 
@@ -26,12 +27,15 @@ SL 源码
   │ FFI.Library / FFI.StaticLibrary / @DllImport / @DllStaticImport
   ▼
 编译层 Front(C#)
-  │ 普通调用   -> CallStatic / CallClosure
-  │ @DllImport -> 源码改写 + bindFunction 注入 -> CallStatic/CallClosure
+  │ 普通调用         -> CallStatic / CallClosure
+  │ @DllImport       -> 普通静态调用 CallStatic(73)；attribute 数据（lib/symbol/sig，
+  │                    handleType=1）随 module.json 方法级 attributeList 导出，不做代码注入
   │ @DllStaticImport -> CallFFIStatic(77) + SLFFIStaticCallPackage JSON
   ▼
 cvm 运行层(C)
-  ├─ assembly build 期：静态库预载 + 符号解析 + payload 改写为 4 字节索引
+  ├─ assembly build 期：静态库预载 + 符号解析 + payload 改写为 4 字节索引；
+  │   运行时 attribute 处理器（src/vm/runtime/attribute/）遍历 handleType=1 的
+  │   attributeList -> DllImport 绑定器建静态绑定并改写 CallStatic(73) -> CallFFIStatic(77)
   ├─ lib 层  src/lib/ffi/ ：签名解析 / 库加载去重引用计数 / x64 ABI 派发
   └─ VM 层   src/vm/system_method_call/ffi_system_method.c ：弹参压结果的适配
   ▼
@@ -63,7 +67,7 @@ cvm 运行层(C)
 |---|---|
 | `path` | 库文件相对路径（相对工程文件；cvm 侧按进程 CWD 规范化为绝对路径） |
 | `name` | 库名 |
-| `alias` | 别名。`@DllImport("别名", ...)` 与 `global.dllImport.<alias>` 都按 `alias / name / path` 三者查表（`ProjectConfig.ResolveDllImportPath`） |
+| `alias` | 别名。`global.dllImport.<alias>` 按 `alias / name / path` 三者查表（`ProjectConfig.ResolveDllImportPath`）；`@DllImport("别名", ...)` 在 cvm 装配期按模块 `dllImports` 段的 `alias` / `name` 匹配 |
 | `static` | **静态绑定名**。非空时该库在 cvm 加载模块时预载，句柄持续到进程退出；是 `@DllStaticImport` 与 `FFI.StaticLibrary.GetStaticLib` 的键 |
 | `functions` | 库函数变量列表，注入为 `global.<name>(...)` 可直接调用 |
 
@@ -255,7 +259,7 @@ FFI.StaticLibrary.GetStaticLib( "no_such_static_lib" )    // null
 
 ### `bindFunction( path, symbol, sig )`
 
-`@DllImport` 的编译期注入目标，等价于：
+通用绑定辅助，等价于：
 
 ```sl
 ret FFI.Library( path ).getFunction( symbol, sig )
@@ -263,11 +267,13 @@ ret FFI.Library( path ).getFunction( symbol, sig )
 
 库按 C# `DllImport` 语义**进程级常驻**（去重缓存共享句柄，不 release）。
 
+> `@DllImport` 旧编译期注入（隐藏字段 `__dll_<name>` 初值即本方法）已退役；现在 `@DllImport` 的绑定由 cvm 装配期处理器直连 lib 层完成（见 §5 / §8.7），不再经过本方法。保留供 SL 侧手动绑定使用。
+
 ---
 
 ## 5. 路径②：`@DllImport` 声明式绑定
 
-C# `[DllImport("lib")] static extern ...` 风格。**必须带函数体**——dll 绑定不可用时执行函数体（fallback 本体）。
+C# `[DllImport("lib")] static extern ...` 风格的**运行时 attribute**（handleType=Runtime=1，对标 CLR 在模块加载期读元数据完成 P/Invoke 绑定）。**必须带函数体**——dll 绑定不可用时执行函数体（fallback 本体）。
 
 ```sl
 @DllImport( "../../source/CLangdll/x64/Debug/CLangdll.dll", "simplelanguage_addtest" )
@@ -283,29 +289,28 @@ static Int64 s_dllMul2( Int64 v ) { ret v * 2 }
 static Int64 s_bookAlloc( int id, float price, int pages, string title ) { ret 0 }
 ```
 
-**实参**：`( 库路径或别名, 符号名 [, sig] )`。`sig` 缺省时从函数签名推导。
+**实参**：`( 库路径或别名, 符号名 [, sig] )`。`sig` 缺省时由导出层从函数签名推导补全（含 `Ptr` 等不可映射类型时推导失败不追加，cvm 侧按绑定失败回退）。
 
-### 编译期做了什么
+### Front 做了什么 / 不做什么
 
-`DllImportSourceRewriter`（**Token 之前的纯文本改写**，行号守恒）把函数定义"炸开"成两段：
+Front **不做任何代码注入**（旧“隐藏字段 + 链头 `if` 分派”机制已退役），函数原样编译为普通静态方法、调用点发射 `CallStatic(73)`；仅将 attribute 数据随 module.json 方法级 `attributeList` 导出：
 
-```sl
-// 改写后（概念形态）
-@DllImport( "CLangdll", "sl_add" ) static Func<Int64,Int64,Int64> __dll_addCs
-static Int64 addCs( Int64 a, Int64 b )
-{
-    if ( __dll_addCs != null ) { ret __dll_addCs( a, b ) }
-    else { ret a + b }                       // 原函数体原样保留为 fallback
-}
+```json
+"attributeList": [ { "name": "DllImport", "args": ["<lib>", "<symbol>", "<sig>"], "handleType": 1 } ]
 ```
 
-随后 `MetaMemberVariable.TryCreateDllImportExpress` 给隐藏字段注入初始化表达式：
+导出层（`SLModulePackageWriter`）在 `args.Count == 2` 时用 `BuildFFIFunctionSigFromMetaFunction` 推导 sig 追加为第 3 实参（手写第 3 实参时不覆盖）。
 
-```sl
-__dll_addCs = FFI.StaticLibrary.bindFunction( "CLangdll", "sl_add", "i64,i64->i64" )
-```
+### cvm 装配期做了什么（run 前）
 
-**运行期**：类加载时执行静态初始化器 → `LoadLibrary + GetSymbol` → 成功则字段为函数值；失败则为 `null`，调用走 `else` 分支。
+cvm 加载 module.json 后、执行前的 assembly build 阶段，运行时 attribute 处理器（`src/vm/runtime/attribute/vm_runtime_attribute.c`）按 name 路由到 DllImport 绑定器，分两阶段：
+
+1. **collect（收集）**：遍历方法级 `attributeList`，`handleType == 1` 且 name 为 `DllImport` 的条目收集绑定素材——lib 三级解析（jsonc `static` 静态名 → `dllImports` 段 `alias` / `name` 匹配 → lib 本身即路径）→ `sl_ffi_lib_resolve` 解析符号 → sig 解析为调用计划 → 登记静态绑定表（进程级常驻）；
+2. **rewrite（改写）**：全量扫描指令，凡 `CallStatic(73)` 命中已绑定 `methodId` 的调用点，就地改写为 `CallFFIStatic(77)` + 4 字节绑定索引——**复用路径③的全部执行链路**。
+
+绑定失败（lib 三级均未命中 / 符号缺失 / sig 非法）的调用点保持 73 原样，运行期回退执行 SL 函数体。
+
+> handleType 判定规则、注册表扩展方式、inline 约束等机制总览见 [syntax/attribute.md](../syntax/attribute.md)「处理时机」一节。
 
 ---
 
@@ -357,22 +362,26 @@ check( "static strlen('abc123')==6", s_statStrlen( "abc123" ) == 6 )
 
 ### 6.3 与 `@DllImport` 的关键差异
 
+两者的运行期执行链路**完全相同**（assembly build 期绑定、零 SL 帧、`CallFFIStatic(77)`、按 `methodId` 回退），差异集中在**驱动方式**与 **lib 解析**：
+
 | | `@DllImport` | `@DllStaticImport` |
 |---|---|---|
-| 第 1 实参语义 | 库**路径**或 dllImports 别名（会查表替换为路径） | jsonc **`"static"` 静态名**（**不做别名查表**） |
-| 源码改写 | 有（隐藏 `__dll_x` 字段 + `if/else` wrapper） | **无**，函数体原样保留 |
-| 绑定时机 | 运行期（类加载静态初始化器） | **cvm assembly build 期** |
-| 库生命周期 | 引用计数管理，进程常驻（不 release） | 预载 + `addRef`，**永不 release**，持续到进程退出 |
-| 调用指令 | `CallStatic` + `CallClosure` | **`CallFFIStatic(77)`** |
-| 成功路径开销 | 建 SL 帧 + null 判断 + 闭包调用 | **零 SL 帧**，直接 marshalling 后调 native |
-| 回退判定 | 编译期生成的 `if (__dll_x != null)` | 运行期：绑定项 `native_fn == NULL` |
-| 回退目标 | `else` 分支（源码级） | `methodId` 指定的原 SL 方法（元数据级） |
-| 额外编译期回退 | 无 | 实参 < 2 或 sig 推导失败 → 直接发射 `CallStatic` |
+| 处理时机 | 运行时 attribute（handleType=1），cvm 装配期处理器消费 | 编译期 attribute（handleType=0），Front 发射 77 |
+| 第 1 实参语义 | 库**路径**或 dllImports `alias` / `name`（三级解析，`static` 名亦可命中） | jsonc **`"static"` 静态名**（**不做别名查表**） |
+| 调用指令来源 | 调用点先发射 `CallStatic(73)`，cvm 装配期改写为 77 | Front 直接发射 `CallFFIStatic(77)` + payload JSON |
+| 绑定时机 | **cvm assembly build 期**（run 前） | **cvm assembly build 期**（run 前） |
+| 库生命周期 | 进程级常驻（静态库表，永不 release） | 预载 + `addRef`，**永不 release**，持续到进程退出 |
+| 成功路径开销 | **零 SL 帧**，直接 marshalling 后调 native | **零 SL 帧**，直接 marshalling 后调 native |
+| 回退判定 | 运行期：绑定项 `native_fn == NULL`（改写未发生的调用点直接走 73） | 运行期：绑定项 `native_fn == NULL` |
+| 回退目标 | `methodId` 指定的原 SL 方法（元数据级） | `methodId` 指定的原 SL 方法（元数据级） |
+| 额外编译期回退 | 无（sig 推导失败 = 导出层不追加 sig → 装配期绑定失败回退） | 实参 < 2 或 sig 推导失败 → 直接发射 `CallStatic` |
 
 ### 6.4 选择建议
 
-- 需要**跨平台兜底 / 库可能不存在** → `@DllImport`（fallback 语义直观，且可随时换库）。
-- 库**必定存在**、调用**高频**、追求最低开销 → `@DllStaticImport`。
+两者运行期性能等价，按**配置形态**选择：
+
+- 库未配 `"static"` 字段、或想直接写路径 / 别名 → `@DllImport`（第 1 实参解析更宽松，三级兜底）。
+- 库已配 `"static"` 静态名、希望绑定信息在编译期就固化为 77 指令（不依赖装配期改写） → `@DllStaticImport`。
 - 需要动态决定库路径、或运行时多次装卸 → 普通 `FFI.Library` 命令式。
 
 ---
@@ -408,9 +417,9 @@ check( "static strlen('abc123')==6", s_statStrlen( "abc123" ) == 6 )
 
 ### 7.3 编译期推导 vs 运行期解析（重要不对称）
 
-- **编译期推导**（`@DllImport` / `@DllStaticImport` / `getFunction` 省略 sig / `lookupFunction<T>`）
-  由 `MetaDefineVarStatements.FFISigNameOfMetaType` 完成，**`Ptr` 被保守排除**——
-  带指针参数/返回的函数必须**手写第 3 实参 sig**。
+- **编译期推导**（`@DllStaticImport` / `getFunction` 省略 sig / `lookupFunction<T>`；`@DllImport`
+  推迟到导出层 `BuildFFIFunctionSigFromMetaFunction`）由 `MetaDefineVarStatements.FFISigNameOfMetaType`
+  完成，**`Ptr` 被保守排除**——带指针参数/返回的函数必须**手写第 3 实参 sig**。
 - **运行期解析**（`SystemFFICallXxx` / `SystemFFIMakeFunction` / `createCallback`）
   会先做 **SL 名 → FFI 短名**映射（`vm_ffi_sl_name_to_ffi`），未登记的名字原样直传。
 - **静态绑定路径例外**：assembly build 期直接 `sl_ffi_sig_parse(sig, &plan)`，**不做 SL 名映射**，
@@ -502,24 +511,34 @@ SystemFFIMakeFunction( fn, "Int32", "Int32", "Int32" ) // 分离形态：返回�
 C 侧调用时经 trampoline **重入 VM**：解析宿主 `RuntimeType` → 压实参 → `vm_execute_method_by_id` → 弹返回值。
 异常/失败返回 0 并丢弃栈上实参。
 
-### 8.7 `@DllImport` 的完整编译流水线
+### 8.7 `@DllImport` 的完整流水线（导出 + 装配期绑定）
 
 ```
-[File/Token 前置] DllImportSourceRewriter.Rewrite( buffer )       FileParse.cs
-   └─ 精确匹配 "@DllImport"（"@DllStaticImport" 不命中）
-   └─ 校验：≥2 字符串实参 / [修饰符]* static / Ret name(T n,...) / 必填 {...} 体
-   └─ 产出 @DllImport(...) static Func<...> __dll_name  +  同名 wrapper( if/else )
-[File/Node]  IsBareMemberVariableDecl：把无 '=' 的裸声明切为独立成员
-[MetaCore]   MetaMemberVariable.TryCreateDllImportExpress
-   ├─ 必须 static / 必须无已有初始化表达式 / args >= 2
-   ├─ ResolveDllImportPath( 别名 ) -> 完整路径
-   ├─ sig = 第 3 实参 ?? BuildFFIFunctionSig( Func<Ret,P...> )
-   └─ 合成 FFI.StaticLibrary.bindFunction( path, symbol, sig )
-[MetaCore]   AttributeManager "DllImport" handler：仅校验 + 日志（注入早已完成）
-[ParseStmt]  wrapper 体内 __dll_x(a,b) -> 成员函数未命中 -> 回退查成员变量 -> ClosureCall
-[IR]         静态初始化器：bindFunction 调用 IR + StoreStaticField -> __dll_x
-[运行期]     类加载 -> bindFunction；成功=函数值，失败=null -> else 分支
+[File/Token] 无源码改写——`@DllImport(...)` 是普通 attribute 行，函数定义原样解析
+[MetaCore]   ParseAttributes 步：MetaAttribute.Parse 解析 name/args，
+             ResolveHandleType 判定 handleType=1（Runtime）
+[IR]         函数原样编译，调用点发射 CallStatic(73)（payload 含 methodId）
+[Export]     SLModulePackageWriter：方法级 attributeList 导出
+             { name:"DllImport", args:[lib, symbol, sig], handleType:1 }；
+             args==2 时 BuildFFIFunctionSigFromMetaFunction 推导 sig 追加
+             （含 Ptr 等不可映射类型推导失败则不追加）
+[cvm load]   slir_json_module_loader：方法级 attribute_list 解析（含 handleType）
+[cvm build]  vm_runtime_attribute_process（run 前，方法注册之后）：
+   ├─ Phase1 collect：遍历 handleType==1 且 name=="DllImport" 的方法 attribute
+   │    ├─ lib 三级解析：静态库表 static 名 -> dllImports 段 alias/name -> lib 即路径
+   │    ├─ sl_ffi_lib_resolve( handle, symbol ) 解析符号
+   │    ├─ sig 为空或 sl_ffi_sig_parse 失败 -> native_fn = NULL
+   │    └─ vm_sys_ffi_static_binding_add 登记绑定表（同方法重复标记取首条）
+   └─ Phase2 rewrite：全量扫描指令，CallStatic(73) 且 payload methodId 命中绑定表
+        -> memcpy 4 字节索引 + op_code 改写为 CallFFIStatic(77)
+[运行期]     CallFFIStatic(77) handler（与 @DllStaticImport 同一条链路，见 8.10）；
+             未被改写的调用点保持 73 原样 -> 执行 SL 函数体 fallback
 ```
+
+> 装配期挂接顺序（`sl_runtime_assembly.c`）：方法注册 → 77 payload 改写 → atsign 改写 →
+> `vm_runtime_attribute_process`（73→77 运行时 attribute 改写）。带 `@DllImport` 的方法
+> **不参与自动 inline**（`AutoInlineMarkFunctions` 排除），保证调用点存活供改写
+> （对标 C# P/Invoke 不可内联）。
 
 ### 8.8 `@DllStaticImport` 的完整编译流水线
 
@@ -653,6 +672,7 @@ entry->native_fn == NULL（回退路径）:
 | 回调 method id | ≤ 191 字符 |
 | C++ / 类成员函数 | 仅支持 `extern "C"` 扁平 ABI |
 | 静态名校验 | 前端**不校验**静态名是否已注册，写错只在运行期表现为"回退函数体" |
+| `@DllImport` inline | 带 `@DllImport` 的方法**不参与自动 inline**（调用点是装配期改写锚点，对标 C# P/Invoke 不可内联） |
 
 ---
 
@@ -664,13 +684,15 @@ entry->native_fn == NULL（回退路径）:
 |---|---|
 | `source/Front/Lib/Std/FFI/Library.sl` | `FFI.Library` / `FFI.StaticLibrary` |
 | `source/Front/Lib/Std/Std.jsonc` | `SystemFFI*` / `SystemPtr*` 系统方法声明与 `cvmFunction` 绑定 |
-| `source/Front/Core/AttributeManager.cs` | `DllImport` / `DllStaticImport` handler（校验 + 日志） |
-| `source/Front/Compile/Parse/DllImportSourceRewriter.cs` | `@DllImport` 源码文本改写器 |
-| `source/Front/Core/MetaMemberVariable.cs` | `bindFunction` 初始化表达式注入 |
+| `source/Front/Core/AttributeManager.cs` | 挂点注册表（`@Nickname` / `@DllStaticImport` 等编译期 attribute 校验分派）+ Runtime Hooks |
+| `source/Front/Core/MetaAttribute.cs` | attribute 解析与 handleType 判定（`ResolveHandleType`） |
+| `source/Front/Core/MetaMemberVariable.cs` / `MetaMemberFunction.cs` | 调用点：express 为空 / ParseStatements 时走 `AttributeManager` 通用分派（挂点机制保留，`@DllImport` 已不再注册） |
 | `source/Front/Core/Statements/MetaDefineVarStatements.cs` | sig 推导（`BuildFFIFunctionSig*`） |
+| `source/Front/Project/ProjectCompile.cs` | `AutoInlineMarkFunctions`：运行时 attribute 方法排除自动 inline |
 | `source/Front/IR/IRCall.cs` | `CallFFIStatic` 发射（77） |
 | `source/Front/IROpEnum.cs` | opcode 定义 |
-| `source/Front/Export/SLIR/SLIRTypes.cs` | `SLDllImportPackage` / `SLFFIStaticCallPackage` |
+| `source/Front/Export/SLIR/SLIRTypes.cs` | `SLDllImportPackage` / `SLFFIStaticCallPackage` / `SLAttributePackage` |
+| `source/Front/Export/SLIR/SLModulePackageWriter.cs` | 方法级 `attributeList` 导出 + `@DllImport` sig 推导补全 |
 | `source/Front/Project/ProjectConfig.cs`、`ProjectJsoncLoader.cs` | `dllImports` 配置与别名解析 |
 | `source/Front/Project/PorjectClass.cs` | `global.dllImport.<alias>` / `global.<funcName>` 注入 |
 
@@ -682,9 +704,10 @@ entry->native_fn == NULL（回退路径）:
 | `src/lib/ffi/sl_ffi_lib_manager.{h,c}` | 加载 / 去重 / 引用计数 / 卸载 |
 | `src/lib/ffi/sl_ffi_call.{h,c}`（+ `gen_sl_ffi_call.py`） | x64 ABI 派发 |
 | `src/vm/system_method_call/ffi_system_method.{h,c}` | `SystemFFI*`、回调 trampoline、静态绑定表 |
-| `src/vm/assembly/sl_runtime_assembly.c` | 静态库预载 + payload 改写 |
-| `src/vm/assembly/slir_assembly_data.h` | `SLDllImportPackage`（含 `static_name`） |
-| `src/vm/load/slir_json_module_loader.c` | `dllImports`（含 `"static"`）解析 |
+| `src/vm/runtime/attribute/vm_runtime_attribute.{c,h}` | 运行时 attribute 处理器注册表 + `@DllImport` 绑定器（collect / rewrite 两阶段，73→77 改写） |
+| `src/vm/assembly/sl_runtime_assembly.c` | 静态库预载 + payload 改写 + `vm_runtime_attribute_process` 挂接 |
+| `src/vm/assembly/slir_assembly_data.h` | `SLDllImportPackage`（含 `static_name`）、`SLAttributePackage` 镜像 |
+| `src/vm/load/slir_json_module_loader.c` | `dllImports`（含 `"static"`）与字段/方法/类三级 `attributeList` 解析 |
 | `src/vm/vm.h` | `OpCode_CallFFIStatic = 77`（紧随 `OpCode_CallSystemMethod = 76`） |
 | `src/vm/runtime/vm_runtime.c` | opcode 77 handler、`CallClosure` native 分支、cleanup |
 

@@ -889,8 +889,8 @@ namespace SimpleLanguage.Project
 
         /// <summary>
         /// 合成 FFI.StaticLibrary.bindFunction( libPath, symbol, sig ) 的
-        /// FileMetaCallTerm（节点构造同 MetaMemberVariable.BuildLibraryGetFunctionCallTerm
-        /// 程序化先例；SetIdentifierNode 必须先设置，否则 AddLinkNode 静默失效）。
+        /// FileMetaCallTerm（程序化构造节点链的通用约定：SetIdentifierNode
+        /// 必须先设置，否则 AddLinkNode 静默失效）。
         /// </summary>
         static FileMetaCallTerm BuildBindFunctionCallTerm( FileMeta fm, string libPath, string symbol, string sig )
         {

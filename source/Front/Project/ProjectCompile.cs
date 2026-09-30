@@ -348,10 +348,26 @@ namespace SimpleLanguage.Project
                 if (mmf.ownerMetaClass is MetaClass omc && omc.isInterfaceClass) continue; // 接口类成员
                 if (mmf.name != null && s_AutoInlineOperatorNames.Contains(mmf.name)) continue; // operator
                 if (overriddenSet.Contains(mmf)) continue;                    // 被子类 override
+                if (HasRuntimeHandleAttribute(mmf)) continue;                 // 运行时 attribute (如 @DllImport): 调用点须保留 CallStatic 供 cvm 装配期改写绑定 (对标 C# P/Invoke 不可内联), inline 展开会吞掉调用点只剩 fallback 体
                 if (!mmf.CanAutoInlineBody(maxStatementCount)) continue;      // 条数/违禁/无源码体
 
                 mmf.SetAutoInline();
             }
+        }
+
+        /// <summary>方法是否带运行时 handleType 的 attribute (EAttributeHandleType.Runtime = 1)。
+        /// 这类方法的调用点是 cvm 装配期绑定 (CallStatic 改写) 的锚点, 不可被 inline 消除</summary>
+        private static bool HasRuntimeHandleAttribute(MetaMemberFunction mmf)
+        {
+            var attrs = mmf.attributeList;
+            if (attrs == null)
+                return false;
+            for (int i = 0; i < attrs.Count; i++)
+            {
+                if (attrs[i] != null && attrs[i].handleType == 1)
+                    return true;
+            }
+            return false;
         }
 
         private static void CollectOverriddenParents(List<MetaMemberFunction> list, HashSet<MetaMemberFunction> set)
