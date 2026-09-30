@@ -85,7 +85,7 @@ import CSharp.System;
 
 Worker
 {
-    # 被 spawn 转发的目标：普通静态方法即可（函数值形式下无命名约束）
+    # 被 spawn 转发的目标：静态方法（裸名直接写）或函数值变量均可
     static int coroAdd2( int a, int b )
     {
         ret a + b
@@ -93,15 +93,9 @@ Worker
 
     static fun()
     {
-        # 0) 包装闭包（函数值形式）：裸静态方法名不能直接作函数值，
-        #    需经闭包转发（见 §5.1）
-        function add2Fn = function( int a, int b )
-        {
-            ret coroAdd2( a, b )
-        }
-
-        # 1) 创建并启动（spawn 关键字 + 函数值调用）
-        Task h = spawn add2Fn( 3, 4 )
+        # 1) 创建并启动（spawn 关键字 + 静态方法调用，实参延迟到协程首跑求值；
+        #    循环变量作实参等需立即求值的场景，改用函数值形式，见 §4.1/§5.1）
+        Task h = spawn coroAdd2( 3, 4 )
 
         # 2) 等待并取回返回值（await 关键字）
         int r = await h as int          # 7
@@ -173,7 +167,7 @@ public class CoroutineBlockReason extends Object
 
 | 关键字 | 语法身份 | 展开为 |
 |---|---|---|
-| `spawn E` | 一元前缀**表达式** | `Coroutine.spawnClosure0..3(...)`（闭包路径，唯一形态） |
+| `spawn E` | 一元前缀**表达式** | 函数值变量：`Coroutine.spawnClosureN( f, 实参... )` 直传；静态方法名/实例链：`Coroutine.spawnClosure0( 合成包装闭包 )` |
 | `await e` | 一元前缀**表达式** | `Coroutine.awaitTask( e )` |
 | `yield` | **语句**（无参） | `Coroutine.yieldNow()` |
 
@@ -186,30 +180,31 @@ yield_stmt := 'yield' ';'
 
 ### 4.1 `spawn`
 
-`spawn` 后必须跟**调用表达式**或**函数字面量**（统一函数值形式），其中调用表达式可为函数值或**实例链**：
+`spawn` 后必须跟**调用表达式**或**函数字面量**，目标形态三选一：**函数值变量**、**静态方法名**（裸名直接写）、**实例链**：
 
 ```sl
-Task h1 = spawn adder( 1, 2 )                    # function 变量
+Task h1 = spawn adder( 1, 2 )                    # function 变量（直传，实参立即求值）
 Task h2 = spawn function() { ... }               # 匿名闭包（无参）
 Task h5 = spawn mk()                             # 无参函数变量
-Task h6 = spawn c1.coroInstAdd2( 3, 4 )          # 实例链（前端自动脱糖，见 §5.3）
-Task h7 = spawn this.coroInstAdd2( 1, 2 )        # this 前缀实例链（同上）
+Task h6 = spawn coroAdd2( 3, 4 )                 # 裸静态方法名（包装闭包，实参延迟求值）
+Task h7 = spawn c1.coroInstAdd2( 3, 4 )          # 实例链（同上，见 §5.3）
+Task h8 = spawn this.coroInstAdd2( 1, 2 )        # this 前缀实例链（同上）
 ```
 
-⚠️ `spawn` 后**不能直接跟裸方法名**——值位置的裸名会按方法调用解析而非函数值，须先经包装闭包转发（见 §5.1）。**实例链形态**（`spawn 实例.方法( 实参... )` / `spawn this.方法( 实参... )`）由前端在 Node 层自动脱糖支持，无需手写包装闭包：
+前端在 Node 层按目标形态**分流脱糖**（判据：目标名在当前作用域内是否有局部定义，见 `StructParseToSyntax.cs` `IsLocalScopeDefineName`）：
 
 ```sl
-# 手写包装闭包（仍可用，与实例链形态等效）
-function add2Fn = function( int a, int b ) { ret coroAdd2( a, b ) }
-Task h = spawn add2Fn( 1, 2 )
+# 分流一 · 函数值变量 (function/Func<> 变量/方法参数) -> 直传，实参在 spawn 点立即求值
+#   spawn adder( 1, 2 )  ->  Coroutine.spawnClosure2( adder, 1, 2 )
 
-# 实例链形态：前端自动脱糖为捕获 receiver 的无参包装闭包
-#   spawn c1.coroInstAdd2( 3, 4 )
-#     -> function spawnClosureTmpN() { ret c1.coroInstAdd2( 3, 4 ) }
-#        Coroutine.spawnClosure0( spawnClosureTmpN )
-# 实参表达式原样内联进闭包体（求值时机移入协程体内），receiver 与实参变量由闭包捕获
-Task h3 = spawn c1.coroInstAdd2( 3, 4 )
+# 分流二 · 裸静态方法名 / 实例链 / this -> 无参包装闭包，实参延迟到协程首跑求值
+#   spawn coroAdd2( a, b )
+#     ->  function spawnClosureTmpN() { ret coroAdd2( a, b ) }
+#         Coroutine.spawnClosure0( spawnClosureTmpN )
+#   receiver 与实参变量由闭包捕获，实参表达式原样内联进闭包体
 ```
+
+⚠️ **实参求值时机**：函数值变量的实参在 **spawn 点立即求值**（循环变量取当次值）；静态方法名/实例链的实参**延迟到协程首跑时求值**（闭包捕获变量）。循环内 spawn 引用循环变量时，用函数值形式（`function`/`Func<>` 变量）才能取到每次迭代的值。
 
 ⚠️ **`spawn x + 1` 这类任意表达式非法。**
 
@@ -245,15 +240,18 @@ Error yield 不支持带表达式参数, 等待条件请使用 Coroutine.waitUnt
 
 ## 5. 生成协程（spawn 全家族）
 
-### 5.1 包装闭包（函数值形式）
+### 5.1 静态方法（直接 spawn / 手写包装闭包）
 
-按**方法名字符串**解析目标的历史 API（`spawn0..3` / `spawnByName`）**已全部移除**：按名形式在编译器里不好定义、调用也不直观。用户代码统一使用**函数值形态** `spawn 函数( 实参... )`——静态方法与闭包经包装闭包转发（本节）；实例方法则可直接写实例链 `spawn 实例.方法( 实参... )`（§5.3 前端自动脱糖），手写包装闭包为等效备选：
+按**方法名字符串**解析目标的历史 API（`spawn0..3` / `spawnByName`）**已全部移除**：按名形式在编译器里不好定义、调用也不直观。静态方法**可直接 spawn**：`spawn 静态方法( 实参... )` 由前端自动脱糖为无参包装闭包（实参延迟到协程首跑求值，见 §4.1 分流二）；需要实参立即求值（如引用循环变量）时，用包装闭包/函数值变量转发（分流一直传）。实例方法直接写实例链 `spawn 实例.方法( 实参... )`（§5.3）：
 
 ```sl
 static int coroAdd2( int a, int b ) { ret a + b }
 static int coroSum3( int a, int b, int c ) { ret a + b + c }
 
-# 包装闭包：显式类型参数，转发到目标静态方法
+# 直接 spawn 静态方法（包装闭包路径，实参延迟到协程首跑求值）
+Task h0 = spawn coroAdd2( 3, 4 )                   # 7
+
+# 包装闭包/函数值转发（直传路径，实参在 spawn 点立即求值）
 function add2Fn = function( int a, int b ) { ret coroAdd2( a, b ) }
 function sum3Fn = function( int a, int b, int c ) { ret coroSum3( a, b, c ) }
 
@@ -261,7 +259,7 @@ Task h1 = spawn add2Fn( 3, 4 )                     # 7
 Task h2 = spawn sum3Fn( 1, 2, 3 )                  # 6
 ```
 
-> 历史说明：按名时代要求被 spawn 的方法名**全工程唯一**（同名同参数个数的方法全局冲突），`CoroutineTest.sl` 因此统一用 `coro` / `coroKw` 前缀命名；改为函数值形式后，前缀仅为可读性约定，普通静态方法即可，无命名约束。
+> 历史说明：按名时代要求被 spawn 的方法名**全工程唯一**（同名同参数个数的方法全局冲突），`CoroutineTest.sl` 因此统一用 `coro` / `coroKw` 前缀命名；改为直接 spawn / 函数值形式后，前缀仅为可读性约定，普通静态方法即可，无命名约束。
 
 ### 5.2 闭包 / 函数变量
 
@@ -827,7 +825,7 @@ check( g_f3count == 40 )
 
 | 分类 | 方法 |
 |---|---|
-| **生成·闭包（唯一形态）** | `spawnClosure0` `spawnClosure1` `spawnClosure2` `spawnClosure3` `spawnClosure`（按名 `spawn0..3` / `spawnByName` / `spawnInstance0..3` 已移除） |
+| **生成·闭包（唯一 API 形态）** | `spawnClosure0` `spawnClosure1` `spawnClosure2` `spawnClosure3` `spawnClosure`（`spawn` 关键字按目标形态自动脱糖到此家族，§4.1；按名 `spawn0..3` / `spawnByName` / `spawnInstance0..3` 已移除） |
 | **调度控制** | `yieldNow` `delay` `waitUntil` |
 | **查询** | `current` `status` `blockedReason` |
 | **等待聚合** | `awaitTask` `waitAll2` `waitAll3` `waitAll` `waitAny2` `waitAny3` `waitAny` `nextCompleted2` `nextCompleted3` `waitTimeout` |
@@ -881,7 +879,7 @@ check( g_f3count == 40 )
 
 | # | 限制 | 说明 |
 |:-:|---|---|
-| 1 | **spawn 支持函数值与实例链两种形态** | 按名 `spawn0..3` / `spawnByName` / `spawnInstance0..3` **已移除**（按名解析不区分类名、要求全工程唯一，编译器不好定义且不直观）。静态方法 / 闭包经 `spawn 函数( 实参... )` 处理（§5.1-§5.2）；实例链 `spawn 实例.方法( 实参... )` / `spawn this.方法( 实参... )` 由前端自动脱糖为捕获 receiver 的包装闭包（§5.3），无命名约束 |
+| 1 | **spawn 支持函数值 / 静态方法名 / 实例链三种形态** | 按名 `spawn0..3` / `spawnByName` / `spawnInstance0..3` **已移除**（按名解析不区分类名、要求全工程唯一，编译器不好定义且不直观）。函数值变量 `spawn f( 实参... )` 直传 `spawnClosureN`（实参立即求值）；裸静态方法名 `spawn 静态方法( 实参... )` 与实例链 `spawn 实例.方法( 实参... )` / `spawn this.方法( 实参... )` 由前端分流脱糖为包装闭包（实参延迟到协程首跑求值，§4.1/§5.1-§5.3），无命名约束 |
 | 2 | **参数按 `object` 装箱传递** | `int` / `string` 等值可直接传入并自动装箱，round-trip 无损；**最多 3 个参数**（`spawnClosure0..3`） |
 | 3 | **无自动公平性** | 前端不发射 `SCHED_CHECK`；纯计算循环必须显式 `Coroutine.yieldNow()`，否则独占调度器、饿死其它协程 |
 | 4 | **`native` 函数体内禁止挂起** | 挂起只发生在解释循环的指令边界（安全点） |

@@ -1229,7 +1229,11 @@ namespace SimpleLanguage.Compile
 
         /// <summary>
         /// spawn/await 关键字展开 (原地修改节点列表):
-        ///     spawn f(a,b)              ->  CoroutineManager.spawnClosure2( f, a, b )
+        ///     spawn f(a,b)              ->  脱糖为无参包装闭包
+        ///                                    function spawnClosureTmpN() { ret f( a, b ) }
+        ///                                    再 CoroutineManager.spawnClosure0( tmpName )
+        ///                                    (f 可为函数值变量/静态方法名/实例方法名, Node 层无法区分,
+        ///                                     包装闭包形态对三者语义均正确; 实参在协程首跑时求值)
         ///     spawn function(){...}     ->  先提升为具名闭包语句, 再 CoroutineManager.spawnClosure0( tmpName )
         ///     spawn cn.func(a,b)        ->  脱糖为捕获 receiver 的无参包装闭包
         ///                                    function spawnClosureTmpN() { ret cn.func( a, b ) }
@@ -1316,8 +1320,9 @@ namespace SimpleLanguage.Compile
                     else if (opNode.nodeType == ENodeType.IdentifierLink
                         || (opNode.nodeType == ENodeType.Key && opNode.token?.type == ETokenType.This))
                     {
-                        // spawn 函数变量调用: spawn f(a,b) -> CoroutineManager.spawnClosureN( f, a, b )
-                        // 实例链形态 spawn cn.fun(a,b): 下方脱糖为捕获 receiver 的无参包装闭包
+                        // spawn 函数调用按目标形态分流脱糖 (判据 IsLocalScopeDefineName):
+                        //   函数值变量 (作用域内同名局部定义) -> 分流一 spawnClosureN 直传 (实参立即求值);
+                        //   裸静态方法名 / 实例链 / this -> 分流二 无参包装闭包 (实参延迟到协程首跑求值)。
                         var linkList = opNode.GetLinkNodeList(true);
                         var lastLinkNode = linkList[linkList.Count - 1];
                         // 标识符链为嵌套结构 (a.b.fun 表示为 a.extend=[.,b], b.extend=[.,fun]),
@@ -1352,22 +1357,48 @@ namespace SimpleLanguage.Compile
                             //     "Error spawn 目前最多支持 3 个参数!");
                             return;
                         }
-                        if (lastLinkNode != opNode)
+                        // 分流一 · 函数值变量直传: 单标识符目标 (无链式/泛式后缀) 且名字在当前作用域
+                        // 有局部定义 (闭包/变量/方法参数) -> 旧直传形态, 实参在 spawn 点立即求值
+                        // (循环变量实参取当次值, 与函数值语义一致; 裸静态方法名不能走此路:
+                        //  作 spawnClosureN 实参会被解析为同步调用, 传入 null 假成功)。
+                        if (opNode.nodeType == ENodeType.IdentifierLink
+                            && opNode == lastLinkNode
+                            && opNode.extendLinkNodeList.Count == 0
+                            && opNode.angleNode == null
+                            && IsLocalScopeDefineName(opNode.token))
                         {
-                            // 实例链形态: spawn receiver.方法( 实参... ) 脱糖为捕获外层变量的无参包装闭包:
-                            //   spawn cn.func( a, b )
-                            //     -> function spawnClosureTmpN() { ret cn.func( a, b ) }
-                            //        Coroutine.spawnClosure0( spawnClosureTmpN )
-                            // 实参表达式原样嵌入闭包体 (receiver 与实参变量由闭包捕获);
-                            // 闭包返回类型由 ret 语句推断 (void 方法 await 得 null, 与 void 闭包语义一致)。
-                            var curInfo = currentNodeInfo;
-                            if (curInfo == null ||
-                                (curInfo.parseType != EParseNodeType.Statements && curInfo.parseType != EParseNodeType.Function))
+                            // 平铺原实参序列 (含段间 Comma), 函数引用与首实参间需新建 Comma 分隔
+                            // (CreateStaticClassCallNode 平铺实参不补逗号; argCount=0 无实参不能带尾逗号)
+                            List<Node> directArgs = new List<Node> { opNode };
+                            if (argCount > 0) directArgs.Add(CreateIsolateCommaNode(cnode.token));
+                            for (int p = 0; p < parNode.childList.Count; p++)
                             {
-                                Log.AddNodeLog(LID.NodeStructParseSpawn, cnode.token,
-                                    "Error spawn 实例链形态只能出现在方法体内!");
-                                return;
+                                var pn = parNode.childList[p];
+                                if (pn == null || pn.nodeType == ENodeType.LineEnd
+                                    || pn.nodeType == ENodeType.Comment) continue;
+                                directArgs.Add(pn);
                             }
+                            Node directCallNode = CreateStaticClassCallNode(cnode.token, "Coroutine",
+                                "spawnClosure" + argCount, directArgs);
+                            pNodeList.RemoveRange(i, opIndex + 1 - i);
+                            pNodeList.Insert(i, directCallNode);
+                            // 替换后落入 for 递增行为一致, 仍可处理列表中后续 spawn
+                            continue;
+                        }
+                        // 分流二 · 包装闭包: 裸静态方法名/实例链 (cn.func)/this 目标, 实参表达式原样嵌入
+                        // 闭包体, receiver 与实参变量由闭包捕获, 实参延迟到协程首跑时求值:
+                        //   spawn cn.func( a, b ) / spawn staticFn( a, b )
+                        //     -> function spawnClosureTmpN() { ret <原调用表达式> }
+                        //        Coroutine.spawnClosure0( spawnClosureTmpN )
+                        // 闭包返回类型由 ret 语句推断 (void 方法 await 得 null, 与 void 闭包语义一致)。
+                        var curInfo = currentNodeInfo;
+                        if (curInfo == null ||
+                            (curInfo.parseType != EParseNodeType.Statements && curInfo.parseType != EParseNodeType.Function))
+                        {
+                            Log.AddNodeLog(LID.NodeStructParseSpawn, cnode.token,
+                                "Error spawn 调用只能出现在方法体内!");
+                            return;
+                        }
                             // 1. 恢复链尾参数列表 (上方已剥离), opNode 还原为完整调用表达式 receiver.方法( 实参... )
                             lastLinkNode.SetParNode(parNode);
                             // 2. 合成闭包体 Brace 节点: { ret receiver.方法( 实参... ) }
@@ -1414,27 +1445,8 @@ namespace SimpleLanguage.Compile
                                 new List<Node> { tmpRefNode });
                             pNodeList.RemoveRange(i, opIndex + 1 - i);
                             pNodeList.Insert(i, spawnCallNode);
-                            // 实例链分支已完成替换, 跳过下方函数值路径 (continue 与闭包路径
-                            // 替换后落入 for 递增的行为一致, 仍可处理列表中后续 spawn)
+                            // 替换后落入 for 递增行为一致, 仍可处理列表中后续 spawn
                             continue;
-                        }
-                        // 闭包路径: 无链式后缀, 整个 opNode 即函数引用
-                        // 新实参 childList: [ f, Comma, 原实参节点... ] (原 childList 自带 Comma 分隔)
-                        List<Node> newArgNodes = new List<Node> { opNode };
-                        Token splitCommaToken = new Token(cnode.token);
-                        splitCommaToken.SetLexeme(",", ETokenType.Comma);
-                        Node splitCommaNode = new Node(splitCommaToken);
-                        splitCommaNode.nodeType = ENodeType.Comma;
-                        newArgNodes.Add(splitCommaNode);
-                        foreach (var pn in parNode.childList)
-                        {
-                            if (pn == null) continue;
-                            if (pn.nodeType == ENodeType.Comment) continue;
-                            newArgNodes.Add(pn);
-                        }
-                        Node callNode = CreateStaticClassCallNode(cnode.token, "Coroutine", "spawnClosure" + argCount.ToString(), newArgNodes);
-                        pNodeList.RemoveRange(i, opIndex + 1 - i);
-                        pNodeList.Insert(i, callNode);
                     }
                     else
                     {
@@ -1478,6 +1490,75 @@ namespace SimpleLanguage.Compile
                 }
             }
         }
+
+        /// <summary>
+        /// spawn 单标识符目标的分流判据: 名字在当前解析作用域内是否有局部定义 (函数值变量/闭包/方法参数)。
+        /// 沿 m_CurrentNodeInfoStack 由内向外遍历 Statements/Function 层, 查已发射语句中的
+        /// 局部定义与方法参数 (spawn 语句本身尚未入列, 天然只见到使用点之前的定义, 与词法作用域一致):
+        ///   命中 -> 目标按函数值变量走 spawnClosureN 直传脱糖 (实参立即求值);
+        ///   未命中 -> 目标按裸静态方法名走包装闭包脱糖 (实参延迟到协程首跑求值)。
+        /// 类成员级定义 (static function 成员等) 不在语句链路中, 未命中落包装闭包路径, 语义仍正确。
+        /// </summary>
+        private bool IsLocalScopeDefineName( Token nameToken )
+        {
+            string name = nameToken?.lexeme?.ToString();
+            if (string.IsNullOrEmpty(name)) return false;
+            foreach (var info in m_CurrentNodeInfoStack)
+            {
+                if (info == null) continue;
+                if (info.parseType == EParseNodeType.Statements && info.codeSyntax != null)
+                {
+                    if (HasLocalDefineNameInSyntaxList(info.codeSyntax.fileMetaSyntax, name)) return true;
+                }
+                else if (info.parseType == EParseNodeType.Function && info.codeFunction != null)
+                {
+                    foreach (var fmp in info.codeFunction.metaParamtersList)
+                    {
+                        if (fmp != null && fmp.token != null
+                            && fmp.token.lexeme?.ToString() == name) return true;
+                    }
+                    if (info.codeFunction.fileMetaBlockSyntax != null
+                        && HasLocalDefineNameInSyntaxList(info.codeFunction.fileMetaBlockSyntax.fileMetaSyntax, name))
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// 语句列表内查同名局部定义: 闭包定义 (function name = ...) / 变量定义 / 带定义的赋值 / 内联lambda。
+        /// 只平铺扫描当前层已发射语句, 不递归下钻 if/for 等嵌套块 (块内定义本就不在外层可见)。
+        /// </summary>
+        private static bool HasLocalDefineNameInSyntaxList( List<FileMetaSyntax> syntaxList, string name )
+        {
+            if (syntaxList == null) return false;
+            for (int i = 0; i < syntaxList.Count; i++)
+            {
+                var fms = syntaxList[i];
+                if (fms == null) continue;
+                if (fms is FileMetaDefineClosureSyntax fdcs)
+                {
+                    if (fdcs.nameToken != null && fdcs.nameToken.lexeme?.ToString() == name) return true;
+                }
+                else if (fms is FileMetaDefineVariableSyntax fdvs)
+                {
+                    if (fdvs.nameToken != null && fdvs.nameToken.lexeme?.ToString() == name) return true;
+                }
+                else if (fms is FileMetaInlineLambdaSyntax fils)
+                {
+                    if (fils.nameToken != null && fils.nameToken.lexeme?.ToString() == name) return true;
+                }
+                else if (fms is FileMetaOpAssignSyntax foas)
+                {
+                    if (foas.hasDefine && foas.token != null
+                        && foas.token.lexeme?.ToString() == name) return true;
+                }
+            }
+            return false;
+        }
+
         //======================================================================================
         // Isolate.run / Isolate.spawn / Isolate.spawnInstance 脱糖 (Dart Isolate.run 语义)
         // 统一为变长系统调用 SystemIsolateRun / SystemIsolateSpawn( 入口, 转发实参... ):
