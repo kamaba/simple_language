@@ -32,6 +32,8 @@ Project
         #LogFatalTest.fun()
         !#
         MiTest.fun()
+        AttributeExcludeTest.fun()
+        AttributeRuntimeTest.fun()
     }
     CompileBefore()
     {

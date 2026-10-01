@@ -128,8 +128,7 @@ namespace SimpleLanguage.Core
 
         /// <summary>
         /// 消费一个 @<tag>(...){...} 块语法：通道扫描 → 插件转调 → 块登记 →
-        /// 就地脱糖合成语句节点逐条喂回当前语句链（beforeStatements 平铺接入,
-        /// 与 static if 的子语句平铺同模式, 不引入作用域）。
+        /// 就地脱糖合成语句节点逐条喂回当前语句链（beforeStatements 平铺接入, 不引入作用域）。
         /// 任何解析失败均只报错不喂语句（块降级丢弃, 已报的 LID 即本块错误）。
         /// </summary>
         public static void HandleDispatch( FileMetaAtSignBlockSyntax fms,

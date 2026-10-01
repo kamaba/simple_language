@@ -418,7 +418,7 @@ namespace SimpleLanguage.Project
             public Dictionary<string, JsonElement> Data { get; set; } = new Dictionary<string, JsonElement>();
 
             // project jsonc: global.macro = { key: primitive }
-            // 静态编译(static if)专用数据，初始值来自 jsonc，
+            // 编译期宏数据面，初始值来自 jsonc，
             // 只允许在 Project.CompileBefore() 中通过 global.macro.xxx = 常量 修改。
             public Dictionary<string, JsonElement> Macro { get; set; } = new Dictionary<string, JsonElement>();
         }

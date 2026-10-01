@@ -37,7 +37,7 @@ public class CommandInputArgs
     public string compileProjectDir { get; private set; } = null;
     public string outputPath { get; private set; } = null;
 
-    // --- static if external macros (--macro name=value, repeatable) ---
+    // --- external macros (--macro name=value, repeatable) ---
     // 编译前外部注入 global.macro 宏值：优先级高于 jsonc global.macro，低于 CompileBefore()
     public Dictionary<string, string> macroDefines { get; } = new Dictionary<string, string>();
 
@@ -282,7 +282,7 @@ public class CommandInputArgs
         }
     }
 
-    /// <summary>解析 "name=value" 形式的外部宏定义（static if global.macro）。</summary>
+    /// <summary>解析 "name=value" 形式的外部宏定义（global.macro）。</summary>
     bool TryAddMacroDefine(string define)
     {
         if (string.IsNullOrEmpty(define))

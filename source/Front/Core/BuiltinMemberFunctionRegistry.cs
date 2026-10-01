@@ -66,7 +66,7 @@ namespace SimpleLanguage.Core
     ///  3. 按规则校验参数个数与类型
     ///  4. 按规则校验返回类型
     ///  5. 父链中存在同名final方法时, 不允许再定义该内置方法(编译报错)
-    /// 注意: _init_ 虽然也是系统内部方法, 但它由Object真实声明并传递下来,
+    /// 注意: _init_/_enter_/_exit_ 虽然也是系统内部方法, 但它们由Object真实声明并传递下来,
     ///       走普通类的override/final检查流程, 不在此注册
     /// </summary>
     public static class BuiltinMemberFunctionRegistry
@@ -103,11 +103,6 @@ namespace SimpleLanguage.Core
             // 索引器: 参数类型任意(key可以是int/string/泛型等), _getItem_返回任意, _setItem_返回void
             AddRule(new BuiltinMemberFunctionRule("_getItem_", 1, EBuiltinParamCheckMode.Any, EBuiltinReturnCheckMode.Any));
             AddRule(new BuiltinMemberFunctionRule("_setItem_", 2, EBuiltinParamCheckMode.Any, EBuiltinReturnCheckMode.Void));
-
-            // 资源管理(预留): 0个参数, _enter_返回当前类类型, _exit_返回void
-            // 同时收录 _enter_ 与 __enter_ 两种写法
-            AddRule(new BuiltinMemberFunctionRule("_enter_", 0, EBuiltinParamCheckMode.Any, EBuiltinReturnCheckMode.CurrentClass));
-            AddRule(new BuiltinMemberFunctionRule("_exit_", 0, EBuiltinParamCheckMode.Any, EBuiltinReturnCheckMode.Void));
         }
 
         private static void AddRule(BuiltinMemberFunctionRule rule)

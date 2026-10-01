@@ -1,9 +1,9 @@
 //****************************************************************************
-//  File:      MacroManager.cs
+//  File:      CompileBeforeManager.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
 //  DateTime: 2026/9/10 12:00:00
-//  Description: static if 编译期宏值管理器（global.macro）
+//  Description: global.macro 编译期宏值管理器
 //****************************************************************************
 //  数据来源（优先级从低到高）：
 //    1. project jsonc 的 global.macro 段（ProjectConfig.Global.Macro）；
@@ -14,8 +14,7 @@
 //  生命周期：
 //    1. 编译开始（InjectProjectData 步骤）LoadFromConfig 重置为 jsonc 初始值并应用外部宏；
 //    2. CompileBefore() 预扫描通过 SetMacroValue 修改（源码内唯一合法修改入口）；
-//    3. MetaCore 层 static if 用 EvaluateStaticCondition 编译期求值，
-//       求值结果决定分支裁剪——static 判断不进入 runtime / IR 层。
+//    3. 最终宏值注入为 Project 静态成员 macro（global.macro.<name>，运行期只读）。
 //****************************************************************************
 
 using SimpleLanguage.Compile;
@@ -190,7 +189,7 @@ namespace SimpleLanguage.Project
             if (string.IsNullOrEmpty(name) || !m_MacroValues.ContainsKey(name))
             {
                 Log.AddMetaCoreLog(LID.ProjectMacroManagerMacroUndefined, token,
-                    "Error static if 宏未定义: global.macro." + (name ?? "?"));
+                    "Error CompileBefore 宏未定义: global.macro." + (name ?? "?"));
                 return false;
             }
             // 值类别校验：只接受布尔/数值/字符串
@@ -245,26 +244,6 @@ namespace SimpleLanguage.Project
             return nameList;
         }
 
-        // ============ static if 条件编译期求值 ============
-
-        /// <summary>
-        /// static if 条件编译期求值入口。
-        /// 支持：宏引用/常量的 ==/!=/</<=/>/>=、布尔宏直接引用、&amp;&amp;/||/!、括号。
-        /// 求值失败（语法/类型/未定义宏）时记录错误并返回 false。
-        /// </summary>
-        public bool EvaluateStaticCondition(FileMetaBaseTerm term, out bool result)
-        {
-            result = false;
-            var root = GetEvalRoot(term);
-            if (root == null)
-            {
-                Log.AddMetaCoreLog(LID.ProjectMacroManagerNotSupportExpress, term?.token,
-                    "Error static if 条件表达式无法解析: " + (term?.ToFormatString() ?? "null"));
-                return false;
-            }
-            return EvaluateBoolTerm(root, out result);
-        }
-
         /// <summary>把 TermExpress/ParTerm 归一到其 AST 根；多元素 ParTerm（root==this）不支持。</summary>
         private FileMetaBaseTerm GetEvalRoot(FileMetaBaseTerm term)
         {
@@ -281,154 +260,6 @@ namespace SimpleLanguage.Project
                 return null;
             }
             return term;
-        }
-
-        /// <summary>求值一个必须为布尔的子表达式。</summary>
-        private bool EvaluateBoolTerm(FileMetaBaseTerm term, out bool result)
-        {
-            result = false;
-            if (term == null)
-            {
-                Log.AddMetaCoreLog(LID.ProjectMacroManagerIssue, (Token)null, "Error static if 条件子表达式为空!!");
-                return false;
-            }
-            if (term is FileMetaSymbolTerm symbol)
-            {
-                return EvaluateSymbolTerm(symbol, out result);
-            }
-            if (term is FileMetaConstValueTerm || term is FileMetaCallTerm)
-            {
-                if (!TryEvaluateOperand(term, out var operand))
-                    return false;
-                if (operand.kind != EOperandKind.Boolean)
-                {
-                    Log.AddMetaCoreLog(LID.ProjectMacroManagerTypeMismatch, term.token,
-                        "Error static if 条件必须是布尔值: " + term.ToFormatString());
-                    return false;
-                }
-                result = operand.boolValue;
-                return true;
-            }
-            if (term is FileMetaParTerm || term is FileMetaTermExpress)
-            {
-                var root = GetEvalRoot(term);
-                if (root == null)
-                {
-                    Log.AddMetaCoreLog(LID.ProjectMacroManagerNotSupportExpress, term.token,
-                        "Error static if 条件表达式无法解析: " + term.ToFormatString());
-                    return false;
-                }
-                return EvaluateBoolTerm(root, out result);
-            }
-            Log.AddMetaCoreLog(LID.ProjectMacroManagerNotSupportExpress, term.token,
-                "Error static if 条件不支持该语法: " + term.ToFormatString());
-            return false;
-        }
-
-        /// <summary>求值符号节点（运算符）。</summary>
-        private bool EvaluateSymbolTerm(FileMetaSymbolTerm symbol, out bool result)
-        {
-            result = false;
-            var opType = symbol.symBolType;
-            switch (opType)
-            {
-                case ETokenType.Not:    // ! 一元
-                    {
-                        if (!IsUnarySymbol(symbol) || symbol.right == null)
-                        {
-                            Log.AddMetaCoreLog(LID.ProjectMacroManagerNotSupportExpress, symbol.token,
-                                "Error static if 条件中 '!' 只能作为一元前缀使用!!");
-                            return false;
-                        }
-                        if (!EvaluateBoolTerm(symbol.right, out bool rv))
-                            return false;
-                        result = !rv;
-                        return true;
-                    }
-                case ETokenType.And:    // &&
-                case ETokenType.Or:     // ||
-                    {
-                        if (symbol.left == null || symbol.right == null)
-                        {
-                            Log.AddMetaCoreLog(LID.ProjectMacroManagerNotSupportExpress, symbol.token,
-                                "Error static if 条件中 '" + symbol.token?.lexeme?.ToString() + "' 缺少操作数!!");
-                            return false;
-                        }
-                        if (!EvaluateBoolTerm(symbol.left, out bool lv))
-                            return false;
-                        // && / || 求值：先求左边，必要时再求右边（编译期无副作用，直接都求也可）
-                        if (!EvaluateBoolTerm(symbol.right, out bool rv2))
-                            return false;
-                        result = (opType == ETokenType.And) ? (lv && rv2) : (lv || rv2);
-                        return true;
-                    }
-                case ETokenType.Equal:          // ==
-                case ETokenType.NotEqual:       // !=
-                case ETokenType.Less:           // <
-                case ETokenType.LessOrEqual:    // <=
-                case ETokenType.Greater:        // >
-                case ETokenType.GreaterOrEqual: // >=
-                    {
-                        if (symbol.left == null || symbol.right == null)
-                        {
-                            Log.AddMetaCoreLog(LID.ProjectMacroManagerNotSupportExpress, symbol.token,
-                                "Error static if 条件中 '" + symbol.token?.lexeme?.ToString() + "' 缺少操作数!!");
-                            return false;
-                        }
-                        if (!TryEvaluateOperand(symbol.left, out var lv))
-                            return false;
-                        if (!TryEvaluateOperand(symbol.right, out var rv))
-                            return false;
-                        return CompareOperand(symbol, lv, rv, out result);
-                    }
-                default:
-                    {
-                        Log.AddMetaCoreLog(LID.ProjectMacroManagerNotSupportOperate, symbol.token,
-                            "Error static if 条件中不支持的运算符: " + (symbol.token?.lexeme?.ToString() ?? "?"));
-                        return false;
-                    }
-            }
-        }
-
-        /// <summary>
-        /// 一元前缀判定：BuildTst 构树时一元符号的 left 是新建的同 token 的 isOnlyOne 符号节点；
-        /// 二元符号的 left/right 是操作数。据此区分一元/二元。
-        /// </summary>
-        private static bool IsUnarySymbol(FileMetaSymbolTerm symbol)
-        {
-            return symbol.left is FileMetaSymbolTerm lst
-                && lst.isOnlyOne
-                && ReferenceEquals(lst.token, symbol.token);
-        }
-
-        /// <summary>求值比较/逻辑运算的操作数（宏引用或常量）。</summary>
-        private bool TryEvaluateOperand(FileMetaBaseTerm term, out OperandValue operand)
-        {
-            operand = default;
-            if (term == null)
-                return false;
-            if (term is FileMetaConstValueTerm cvt)
-            {
-                return TryConstToOperand(cvt, out operand);
-            }
-            if (term is FileMetaCallTerm call)
-            {
-                return TryMacroRefToOperand(call, out operand);
-            }
-            if (term is FileMetaParTerm || term is FileMetaTermExpress)
-            {
-                var root = GetEvalRoot(term);
-                if (root == null)
-                {
-                    Log.AddMetaCoreLog(LID.ProjectMacroManagerNotSupportExpress, term.token,
-                        "Error static if 条件表达式无法解析: " + term.ToFormatString());
-                    return false;
-                }
-                return TryEvaluateOperand(root, out operand);
-            }
-            Log.AddMetaCoreLog(LID.ProjectMacroManagerNotSupportExpress, term.token,
-                "Error static if 条件的操作数只支持宏引用与常量: " + term.ToFormatString());
-            return false;
         }
 
         /// <summary>常量 token → 操作数。String/Number/NumberReal/BoolValue。</summary>
@@ -462,7 +293,7 @@ namespace SimpleLanguage.Project
                         catch
                         {
                             Log.AddMetaCoreLog(LID.ProjectMacroManagerNotSupportExpress, token,
-                                "Error static if 条件中的数字常量无法解析: " + token.ToLexemeAllString());
+                                "Error CompileBefore 宏赋值中的数字常量无法解析: " + token.ToLexemeAllString());
                             return false;
                         }
                     }
@@ -475,13 +306,13 @@ namespace SimpleLanguage.Project
                             return true;
                         }
                         Log.AddMetaCoreLog(LID.ProjectMacroManagerNotSupportExpress, token,
-                            "Error static if 条件中的布尔常量无法解析: " + token.ToLexemeAllString());
+                            "Error CompileBefore 宏赋值中的布尔常量无法解析: " + token.ToLexemeAllString());
                         return false;
                     }
                 default:
                     {
                         Log.AddMetaCoreLog(LID.ProjectMacroManagerNotSupportExpress, token,
-                            "Error static if 条件只支持字符串/数字/布尔常量: " + token.ToLexemeAllString());
+                            "Error CompileBefore 宏赋值只支持字符串/数字/布尔常量: " + token.ToLexemeAllString());
                         return false;
                     }
             }
@@ -500,7 +331,7 @@ namespace SimpleLanguage.Project
                     if (nodeList[i].isCallFunction || nodeList[i].isArray || nodeList[i].isTemplate)
                     {
                         Log.AddMetaCoreLog(LID.ProjectMacroManagerNotSupportExpress, call.token,
-                            "Error static if 条件中的宏引用不允许函数调用/下标/模板: " + call.ToFormatString());
+                            "Error CompileBefore 宏引用不允许函数调用/下标/模板: " + call.ToFormatString());
                         return false;
                     }
                 }
@@ -510,16 +341,16 @@ namespace SimpleLanguage.Project
                 || nameList[0] != "global" || nameList[1] != "macro")
             {
                 Log.AddMetaCoreLog(LID.ProjectMacroManagerNotSupportExpress, call.token,
-                    "Error static if 条件中只允许引用 global.macro.宏名: " + call.ToFormatString());
-                return false;
-            }
-            string macroName = nameList[2];
-            if (!TryGetMacroValue(macroName, out var value))
-            {
-                Log.AddMetaCoreLog(LID.ProjectMacroManagerMacroUndefined, call.token,
-                    "Error static if 引用了未定义的宏: global.macro." + macroName);
-                return false;
-            }
+                "Error CompileBefore 中只允许引用 global.macro.宏名: " + call.ToFormatString());
+            return false;
+        }
+        string macroName = nameList[2];
+        if (!TryGetMacroValue(macroName, out var value))
+        {
+            Log.AddMetaCoreLog(LID.ProjectMacroManagerMacroUndefined, call.token,
+                "Error CompileBefore 引用了未定义的宏: global.macro." + macroName);
+            return false;
+        }
             return TryJsonElementToOperand(value, call.token, out operand);
         }
 
@@ -551,63 +382,6 @@ namespace SimpleLanguage.Project
             Log.AddMetaCoreLog(LID.ProjectMacroManagerMacroValueInvalid, token,
                 "Error global.macro 宏值只支持布尔/数值/字符串，当前类别: " + element.ValueKind);
             return false;
-        }
-
-        /// <summary>编译期比较两个操作数。类别不一致报错；Boolean/String 只支持 ==/!=。</summary>
-        private bool CompareOperand(FileMetaSymbolTerm symbol, OperandValue lv, OperandValue rv, out bool result)
-        {
-            result = false;
-            if (lv.kind != rv.kind)
-            {
-                Log.AddMetaCoreLog(LID.ProjectMacroManagerTypeMismatch, symbol.token,
-                    "Error static if 条件比较的操作数类型不一致: " + lv.kind + " vs " + rv.kind);
-                return false;
-            }
-            switch (symbol.symBolType)
-            {
-                case ETokenType.Equal:
-                    result = EqualOperand(lv, rv);
-                    return true;
-                case ETokenType.NotEqual:
-                    result = !EqualOperand(lv, rv);
-                    return true;
-                case ETokenType.Less:
-                case ETokenType.LessOrEqual:
-                case ETokenType.Greater:
-                case ETokenType.GreaterOrEqual:
-                    {
-                        if (lv.kind != EOperandKind.Number)
-                        {
-                            Log.AddMetaCoreLog(LID.ProjectMacroManagerNotSupportOperate, symbol.token,
-                                "Error static if 条件中 '" + symbol.token?.lexeme?.ToString() + "' 只支持数值比较!!");
-                            return false;
-                        }
-                        switch (symbol.symBolType)
-                        {
-                            case ETokenType.Less: result = lv.numberValue < rv.numberValue; break;
-                            case ETokenType.LessOrEqual: result = lv.numberValue <= rv.numberValue; break;
-                            case ETokenType.Greater: result = lv.numberValue > rv.numberValue; break;
-                            case ETokenType.GreaterOrEqual: result = lv.numberValue >= rv.numberValue; break;
-                        }
-                        return true;
-                    }
-                default:
-                    {
-                        Log.AddMetaCoreLog(LID.ProjectMacroManagerNotSupportOperate, symbol.token,
-                            "Error static if 条件中不支持的比较运算符: " + (symbol.token?.lexeme?.ToString() ?? "?"));
-                        return false;
-                    }
-            }
-        }
-        private static bool EqualOperand(OperandValue lv, OperandValue rv)
-        {
-            switch (lv.kind)
-            {
-                case EOperandKind.Boolean: return lv.boolValue == rv.boolValue;
-                case EOperandKind.Number: return lv.numberValue == rv.numberValue;
-                case EOperandKind.String: return lv.stringValue == rv.stringValue;
-                default: return false;
-            }
         }
 
         // ============ CompileBefore 赋值右值求值 ============

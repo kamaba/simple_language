@@ -36,10 +36,6 @@ internal static class Program
             {
                 projectPath = Path.Combine(repoRoot, "test", "Other", "NullFastTest", "ProjectTest");
             }
-            else if (arg == "StaticIf")
-            {
-                projectPath = Path.Combine(repoRoot, "test", "Other", "StaticIfTest", "ProjectTest");
-            }
             else if (arg == "JsonTest")
             {
                 projectPath = Path.Combine(repoRoot, "test", "Other", "JsonTest", "JsonTest");

@@ -210,7 +210,6 @@ namespace SimpleLanguage.Project
                 // Inject jsonc data (root "data" + legacy global.data) into Project meta members before statements parse.
                 ProjectClass.InjectProjectGlobalDataFromConfig();
                 // global.macro 宏：载入 jsonc 初始值后注入 Project 静态成员 macro（运行期可读）。
-                // static if 判断在编译期（MetaCore 层）完成，不依赖该成员。
                 ProjectClass.InjectProjectMacroMember();
                 // 系统集成成员：注入 Project 静态 Array<Object> _inputArgs（jsonc data 同名项优先）。
                 ProjectClass.InjectInputArgsMember();
@@ -348,23 +347,27 @@ namespace SimpleLanguage.Project
                 if (mmf.ownerMetaClass is MetaClass omc && omc.isInterfaceClass) continue; // 接口类成员
                 if (mmf.name != null && s_AutoInlineOperatorNames.Contains(mmf.name)) continue; // operator
                 if (overriddenSet.Contains(mmf)) continue;                    // 被子类 override
-                if (HasRuntimeHandleAttribute(mmf)) continue;                 // 运行时 attribute (如 @DllImport): 调用点须保留 CallStatic 供 cvm 装配期改写绑定 (对标 C# P/Invoke 不可内联), inline 展开会吞掉调用点只剩 fallback 体
+                if (HasPreloadOrRuntimeAttribute(mmf)) continue;             // Preload/Runtime 时点 attribute (如 @DllImport): 调用点须保留 CallStatic 供 cvm 装配期改写绑定 (对标 C# P/Invoke 不可内联), inline 展开会吞掉调用点只剩 fallback 体
                 if (!mmf.CanAutoInlineBody(maxStatementCount)) continue;      // 条数/违禁/无源码体
 
                 mmf.SetAutoInline();
             }
         }
 
-        /// <summary>方法是否带运行时 handleType 的 attribute (EAttributeHandleType.Runtime = 1)。
-        /// 这类方法的调用点是 cvm 装配期绑定 (CallStatic 改写) 的锚点, 不可被 inline 消除</summary>
-        private static bool HasRuntimeHandleAttribute(MetaMemberFunction mmf)
+        /// <summary>方法是否带 Preload/Runtime 时点的 attribute（EAttributeStage.Preload=2 / Runtime=3）。
+        /// Preload 方法的调用点是 cvm 装配期绑定 (CallStatic 改写) 的锚点, 不可被 inline 消除;
+        /// Runtime 方法将有执行期钩子 (P7), 同样保留调用点</summary>
+        private static bool HasPreloadOrRuntimeAttribute(MetaMemberFunction mmf)
         {
             var attrs = mmf.attributeList;
             if (attrs == null)
                 return false;
             for (int i = 0; i < attrs.Count; i++)
             {
-                if (attrs[i] != null && attrs[i].handleType == 1)
+                var attr = attrs[i];
+                if (attr != null
+                    && (attr.attributeStage == MetaAttribute.StagePreload
+                        || attr.attributeStage == MetaAttribute.StageRuntime))
                     return true;
             }
             return false;

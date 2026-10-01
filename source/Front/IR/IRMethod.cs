@@ -163,8 +163,8 @@ namespace SimpleLanguage.IR
         }
 
         /// <summary>
-        /// 从 MetaMemberFunction 的 attribute 中收集 @Nickname 别名，
-        /// 加上原名组成 exportNameList。
+        /// 从 MetaMemberFunction 的 attribute 中收集 Compiling 时点的导出别名
+        /// （ExportName 语义，如 @Nickname），加上原名组成 exportNameList。
         /// </summary>
         private void CollectExportNames(MetaMemberFunction mmf)
         {
@@ -173,12 +173,12 @@ namespace SimpleLanguage.IR
             // 原名（短名）
             if (!string.IsNullOrEmpty(mmf.name))
                 m_ExportNameList.Add(mmf.name);
-            // 收集 @Nickname
+            // 收集别名（经 Compiling 消费语义注册表分发，P5）
             var attrs = mmf.attributeList;
             if (attrs == null) return;
             foreach (var attr in attrs)
             {
-                if (attr == null || attr.name != "Nickname") continue;
+                if (AttributeManager.GetCompilingConsumer(attr) != ECompilingConsumer.ExportName) continue;
                 string nickname = attr.GetStringArg(0);
                 if (!string.IsNullOrEmpty(nickname) && !m_ExportNameList.Contains(nickname))
                     m_ExportNameList.Add(nickname);
@@ -186,7 +186,7 @@ namespace SimpleLanguage.IR
         }
 
         /// <summary>
-        /// 判断 MetaMemberFunction 是否标注了 @AOT() 属性。
+        /// 判断 MetaMemberFunction 是否标注了 AotFlag 语义属性（如 @AOT()，P5 经注册表分发）。
         /// </summary>
         private static bool HasAotAttribute(MetaMemberFunction mmf)
         {
@@ -194,15 +194,15 @@ namespace SimpleLanguage.IR
             if (attrs == null) return false;
             foreach (var attr in attrs)
             {
-                if (attr != null && attr.name == "AOT")
+                if (AttributeManager.GetCompilingConsumer(attr) == ECompilingConsumer.AotFlag)
                     return true;
             }
             return false;
         }
 
         /// <summary>
-        /// 查找 MetaMemberFunction 上标注的 @GPU(...) 属性实例（含 tile/launch 参数）。
-        /// 未标注返回 null。
+        /// 查找 MetaMemberFunction 上标注的 GpuKernel 语义属性实例（如 @GPU(...)，含 tile/launch 参数）。
+        /// 未标注返回 null（P5 经注册表分发）。
         /// </summary>
         private static MetaAttribute FindGpuAttribute(MetaMemberFunction mmf)
         {
@@ -210,7 +210,7 @@ namespace SimpleLanguage.IR
             if (attrs == null) return null;
             foreach (var attr in attrs)
             {
-                if (attr != null && attr.name == "GPU")
+                if (AttributeManager.GetCompilingConsumer(attr) == ECompilingConsumer.GpuKernel)
                     return attr;
             }
             return null;
@@ -292,7 +292,7 @@ namespace SimpleLanguage.IR
                 foreach (var ap in mp.attributeList)
                 {
                     if (ap == null || string.IsNullOrEmpty(ap.name)) continue;
-                    m_RefAttributeList.Add(new MetaAttribute(ap.name, ap.args, ap.handleType));
+                    m_RefAttributeList.Add(new MetaAttribute(ap.name, ap.args, ap.stage, ap.targets));
                 }
             }
         }

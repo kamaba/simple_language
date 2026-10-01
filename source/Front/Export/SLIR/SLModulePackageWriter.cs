@@ -795,16 +795,20 @@ namespace SimpleLanguage.Export.SLIR
                 if (m.bindMetaFunction is MetaMemberFunction mmf)
                 {
                     ExportAttributes(mp.attributeList, mmf.attributeList);
-                    // DllImport（运行时 attribute）sig 补全：cvm 装配期（run 前）完成
+                    // DllImport（Preload 时点 attribute）sig 补全：cvm 装配期（run 前）完成
                     // native 绑定的签名依据。attribute 第 3 实参可手写 sig（args.Count==3
                     // 时不覆盖）；缺省时从函数签名推导（形参 defineMetaType + 返回类型），
                     // 含无法映射的类型（如 Ptr）时推导失败、不追加——cvm 侧按绑定失败
                     // 回退 SL 函数体 fallback。
+                    // P6：识别依据从按名（=="DllImport"）改为按 stage==Preload——名字
+                    // 知识收敛到 cvm 侧 vm_runtime_attribute 处理器注册表一处；args>=2
+                    // 形态门控保留（Route 等单参 Preload 属性不受影响）。
                     if (mp.attributeList != null)
                     {
                         foreach (var ap in mp.attributeList)
                         {
-                            if (ap != null && ap.name == "DllImport" && ap.args != null
+                            if (ap != null && ap.stage == Core.MetaAttribute.StagePreload
+                                && ap.args != null
                                 && ap.args.Count >= 2 && ap.args.Count < 3)
                             {
                                 var sig = Core.MetaDefineVarStatements.BuildFFIFunctionSigFromMetaFunction(mmf);
@@ -1774,7 +1778,13 @@ namespace SimpleLanguage.Export.SLIR
                 if (attr == null || string.IsNullOrEmpty(attr.name)) continue;
                 // Ensure Parse() has been called so stringArgs is populated
                 attr.Parse();
-                var pkg = new SLAttributePackage { name = attr.name, handleType = attr.handleType };
+                // stage/targets 契约导出（未解析时兜底 Compiling+All，与旧默认一致）
+                var pkg = new SLAttributePackage
+                {
+                    name = attr.name,
+                    stage = attr.attributeStage >= 0 ? attr.attributeStage : Core.MetaAttribute.StageCompiling,
+                    targets = attr.attributeTargets > 0 ? attr.attributeTargets : Core.MetaAttribute.TargetAll,
+                };
                 if (attr.stringArgs != null)
                 {
                     foreach (var arg in attr.stringArgs)

@@ -445,6 +445,11 @@ namespace SimpleLanguage.Logging
         MetaCoreAttributeAttributeHookOwnerAttr = 21011,
         MetaCoreAttributeIsNullMetaAttributeAttribute = 21039,
         MetaCoreAttributeNotFoundMetaAttributeAttribute = 21040,
+        // 注：21041-21463 已被 MetaCore 其它段占用，Attribute 段新号接 21464
+        MetaCoreAttributeStageTargetsNotFound = 21464,
+        MetaCoreAttributePlacementInvalid = 21465,
+        MetaCoreAttributePreCompileSkip = 21466,
+        FileMetaSyntaxStaticIfDeprecated = 21467,
         // ClassManager
         MetaCoreClassManagerNotFoundNotFound = 21012,
         MetaCoreClassManagerNotAllowNamespaceData = 21013,
@@ -1039,16 +1044,12 @@ namespace SimpleLanguage.Logging
         // 平台校验（r4：Front 编译期两维校验——当前环境 + 输出 targets，§9.1/§9.3③）
         PluginPlatformMismatchFatal = 22139,
         PluginPlatformSkipped = 22140,
-        // ---- StaticIf 模块（static if 编译期条件编译 / global.macro 宏）----
-        ProjectMacroManagerIssue = 23000,
+        // ---- MacroManager（global.macro 宏 / CompileBefore 赋值求值）----
         ProjectMacroManagerMacroUndefined = 23001,
         ProjectMacroManagerNotSupportExpress = 23002,
-        ProjectMacroManagerNotSupportOperate = 23003,
-        ProjectMacroManagerTypeMismatch = 23004,
         ProjectMacroManagerMacroValueInvalid = 23005,
         ProjectMacroManagerMacroOnlyModifyInCompileBefore = 23006,
         ProjectMacroManagerMacroNotConst = 23007,
-        FileMetaSyntaxStaticIfFollowKey = 23008,
         ProjectMacroManagerExternalMacroApplied = 23009,
 
     }

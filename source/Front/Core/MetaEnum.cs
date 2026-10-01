@@ -25,6 +25,10 @@ namespace SimpleLanguage.Core
         public Dictionary<string, MetaMemberVariable> metaMemberVariableDict => m_MetaMemberVariableDict;
         /// <summary>源码绑定（用于 IR 导出路径等）。</summary>
         public FileMetaClass boundFileMetaClass => m_FileMetaClass;
+        /// <summary>enum 声明级 attribute 列表（P2 注册点扩展：TargetEnum=4）</summary>
+        public List<MetaAttribute> attributeList => m_AttributeList;
+
+        protected readonly List<MetaAttribute> m_AttributeList = new List<MetaAttribute>();
 
         protected MetaMemberVariable m_ValuesMetaVariable = null;
         protected Dictionary<string, MetaMemberEnum> m_MetaMemberEnumDict = new Dictionary<string, MetaMemberEnum>();
@@ -37,6 +41,16 @@ namespace SimpleLanguage.Core
         {
             m_Name = _name;
             m_Type = EType.Enum;
+        }
+
+        /// <summary>从 FileMetaClass 拷贝声明级 attribute（与 MetaClass.AddAttributes 同构）</summary>
+        public void AddAttributes(List<FileMetaAttributeSyntax> list)
+        {
+            if (list == null || list.Count == 0) return;
+            for (int i = 0; i < list.Count; i++)
+            {
+                m_AttributeList.Add(new MetaAttribute(list[i]));
+            }
         }
         public void SetClassDefineType(EClassDefineType type)
         {
@@ -268,6 +282,8 @@ namespace SimpleLanguage.Core
         {
             m_FileMetaClass = fmc;
             m_Token = fmc.token;
+            // P2: 拷贝 enum 声明级 attribute（FileMetaClass 在 class/enum/data 分流前统一挂接）
+            AddAttributes(fmc.attributeList);
             if (fmc.memberFunctionList.Count > 0)
             {
                 Log.AddMetaCoreLog(LID.MetaCoreEnumMemberFunctionNot, m_Token, " Error member function not should function ");

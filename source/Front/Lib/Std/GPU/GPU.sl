@@ -6,7 +6,7 @@ public class GPU extends Attribute
     #   @GPU( 32, 32 )                指定 tile 尺寸
     #   @GPU( 32, 32, 4, 0 )          tile 尺寸 + tileNum + groupId
     #   @GPU( 32, 32, 4, 0, 16, 16, 1, 256, 1, 1, 0, 0, "kernel" )  全参
-    # 标注在成员函数上，由 MLIRExporter 发射 gpu.module/gpu.func，
+    # 编译中（Compiling）生效: 标注在成员函数上, 由 MLIRExporter 发射 gpu.module/gpu.func,
     # host 侧发射 gpu.launch 调度逻辑
 
     # ---- Tile 分块参数（矩阵分块计算） ----
@@ -47,7 +47,8 @@ public class GPU extends Attribute
     # 无参构造: @GPU() 使用全部默认值
     override _init_()
     {
-        this._attributeHandleType = 0
+        this._attributeStage = EAttributeStage.Compiling
+        this._attributeTargets = EAttributeTarget.Method
     }
 
     # 全参构造:
@@ -72,7 +73,8 @@ public class GPU extends Attribute
         this._sharedMemorySize = sharedMemorySize
         this._deviceId = deviceId
         this._kernelName = kernelName
-        this._attributeHandleType = 0
+        this._attributeStage = EAttributeStage.Compiling
+        this._attributeTargets = EAttributeTarget.Method
     }
 
     # ---- Tile 参数 getter ----
@@ -140,11 +142,5 @@ public class GPU extends Attribute
     public get string kernelName()
     {
         ret this._kernelName
-    }
-
-    # 编译时回调 - 由 C# 侧 AttributeManager 处理:
-    # MLIRExporter 读取 tile/launch 参数发射 gpu.module + gpu.func + gpu.launch
-    override void OnCompile()
-    {
     }
 }

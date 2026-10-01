@@ -5,11 +5,6 @@
       "commandLineArgs": "NullFast",
       "nativeDebugging": true
     },
-    "StaticIfTest": {
-      "commandName": "Project",
-      "commandLineArgs": "StaticIf",
-      "nativeDebugging": true
-    },
     "JsonTest": {
       "commandName": "Project",
       "commandLineArgs": "JsonTest",

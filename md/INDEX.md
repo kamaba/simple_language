@@ -25,6 +25,7 @@
 | [project/project.md](./project/project.md) | 工程概念：`ProjectConfig`、编译文件列表、入口与全局变量（偏语言侧叙述） |
 | [project/project-module.md](./project/project-module.md) | 模块与类组织方式说明 |
 | [project/project-config-jsonc-guide.md](./project/project-config-jsonc-guide.md) | JSONC 字段详解与迁移注意点 |
+| [project/static-if.md](./project/static-if.md) | **global.macro 宏数据面**：jsonc `global.macro` / `CompileBefore()` 修改 / CLI `--macro` / `SL_MACRO_*` / 宿主 API 注入与优先级链；**static if 编译期条件已废弃**（LID 21467），迁移到 `@Exclude`（PreCompile）或 `compileFiles.ignore` |
 | [project/optimization.md](./project/optimization.md) | **编译优化等级（CLI `-O0..-O3`）**：各等级优化内容（null peephole / 常数融合 store / 小函数自动 inline——O1≤2 / O2≤4 / O3≤7 条）、排除集、与 jsonc `compile.optimize` 的关系 |
 | [project/environment-guide.md](./project/environment-guide.md) | **Environment 平台环境**：`Environment.*` API（current/probe/Override/env/custom/sys）、`Platform` 定义枚举全表、jsonc `platform` 段全量关键字（require 18 字段 / override / variants）、运行期覆盖四通道 |
 | [project/ffi.md](./project/ffi.md) | **FFI 外部函数接口（已落地）**：普通 FFI 调用、`FFI.Library` / `FFI.StaticLibrary`、`dllImports` 配置、`@DllImport` 与 `@DllStaticImport`(opcode 77)、sig 规则、内部原理 |
@@ -39,7 +40,7 @@
 | 文档 | 说明 |
 |------|------|
 | [syntax/introduction.md](./syntax/introduction.md) | 简介与文档约定 |
-| [syntax/keywords.md](./syntax/keywords.md) | **关键字与语法糖总表**：全量关键字分类表（词法器实测）、运算符与特殊符号、语法糖对照（ret/next/yield/await/spawn/static if/$插值/小写容器构造糖）、类成员保留名规则、Core 引用后直接可用类型清单、Core / Environment / Platform 命名空间 |
+| [syntax/keywords.md](./syntax/keywords.md) | **关键字与语法糖总表**：全量关键字分类表（词法器实测）、运算符与特殊符号、语法糖对照（ret/next/yield/await/spawn/$插值/小写容器构造糖/static if 已废弃）、类成员保留名规则、Core 引用后直接可用类型清单、Core / Environment / Platform 命名空间 |
 | [syntax/base.md](./syntax/base.md) | 基本语法 |
 | [syntax/namespace.md](./syntax/namespace.md) | 命名空间 |
 | [syntax/variable.md](./syntax/variable.md) | 变量 |
@@ -78,7 +79,7 @@
 | [syntax/object.md](./syntax/object.md) | 对象 |
 | [syntax/interface.md](./syntax/interface.md) | 接口 |
 | [syntax/extend.md](./syntax/extend.md) | 继承 |
-| [syntax/attribute.md](./syntax/attribute.md) | 特性 / 属性 |
+| [syntax/attribute.md](./syntax/attribute.md) | 特性 / 注解（四时点 PreCompile/Compiling/Preload/Runtime × 五注册点 Class/Data/Enum/Field/Method；`_enter_`/`_exit_` 触发 + 三查询 API；内建全景与旧语法迁移） |
 | [syntax/function.md](./syntax/function.md) | 方法 / 函数 |
 | [syntax/enum.md](./syntax/enum.md) | 枚举 |
 
@@ -115,6 +116,7 @@
 | [syntax/std/Component.md](./syntax/std/Component.md) | Component 组件基类（组件即节点组合树：查询 / 门控 / 消息） |
 | [syntax/std/Sqlite.md](./syntax/std/Sqlite.md) | Sqlite 数据库（DB.Sqlite3） |
 | [../../../csimple_lang/md/design/PROCESS_DESIGN.md](../../../csimple_lang/md/design/PROCESS_DESIGN.md) | Std.OS.Process 外部进程执行（run/start/wait、stdio 三态管道、kill/terminate、环境变量；SL API + C 层设计） |
+| [../../../csimple_lang/md/design/ATTRIBUTE_DESIGN.md](../../../csimple_lang/md/design/ATTRIBUTE_DESIGN.md) | attribute 系统四时点重构（PreCompile/Compiling/Preload/Runtime × 五注册点 × enter/exit；内建迁移映射 + P1..P8 分期） |
 | [syntax/core/Lz4.md](./syntax/core/Lz4.md) | Lz4 块压缩（Core 库：自包含容器格式 + ByteBuffer 底座） |
 | [syntax/core/ProtocalBuffers.md](./syntax/core/ProtocalBuffers.md) | ProtocalBuffers / protobuf 线格式编解码（Core 库：PbWriter / PbReader，proto3 兼容子集） |
 | [syntax/core/Stream.md](./syntax/core/Stream.md) | Stream 元素流（Core 库：Stream\<T\>/Controller/Transformer，推/拉双模 + 背压） |

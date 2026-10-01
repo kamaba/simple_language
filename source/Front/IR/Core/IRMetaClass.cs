@@ -177,8 +177,8 @@ namespace SimpleLanguage.IR
         }
 
         /// <summary>
-        /// 从 MetaBase 的 attributeList 中收集 @Nickname 别名，
-        /// 加上原名组成 exportNameList。
+        /// 从 MetaBase 的 attributeList 中收集 Compiling 时点的导出别名
+        /// （ExportName 语义，如 @Nickname），加上原名组成 exportNameList。
         /// </summary>
         private void CollectExportNames(MetaBase owner)
         {
@@ -190,7 +190,7 @@ namespace SimpleLanguage.IR
             if (!string.IsNullOrEmpty(shortName))
                 m_ExportNameList.Add(shortName);
 
-            // 从 attributeList 中收集 @Nickname（MetaClass/MetaMemberFunction/MetaMemberVariable 各自持有）
+            // 从 attributeList 中收集别名（MetaClass/MetaMemberFunction/MetaMemberVariable 各自持有）
             List<MetaAttribute> attrs = null;
             if (owner is MetaClass mc) attrs = mc.attributeList;
             else if (owner is MetaMemberFunction mmf) attrs = mmf.attributeList;
@@ -198,7 +198,7 @@ namespace SimpleLanguage.IR
             if (attrs == null) return;
             foreach (var attr in attrs)
             {
-                if (attr == null || attr.name != "Nickname") continue;
+                if (AttributeManager.GetCompilingConsumer(attr) != ECompilingConsumer.ExportName) continue;
                 string nickname = attr.GetStringArg(0);
                 if (!string.IsNullOrEmpty(nickname) && !m_ExportNameList.Contains(nickname))
                     m_ExportNameList.Add(nickname);

@@ -534,10 +534,10 @@ Console.writeLine( Environment.sys.tickCount64().toString() )
 | `platform.require` | **CVM 加载期** | 探测值与声明比对，决定模块能否运行（硬性）/ 告警降级（optional） |
 | `platform.override` | **运行期** | 同一份 module.json 换传参换逻辑（测试矩阵、模拟环境） |
 | `global.data`（.sp） | 运行期可读数据注入 | 注入**数据**，不做能力判定 |
-| `global.macro` + `static if` | **编译期** | 分支裁剪，未选中分支不进 IR（产物更小），见 `md/project/static-if.md` |
+| `global.macro` | **编译期** | 宏数据面：jsonc / `CompileBefore()` / `--macro` / `SL_MACRO_*` 编译期定稿，运行期只读（原 static if 分支裁剪已废弃 LID 21467，改用 `@Exclude`），见 `md/project/static-if.md` |
 | `compile.target` | 编译期目标架构 | 与 require.arch 无交集 → Warning 20034 |
 
-选择：需要产物瘦身用 static if；需要运行时自适应分支用 `Environment.current`；需要拒绝在不满足环境运行用 `platform.require`。
+选择：需要按平台/配置裁剪成员或类用 `@Exclude`（PreCompile attribute）；需要运行时自适应分支用 `Environment.current`；需要拒绝在不满足环境运行用 `platform.require`。
 
 ---
 

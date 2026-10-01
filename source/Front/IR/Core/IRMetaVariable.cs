@@ -227,8 +227,8 @@ namespace SimpleLanguage.IR
         }
 
         /// <summary>
-        /// 从 MetaMemberVariable 的 attribute 中收集 @Nickname 别名，
-        /// 加上原名组成 exportNameList。
+        /// 从 MetaMemberVariable 的 attribute 中收集 Compiling 时点的导出别名
+        /// （ExportName 语义，如 @Nickname），加上原名组成 exportNameList。
         /// </summary>
         private void CollectExportNames(MetaMemberVariable mmv)
         {
@@ -237,12 +237,12 @@ namespace SimpleLanguage.IR
             // 原名（短名）
             if (!string.IsNullOrEmpty(mmv.name))
                 m_ExportNameList.Add(mmv.name);
-            // 收集 @Nickname
+            // 收集别名（经 Compiling 消费语义注册表分发，P5）
             var attrs = mmv.attributeList;
             if (attrs == null) return;
             foreach (var attr in attrs)
             {
-                if (attr == null || attr.name != "Nickname") continue;
+                if (AttributeManager.GetCompilingConsumer(attr) != ECompilingConsumer.ExportName) continue;
                 string nickname = attr.GetStringArg(0);
                 if (!string.IsNullOrEmpty(nickname) && !m_ExportNameList.Contains(nickname))
                     m_ExportNameList.Add(nickname);
@@ -278,7 +278,7 @@ namespace SimpleLanguage.IR
                 foreach (var attr in field.attributeList)
                 {
                     if (attr == null || string.IsNullOrEmpty(attr.name)) continue;
-                    m_AttributeList.Add(new MetaAttribute(attr.name, attr.args, attr.handleType));
+                    m_AttributeList.Add(new MetaAttribute(attr.name, attr.args, attr.stage, attr.targets));
                 }
             }
         }

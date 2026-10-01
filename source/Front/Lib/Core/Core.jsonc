@@ -52,6 +52,9 @@
       { "path": "Attribute.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "Nickname.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "AOT.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "DllImport.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "DllStaticImport.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "Exclude.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "Environment.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "Environment/Platform_OS.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "Environment/Platform_Cpu.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
@@ -673,7 +676,11 @@
     // ---- Debug Trace & frameTable (DEBUG_SYSTEM_DESIGN §9.2, P6) ----
     { "name": "SystemDebugLog",           "returnType": "void",   "params": ["string"], "isVariadic": false, "cvmFunction": "vm_sys_debug_log" },
     { "name": "SystemDebugGetTraceLog",   "returnType": "string", "params": [], "isVariadic": false, "cvmFunction": "vm_sys_debug_get_trace_log" },
-    { "name": "SystemDebugGetFrameTable", "returnType": "string", "params": ["Array<object>"], "isVariadic": false, "cvmFunction": "vm_sys_debug_get_frame_table" }
+    { "name": "SystemDebugGetFrameTable", "returnType": "string", "params": ["Array<object>"], "isVariadic": false, "cvmFunction": "vm_sys_debug_get_frame_table" },
+    // ---- Attribute runtime queries (ATTRIBUTE_DESIGN.md P7, Q6) ----
+    { "name": "SystemAttributeGetClassAttributes",  "returnType": "Array<object>", "params": ["string"], "isVariadic": false, "cvmFunction": "vm_sys_attribute_get_class_attributes" },
+    { "name": "SystemAttributeGetFieldAttributes",  "returnType": "Array<object>", "params": ["string", "string"], "isVariadic": false, "cvmFunction": "vm_sys_attribute_get_field_attributes" },
+    { "name": "SystemAttributeGetMethodAttributes", "returnType": "Array<object>", "params": ["string", "string"], "isVariadic": false, "cvmFunction": "vm_sys_attribute_get_method_attributes" }
   ],
   "struct": [
       { "namespace": "Core", "children": 
@@ -710,6 +717,11 @@
         { "class": "Attribute" },
         { "class": "Nickname" },
         { "class": "AOT" },
+        { "class": "DllImport" },
+        { "class": "DllStaticImport" },
+        { "class": "Exclude" },
+        { "enum": "EAttributeStage" },
+        { "enum": "EAttributeTarget" },
         { "class": "Error" },
         { "class": "Tuple" },
         { "class": "Tuple<T1>" },

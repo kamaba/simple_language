@@ -2111,52 +2111,14 @@ namespace SimpleLanguage.Compile
                         break;
                     }
 
-                    // follow 一致性校验: static if 的 follow 必须同为 static (static elif/static else),
-                    // 普通 if 的 follow 不允许带 static 修饰
-                    for (int i = 0; i < akss.followKeySyntaxStructList.Count; i++)
-                    {
-                        var fsns = akss.followKeySyntaxStructList[i];
-                        if (fsns.isStaticModifier != akss.isStaticModifier)
-                        {
-                            Log.AddNodeLog(LID.FileMetaSyntaxStaticIfFollowKey, fsns.keyNode?.token,
-                                "Error static if 与 elif/else 的 static 修饰必须保持一致!!");
-                            break;
-                        }
-                    }
-
+                    // static if 编译期条件编译已废弃 (ATTRIBUTE_DESIGN §7 旧隔离机制收编为 @Exclude):
+                    // 保留 static 修饰检测并显式报 Error, 防止旧代码静默退化为运行期 if
                     if (akss.isStaticModifier)
                     {
-                        // static if 编译期条件编译: FileMeta 层保留完整分支结构 (全部子语法),
-                        // MetaCore 层 HandleMetaSyntax 编译期求值后只把选中分支的子语句接入语句链,
-                        // 未选中分支不参与语义分析与 IR——static 不进 runtime
-                        FileMetaKeyStaticIfSyntax fmksis = FileMetaKeyStaticIfSyntax.ParseStaticIfSyntax(m_FileMeta, akss);
-                        fms = fmksis;
-                        AddParseSyntaxNodeInfo(fmksis);
-
-                        ParseCurrentNodeInfo pcnic = new ParseCurrentNodeInfo(fmksis.ifExpressSyntax.executeBlockSyntax);
-                        m_CurrentNodeInfoStack.Push(pcnic);
-                        ParseSyntax(akss.blockNode);
-                        m_CurrentNodeInfoStack.Pop();
-
-                        for (int i = 0; i < akss.followKeySyntaxStructList.Count; i++)
-                        {
-                            FileMetaBlockSyntax fmbs = null;
-                            if (i < fmksis.elseIfExpressSyntax.Count)
-                            {
-                                fmbs = fmksis.elseIfExpressSyntax[i].executeBlockSyntax;
-                            }
-                            else
-                            {
-                                fmbs = fmksis.elseExpressSyntax?.executeBlockSyntax;
-                            }
-
-                            ParseCurrentNodeInfo pcnic2 = new ParseCurrentNodeInfo(fmbs);
-                            m_CurrentNodeInfoStack.Push(pcnic2);
-                            ParseSyntax(akss.followKeySyntaxStructList[i].blockNode);
-                            m_CurrentNodeInfoStack.Pop();
-                        }
+                        Log.AddNodeLog(LID.FileMetaSyntaxStaticIfDeprecated, akss.keyNode?.token,
+                            "Error static if 编译期条件编译已废弃, 请使用 @Exclude attribute (PreCompile) 或工程级 compileFiles.ignore!!");
                     }
-                    else
+
                     {
                         FileMetaKeyIfSyntax fmkis = FileMetaKeyIfSyntax.ParseIfSyntax(m_FileMeta, akss);
                         fms = fmkis;

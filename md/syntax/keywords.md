@@ -139,18 +139,10 @@
 
 展开发生在 `StructParseToSyntax.cs` 的 `TransformCoroutineKeywordNodes`。详见 [coroutine.md](./coroutine.md)。
 
-### 3.3 编译期条件 `static if`
+### 3.3 编译期条件 `static if`（已废弃）
 
-```sl
-static if global.macro.platform == "Win32"
-{
-    # 仅 Win32 构建参与编译
-}
-static elif ...
-static else ...
-```
-
-编译期求值（`MacroManager`），数据源为 jsonc `global.macro` 与环境变量 `SL_MACRO_*`；未选中的分支不进入编译。
+> **已废弃**（attribute 重构，旧隔离机制收编）：现在写 `static if` 报 **Error（LID 21467）**，该语句按普通 `if` 继续解析（退化为运行期逻辑）。
+> 迁移：成员/类裁剪用 `@Exclude` attribute（PreCompile，标注即不参与编译）；整文件剔除用 jsonc `compileFiles.ignore`；配置值保留 `global.macro.X` 运行期只读访问。详见 [static-if.md](../project/static-if.md)。
 
 ### 3.4 表达式糖
 

@@ -140,7 +140,7 @@ SL 源码内注释（见 §三 3.6）：`#` 行注释、`#! ... !#` 块注释。
 | `yield;`                                                                                               | `Coroutine.yieldNow()`                                                        |
 | `await expr`                                                                                           | `Coroutine.awaitTask(expr)`                                                   |
 | `spawn f(实参...)`                                                                                       | `Coroutine.spawnClosureN(...)`（挂起当前协程，异步执行 f）                                 |
-| `static if / static elif / static else`                                                                | 编译期条件（MacroManager 求值，数据源 jsonc `global.macro` 与环境变量 `SL_MACRO_*`，未选中分支不参与编译） |
+| `static if / static elif / static else`                                                              | **已废弃**（LID 21467 报错，退化为普通 `if`）：成员/类裁剪改用 `@Exclude` attribute（PreCompile），整文件剔除用 jsonc `compileFiles.ignore`，详见 `md/project/static-if.md` |
 | `try? expr` / `try! expr`                                                                              | try 的表达式前缀形式                                                                  |
 | `a ?? b` / `a?.member`                                                                                 | 判空合并 / 判空访问                                                                   |
 | `a..b`                                                                                                 | 构造 `Range`                                                                    |

@@ -30,22 +30,22 @@ ForTest
         }
     }
 
-    # for-in 遍历枚举 EAttributeHandleType（含 break/continue）
+    # for-in 遍历枚举 EAttributeStage（含 break/continue）
     static forInEnumAttrHandleType()
     {
         global.println("---------------forInEnumAttrHandleType--------------")
-        for v in EAttributeHandleType
+        for v in EAttributeStage
         {
-            if v == EAttributeHandleType.Compile
+            if v == EAttributeStage.PreCompile
             {
-                global.println( "EAttributeHandleType--------------Compile " )
+                global.println( "EAttributeStage--------------PreCompile " )
                 continue
             }
-            global.println( "EAttributeHandleType= $v.name.toString() value = $v.value.toString()  " )
+            global.println( "EAttributeStage= $v.name.toString() value = $v.value.toString()  " )
             global.println(v)
-            if v == EAttributeHandleType.Runtime
+            if v == EAttributeStage.Runtime
             {
-                global.println( "EAttributeHandleType--------------Runtime " )
+                global.println( "EAttributeStage--------------Runtime " )
                 break
             }
         }

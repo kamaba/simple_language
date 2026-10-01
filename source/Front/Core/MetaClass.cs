@@ -1096,6 +1096,15 @@ namespace SimpleLanguage.Core
             bool isHave = false;
             foreach (var v2 in fmc.memberVariableList)
             {
+                // PreCompile 送检（ATTRIBUTE_DESIGN §4.1）：@Exclude 等编译前 attribute 命中 →
+                // 该成员变量整体跳过编译（不进 Meta/IR/module.json），
+                // 引用点由符号解析报编译 Error（Q2）。
+                if (AttributeManager.ShouldExcludeByPreCompileAttribute(v2.attributeList))
+                {
+                    Log.AddMetaCoreLog(LID.MetaCoreAttributePreCompileSkip, v2.token,
+                        $"PreCompile attribute 命中跳过: 成员变量 '{m_AllName}.{v2.name}' 不进入编译（不进 module.json）");
+                    continue;
+                }
                 if (s_ReservedMemberNameSet.Contains(v2.name))
                 {
                     Log.AddMetaCoreLog(LID.MetaCoreMemberNameReserved, v2.token,
@@ -1151,6 +1160,15 @@ namespace SimpleLanguage.Core
             }
             foreach (var v2 in fmc.memberFunctionList)
             {
+                // PreCompile 送检（ATTRIBUTE_DESIGN §4.1）：@Exclude 等编译前 attribute 命中 →
+                // 该成员函数整体跳过编译（不进 Meta/IR/module.json），
+                // 引用点由符号解析报编译 Error（Q2）。
+                if (AttributeManager.ShouldExcludeByPreCompileAttribute(v2.attributeList))
+                {
+                    Log.AddMetaCoreLog(LID.MetaCoreAttributePreCompileSkip, v2.token,
+                        $"PreCompile attribute 命中跳过: 成员函数 '{m_AllName}.{v2.name}' 不进入编译（不进 module.json）");
+                    continue;
+                }
                 if (s_ReservedMemberNameSet.Contains(v2.name))
                 {
                     Log.AddMetaCoreLog(LID.MetaCoreMemberNameReserved, v2.token,

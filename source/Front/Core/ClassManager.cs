@@ -149,6 +149,18 @@ namespace SimpleLanguage.Core
             }
             return null;
         }
+
+        /// <summary>
+        /// 按短名查找当前模块（非引用 shell）类，模板数需匹配。
+        /// 供 MetaAttribute.Parse 兜底本模块自定义 attribute 子类：
+        /// 本模块类注册 key 为全名（如 ProjectTest.LogTrace_0），
+        /// GetClassByName(短名) / Core.短名 / Std.短名 均查不到时由此兜底。
+        /// </summary>
+        public MetaClass FindSelfMetaClassByShortName(string shortName, int templateCount)
+        {
+            return FindFirstMetaClassByShortName(shortName, templateCount);
+        }
+
         public bool AddMetaClass( MetaClass mc, MetaModule mm = null )
         {
             MetaNode topLevelNamespace = mm?.metaNode;
@@ -323,6 +335,16 @@ namespace SimpleLanguage.Core
         }
         public MetaBase AddClass( FileMetaClass fmc )
         {
+            // PreCompile 送检（ATTRIBUTE_DESIGN §4.1）：@Exclude 等编译前 attribute 命中 →
+            // 整个类（含 data/enum）不进入后续编译（不进 Meta/IR/module.json），
+            // 引用点由符号解析报编译 Error（Q2）。返回 null 与"类创建失败"同路，
+            // 两处调用方（FileMeta.ParseClass / PorjectClass.ParseCompileClass）均忽略返回值，静默安全。
+            if (AttributeManager.ShouldExcludeByPreCompileAttribute(fmc.attributeList))
+            {
+                Log.AddMetaCoreLog(LID.MetaCoreAttributePreCompileSkip, fmc.token,
+                    $"PreCompile attribute 命中跳过: class '{fmc.name}' 不进入编译（不进 module.json）");
+                return null;
+            }
             bool isCanAddBind = false;
             Token token = fmc.token;
             MetaNode finalTopMetaNode = ModuleManager.instance.selfModule.metaNode;

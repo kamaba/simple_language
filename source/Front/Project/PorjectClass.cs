@@ -429,12 +429,12 @@ namespace SimpleLanguage.Project
             mmv.ParseRealMetaType();
         }
 
-        // global.macro 宏注入（static if 编译期条件编译的数据源）：
+        // global.macro 宏注入（jsonc 宏数据面 + 运行期只读访问）：
         //   1. LoadFromConfig 载入 jsonc global.macro 段初始值（CompileBefore 预扫描在其后修改宏值）；
         //   2. 把最终宏值注入为 Project 静态成员 macro（global.macro.<name>，运行期可读）。
         // 成员定义方式与 jsonc data 的 Object 段一致（匿名 MetaData + MetaNewObjectExpressNode）。
-        // 注意：static if 的条件判断在 MetaCore 层编译期完成（MacroManager.EvaluateStaticCondition），
-        // 未选中分支不参与语义分析与 IR——static 不进 runtime。
+        // 注：static if 编译期条件编译已废弃收编为 @Exclude（ATTRIBUTE_DESIGN §7），
+        // 宏数据面（jsonc/环境变量/CLI 注入）与运行期 macro 只读访问保留。
         public static void InjectProjectMacroMember()
         {
             // 编译开始：重置为 jsonc global.macro 段初始值

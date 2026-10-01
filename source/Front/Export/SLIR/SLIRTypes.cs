@@ -274,15 +274,19 @@ namespace SimpleLanguage.Export.SLIR.Types
     /// <summary>
     /// Serialized attribute data for export/import.
     /// Carries the attribute name and extracted string arguments so that
-    /// the VM loader can reconstruct runtime attributes (Route, Condition, etc.)
+    /// the VM loader can reconstruct runtime attributes (Route, DllImport, etc.)
     /// without needing the full MetaCore/FileMeta parse tree.
     /// </summary>
     public sealed class SLAttributePackage
     {
         public string name { get; set; } = string.Empty;
         public List<string> args { get; set; } = new();
-        /// <summary>0=Compile, 1=Runtime - mirrors EAttributeHandleType from SL</summary>
-        public int handleType { get; set; }
+        /// <summary>生效时点 EAttributeStage：0=PreCompile / 1=Compiling / 2=Preload / 3=Runtime
+        /// （与 MetaAttribute.Stage* 常量、Lib/Core/Attribute.sl 的 EAttributeStage 逐项对齐）</summary>
+        public int stage { get; set; }
+        /// <summary>合法注册点位掩码 EAttributeTarget：Class=1|Data=2|Enum=4|Field=8|Method=16|All=31
+        /// （与 MetaAttribute.Target* 常量、EAttributeTarget 逐项对齐）</summary>
+        public int targets { get; set; }
     }
 
     public sealed class SLFieldPackage

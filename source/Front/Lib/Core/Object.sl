@@ -12,6 +12,17 @@ public class Object
     void _init_()
     {
     }
+
+    #resource management hooks (attribute / with semantics)
+    #_init_ 同款传递模式: 根类真实声明, 子类走普通 override/final 检查流程
+    public Object _enter_()
+    {
+        ret this
+    }
+    public void _exit_()
+    {
+    }
+
     final get Type type()
     {
         ret SystemObjectGetType(this)

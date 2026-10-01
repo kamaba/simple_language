@@ -112,6 +112,15 @@ namespace SimpleLanguage.Core
                         Log.AddMetaCoreLog(LID.MetaCoreLocalCannotLocalFunctions, fmmf.token, "Error local{} functions cannot use static keyword");
                         continue;
                     }
+                    // PreCompile 送检（ATTRIBUTE_DESIGN §4.1）：@Exclude 命中 →
+                    // 该局部函数整体跳过编译（不进 Meta/IR/module.json），
+                    // 引用点由符号解析报编译 Error（Q2）。
+                    if (AttributeManager.ShouldExcludeByPreCompileAttribute(fmmf.attributeList))
+                    {
+                        Log.AddMetaCoreLog(LID.MetaCoreAttributePreCompileSkip, fmmf.token,
+                            $"PreCompile attribute 命中跳过: 局部函数 '{fmmf.name}' 不进入编译（不进 module.json）");
+                        continue;
+                    }
                     var mmf = new MetaMemberFunction(localMc, fmmf);
                     localMc.AddMetaMemberFunction(mmf);
                     // BuildLocalClass 在 ParseMetaClassLink 之后运行，动态创建的 local 函数

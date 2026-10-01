@@ -2,7 +2,7 @@ public class AOT extends Attribute
 {
     # AOT（Ahead-Of-Time）预编译属性
     # 用法: @AOT() 或 @AOT( 2, "x64", "static", true, false, false ) 标注在类/成员上
-    # 当前仅注册到编译时处理器，暂不关联其它导出逻辑
+    # 编译中（Compiling）生效: Front flags|=256 + VM AOT 注册表装配期加载
     #
     # 参数参考其它语言的 AOT 实现：
     #   .NET NativeAOT: PublishAot / TrimMode / RID(windows-x64, linux-arm64)
@@ -37,7 +37,8 @@ public class AOT extends Attribute
     # 无参构造: @AOT() 使用全部默认值
     override _init_()
     {
-        this._attributeHandleType = 0
+        this._attributeStage = EAttributeStage.Compiling
+        this._attributeTargets = EAttributeTarget.All
     }
 
     # 全参构造: @AOT( optimizeLevel, target, linkMode, isDebugInfo, isTrimming, isInitializeAtBuildTime )
@@ -49,7 +50,8 @@ public class AOT extends Attribute
         this._isDebugInfo = isDebugInfo
         this._isTrimming = isTrimming
         this._isInitializeAtBuildTime = isInitializeAtBuildTime
-        this._attributeHandleType = 0
+        this._attributeStage = EAttributeStage.Compiling
+        this._attributeTargets = EAttributeTarget.All
     }
 
     public get Int32 optimizeLevel()
@@ -80,11 +82,5 @@ public class AOT extends Attribute
     public get bool isInitializeAtBuildTime()
     {
         ret this._isInitializeAtBuildTime
-    }
-
-    # 编译时回调 - 预留，暂无逻辑
-    # 后续由 C# 侧 AttributeManager / ExportAot / LLVMEmitter 读取参数决定导出行为
-    override void OnCompile()
-    {
     }
 }

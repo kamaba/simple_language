@@ -139,40 +139,40 @@ EnumTest
         global.println("========== EnumTest (start) ==========")
 
         
-        EAttributeHandleType kind222 = EAttributeHandleType.Compile
-        kind111 = EAttributeHandleType.Compile
+        EAttributeStage kind222 = EAttributeStage.PreCompile
+        kind111 = EAttributeStage.PreCompile
 
         if kind222 == kind111
         {
-            global.println("EAttributeHandleType--------------Compile11111111111")
+            global.println("EAttributeStage--------------PreCompile11111111111")
         }
 
-        if kind222 == EAttributeHandleType.Compile
+        if kind222 == EAttributeStage.PreCompile
         {
-            global.println("EAttributeHandleType--------------Compile1")
+            global.println("EAttributeStage--------------PreCompile1")
         }
-        elif kind222 == EAttributeHandleType.Runtime
+        elif kind222 == EAttributeStage.Runtime
         {
-            global.println("EAttributeHandleType--------------Runtime1")
+            global.println("EAttributeStage--------------Runtime1")
         }
         else
         {
-            global.println("EAttributeHandleType--------------OTHER1")
+            global.println("EAttributeStage--------------OTHER1")
         }
 
         #kind111 =  EShape.r1
-        kind111 = EAttributeHandleType.Runtime
-        if kind111 == EAttributeHandleType.Compile
+        kind111 = EAttributeStage.Runtime
+        if kind111 == EAttributeStage.PreCompile
         {
-            global.println("EAttributeHandleType--------------Compile2")
+            global.println("EAttributeStage--------------PreCompile2")
         }
-        elif kind111 == EAttributeHandleType.Runtime
+        elif kind111 == EAttributeStage.Runtime
         {
-            global.println("EAttributeHandleType--------------Runtime2")
+            global.println("EAttributeStage--------------Runtime2")
         }
         else
         {
-            global.println("EAttributeHandleType--------------OTHER2")
+            global.println("EAttributeStage--------------OTHER2")
         }
 
         EShape shape123 = EShape.r1
@@ -331,6 +331,6 @@ enum EnumErrorRepeat
 #
 # 预期结果：
 # - EErr.First.value == 2、EErr.Six.value == 6、EBytes.x5.value == 14 为 True。
-# - EAttributeHandleType.Compile == EAttributeHandleType.Compile 为 True，EAttributeHandleType.Compile != EAttributeHandleType.Runtime 为 True。
+# - EAttributeStage.PreCompile == EAttributeStage.PreCompile 为 True，EAttributeStage.PreCompile != EAttributeStage.Runtime 为 True。
 # - EShape.r1 == EShape.r2 和 ERectShape.r1 == ERectShape.r2 为 False。
 # - switch GameState.Begin 命中 Begin 分支；无编译/运行时错误。

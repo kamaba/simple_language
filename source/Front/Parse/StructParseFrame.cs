@@ -429,8 +429,9 @@ namespace SimpleLanguage.Compile
                     break;
 
                 // only allow in namespace/class blocks
-                if (currentNodeInfo == null &&
-                    (currentNodeInfo.parseType == EParseNodeType.Function))
+                // （原 `currentNodeInfo == null && ...` 因短路恒 false 成死代码，修正为 != null）
+                if (currentNodeInfo != null &&
+                    currentNodeInfo.parseType == EParseNodeType.Function)
                 {
                     Log.AddFileMetaLog(LID.FileMetaStructFrameAttributeNamespaceClass, "Error @Attribute 只允许写在 namespace{} / class{} 内");
                     // do not consume; let outer parser handle as error or normal token
