@@ -381,6 +381,8 @@ public static void delay( Int64 millis )
 
 延时挂起指定毫秒（**不阻塞线程**）：协程挂起后由调度器定时唤醒，期间调度器可运行其它协程。不在协程上下文（root 直接执行）时**退化为真阻塞**（等价 `OS.Timer.delay`，会卡住整个线程！）。
 
+`millis <= 0`（尤其 `delay(0)`）为**空操作（no-op）**：不挂起、不让出、也不阻塞，立即返回继续执行；需要纯让出时用 `yieldNow()`。
+
 ```sl
 # 并行：总耗时 ≈ max(100,100)，不是 200
 function delayFn = function( int ms ) { Coroutine.delay( ms ) }
@@ -388,7 +390,7 @@ Task e1a = spawn delayFn( 100 )
 Task e1b = spawn delayFn( 100 )
 Coroutine.waitAll2( e1a, e1b )          # 约 100ms
 
-Task e2 = spawn delayFn( 0 )            # Delay(0)：只让出，不阻塞
+Task e2 = spawn delayFn( 0 )            # Delay(0)：空操作，不让出（让出请用 yieldNow）
 ```
 
 ### 6.3 `waitUntil()` — 条件等待（类似 Unity 的 WaitUntil）
@@ -1311,7 +1313,7 @@ check( await hp as int == 30 )
 | 定时器链表升序 | 按 `wake_at_ms` 升序插入，`delay` 到期即唤醒 |
 | 重复唤醒安全 | 多次 `enqueue_ready` 同一协程有守卫，不会重复入队 |
 | 全部结束则收敛 | `vm_scheduler_enter` 的 drain 循环退出 |
-| `delay(0)` 必须 requeue | `ms <= 0` 时若只挂起不入队，协程会既不在就绪队列也不在定时器上，**永久丢失（E2 死锁）** |
+| `delay(0)` 为空操作 | `ms <= 0` 直接返回：不挂起、不入就绪队列、不上定时器；仅 `ms > 0` 才挂起并由定时器唤醒 |
 
 ### 16.2 挂起系统调用的通用协议（Option A）
 

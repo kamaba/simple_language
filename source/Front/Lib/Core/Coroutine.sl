@@ -170,6 +170,8 @@ public class Coroutine extends Object
     #!
      * 延时当前协程指定毫秒数，期间不阻塞线程：协程挂起由调度器定时唤醒，
      * 调度器可继续运行其它协程。
+     * millis <= 0（尤其 0）为空操作：不挂起、不让出、不阻塞，立即返回
+     * （需要纯让出请用 yieldNow）。
      * 若当前不在协程上下文（root 直接执行），则退化为阻塞 sleep
      * （真阻塞线程，等价 OS.Timer.sleep）。
     !#
