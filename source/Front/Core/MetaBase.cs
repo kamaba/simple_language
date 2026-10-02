@@ -125,6 +125,10 @@ namespace SimpleLanguage.Core
         {
             this.m_RefFromType = type;
         }
+        public void SetPermission( EPermission permission )
+        {
+            this.m_Permission = permission;
+        }
         public void SetName( string _name )
         {
             m_Name = _name;

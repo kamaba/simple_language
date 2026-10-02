@@ -24,6 +24,7 @@ namespace SimpleLanguage.Compile
         public bool isData { get { return m_DataToken != null; } }
         public bool isPartial => m_PartialToken != null;
         public Token preInterfaceToken => m_PreInterfaceToken;
+        public Token permissionToken => m_PermissionToken;
         public MetaClass metaClass => m_MetaClass;
         public MetaEnum metaEnum => m_MetaEnum;
         public MetaData metaData => m_MetaData;
@@ -296,7 +297,8 @@ namespace SimpleLanguage.Compile
                     if (token.type == ETokenType.Public
                         || token.type == ETokenType.Private
                         || token.type == ETokenType.Projected
-                        || token.type == ETokenType.Extern)
+                        || token.type == ETokenType.Extern
+                        || token.type == ETokenType.Export)
                     {
                         if (permissionToken == null)
                         {
@@ -673,6 +675,10 @@ namespace SimpleLanguage.Compile
         public void SetMetaEnum(MetaEnum me)
         {
             m_MetaEnum = me;
+            if (m_PermissionToken != null && me != null)
+            {
+                me.SetPermission(CompilerUtil.GetPerMissionByType(m_PermissionToken.type));
+            }
         }
         public void SetMetaData(MetaData md)
         {

@@ -141,6 +141,8 @@ namespace SimpleLanguage.Logging
         ProjectPlatformRequireUnknownField = 20035,
         ProjectPlatformRequireValueInvalid = 20036,
         ProjectPlatformAotFeatureConflict = 20037,
+        // Export（jsonc "export" 段）
+        ProjectPublicExportInvalid = 20038,
         // ---- Process 模块 ----
         // SystemMethodCall
         ProcessSystemMethodCallNotFoundImportSystem = 20051,

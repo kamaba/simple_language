@@ -356,6 +356,22 @@ namespace SimpleLanguage.Export.SLIR
                 // 跳过引用模块的类：它们已由被引用模块导出，不应在当前模块中重复导出。
                 if (c.isRefModulePreBuilt) continue;
                 if (c.typeOwner?.refFromType == RefFromType.RefModule) continue;
+                // jsonc "export"."publicExport" 类导出门槛过滤：
+                // - 未配置（null）→ 不过滤（所有声明类全导出，兼容旧工程）
+                // - "none"   → 仅显式 export 修饰的类导出
+                // - "public" → export / public 修饰的类均导出
+                // - "extern" → export / public / extern 修饰的类均导出
+                // private/protected 永不导出；无修饰符的类按 public 处理（MetaBase 默认权限）。
+                var publicExportMode = ProjectManager.config?.Export?.PublicExport;
+                if (publicExportMode != null)
+                {
+                    var perm = c.typeOwner?.permission ?? EPermission.Public;
+                    var exportable =
+                        perm == EPermission.Export
+                        || (perm == EPermission.Public && publicExportMode >= EPublicExportMode.Public)
+                        || (perm == EPermission.Extern && publicExportMode >= EPublicExportMode.Extern);
+                    if (!exportable) continue;
+                }
                 // Keep module prefix in fullName so that classes from different modules
                 // (e.g. Core.Object vs ProjectTest.Object) have distinct fullNames.
                 var full = NormalizeTypeName(c.irName ?? string.Empty);

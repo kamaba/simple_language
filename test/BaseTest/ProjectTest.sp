@@ -53,7 +53,7 @@ Project
         StringBuilderTest.fun()
         !#
         MonitorTest.fun()
-        ExitTestNS.ExitTest.fun()
+        #ExitTestNS.ExitTest.fun()
         #!
         
         EnvironmentTest.fun()

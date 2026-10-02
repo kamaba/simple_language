@@ -14,7 +14,7 @@ namespace SimpleLanguage.Compile
             var nsArr = ns.Split('.');
             if (nsArr.Length == 0)
             {
-                Debug.Write("ÃüÃû¿Õ¼äÃû³Æ²»ÄÜÎª¿Õ×Ö·û");
+                Debug.Write("ï¿½ï¿½ï¿½ï¿½ï¿½Õ¼ï¿½ï¿½ï¿½ï¿½Æ²ï¿½ï¿½ï¿½Îªï¿½ï¿½ï¿½Ö·ï¿½");
                 return false;
             }
             if (nsArr.Length == 1)
@@ -51,6 +51,7 @@ namespace SimpleLanguage.Compile
                 case EPermission.Public: return "public";
                 case EPermission.Protected: return "protected";
                 case EPermission.Private: return "private";
+                case EPermission.Extern: return "extern";
             }
             return "_public";
         }
@@ -62,6 +63,7 @@ namespace SimpleLanguage.Compile
                 case ETokenType.Public: return EPermission.Public;
                 case ETokenType.Projected: return EPermission.Protected;
                 case ETokenType.Private: return EPermission.Private;
+                case ETokenType.Extern: return EPermission.Extern;
                 default:return EPermission.Null;
             }
         }

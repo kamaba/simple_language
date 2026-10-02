@@ -638,6 +638,7 @@ id,logType,enableAssert,pass,paramCount,domesticTips,zhMessage,,zhFixedTips,enMe
 20035,Warning,FALSE,TRUE,2,,"platform.require 未知字段 '{0}' 已忽略；已知字段见 PLATFORM_CAPABILITY_DESIGN.md §6.2：{1}",,,,
 20036,Error,TRUE,FALSE,4,,"platform.require.{0} 中的 '{1}' 不是合法值；{2}。{3}",,,,
 20037,Error,TRUE,FALSE,3,,"export.aot.features 与 platform.require {0} 矛盾：{1}（features '{2}'）",,,,
+20038,Error,TRUE,FALSE,1,,"export.publicExport '{0}' 非法；可选值：none/public/extern",,,,
 20051,Error,TRUE,FALSE,0,,"import system method call param type not found! name={}, paramType={}",,,,
 20052,Error,TRUE,FALSE,0,,"import system method call param type not found! name={}, paramType={}",,,,
 20053,Error,TRUE,FALSE,0,,import system method call name had define!,,,,

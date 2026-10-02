@@ -358,6 +358,7 @@ namespace SimpleLanguage.Compile
                         case ETokenType.Class:
                         case ETokenType.Interface:
                         case ETokenType.Extern:
+                        case ETokenType.Export:
                         case ETokenType.Public:
                         case ETokenType.Private:
                         case ETokenType.Projected:

@@ -2350,6 +2350,9 @@ namespace SimpleLanguage.Compile
                 case "goto":
                     tokenType = ETokenType.Goto;
                     break;
+                case "export":
+                    tokenType = ETokenType.Export;
+                    break;
                 case "extern":
                     tokenType = ETokenType.Extern;
                     break;

@@ -164,6 +164,21 @@ namespace SimpleLanguage.Project
                 cfg.Export.OutputDir = GetStr(exportObj, "outputDir", cfg.Export.OutputDir);
                 cfg.Export.StringPoolAsBlob = GetBool(exportObj, "stringPoolAsBlob", cfg.Export.StringPoolAsBlob);
                 cfg.Export.ExportPublicOnly = GetBool(exportObj, "exportPublicOnly", cfg.Export.ExportPublicOnly);
+                // "export"."publicExport"："none" | "public" | "extern"（大小写不敏感）；
+                // 未配置 → 保持 null（导出不过滤）；非法值 → Error 20038。
+                if (exportObj.TryGetProperty("publicExport", out var publicExport)
+                    && publicExport.ValueKind == JsonValueKind.String)
+                {
+                    var rawPublicExport = publicExport.GetString() ?? string.Empty;
+                    if (Enum.TryParse<EPublicExportMode>(rawPublicExport, true, out var parsedPublicExport))
+                    {
+                        cfg.Export.PublicExport = parsedPublicExport;
+                    }
+                    else
+                    {
+                        Log.AddProjectLog(LID.ProjectPublicExportInvalid, "", rawPublicExport);
+                    }
+                }
                 cfg.Export.IncludeMetadata = GetBool(exportObj, "includeMetadata", cfg.Export.IncludeMetadata);
 
                 cfg.Export.VersionMain = GetInt(exportObj, "versionMain", cfg.Export.VersionMain);

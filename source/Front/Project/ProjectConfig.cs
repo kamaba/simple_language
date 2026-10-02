@@ -154,6 +154,18 @@ namespace SimpleLanguage.Project
         public EEnvType envType { get; set; } = EEnvType.SLVM;
         public ERunInOS runInOS { get; set; } = ERunInOS.None;
     }
+    /// <summary>
+    /// jsonc "export"."publicExport" 类导出门槛，值按档位递进（支持 &gt;= 比较）：
+    /// - None(0)   仅显式 export 修饰的类导出
+    /// - Public(1)  export 与 public 修饰的类均导出
+    /// - Extern(2)  export/public/extern 修饰的类均导出
+    /// </summary>
+    public enum EPublicExportMode
+    {
+        None = 0,
+        Public = 1,
+        Extern = 2,
+    }
     // Strongly-typed representation of project <ProjectName>.jsonc
     public class ProjectConfig
     {
@@ -433,6 +445,12 @@ namespace SimpleLanguage.Project
             public bool StringPoolAsBlob { get; set; } = true;
             // Only export public methods
             public bool ExportPublicOnly { get; set; } = false;
+            /// <summary>
+            /// 类导出门槛（jsonc "export"."publicExport"："none" | "public" | "extern"）。
+            /// null = 未配置 → 导出不过滤（所有声明类全导出，兼容旧工程）；
+            /// 配置后仅导出达到档位的类，见 EPublicExportMode。
+            /// </summary>
+            public EPublicExportMode? PublicExport { get; set; } = null;
             // Include additional metadata like owner class id, visibility flags
             public bool IncludeMetadata { get; set; } = true;
 

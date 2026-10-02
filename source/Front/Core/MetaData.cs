@@ -50,6 +50,11 @@ namespace SimpleLanguage.Core
             m_IsDynamic = false;
             m_Token = md.token;
             AddPingToken(md?.token);
+            // data 类型级权限 token 传播到 Meta 层（与 MetaClass.BindFileMetaClass 一致）
+            if (md.permissionToken != null)
+            {
+                m_Permission = CompilerUtil.GetPerMissionByType(md.permissionToken.type);
+            }
             /* 拷贝 data 类型级 attribute（@Serializable 等），供 SLIR 导出 */
             if (md.attributeList != null && md.attributeList.Count > 0)
             {

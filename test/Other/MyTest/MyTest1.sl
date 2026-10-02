@@ -19,14 +19,14 @@ MyTest1
 
         var start1 = OS.Timer.clock();
 
-        Coroutine.delay(1500);
+        Coroutine.delay(2500);
 
         Console.println("b2========" + (OS.Timer.clock() - start1 ).toString() )
     }
     static fun()
     {
         spawn WaitTimeaa()
-        Coroutine.yieldNow()
+        #Coroutine.yieldNow()
         Waitimeabbb();
         #!
         # [探针1] 分流一直传: 函数值变量实参在 spawn 点立即求值, probe 应为 0/100/200

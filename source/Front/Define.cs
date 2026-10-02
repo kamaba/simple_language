@@ -17,7 +17,8 @@ namespace SimpleLanguage
         Export,
         Public,
         Protected,
-        Private
+        Private,
+        Extern
     }
     //前置类型
     public enum EType : byte

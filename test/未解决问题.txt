@@ -18,7 +18,6 @@ TankGame.sl 引入Math类。把一些 二维的都使用Int32_2 Int32_3
 
 改二进制的大工程
 
-DllImportSourceRewriter 这个要变成统一的@()处理 这样的处理，而不是每一个要增加一段逻辑。 这块逻辑要在所有 代码中对@的识别，如果有@标识，如果在代码段之外，的话就会被认为是Attribute  然后针对Attribute的进行处理， 如果在代码段里边 则认为是AtSinglLabel的逻辑  如果AtSignLabel的逻辑，原来的可以放到MetaCore层去解析AtSignLabel的处理。
 
 在Frontend中，如果定义了export则默认直接导出，如果是public 则要看Export里边默认配置，是否必须export才进行导出，如果是则认为必须是export才导出，如果不是则public也会导出。
 制定规则，在配置的jsonc里边，如果配置了，是否是public就可以为导出类  有三个选项 不导出，public,extern导出  
