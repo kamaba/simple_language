@@ -40,6 +40,7 @@
       { "path": "Net/IpProtocal.sl", "group": "std", "tag": "net", "ignore": false, "priority": 0 },
       { "path": "Net/TcpSocket.sl", "group": "std", "tag": "net", "ignore": false, "priority": 0 },
       { "path": "Net/UdpSocket.sl", "group": "std", "tag": "net", "ignore": false, "priority": 0 },
+      { "path": "Net/NetStream.sl", "group": "std", "tag": "net", "ignore": false, "priority": 0 },
       { "path": "Net/Uri.sl", "group": "std", "tag": "net", "ignore": false, "priority": 0 },
       { "path": "Component.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
       { "path": "Debug/Log.sl", "group": "std", "tag": "debug", "ignore": false, "priority": 0 },
@@ -122,15 +123,24 @@
             { "class": "Process" }
         ]
       },
-      { "namespace": "Net", "children": 
+      { "namespace": "Net", "children":
             [
                 { "class": "HttpClient" },
                 { "class": "IpProtocal" },
-                { "class": "TcpNet" },
-                { "class": "UdpNet" },
+                { "enum": "NetError" },
+                { "enum": "SocketShutdown" },
+                { "class": "TcpSocket" },
+                { "class": "Tcp" },
+                { "class": "TcpServer" },
+                { "class": "UdpSocket" },
+                { "class": "Udp" },
+                { "class": "UdpDatagram" },
+                { "class": "NetStream" },
+                { "class": "TcpStream" },
+                { "class": "UdpStream" },
                 { "class": "Uri" }
             ]
-      },      
+      },
       // { "namespace": "Data", "children":
       //    [
       //       { "class": "Table" },
@@ -380,7 +390,30 @@
     { "name": "SystemEncodingMaxCharCount",    "returnType": "Int32", "params": ["Int32", "Int32"], "isVariadic": false, "cvmFunction": "vm_sys_encoding_max_char_count" },
     { "name": "SystemEncodingEncode",          "returnType": "Int64", "params": ["Int32", "Int64"], "isVariadic": false, "cvmFunction": "vm_sys_encoding_encode" },
     { "name": "SystemEncodingDecode",          "returnType": "Int64", "params": ["Int32", "Int64"], "isVariadic": false, "cvmFunction": "vm_sys_encoding_decode" },
-    { "name": "SystemEncodingPreamble",        "returnType": "Int64", "params": ["Int32"], "isVariadic": false, "cvmFunction": "vm_sys_encoding_preamble" }
+    { "name": "SystemEncodingPreamble",        "returnType": "Int64", "params": ["Int32"], "isVariadic": false, "cvmFunction": "vm_sys_encoding_preamble" },
+    // ---- Net calls (Std/Net/*.sl, design: csimple_lang/md/design/NETSTREAM_DESIGN.md §7) ----
+    // 挂起语义：ConnectWait/Accept/Recv/Send/UdpRecvFrom 在 C VM 侧经 CORO_BLOCK_IO
+    // 挂起当前协程（Option A 指令重执行），失败 = 哨兵值 + last_error 可查，SL 层负责 throw。
+    { "name": "SystemNetLastError",              "returnType": "Int32",  "params": [], "isVariadic": false, "cvmFunction": "libstd_net_last_error" },
+    { "name": "SystemTcpBeginConnect",           "returnType": "Int64",  "params": ["string", "Int32"], "isVariadic": false, "cvmFunction": "libstd_net_tcp_begin_connect" },
+    { "name": "SystemTcpConnectWait",            "returnType": "Int32",  "params": ["Int64", "Int64"], "isVariadic": false, "cvmFunction": "libstd_net_tcp_connect_wait" },
+    { "name": "SystemTcpListen",                 "returnType": "Int64",  "params": ["string", "Int32", "Int32"], "isVariadic": false, "cvmFunction": "libstd_net_tcp_listen" },
+    { "name": "SystemTcpAccept",                 "returnType": "Int64",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "libstd_net_tcp_accept" },
+    { "name": "SystemTcpRecv",                   "returnType": "Int32",  "params": ["Int64", "Int64"], "isVariadic": false, "cvmFunction": "libstd_net_tcp_recv" },
+    { "name": "SystemTcpSend",                   "returnType": "Int32",  "params": ["Int64", "Int64"], "isVariadic": false, "cvmFunction": "libstd_net_tcp_send" },
+    { "name": "SystemTcpShutdown",               "returnType": "bool",   "params": ["Int64", "Int32"], "isVariadic": false, "cvmFunction": "libstd_net_tcp_shutdown" },
+    { "name": "SystemTcpClose",                  "returnType": "bool",   "params": ["Int64"], "isVariadic": false, "cvmFunction": "libstd_net_tcp_close" },
+    { "name": "SystemTcpRemoteAddress",          "returnType": "string", "params": ["Int64"], "isVariadic": false, "cvmFunction": "libstd_net_tcp_remote_address" },
+    { "name": "SystemTcpRemotePort",             "returnType": "Int32",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "libstd_net_tcp_remote_port" },
+    { "name": "SystemTcpLocalAddress",           "returnType": "string", "params": ["Int64"], "isVariadic": false, "cvmFunction": "libstd_net_tcp_local_address" },
+    { "name": "SystemTcpLocalPort",              "returnType": "Int32",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "libstd_net_tcp_local_port" },
+    { "name": "SystemTcpSetNoDelay",             "returnType": "bool",   "params": ["Int64", "bool"], "isVariadic": false, "cvmFunction": "libstd_net_tcp_set_nodelay" },
+    { "name": "SystemUdpBind",                   "returnType": "Int64",  "params": ["string", "Int32"], "isVariadic": false, "cvmFunction": "libstd_net_udp_bind" },
+    { "name": "SystemUdpRecvFrom",               "returnType": "Int32",  "params": ["Int64", "Int64"], "isVariadic": false, "cvmFunction": "libstd_net_udp_recv_from" },
+    { "name": "SystemUdpSendTo",                 "returnType": "Int32",  "params": ["Int64", "Int64", "string", "Int32"], "isVariadic": false, "cvmFunction": "libstd_net_udp_send_to" },
+    { "name": "SystemUdpGetLastFromAddress",     "returnType": "string", "params": ["Int64"], "isVariadic": false, "cvmFunction": "libstd_net_udp_last_from_address" },
+    { "name": "SystemUdpGetLastFromPort",        "returnType": "Int32",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "libstd_net_udp_last_from_port" },
+    { "name": "SystemUdpClose",                  "returnType": "bool",   "params": ["Int64"], "isVariadic": false, "cvmFunction": "libstd_net_udp_close" }
   ],
   "export": {
     "moduleName": "Std",

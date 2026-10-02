@@ -3,7 +3,6 @@ Project
     _main_()
     {
         # calculator 已从 ConsoleTest.fun() 中注释掉（交互式阻塞 stdin），可在此单独调用
-        #!
         LinkedListTest.fun()
         CsvTest.fun()
         ListTest.fun()
@@ -30,7 +29,6 @@ Project
         # mimalloc host 堆接管回归（按构建变体自动分派禁用/接管断言）
         # LogFatalTest 必须放最末尾：fatal 触发 fatal_halt 硬停，整个进程终止（退出码 1）
         #LogFatalTest.fun()
-        !#
         MiTest.fun()
         AttributeExcludeTest.fun()
         AttributeRuntimeTest.fun()

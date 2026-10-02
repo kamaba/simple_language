@@ -580,6 +580,7 @@ namespace SimpleLanguage.Core
                     fmc.SetMetaEnum(newme);
                     newme.SetClassDefineType(EClassDefineType.CodeDefine);
                     newme.ParseFileMetaEnumMemeberEnum(fmc);
+                    newme.ApplyClassPermission(fmc.permissionToken);
 
                     AddInitHandleMetaEnumList(newme);
 
@@ -591,6 +592,7 @@ namespace SimpleLanguage.Core
                     newmd.SetClassDefineType(EClassDefineType.CodeDefine);
                     finalTopMetaNode.AddMetaData(newmd);
                     newmd.ParseFileMetaDataMemeberData(fmc);
+                    newmd.ApplyClassPermission(fmc.permissionToken);
                     AddInitHandleMetaDataList(newmd);
                     newmd.UpdateAllName();
 

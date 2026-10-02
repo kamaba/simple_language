@@ -19,6 +19,26 @@ namespace SimpleLanguage.Core
         public MetaExpressNodeBase express => m_Express;
         public Token token => m_Token;
         public string paramName => m_ParamName;
+        /// <summary>实参是否直接来自 const 变量（f(la) 中 la 为 const）。
+        /// 仅判定变量引用本身；运算表达式(f(la+1))/常量字面量(f(10))不产生 const 传递约束。</summary>
+        public bool isFromConstVariable
+        {
+            get
+            {
+                if (m_Express is MetaCallLinkExpressNode mclen)
+                {
+                    // 注意用 MetaCallLink.GetStoreMetaVariable()（finalCallNode 解析链），
+                    // MetaCallLinkExpressNode 同名方法读 m_StoreMetaVariable 字段（从不赋值，恒 null）
+                    var mv = mclen.metaCallLink?.GetStoreMetaVariable();
+                    // const 传参约束只针对"运行期值"：显式 const 声明的局部变量 / 形参 / 实例成员
+                    // （见 MetaVariable.isExplicitConst）。编译期常量不参与：enum 枚举值与 const static
+                    // 类成员（如 BigNumber.BASE / Mathd.Pi）本质等同字面量，标准库大量将其传给
+                    // 普通形参（Array<Int32>(CAPACITY) / Mathd.min(x, CAPACITY)），拦截会破坏既有合法用法。
+                    return mv != null && mv.isExplicitConst && !mv.isStatic;
+                }
+                return false;
+            }
+        }
 
         protected FileInputParamNode m_FileInputParamNode;
         protected MetaExpressNodeBase m_Express = null;
@@ -100,11 +120,20 @@ namespace SimpleLanguage.Core
         public bool isMust { get { return m_MetaExpressNode == null && !m_HasExpressImported; } }
         public bool isExtendParams => m_FileMetaParamter?.paramsToken != null || m_ExtendParamsForced;
         public bool isHasExpress => m_IsHasExpress || m_HasExpressImported;
+        /// <summary>形参是否为 const 修饰（const TypeName name）：函数体内只读不可赋值，
+        /// 且调用点传 const 实参时要求对应形参也带 const。本地编译从 FileMetaParamterDefine.constToken
+        /// 判定，ref module 导入从 m_IsConstImported 还原（两路 OR，与 isHasExpress 同模式：
+        /// 导入路径构造器会创建 MetaVariable，单一短路会让导入标记失效）。</summary>
+        public bool isConst => m_MetaVariable != null ? (m_MetaVariable.isConst || m_IsConstImported) : m_IsConstImported;
 
         // 从编译后的引用模块还原方法时没有 FileMeta 语法节点，
         // 用该标记补上 params 可变参数属性（配合 MetaDefineParamCollection.isExtendParams 参与调用匹配）。
         protected bool m_ExtendParamsForced = false;
         public void SetExtendParams() { m_ExtendParamsForced = true; }
+
+        /// <summary>ref module 导入的 const 参数标记（无 FileMeta / MetaVariable 时兜底）。</summary>
+        protected bool m_IsConstImported = false;
+        public void SetIsConstImported() { m_IsConstImported = true; }
 
         /// <summary>
         /// 标记该参数有默认表达式（从引用模块导入，避免 isMust 匹配失败）。
@@ -148,6 +177,7 @@ namespace SimpleLanguage.Core
             // 否则 isMust 判定回退为 true，省略默认参数的调用会匹配失败（模板实例化 / MetaMethod 复制路径）。
             m_HasExpressImported = mdp.m_HasExpressImported;
             m_ExtendParamsForced = mdp.m_ExtendParamsForced;
+            m_IsConstImported = mdp.m_IsConstImported;
             m_MetaExpressNode = mdp.m_MetaExpressNode;
             m_OwnerMetaFunction = mdp.m_OwnerMetaFunction;
             m_MetaVariable = new MetaVariable( mdp.m_MetaVariable );
@@ -163,6 +193,7 @@ namespace SimpleLanguage.Core
                 null, m_OwnerMetaFunction.ownerMetaClass, null );
             m_Token = m_FileMetaParamter.token;
             m_MetaVariable.SetToken(m_Token);
+            m_MetaVariable.SetIsConst(m_FileMetaParamter.constToken != null);
             m_IsHasExpress = m_FileMetaParamter.express != null;
         }
         public void SetOwnerMetaFunction(MetaFunction mf)
@@ -362,6 +393,19 @@ namespace SimpleLanguage.Core
         {
             return m_MetaVariable.name.Equals(name);
         }
+        /// <summary>
+        /// const 传参约束：const 修饰的实参只能传给带 const 标记的形参
+        ///（类型匹配成立后才检查，不影响重载决议的类型筛选语义）。
+        /// 精确匹配与宽松匹配两条路径都必须调用，否则精确匹配成功的调用会漏报。
+        /// </summary>
+        public void CheckConstToNonConstParam(MetaInputParam b)
+        {
+            if (b != null && !isConst && b.isFromConstVariable)
+            {
+                Log.AddMetaCoreLog(LID.MetaCoreParamConstToNonConst, b.token,
+                    "Error const 实参传给了非 const 形参: " + m_Name);
+            }
+        }
         public void SetDefineMetaType( MetaType mt )
         {
             m_MetaVariable.SetMetaDefineType(mt);
@@ -560,6 +604,7 @@ namespace SimpleLanguage.Core
                 {
                     return false;
                 }
+                a.CheckConstToNonConstParam(b);
             }
             // 未传的尾部形参必须带默认值, 否则该重载本就不合法(与宽松版 CheckInputMetaParam 语义一致)
             for (int i = inputCount; i < m_MetaDefineParamList.Count; i++)
@@ -972,7 +1017,10 @@ namespace SimpleLanguage.Core
                 return !a.isMust;      // ???????????????
             }
             if (a.EqualsInputMetaParam(b))
+            {
+                a.CheckConstToNonConstParam(b);
                 return true;
+            }
             return false;
         }
         /*

@@ -7,6 +7,7 @@
 //****************************************************************************
 
 using SimpleLanguage.Compile;
+using SimpleLanguage.Logging;
 using System;
 using System.Text;
 
@@ -44,6 +45,10 @@ namespace SimpleLanguage.Core
                     isConst = false,
                     parsefrom = EParseFrom.StatementRightExpress,
                 };
+                // 记录解析前的诊断计数：若解析失败且内部未产出任何 Error/Warning，
+                // 说明语句会被静默丢弃(不进 IR)，此时兜底报编译 Error
+                int errorBegin = Log.errorCount;
+                int warningBegin = Log.warningCount;
                 var men = ExpressManager.CreateExpressNodeByCEP(cep);
                 if (men != null)
                 {
@@ -54,6 +59,13 @@ namespace SimpleLanguage.Core
                     // would wrongly get a Pop -> OpCode_Pop stack underflow assert.
                     men.CalcReturnType();
                     m_ExpressNode = men;
+                }
+                else if (Log.errorCount == errorBegin && Log.warningCount == warningBegin)
+                {
+                    // 表达式语句解析失败且无先行诊断：此前整条语句被无声丢弃(IR 中消失)，
+                    // 升为编译 Error 阻断导出
+                    Log.AddMetaCoreLog(LID.MetaCoreParseCallLinkFailed, fmcl.expressTerm.token,
+                        "Express statement parse failed!", fmcl.expressTerm.token.ToLexemeAllString());
                 }
             }
             else

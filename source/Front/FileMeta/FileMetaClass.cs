@@ -43,6 +43,7 @@ namespace SimpleLanguage.Compile
         protected Token m_PermissionToken = null;
         protected Token m_PartialToken = null;
         protected Token m_AbstractToken = null;
+        protected Token m_FinalToken = null;
         protected Token m_PreInterfaceToken = null;
         protected Token m_SufInterfaceToken = null;
         protected Token m_BindToken = null;
@@ -342,6 +343,15 @@ namespace SimpleLanguage.Compile
                         }
                         m_AbstractToken = token;
                     }
+                    else if (token.type == ETokenType.Final)
+                    {
+                        if (m_FinalToken != null)
+                        {
+                            isError = true;
+                            Log.AddFileMetaLog(LID.FileMetaClassFinal, token, "Error 解析过了一次final!!");
+                        }
+                        m_FinalToken = token;
+                    }
                     else if (token.type == ETokenType.Class)
                     {
                         if (m_EnumToken != null)
@@ -512,6 +522,11 @@ namespace SimpleLanguage.Compile
                     Log.AddFileMetaLog(LID.FileMetaClassEnumPartial, token, "Error Enum方式，不支持partial的使用!!");
                     return false;
                 }
+                if (m_FinalToken != null)
+                {
+                    Log.AddFileMetaLog(LID.FileMetaClassFinal, m_FinalToken, "Error Enum方式，不支持final的使用!!");
+                    return false;
+                }
 
             }
             else if (m_DataToken != null)
@@ -541,6 +556,11 @@ namespace SimpleLanguage.Compile
                     Log.AddFileMetaLog(LID.FileMetaClassDataPartial, token, "Error Data方式，不支持partial的使用!!");
                     return false;
                 }
+                if (m_FinalToken != null)
+                {
+                    Log.AddFileMetaLog(LID.FileMetaClassFinal, m_FinalToken, "Error Data方式，不支持final的使用!!");
+                    return false;
+                }
 
             }
             else
@@ -549,6 +569,19 @@ namespace SimpleLanguage.Compile
                 if (classNameTokenList.Count == 0)
                 {
                     Log.AddFileMetaLog(LID.FileMetaClassType, token, "Error 解析类型名称错误!!");
+                }
+                // interface 只能被实现不能被继承，final 无意义
+                if ((m_PreInterfaceToken != null || m_SufInterfaceToken != null) && m_FinalToken != null)
+                {
+                    Log.AddFileMetaLog(LID.FileMetaClassFinal, m_FinalToken, "Error interface方式，不支持final的使用!!");
+                    return false;
+                }
+                // abstract 要求类必须被继承实现，final 禁止继承，两者互斥
+                if (m_AbstractToken != null && m_FinalToken != null)
+                {
+                    Log.AddFileMetaLog(LID.FileMetaClassAbstractFinal, m_FinalToken,
+                        "Error abstract与final不允许同时使用: abstract类必须被继承，final类禁止被继承!!");
+                    return false;
                 }
             }
             m_Token = classNameTokenList[classNameTokenList.Count - 1];
@@ -654,6 +687,9 @@ namespace SimpleLanguage.Compile
         {
             m_PermissionToken = permissionToken;
         }
+        /// <summary>类级权限 token（public/private/projected/extern）。
+        /// extern 是类级显式导出标记（映射 EPermission.Export；export 关键字已移除）。</summary>
+        public Token permissionToken => m_PermissionToken;
         //public void SetParentClassNameToken(List<Token> tokenList, Node angleNode)
         //{
         //    if( tokenList != null && tokenList.Count > 0 )
@@ -668,6 +704,11 @@ namespace SimpleLanguage.Compile
             if (m_AbstractToken != null && m_MetaClass != null)
             {
                 m_MetaClass.SetAbstractClass(true);
+            }
+            // 类级 final 标记传递（final 类不可被继承）
+            if (m_FinalToken != null && m_MetaClass != null)
+            {
+                m_MetaClass.SetFinalClass(true);
             }
         }
         public void SetMetaEnum(MetaEnum me)

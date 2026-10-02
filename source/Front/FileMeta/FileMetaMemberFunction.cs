@@ -19,9 +19,12 @@ namespace SimpleLanguage.Compile
         public FileMetaClassDefine classDefineRef => m_ClassDefineRef;
         public FileMetaBaseTerm express => m_Express;
         public Token paramsToken => m_ParamsToken;
+        /// <summary>const 修饰 token（const int a 形态的参数），null 表示非 const 参数。</summary>
+        public Token constToken => m_ConstToken;
 
         private Token m_AssignToken = null;
         private Token m_ParamsToken = null;
+        private Token m_ConstToken = null;
         private FileMetaClassDefine m_ClassDefineRef = null;
         private FileMetaBaseTerm m_Express;
         public FileMetaParamterDefine(FileMeta fileMeta, List<Node> list)
@@ -102,6 +105,13 @@ namespace SimpleLanguage.Compile
                 {
                     typeNode = curNode;
                     paramstoken = curNode.token;
+                    removeNodeList.Add(curNode);
+                }
+                else if (curNode.nodeType == ENodeType.Key && curNode.token.type == ETokenType.Const)
+                {
+                    // const TypeName ParamName：const 作为前缀 Key 节点收集后移除，
+                    // 剩余节点仍保持 TypeName ParamName 的 1~2 节点标准形态
+                    m_ConstToken = curNode.token;
                     removeNodeList.Add(curNode);
                 }
 

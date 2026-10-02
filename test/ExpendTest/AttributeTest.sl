@@ -71,9 +71,9 @@ AttrHost1
 AttrHost2
 {
     static int m2 = 10;
-    m = 10;
+    int m = 10;
     AttrHost2( int x )
     {
-        m = 10;
+        this.m = 10;
     }
 }

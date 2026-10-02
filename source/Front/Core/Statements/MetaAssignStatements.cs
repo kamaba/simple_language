@@ -290,6 +290,22 @@ namespace SimpleLanguage.Core
             m_LeftMetaExpress.Parse(new AllowUseSettings());
             m_MetaVariable = m_LeftMetaExpress.GetStoreMetaVariable();
 
+            // const 左值拦截的范围判定：见 MetaVariable.isExplicitConst（只拦显式 const 关键字声明路径）
+            bool IsExplicitConstVariableFrom(MetaVariable mv) => mv.isExplicitConst;
+
+            // const 左值拦截：const 成员变量 / const 局部变量 / const 形参在声明之后再赋值
+            // (含 =、复合赋值 += -=、++/--) 一律报错，只能读取。
+            // 定义语句(const int a = 10)走 MetaDefineVarStatements，不会进入本拦截。
+            // 只拦用户显式 const 关键字声明路径（ClassMember/LocalStatement/Argument）；
+            // const data 容器传染（DataMember）是独立的容器级只读特性（见 md/syntax/data.md
+            // "当前尚未完整支持"），bind 宿主经 setter 写底层 data 实例成员属合法用法，放行。
+            if (m_MetaVariable != null && m_MetaVariable.isConst && IsExplicitConstVariableFrom(m_MetaVariable))
+            {
+                Log.AddMetaCoreLog(LID.MetaCoreAssignStatementConst, m_Token,
+                    "Error 当前左值声明为 const，不允许进行赋值或修改!! " + m_LeftMetaExpress.ToFormatString());
+                return;
+            }
+
             if ( isAssignSign == false && m_RightMetaExpress == null)
             {
                 if (TryParseRightExpress(rightExpress, null ) == false)

@@ -944,6 +944,8 @@ namespace SimpleLanguage.Project
                 var metaBase = CreateReferenceTypeShell(metaModule, cls);
                 if (metaBase != null)
                 {
+                    // 回填导出包中的类级权限（extern 标记类=Export；旧包无键=Null 保持默认 Public）
+                    metaBase.SetImportedClassPermission((EPermission)cls.permission);
                     createdTypes.Add((cls, metaBase));
                 }
             }
@@ -1117,6 +1119,12 @@ namespace SimpleLanguage.Project
                 {
                     var mc = new MetaClass(typeName, EClassDefineType.StructDefine);
                     mc.SetRefFromType(RefFromType.RefModule);
+                    // 恢复类级 final 标记（导出端 SLClassPackage.isFinal）：
+                    // 跨模块 extends final 类由 MetaClass.ParseExtendsRelation 统一拦截
+                    if (cls.isFinal)
+                    {
+                        mc.SetFinalClass(true);
+                    }
 
                     /* Template class: create MetaTemplate parameters before adding to MetaNode,
                      * so MetaNode.AddMetaClass registers it with the correct template count
@@ -1543,6 +1551,13 @@ namespace SimpleLanguage.Project
                     if (arg == null) continue;
                     var paramName = !string.IsNullOrWhiteSpace(arg.name) ? arg.name : "arg";
                     var mdp = new MetaDefineParam(paramName, mmf);
+                    if (arg.isConst)
+                    {
+                        /* 还原 const 形参标记：导出端 SLVariablePackage.isConst。
+                         * MetaDefineParam 主构造器无 FileMetaParamterDefine（ref module 路径），
+                         * isConst 经 SetIsConstImported 兜底，跨模块 const 传参约束与本模块一致。 */
+                        mdp.SetIsConstImported();
+                    }
                     if (arg.isHasExpress)
                     {
                         mdp.SetHasExpress();

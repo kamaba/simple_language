@@ -356,6 +356,23 @@ namespace SimpleLanguage.Export.SLIR
                 // 跳过引用模块的类：它们已由被引用模块导出，不应在当前模块中重复导出。
                 if (c.isRefModulePreBuilt) continue;
                 if (c.typeOwner?.refFromType == RefFromType.RefModule) continue;
+                // 类级导出权限过滤（jsonc "export"."publicExport" 三态；范围=类与类型表）：
+                // extern 标记类（EPermission.Export）恒导出；protected/private 恒不导出（不进 typeList/classList）；
+                // public/未标记类按三态：None=不导出 / Public=照常导出 / Extern=照常导出且包内 permission 记 Export。
+                var publicExportMode = ProjectManager.config?.Export.PublicExportMode
+                    ?? ProjectConfig.EPublicExportMode.Public;
+                var ownerPerm = c.typeOwner?.permission ?? EPermission.Public;
+                if (ownerPerm != EPermission.Export)
+                {
+                    if (ownerPerm != EPermission.Public)
+                    {
+                        continue; // protected/private：不导出
+                    }
+                    if (publicExportMode == ProjectConfig.EPublicExportMode.None)
+                    {
+                        continue; // 三态 None：public 类不导出（仅显式 extern 标记类导出）
+                    }
+                }
                 // Keep module prefix in fullName so that classes from different modules
                 // (e.g. Core.Object vs ProjectTest.Object) have distinct fullNames.
                 var full = NormalizeTypeName(c.irName ?? string.Empty);
@@ -377,7 +394,16 @@ namespace SimpleLanguage.Export.SLIR
                     exportNames = c.exportNames,
                     sourcePath = c.sourcePath ?? string.Empty,
                     metaClassKind = (int)c.metaClassKind,
+                    // 类级导出权限写入（EPermission）：extern 标记类已是 Export；
+                    // publicExport="extern" 档下 public 类也记 Export（对外视为显式导出类）。
+                    permission = (int)(ownerPerm == EPermission.Public
+                        && publicExportMode == ProjectConfig.EPublicExportMode.Extern
+                        ? EPermission.Export
+                        : ownerPerm),
                     isDynamic = c.OwnerMetaData?.isDynamic ?? false,
+                    // 类级 final 导出：final 类不可被继承。仅 class 类型有效
+                    //（data/enum/interface 的 final 在 FileMeta 层已被拦截，恒 false）。
+                    isFinal = c.OwnerMetaClass?.isFinalClass ?? false,
                     // enum（MetaEnum : MetaBase，非 MetaClass 子类）的 extends 走 OwnerMetaEnum；
                     // IRMetaClass.OwnerMetaClass 对 enum 恒为 null，漏掉会导致 baseClassId 导出 0，
                     // 跨模块导入后 isErrorEnum 丢失（throw enum extends Error 校验失败）。
@@ -741,6 +767,9 @@ namespace SimpleLanguage.Export.SLIR
                             typeDef = CreateRuntimeDefTypePackage(v.irMetaType),
                             debugInfo = CreateVariableDebugInfo(v),
                             hasExpress = v.isHasExpress,
+                            // const 形参标记跨模块导出：导入端据此恢复 MetaDefineParam 的
+                            // const 标记（SetIsConstImported），使跨模块调用的 const 传参约束生效
+                            isConst = v.isConst,
                         };
                         if (v.isHasExpress && defineParams != null)
                         {

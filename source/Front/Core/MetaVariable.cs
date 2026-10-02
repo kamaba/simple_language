@@ -53,6 +53,18 @@ namespace SimpleLanguage.Core
 
         public MetaBlockStatements ownerMetaBlockStatements => m_OwnerMetaBlockStatements;
         public EVariableFrom variableFrom => m_VariableFrom;
+        /// <summary>是否为用户显式 const 关键字声明的变量（const 成员变量 / const 局部 / const 形参）。
+        /// 用于 const 赋值拦截与 const 传参约束的范围判定：
+        /// - const data 容器传染（DataMember）/ enum 枚举值（EnumMember）是独立特性，不参与
+        ///   （bind 宿主 setter 写 data 实例成员为合法用法，见 md/syntax/data.md）；
+        /// - ClassMember 还须 fromType == Code（用户源码）：jsonc global.data 注入成员（Manual）
+        ///   的 const 是初始值折叠标记（isolate 测试在 worker/主端改写 global.var1 为既有语义）、
+        ///   ref module 导入成员（CSharp）同理，均不属于用户 const 声明。</summary>
+        public bool isExplicitConst => m_IsConst
+            && (m_VariableFrom == EVariableFrom.LocalStatement
+                || m_VariableFrom == EVariableFrom.Argument
+                || (m_VariableFrom == EVariableFrom.ClassMember
+                    && (this as MetaMemberVariable)?.fromType == EFromType.Code));
         public MetaType defineMetaType => m_DefineMetaType;
         public MetaType realMetaType => m_RealMetaType;
         public MetaClass ownerMetaClass => m_OwnerMetaBase as MetaClass;

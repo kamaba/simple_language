@@ -4,10 +4,7 @@
 Tcp/Udp/HttpClient/Websocket/NetStream相关接口
 Yaml/Xml/RegExp
 
-
-
 TankGame.sl 引入Math类。把一些 二维的都使用Int32_2 Int32_3
-
 
 1. 接入 quickjs 
 2. 接入python
@@ -18,12 +15,12 @@ TankGame.sl 引入Math类。把一些 二维的都使用Int32_2 Int32_3
 
 改二进制的大工程
 
-DllImportSourceRewriter 这个要变成统一的@()处理 这样的处理，而不是每一个要增加一段逻辑。 这块逻辑要在所有 代码中对@的识别，如果有@标识，如果在代码段之外，的话就会被认为是Attribute  然后针对Attribute的进行处理， 如果在代码段里边 则认为是AtSinglLabel的逻辑  如果AtSignLabel的逻辑，原来的可以放到MetaCore层去解析AtSignLabel的处理。
-
 在Frontend中，如果定义了export则默认直接导出，如果是public 则要看Export里边默认配置，是否必须export才进行导出，如果是则认为必须是export才导出，如果不是则public也会导出。
-制定规则，在配置的jsonc里边，如果配置了，是否是public就可以为导出类  有三个选项 不导出，public,extern导出  
-const 关键字的使用 
-final 的确定与检测
+制定规则，在配置的jsonc里边，如果配置了，是否是public就可以为导出类  有三个选项 不导出，public,export导出  
+const 关键字的使用 这个关键字要进行扩展，可以 使用的地方，包括，成员变量，如果在成员变量使用，在其它地方不允许进行赋值操作， 如果给参数传叁，传的是一个const修饰的，则参数必须也有const的标记， 像语句中的const 则在下边不可以进行变化。（2026-10-02 已实现：显式 const 成员/局部/形参的赋值拦截 + const 传参约束 + SLIR 跨模块 isConst 导出；见 md/syntax/variable.md const 章节）
+return 关键字在 .sl 中会被静默忽略（返回语句是 ret），函数写了 return 依然无返回值且编译不报错，容易误导（2026-10-02 排查 ConstProbe 运行期输出时发现）
+final 的确定与检测（2026-10-02 已实现：final 类禁止继承 21469 + final 方法禁止 override 12274（存量）+ final 不允许用于 data/enum/interface 21470、不允许 abstract final 21471 + SLIR 跨模块 isFinal 导出；见 md/syntax/class.md 1.6 节，用例 test/Other/FinalProbe/）
+类成员变量声明不带初始化（如 int v;）报 MetaCoreExpressIsNull（"express传入参数与要求参数不对应"）而非明确的"成员变量必须初始化"提示（2026-10-02 编写 FinalProbe 用例时发现）
 _before_
 _after_ 这两的注册到.md里边
 project.jsonc的配置整理。

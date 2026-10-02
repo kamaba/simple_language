@@ -94,9 +94,11 @@ namespace SimpleLanguage.IR
             m_Id = mv.GetHashCode();
             m_Index = index;
             m_Name = mv.ownerMetaBlockStatements?.ownerMetaFunction.name + (mv.isStatic?"_static":"_local") + "[" + mv.name + "]";
-            FillDebugInfo(mv, mv.name, "IRMetaVariable");           
+            FillDebugInfo(mv, mv.name, "IRMetaVariable");
             m_IsStatic = mv.isStatic;
             m_Permission = mv.permission;
+            // const 形参/局部变量标记透传到 IR 层，供 SLIR 导出（SLVariablePackage.isConst）
+            m_IsConst = mv.isConst;
             if( mv.variableFrom == MetaVariable.EVariableFrom.ClassMember )
             {
                 if( mv.isStatic )
@@ -297,6 +299,8 @@ namespace SimpleLanguage.IR
             m_HasExpress = var?.hasExpress ?? false;
             m_DefaultConstValue = var?.defaultConstValue;
             m_DefaultConstEType = var?.defaultConstEType ?? 0;
+            // ref module 导入：恢复 const 形参标记（导出端 SLVariablePackage.isConst）
+            m_IsConst = var?.isConst ?? false;
         }
         private void FillDebugInfo(MetaBase mb, string fallbackName, string info)
         {

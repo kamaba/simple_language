@@ -79,7 +79,7 @@ fun<T extends Number> sumAll(List<T> values) { /* ... */ }
 - `static`：声明为类级别函数，不需要实例即可调用。
 - `override`：用于子类方法，表示显式重写父类或接口中的方法；若父方法是 `abstract`，子类必须 `override` 并提供实现（否则子类必须声明为 `abstract`）。
 - `abstract`：在类内声明抽象方法（无方法体）。编译器不会对抽象方法进行函数体解析。
-- `final`：标记方法或字段为不可重写。
+- `final`：标记方法为不可重写；子类 `override` 父类 final 方法会在 MetaCore 阶段报 12274 MetaCoreFinalFunctionCannotOverride。final 也可用于类表示禁止继承（见 md/syntax/class.md 1.6 节）。
 - 访问权限：`public` / `private` / `projected` / `extern` 等，用于控制可见性与链接方式。
 
 示例：

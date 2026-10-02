@@ -1044,6 +1044,7 @@ namespace SimpleLanguage.Compile
             m_Token = fileMetaVariableRef.callNodeList[0].token;
             isAppendSemiColon = flag;
         }
+        public void SetConstToken(Token token) { m_ConstToken = token; }
         public override void SetDeep(int _deep)
         {
             m_Deep = _deep;

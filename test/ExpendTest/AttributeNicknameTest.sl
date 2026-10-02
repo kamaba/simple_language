@@ -18,9 +18,9 @@ Class1
 Class2
 {
     static int m2 = 10;
-    m = 10;
+    int m = 10;
     Class2( int x )
     {
-        m = 10;
+        this.m = 10;
     }
 }

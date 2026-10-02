@@ -14,7 +14,7 @@ namespace SimpleLanguage.Compile
             var nsArr = ns.Split('.');
             if (nsArr.Length == 0)
             {
-                Debug.Write("�����ռ����Ʋ���Ϊ���ַ�");
+                Debug.Write("�����ռ����Ʋ���Ϊ���ַ�");
                 return false;
             }
             if (nsArr.Length == 1)
@@ -47,7 +47,8 @@ namespace SimpleLanguage.Compile
         {
             switch( permission )
             {
-                case EPermission.Export: return "export";
+                // export 关键字已移除：类级显式导出标记由 extern 接替（extern class → EPermission.Export）
+                case EPermission.Export: return "extern";
                 case EPermission.Public: return "public";
                 case EPermission.Protected: return "protected";
                 case EPermission.Private: return "private";
@@ -58,7 +59,9 @@ namespace SimpleLanguage.Compile
         {
             switch (type)
             {
-                case ETokenType.Export: return EPermission.Export;
+                // ETokenType.Export 映射已删除：export 关键字不再作为权限标记。
+                // 注意：ETokenType.Extern 不能映射到公共权限表——成员级 extern 是 FFI 外部实现语义，
+                // 类级 extern 的导出标记在 MetaClass.BindFileMetaClass 处特判为 EPermission.Export。
                 case ETokenType.Public: return EPermission.Public;
                 case ETokenType.Projected: return EPermission.Protected;
                 case ETokenType.Private: return EPermission.Private;

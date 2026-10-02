@@ -163,7 +163,25 @@ namespace SimpleLanguage.Project
                 cfg.Export.ModuleName = GetStr(exportObj, "moduleName", cfg.Export.ModuleName);
                 cfg.Export.OutputDir = GetStr(exportObj, "outputDir", cfg.Export.OutputDir);
                 cfg.Export.StringPoolAsBlob = GetBool(exportObj, "stringPoolAsBlob", cfg.Export.StringPoolAsBlob);
-                cfg.Export.ExportPublicOnly = GetBool(exportObj, "exportPublicOnly", cfg.Export.ExportPublicOnly);
+                // public 类导出策略三态（none/public/extern，缺省 public）；非法值报 Error 阻断编译
+                {
+                    var rawPublicExport = GetStr(exportObj, "publicExport", null);
+                    if (rawPublicExport != null)
+                    {
+                        switch (rawPublicExport)
+                        {
+                            case "none": cfg.Export.PublicExportMode = ProjectConfig.EPublicExportMode.None; break;
+                            case "public": cfg.Export.PublicExportMode = ProjectConfig.EPublicExportMode.Public; break;
+                            case "extern": cfg.Export.PublicExportMode = ProjectConfig.EPublicExportMode.Extern; break;
+                            default:
+                                Log.AddProjectLog(LID.ProjectExportPublicExportInvalid, "", rawPublicExport,
+                                    rawPublicExport == "export"
+                                        ? "注意：类级显式导出标记是 extern 关键字（export 关键字已移除）"
+                                        : "");
+                                break;
+                        }
+                    }
+                }
                 cfg.Export.IncludeMetadata = GetBool(exportObj, "includeMetadata", cfg.Export.IncludeMetadata);
 
                 cfg.Export.VersionMain = GetInt(exportObj, "versionMain", cfg.Export.VersionMain);

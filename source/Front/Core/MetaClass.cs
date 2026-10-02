@@ -26,6 +26,10 @@ namespace SimpleLanguage.Core
     {
         public List<MetaAttribute> attributeList => m_AttributeList;
         public bool isAbstractClass => m_IsAbstractClass;
+        /// <summary>类级 final 标记：final 类不允许被继承（见 ParseExtendsRelation 拦截）。
+        /// 模板生成类经拷贝构造继承该标记，因此 final 模板类的生成实例同样不可被继承；
+        /// SLIR 侧随 SLClassPackage.isFinal 跨模块导出/导入。</summary>
+        public bool isFinalClass => m_IsFinalClass;
         public bool allowExtendsClassWithTemplate => m_GenMetaClassTemplateList.Count > 0 ;             //允许继承类 是否可携带模板  像 ListInt : List<int>{} ListIntEx<T> : List<int> 这种情况不允许
         public MetaClass extendClass => m_ExtendClass;
         public MetaType extendClassMetaType => m_ExtendClassMetaType;
@@ -98,6 +102,7 @@ namespace SimpleLanguage.Core
         protected MetaExpressNodeBase m_DefaultExpressNode = null;
         protected bool m_IsInterfaceClass = false;
         protected bool m_IsAbstractClass = false;
+        protected bool m_IsFinalClass = false;
         protected bool m_NeedInitMemberVariables = true;
         protected bool m_InnderDefine = false;
         protected bool m_StructDefine = false;
@@ -160,6 +165,7 @@ namespace SimpleLanguage.Core
             m_StaticMetaMemberFunctionList = mc.m_StaticMetaMemberFunctionList;
             m_DefaultExpressNode = mc.m_DefaultExpressNode;
             m_IsAbstractClass = mc.m_IsAbstractClass;
+            m_IsFinalClass = mc.m_IsFinalClass;
             m_IsInterfaceClass = mc.m_IsInterfaceClass;
             m_IsPartial = mc.m_IsPartial;
         }
@@ -185,6 +191,7 @@ namespace SimpleLanguage.Core
         }
         public void SetNeedInitMemberVariables( bool flag) { m_NeedInitMemberVariables = flag; }
         public void SetAbstractClass(bool v) { m_IsAbstractClass = v; }
+        public void SetFinalClass(bool v) { m_IsFinalClass = v; }
         public void UpdateClassAllName()
         {
             StringBuilder sb = new StringBuilder();
@@ -309,6 +316,13 @@ namespace SimpleLanguage.Core
             else
             {
                 this.m_ExtendClass = m_ExtendClassMetaType.metaClass;
+            }
+            // final 类不允许被继承（含跨模块导入的 final 类与 final 模板类的生成实例）
+            if (this.m_ExtendClass != null && this.m_ExtendClass.isFinalClass)
+            {
+                Log.AddMetaCoreLog(LID.MetaCoreFinalClassCannotExtend, this.m_Token,
+                    "Error 类[" + this.m_AllName + "] 继承了 final 类: " + this.m_ExtendClass.m_AllName +
+                    " 不允许进行继承!!");
             }
             HandleParentClassTemplateMapRelation();
             HandleExtendClassTemplateMapRelation();
@@ -1033,6 +1047,9 @@ namespace SimpleLanguage.Core
                 return;
             }
             fmc.SetMetaClass(this);
+            // 类级权限传递（jsonc export.publicExport 三态规则的前提）：
+            // extern→EPermission.Export 特判、partial 冲突报错等逻辑统一收口在 MetaBase.ApplyClassPermission。
+            ApplyClassPermission(fmc.permissionToken);
             m_FileMetaClassDict.Add(fmc.token, fmc);
             AddPingToken(fmc.token);
 

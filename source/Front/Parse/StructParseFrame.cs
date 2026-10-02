@@ -363,6 +363,7 @@ namespace SimpleLanguage.Compile
                         case ETokenType.Projected:
                         case ETokenType.Partial:
                         case ETokenType.At:
+                        case ETokenType.Final:    // final 类声明起始（final class ...）；data/enum/interface 上的 final 由 FileMetaClass.Parse 后置校验拦截
                             {
                                 hasNamespaceOrClass = true;
                                 ParseNamespaceOrTopClass(pnode);

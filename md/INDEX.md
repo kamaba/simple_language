@@ -43,7 +43,7 @@
 | [syntax/keywords.md](./syntax/keywords.md) | **关键字与语法糖总表**：全量关键字分类表（词法器实测）、运算符与特殊符号、语法糖对照（ret/next/yield/await/spawn/$插值/小写容器构造糖/static if 已废弃）、类成员保留名规则、Core 引用后直接可用类型清单、Core / Environment / Platform 命名空间 |
 | [syntax/base.md](./syntax/base.md) | 基本语法 |
 | [syntax/namespace.md](./syntax/namespace.md) | 命名空间 |
-| [syntax/variable.md](./syntax/variable.md) | 变量 |
+| [syntax/variable.md](./syntax/variable.md) | 变量（含 `const` 只读变量/形参与传参约束） |
 | [syntax/local.md](./syntax/local.md) | 局部与作用域相关 |
 | [syntax/global.md](./syntax/global.md) | `global` 与工程 / `Project{}` 联动 |
 
@@ -117,6 +117,7 @@
 | [syntax/std/Sqlite.md](./syntax/std/Sqlite.md) | Sqlite 数据库（DB.Sqlite3） |
 | [../../../csimple_lang/md/design/PROCESS_DESIGN.md](../../../csimple_lang/md/design/PROCESS_DESIGN.md) | Std.OS.Process 外部进程执行（run/start/wait、stdio 三态管道、kill/terminate、环境变量；SL API + C 层设计） |
 | [../../../csimple_lang/md/design/ATTRIBUTE_DESIGN.md](../../../csimple_lang/md/design/ATTRIBUTE_DESIGN.md) | attribute 系统四时点重构（PreCompile/Compiling/Preload/Runtime × 五注册点 × enter/exit；内建迁移映射 + P1..P8 分期） |
+| [../../../csimple_lang/md/design/NETSTREAM_DESIGN.md](../../../csimple_lang/md/design/NETSTREAM_DESIGN.md) | NetStream 家族与 Tcp/Udp 网络层（非阻塞 fd + 单 IO 线程 poll + Option A 挂起；SL API 全签名 + C 层设计 + syscall 清单 20 项 + 分期路线） |
 | [syntax/core/Lz4.md](./syntax/core/Lz4.md) | Lz4 块压缩（Core 库：自包含容器格式 + ByteBuffer 底座） |
 | [syntax/core/ProtocalBuffers.md](./syntax/core/ProtocalBuffers.md) | ProtocalBuffers / protobuf 线格式编解码（Core 库：PbWriter / PbReader，proto3 兼容子集） |
 | [syntax/core/Stream.md](./syntax/core/Stream.md) | Stream 元素流（Core 库：Stream\<T\>/Controller/Transformer，推/拉双模 + 背压） |

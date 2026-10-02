@@ -423,6 +423,18 @@ namespace SimpleLanguage.Project
             public Dictionary<string, JsonElement> Macro { get; set; } = new Dictionary<string, JsonElement>();
         }
 
+        /// <summary>public 类的导出策略三态（jsonc "export"."publicExport"，缺省 Public）。
+        /// None   = 不导出 public 类：仅显式 extern 标记类（extern class）导出；
+        /// Public = public 类照常导出（历史默认行为，存量工程零差异）；
+        /// Extern = public 类照常导出，且导出包 permission 记为 Export（对外视为显式导出类）。
+        /// 显式 extern 标记类不受三态影响恒导出；protected/private 类恒不导出。</summary>
+        public enum EPublicExportMode
+        {
+            None,
+            Public,
+            Extern,
+        }
+
         public class ExportSection
         {
             // Module name to produce (overrides Project.Name when non-empty)
@@ -431,8 +443,8 @@ namespace SimpleLanguage.Project
             public string OutputDir { get; set; } = "Export/SLVMCode";
             // Pack string pool into a single blob with offsets/lengths
             public bool StringPoolAsBlob { get; set; } = true;
-            // Only export public methods
-            public bool ExportPublicOnly { get; set; } = false;
+            // public 类的导出策略三态（jsonc "export"."publicExport"：none/public/extern）
+            public EPublicExportMode PublicExportMode { get; set; } = EPublicExportMode.Public;
             // Include additional metadata like owner class id, visibility flags
             public bool IncludeMetadata { get; set; } = true;
 

@@ -98,6 +98,78 @@ const data ProjectConfig{
 
 ### 规则，在函数每个{}区间对应的变量的范围，如果超出范围，不能使用该变量， 在函数变量定义中，不允许有重复名称，如果重复名称，则一般会报错。
 
+## const 只读变量（2026-10-02 实装）
+
+`const` 关键字声明的变量为只读：声明初始化之后只能读取，不允许再赋值或修改。三种使用位置：
+
+### 1. const 成员变量
+
+```python
+class Class0
+{
+    const Int32 CF = 10;          # 实例 const 成员
+    static const Int32 SCF = 20;  # 静态 const 成员
+}
+
+Class0 c = Class0();
+c.CF = 100;        # 错误: const 成员不允许赋值（MetaCoreAssignStatementConst）
+Class0.SCF = 5;    # 错误: 静态 const 成员同样拦截
+```
+
+### 2. const 局部变量（语句）
+
+```python
+static Main()
+{
+    const Int32 la = 10;
+    const lb = 30;          # 无类型形态，由初始值推断
+    la = 20;                # 错误: const 局部变量不允许再赋值
+    lb = 40;                # 错误: 无类型 const 同样拦截
+    Int32 r = la + lb;      # 正确: 只读访问
+}
+```
+
+### 3. const 函数形参
+
+形参带 `const` 标记后，函数体内只读：
+
+```python
+static Int32 takeConst( const Int32 a )
+{
+    a = 100;        # 错误: const 形参在函数体内不允许赋值
+    ret a + 1;      # 正确: 只读使用
+}
+```
+
+### const 传参约束
+
+const 修饰的**实参**只能传给带 `const` 标记的形参（含跨模块引用的方法，`isConst` 随 SLIR 导出）：
+
+```python
+const Int32 la = 10;
+takeConst( la );    # 正确: const 实参 -> const 形参
+takeConst( 5 );     # 正确: 字面量/编译期常量不受限制
+takeNormal( la );   # 错误: const 实参传给了非 const 形参（MetaCoreParamConstToNonConst, LID=21468）
+```
+
+### 不参与约束的场景（编译期常量与独立特性）
+
+以下 const 属于类型系统常量或机制内部标记，**不触发**赋值拦截与传参约束：
+
+| 场景 | 示例 | 说明 |
+|------|------|------|
+| enum 枚举值 | `FileStream(path, FileMode.Read, FileAccess.Read)` | 枚举值天然只读，等同字面量 |
+| const static 类成员传参 | `Mathd.min(x, BigNumber.CAPACITY)` | 编译期常量可传普通形参（赋值拦截仍生效） |
+| `const data` 容器成员 | bind 宿主经 setter 写底层 data 实例成员 | 容器级只读是独立特性，见 [data.md](data.md) |
+| jsonc `global.data` 注入变量 | `global.var1 = 99`（isolate 隔离语义） | 注入 const 是初始值折叠标记，非只读承诺 |
+
+### 相关错误码
+
+| LID | 错误 | 说明 |
+|-----|------|------|
+| `MetaCoreAssignStatementConst` | const 左值再赋值 | 覆盖 `=`、复合赋值（`+=` 等）、`++`/`--` |
+| `MetaCoreParamConstToNonConst` (21468) | const 实参传非 const 形参 | 重载决议的精确/宽松两条匹配路径均检查 |
+
 ## 变量命名规则（禁止关键字）
 
 变量的名称不允许使用关键字，Front 解析阶段会直接报错（LID `NodeStructParseNameIsKeyword`）。适用于所有变量定义（对象变量、函数内变量、for 循环变量）以及函数/闭包/lambda 参数命名。

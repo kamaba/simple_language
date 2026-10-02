@@ -1053,6 +1053,14 @@ namespace SimpleLanguage.Core
                     {
                         return variable;
                     }
+                case EVisitType.GetTypeValue:
+                    {
+                        // .type 元对象（如 ArrClass.type）：与 GetReturnMetaVariable 对齐返回 variable。
+                        // MetaInputParam.isFromConstVariable 的 const 传参判定会经
+                        // MetaCallLink.GetStoreMetaVariable() 走到这里，缺 case 会误报
+                        // MetaCoreVisitCallTypeError 并返回 null（TypeTest IsIntType(ArrClass.type)）。
+                        return variable;
+                    }
                 default:
                     {
                         Log.AddMetaCoreLog(LID.MetaCoreVisitCallTypeError, m_Token, "Error MetaVisiCall IsNull!");

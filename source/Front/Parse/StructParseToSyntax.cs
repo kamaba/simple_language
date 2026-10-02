@@ -1109,6 +1109,8 @@ namespace SimpleLanguage.Compile
                 if (varRef != null)
                 {
                     FileMetaOpAssignSyntax fms = new FileMetaOpAssignSyntax(varRef, assignNode.token, dynamicToken, dataToken, varToken, functionToken, fme, true);
+                    // const la = 30 无类型形态: constToken 在此路径此前被丢弃
+                    fms.SetConstToken(constToken);
                     return fms;
                 }
             }
@@ -2070,7 +2072,14 @@ namespace SimpleLanguage.Compile
             }
             else if( akss.eSyntaxNodeType == ESyntaxNodeStructType.CommonSyntax )
             {
-                if( akss.commonContent.Count > 0 )
+                // const 语句: SetMainKeyNode(const) 后续 AddContent 把类型重置为 CommonSyntax,
+                // const Key 节点滞留在 keyNode 上(commonContent 不含它),
+                // 这里回填到内容列表头部, 由 CrateFileMetaSyntaxNoKey 收集为 constToken
+                if (akss.keyNode != null && akss.keyNode.token?.type == ETokenType.Const)
+                {
+                    akss.commonContent.Insert(0, akss.keyNode);
+                }
+                if ( akss.commonContent.Count > 0 )
                 {
                     fms = CrateFileMetaSyntaxNoKey(akss.commonContent);
                     if (fms != null)

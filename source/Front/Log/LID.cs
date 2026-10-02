@@ -141,6 +141,7 @@ namespace SimpleLanguage.Logging
         ProjectPlatformRequireUnknownField = 20035,
         ProjectPlatformRequireValueInvalid = 20036,
         ProjectPlatformAotFeatureConflict = 20037,
+        ProjectExportPublicExportInvalid = 20038,
         // ---- Process 模块 ----
         // SystemMethodCall
         ProcessSystemMethodCallNotFoundImportSystem = 20051,
@@ -781,6 +782,12 @@ namespace SimpleLanguage.Logging
         MetaCoreParamParams = 21318,
         MetaCoreParamAddMetaDefineParam = 21319,
         MetaCoreParamIssue = 21320,
+        // 注：21321+ 已被 MetaCore 其它段占用，Param 段新号接 21468
+        MetaCoreParamConstToNonConst = 21468,
+        // final 类继承拦截（类级 final：见 MetaClass.isFinalClass）
+        MetaCoreFinalClassCannotExtend = 21469,
+        FileMetaClassFinal = 21470,
+        FileMetaClassAbstractFinal = 21471,
         // TemplateClass
         MetaCoreTemplateClassDuplicateDefine = 21321,
         MetaCoreTemplateClassNotFoundData = 21322,

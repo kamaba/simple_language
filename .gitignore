@@ -419,3 +419,5 @@
 /test/Other/MyTest/build/logs/VM.txt
 /test/out/export/MyTest/Logs/Front.txt
 /test/out/export/MyTest/MyTest.module.json
+/test/out/export/MyTest
+/test/out/

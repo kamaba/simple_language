@@ -235,6 +235,9 @@ namespace SimpleLanguage.Export.SLIR.Types
         public string? defaultConstValue { get; set; }
         /// <summary>默认参数常量的 EType（(int)EType；0=None 表示无）。</summary>
         public int defaultConstEType { get; set; }
+        /// <summary>方法形参是否为 const 修饰（const TypeName name）。导入端据此恢复
+        /// MetaDefineParam 的 const 标记，使跨模块调用的 const 传参约束与本模块一致。</summary>
+        public bool isConst { get; set; }
     }
     public sealed class SLMethodPackage
     {
@@ -316,8 +319,16 @@ namespace SimpleLanguage.Export.SLIR.Types
         public string sourcePath { get; set; } = string.Empty;
         /// <summary>Matches <see cref="SimpleLanguage.IR.IRMetaClassKind"/> (0=Class, 1=Enum, 2=Data, 3=Interface).</summary>
         public int metaClassKind { get; set; }
+        /// <summary>类级导出权限（EPermission：0=Null,1=Export,2=Public,3=Protected,4=Private）。
+        /// extern 标记类=Export；jsonc "export"."publicExport"="extern" 档下 public 类也记 Export。
+        /// 旧包无此键（读回 0=Null），导入侧按 Public 处理保持向后兼容。</summary>
+        public int permission { get; set; }
         /// <summary>True when this exported data type is anonymous/dynamic data.</summary>
         public bool isDynamic { get; set; }
+        /// <summary>类级 final 标记：final 类不允许被继承。导入端经 SetFinalClass 恢复，
+        /// 使跨模块 extends final 类在编译期被拦截（MetaCoreFinalClassCannotExtend）。
+        /// 旧包无此键（读回 false），保持向后兼容。</summary>
+        public bool isFinal { get; set; }
         /// <summary>IR class id of the base/extend class (same id scheme as <see cref="id"/>); 0 if none.</summary>
         public int baseClassId { get; set; }
         /// <summary>IR class ids of interfaces this type implements (same id scheme as <see cref="id"/>), including from the base class chain in Meta.</summary>
