@@ -20,11 +20,13 @@ Project
         # CSharpTest3：WinForms 窗口 + HTTP json 请求回显（SWF/System.Drawing 经 jsonc references + 插件 BCL 树）
         #CSharpTest3.fun();
 
-        JavaTest.fun()
+        # JavaTest / JavaTest2：@java_hotspot 块依赖本机 JDK 17（javac 编译期 +
+        # jvm.dll 运行期），未装 JDK 时运行期报错退出；装机后恢复这两行。
+        #JavaTest.fun();
 
         # JavaTest2：callSL 通道（P4 §5.7）——Java 块内 SLChannel.call 回调
         # SL 静态方法（int/string/double/void-null/嵌套块 save/restore 回归）
-        JavaTest2.fun()
+        #JavaTest2.fun()
 
         #!
         # AOT 测试用例（自 test/AOTTest/ProjectTest.sp 合并）
@@ -195,7 +197,7 @@ Project
         !#
 
         # Std.OS.Process 外部进程执行测试（设计：csimple_lang/md/design/PROCESS_DESIGN.md）
-        #ProcessTest.fun();
+        ProcessTest.fun();
         
 
         nowMs = Environment.sys.nowMillis() - nowMs

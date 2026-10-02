@@ -52,6 +52,7 @@ namespace SimpleLanguage.Compile
                 case EPermission.Public: return "public";
                 case EPermission.Protected: return "protected";
                 case EPermission.Private: return "private";
+                case EPermission.Extern: return "extern";
             }
             return "_public";
         }
@@ -65,6 +66,7 @@ namespace SimpleLanguage.Compile
                 case ETokenType.Public: return EPermission.Public;
                 case ETokenType.Projected: return EPermission.Protected;
                 case ETokenType.Private: return EPermission.Private;
+                case ETokenType.Extern: return EPermission.Extern;
                 default:return EPermission.Null;
             }
         }
