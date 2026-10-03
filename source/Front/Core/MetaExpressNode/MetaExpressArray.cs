@@ -1,4 +1,4 @@
-﻿
+﻿﻿
 
 
 using SimpleLanguage.Compile;
@@ -64,7 +64,7 @@ namespace SimpleLanguage.Core
             m_Token = fmbt.token;
             if ( m_FileMetaBaseTermList == null )
             {
-                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, token, "m_FileMetaBaseTermList need not null");
+                Log.AddMetaCoreLog(LID.MetaCoreExpressArrayM_FileMetaBaseTermListNeedNot, token, "m_FileMetaBaseTermList need not null");
                 return;
             }
 
@@ -80,7 +80,7 @@ namespace SimpleLanguage.Core
                         {
                             token = mv?.token;
                         }
-                        Log.AddMetaCoreLog(LID.MetaCoreArrayMustIsArray, token, "MetaArrayExpressNode", mv?.name);
+                        Log.AddMetaCoreLog(LID.MetaCoreArrayMustIsArray, token, "must is array MetaArrayExpressNode", mv?.name);
                         return;
                     }
                     this.m_ExpressReturnMetaType = defineMT;
@@ -99,7 +99,7 @@ namespace SimpleLanguage.Core
 
                     if (cmt == null)
                     {
-                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, token, "MetaArrayExpressNode defineMT need have template meta type");
+                        Log.AddMetaCoreLog(LID.MetaCoreExpressArrayMetaArrayExpressNodeDefineMTNeed, token, "MetaArrayExpressNode defineMT need have template meta type");
                     }
                 }
             }

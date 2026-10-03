@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      MetaTemplate.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -179,17 +179,48 @@ namespace SimpleLanguage.Core
             {
                 sb.Append(m_MetaType.metaTemplate.name);
             }
-            else
+            else if( m_MetaType.metaClass != null )
             {
                 sb.Append(m_MetaType.metaClass.ToString() );
-            }           
+            }
+            else
+            {
+                /* data/enum 等无 MetaClass 的实参形态（类模板物化支持 data 实参后到达） */
+                if( m_MetaType.isData && m_MetaType.metaData != null )
+                {
+                    sb.Append(m_MetaType.metaData.allName);
+                }
+                else if( m_MetaType.isEnum && m_MetaType.metaEnum != null )
+                {
+                    sb.Append(m_MetaType.metaEnum.allName);
+                }
+                else
+                {
+                    sb.Append(m_MetaType.ToString());
+                }
+            }
 
             return sb.ToString();
         }
         public string ToFormatString()
         {
             StringBuilder sb = new StringBuilder();
-            sb.Append(m_MetaType.metaClass.name);
+            if( m_MetaType.metaClass != null )
+            {
+                sb.Append(m_MetaType.metaClass.name);
+            }
+            else if( m_MetaType.isData && m_MetaType.metaData != null )
+            {
+                sb.Append(m_MetaType.metaData.name);
+            }
+            else if( m_MetaType.isEnum && m_MetaType.metaEnum != null )
+            {
+                sb.Append(m_MetaType.metaEnum.name);
+            }
+            else
+            {
+                sb.Append(m_MetaType.ToString());
+            }
             return sb.ToString();
         }
     }

@@ -1,0 +1,3 @@
+now=14:57:27
+procs=0
+s5tail=  rt sweep at 0xBFFFFFFF /   rt sweep at 0xFFFFFFFF / f16/bf16 exhaustive: done (fails so far 0) / RESULT: PASS

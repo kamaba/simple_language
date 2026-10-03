@@ -1,0 +1,14 @@
+[07:27:13] [Info] [Project] [LID=10002] Resolved input path: D:\project\lang\simple_language\out\export\NullFastTest\ProjectTest.module.json
+[07:27:13] [Info] [Project] [LID=10002] Warning: could not load module reference '../../../test/out/export/Core' (resolved: D:\project\lang\simple_language\out\export\NullFastTest/../../../test/out/export/Core), skipping
+[07:27:13] [Info] [Project] [LID=10002] Warning: could not load module reference '../../../test/out/export/Std' (resolved: D:\project\lang\simple_language\out\export\NullFastTest/../../../test/out/export/Std), skipping
+[07:27:13] [Info] [Project] [LID=10002] Runtime load success. root=D:\project\lang\simple_language\out\export\NullFastTest\ProjectTest.module.json packageCount=1
+[07:27:13] [Info] [Project] [LID=10002] SLIR loaded. root=D:\project\lang\simple_language\out\export\NullFastTest\ProjectTest.module.json, format=json, packageCount=1
+[07:27:13] [Info] [Project] [LID=10002] Selected entry method: ProjectTest.Project._main_ instructionCount=3 codeLength=309
+[07:27:13] [Info] [Runtime] [LID=10002] Runtime assembly ready. classCount=9 methodCount=8
+[07:27:13] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__ProjectTest.Project] begin. code_length=354
+[07:27:13] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__ProjectTest.Project] end. error_code=0
+[07:27:13] [Info] [Runtime] [LID=10002] vm_run [(null)] begin. code_length=309
+[07:27:13] [Info] [Runtime] [LID=10002] vm_run [__new_object__ProjectTest.NullFastClass] begin. code_length=180
+[07:27:13] [Info] [Runtime] [LID=10002] vm_run=[__new_object__ProjectTest.NullFastClass] end. error_code=0
+[07:27:13] [Info] [Runtime] [LID=10002] vm_run=[(null)] end. error_code=0
+[07:27:13] [Info] [Runtime] [LID=10002] VM finished successfully.

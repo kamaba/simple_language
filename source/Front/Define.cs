@@ -17,7 +17,8 @@ namespace SimpleLanguage
         Export,
         Public,
         Protected,
-        Private
+        Private,
+        Extern
     }
     //前置类型
     public enum EType : byte
@@ -37,10 +38,13 @@ namespace SimpleLanguage
         UInt16,
         Int32,
         UInt32,
-        Float16,
-        Float32,
         Int64,
         UInt64,
+        Float8,
+        Float8_E5M2,
+        Float16,
+        Float16_Brain,
+        Float32,
         Float64,
         Int128,
         UInt128,
@@ -49,8 +53,12 @@ namespace SimpleLanguage
         String,
         Object,
         Type,
-        Float2,
         Member,
+        Ptr,
+        Result,
+        ResultT,
+        Function,
+        InlineLambda,
     }
     //token类型
     public enum ETokenType : byte
@@ -183,12 +191,6 @@ namespace SimpleLanguage
         Else,
         /// <summary> elif </summary>
         ElseIf,
-        /// <summary> !if </summary>
-        MacroIf,
-        /// <summary> !else </summary>
-        MacroElse,
-        /// <summary> !endif </summary>
-        MacroEndif,
         /// <summary> import </summary>
         Import,
         /// <summary> as </summary>
@@ -219,8 +221,6 @@ namespace SimpleLanguage
         Extends,
         /// <summary> bind </summary>
         Bind,
-        /// <summary> virtual </summary>
-        //Virtual,
         /// <summary> override </summary>
         Override,
         /// <summary> const </summary>
@@ -231,12 +231,12 @@ namespace SimpleLanguage
         Final,
         /// <summary> static </summary>
         Static,
+        /// <summary> inline（方法修饰符：调用点内联展开） </summary>
+        Inline,
         /// <summary> get </summary>
         Get,
         /// <summary> set </summary>
         Set,
-        /// <summary> let </summary>
-        Let,
         /// <summary> new </summary>
         New,
         /// <summary> partial </summary>
@@ -265,8 +265,6 @@ namespace SimpleLanguage
         Transience,
         /// <summary> return </summary>
         Return,
-        /// <summary> operator </summary>
-        Operator,
         /// <summary> local </summary>
         Local,
         /// <summary> global </summary>
@@ -287,10 +285,20 @@ namespace SimpleLanguage
         Function,
         /// <summary> try </summary>
         Try,
+        /// <summary> try? </summary>
+        TryQuestion,
+        /// <summary> try! </summary>
+        TryExclamation,
         /// <summary> catch </summary>
         Catch,
+        /// <summary> finally </summary>
+        Finally,
         /// <summary> throw </summary>
         Throw,
+        /// <summary> checked </summary>
+        Checked,
+        /// <summary> unchecked </summary>
+        Unchecked,
         /// <summary> BoolValue </summary>
         BoolValue,
         /// <summary> number </summary>
@@ -320,14 +328,20 @@ namespace SimpleLanguage
         /// <summary> 标识符 </summary>
         Identifier,
         /// <summary> async </summary>
-        Async,
-        /// <summary> await </summary>
+        //Async,
+        ///// <summary> await </summary>
         Await,
+        /// <summary> spawn（协程生成关键字，一元前缀表达式）</summary>
+        Spawn,
+        /// <summary> yield（协程让出关键字，语句）</summary>
+        Yield,
+        /// <summary> throws </summary>
+        Throws,
 
         /// <summary> typealias </summary>
         TypeAlias,
 
-        Float2, Float3, Float4,
+        Float3, Float4,
         /// <summary> float extent </summary>
         Float2x2, 
         Float2x3, Float3x2, Float3x3,
@@ -342,6 +356,9 @@ namespace SimpleLanguage
         Matrix2x2,
         Matrix2x3, Matrix3x2, Matrix3x3,
         Matrix4x2, Matrix2x4, Matrix3x4, Matrix4x3, Matrix4x4,
+
+        /// <summary> @<tag>(...){...} 不透明内联块（统一 @ 识别：代码段内 AtSignLabel 语义，Lexer raw 捕获）</summary>
+        AtSignBlock,
 
         /// <summary> 结束 </summary>
         Finished,
@@ -366,12 +383,6 @@ namespace SimpleLanguage
         Not
     }
 
-    public enum EParseState
-    {
-        Null,
-        Begin,
-        End
-    }
     public class SignComputePriority
     {
         public const int Level1 = 1;                         //(a+b) [] . 优先操作，对象操作等
@@ -390,61 +401,20 @@ namespace SimpleLanguage
         public const int Level11_Assign = 120;              // = /= *= %= += -= <<= >>= &= ^= |= 
         public const int Level12_Split = 130;                //,
     }
-
-    // System-level builtin method calls handled by the runtime/native bridge
-    public enum ESystemMethodCall
-    {
-        SystemCallCLRMethod,
-        SystemCallNativeMethod,
-        SystemCallJVMMethod,
-        SystemPrint,
-        SystemPrintln,
-        SystemReadLine,
-        SystemReadKey,
-        SystemConvertBool,
-        SystemConvertInt8,
-        SystemConvertUInt8,
-        SystemConvertInt16,
-        SystemConvertUInt16,
-        SystemConvertInt32,
-        SystemConvertUInt32,
-        SystemConvertInt64,
-        SystemConvertUInt64,
-        SystemConvertFloat32,
-        SystemConvertFloat64,
-        SystemConvertString,
-        SystemEqualObject,
-        SystemObjectGetType,
-        SystemObjectGetHashCode,
-        SystemObjectRef,
-        SystemObjectRefWeak,
-        SystemObjectRefCount,
-        SystemObjectFree,
-        SystemObjectRelease,
-        SystemArrayGetValueThis,
-        SystemArraySetValueThis,
-        SystemInt32Parse,
-        SystemNumAbs,
-        SystemNumFloor,
-        SystemStringFormat,
-        SystemStringFront,
-        SystemStringEnd,
-        SystemStringRange,
-        SystemStringToUInt8Array,
-        /// <summary>data 定义类型与成员缓冲区均相同（见 <c>md/syntax/data.md</c>）。</summary>
-        DataAllEqual,
-        /// <summary>data 字段排列的格式/形状相同（标量族、数组、嵌套 data 结构）。</summary>
-        DataTypeEqual,
-        /// <summary>data 字段名与各字段类型签名相同。</summary>
-        DataNameAndTypeEqual,
-        /// <summary>data 字段值相同（数值类型可宽化兼容，如 int8 与 int32）。</summary>
-        DataDataEqual,
-        /// <summary>Build data/anonymous-data string representation.</summary>
-        SystemBuildDataString,
-        SystemConvertSInt8,
-    }
     public class Global
     {
         public const string tabChar = "    ";
+
+        /// <summary>
+        /// VM_PTR_SIZE – byte width of pointer/handle values (PTR/STRING slots)
+        /// stored on the eval stack.  Must be kept in sync across all three
+        /// code-bases:
+        ///   - cvm        : vm_runtime.h   #define VM_PTR_SIZE
+        ///   - CSharpVM   : RuntimeVM.cs   VM_PTR_SIZE constant
+        ///   - Frontend   : Define.cs      Global.VM_PTR_SIZE  (this field)
+        ///
+        /// Options: 2 (short), 4 (int), 8 (long).
+        /// </summary>
+        public const int VM_PTR_SIZE = 8;
     }
 }

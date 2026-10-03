@@ -1,6 +1,3 @@
-import Std
-import CSharp.System
-
 class XC
 {
     a = 10
@@ -127,16 +124,11 @@ OK
 {
     code = 0;
 }
-Error
-{
-    code = 0;
-}
 #!
 报错
 enum Res
 {
     OK ok;
-    Error error;
 }
 !#
 
@@ -147,40 +139,40 @@ EnumTest
         global.println("========== EnumTest (start) ==========")
 
         
-        BridgeKind kind222 = BridgeKind.SELF
-        kind111 = BridgeKind.SELF
+        EAttributeStage kind222 = EAttributeStage.PreCompile
+        kind111 = EAttributeStage.PreCompile
 
         if kind222 == kind111
         {
-            global.println("BridgeKind--------------SELF11111111111")
+            global.println("EAttributeStage--------------PreCompile11111111111")
         }
 
-        if kind222 == BridgeKind.SELF
+        if kind222 == EAttributeStage.PreCompile
         {
-            global.println("BridgeKind--------------SELF1")
+            global.println("EAttributeStage--------------PreCompile1")
         }
-        elif kind222 == BridgeKind.JVM
+        elif kind222 == EAttributeStage.Runtime
         {
-            global.println("BridgeKind--------------JVM1")
+            global.println("EAttributeStage--------------Runtime1")
         }
         else
         {
-            global.println("BridgeKind--------------OTHER1")
+            global.println("EAttributeStage--------------OTHER1")
         }
 
         #kind111 =  EShape.r1
-        kind111 = BridgeKind.JVM
-        if kind111 == BridgeKind.SELF
+        kind111 = EAttributeStage.Runtime
+        if kind111 == EAttributeStage.PreCompile
         {
-            global.println("BridgeKind--------------SELF2")
+            global.println("EAttributeStage--------------PreCompile2")
         }
-        elif kind111 == BridgeKind.JVM
+        elif kind111 == EAttributeStage.Runtime
         {
-            global.println("BridgeKind--------------JVM2")
+            global.println("EAttributeStage--------------Runtime2")
         }
         else
         {
-            global.println("BridgeKind--------------OTHER2")
+            global.println("EAttributeStage--------------OTHER2")
         }
 
         EShape shape123 = EShape.r1
@@ -339,6 +331,6 @@ enum EnumErrorRepeat
 #
 # 预期结果：
 # - EErr.First.value == 2、EErr.Six.value == 6、EBytes.x5.value == 14 为 True。
-# - BridgeKind.SELF == BridgeKind.SELF 为 True，BridgeKind.SELF != BridgeKind.JVM 为 True。
+# - EAttributeStage.PreCompile == EAttributeStage.PreCompile 为 True，EAttributeStage.PreCompile != EAttributeStage.Runtime 为 True。
 # - EShape.r1 == EShape.r2 和 ERectShape.r1 == ERectShape.r2 为 False。
 # - switch GameState.Begin 命中 Begin 分支；无编译/运行时错误。

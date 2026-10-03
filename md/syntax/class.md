@@ -99,6 +99,52 @@ MyClass {
     class MyChild extends MyClass { }
     ```
 
+    #### final 类与 final 方法（2026-10-02 已实现）
+
+    **final 类**：
+    - 语法：`final class X { ... }` 或 `final X { ... }`（final 置于 class 关键字/类名之前）
+    - 语义：final 类不允许被任何类 `extends` 继承；final 类本身可正常实例化、调用其成员
+    - final 仅允许用于 `class`；出现在 `data` / `enum` / `interface` 上报错 21470
+    - `abstract final` 组合无意义，报错 21471
+    - 跨模块约束：final 标记随 SLIR 导出（module.json 类节点 `isFinal` 字段），引用方模块 `extends` 其它模块导出的 final 类同样被拦截
+    - 错误码：21469 MetaCoreFinalClassCannotExtend（`类[X] 继承了 final 类： Y`）
+
+    **final 方法**（详见 md/syntax/function.md）：
+    - 语法：`final int locked() { ... }`
+    - 语义：子类不允许 `override` 父类的 final 方法；错误码 12274 MetaCoreFinalFunctionCannotOverride
+
+    ```s
+    # final 类：禁止继承
+    final class SealedBase {
+        int v = 0;
+        int getV()
+        {
+            ret this.v
+        }
+        final int sealedGet()      # final 方法：禁止 override
+        {
+            ret this.v * 10
+        }
+    }
+
+    # class SealedChild extends SealedBase { }   # 编译错误 21469
+
+    class MethodBase
+    {
+        final int locked()
+        {
+            ret 100
+        }
+    }
+
+    class MethodChild extends MethodBase
+    {
+        # override int locked() { ret 200 }      # 编译错误 12274
+    }
+    ```
+
+    测试用例：`test/Other/FinalProbe/`（FinalLib 正向 / FinalProbe 拦截 / FinalCross 跨模块）。
+
     ### 1.7 泛型与嵌套类
     - 泛型：`List<T> extends Object { ... }`
     - 支持类中嵌套类、匿名对象、数组等

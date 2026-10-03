@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      MetaReturnStatements.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -16,10 +16,16 @@ namespace SimpleLanguage.Core
     public sealed  class MetaReturnStatements : MetaStatements
     {
         public MetaExpressNodeBase express => m_Express;
+        /// <summary>result 关键字: 该 ret 是否被改写为值返回 (ret expr 等价 result.value = expr; ret result)。</summary>
+        public bool isResultValueReturn => m_IsResultValueReturn;
+        /// <summary>result 关键字: 改写目标 result 变量 (函数返回类型为 Result/Result&lt;T&gt; 时注入的隐藏局部变量)。</summary>
+        public MetaVariable resultMetaVariable => m_ResultMetaVariable;
 
         private FileMetaKeyReturnSyntax m_FileMetaReturnSyntax;
         private MetaType m_ReturnMetaDefineType;
         private MetaExpressNodeBase m_Express = null;
+        private bool m_IsResultValueReturn = false;
+        private MetaVariable m_ResultMetaVariable = null;
         public MetaReturnStatements( MetaBlockStatements mbs, FileMetaKeyReturnSyntax fmrs ) : base(mbs)
         {
             m_FileMetaReturnSyntax = fmrs;
@@ -54,9 +60,69 @@ namespace SimpleLanguage.Core
                 m_ReturnMetaDefineType = new MetaType(CoreMetaClassManager.voidMetaClass);
             }
 
-            if( !TypeManager.CompareLeftRightMetaType(mdt, m_ReturnMetaDefineType, m_Token, out MetaType convertMt  ) )
+            // result 关键字: 返回类型为 Result/Result<T> 的函数, ret 语义改写判定
+            // 裸 ret / ret 非 Result 类型值 => 改写为 result.value = expr; ret result
+            var ownerMmf = mbs.ownerMetaFunction as MetaMemberFunction;
+            if( ownerMmf != null && ownerMmf.hasResultVariable )
             {
-                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "left compare right " + m_ReturnMetaDefineType?.ToString(), mdt.ToString());
+                // 当前作用域可见的 result 必须是函数注入的那个 (用户自定义同名变量会遮蔽注入变量, 此时按普通返回处理)
+                if( mbs.GetMetaVariableByName("result") == ownerMmf.resultVariable )
+                {
+                    m_ResultMetaVariable = ownerMmf.resultVariable;
+                    if( m_Express == null || !CoreMetaClassManager.IsResultMetaType( m_ReturnMetaDefineType ) )
+                    {
+                        m_IsResultValueReturn = true;
+                    }
+                }
+            }
+
+            // 闭包函数返回类型推断: 首次遇到带返回值的 ret 语句时, 将返回类型从 Void 更新为实际类型
+            // ret null 先出现时不定型 (null 是 bottom type, 可赋给任意类型), 后续真实类型的 ret 可覆盖 Null
+            var ownerFunc = mbs.ownerMetaFunction as MetaMemberFunction;
+            if( ownerFunc != null && ownerFunc.isClosureFunction )
+            {
+                if( m_ReturnMetaDefineType != null
+                    && m_ReturnMetaDefineType.metaClass != CoreMetaClassManager.voidMetaClass )
+                {
+                    var curType = ownerFunc.returnMetaVariable.defineMetaType;
+                    if( curType != null
+                        && ( curType.metaClass == CoreMetaClassManager.voidMetaClass
+                            || ( curType.metaClass == CoreMetaClassManager.nullMetaClass
+                                && m_ReturnMetaDefineType.metaClass != CoreMetaClassManager.nullMetaClass ) ) )
+                    {
+                        ownerFunc.returnMetaVariable.SetMetaDefineType( m_ReturnMetaDefineType );
+                    }
+                }
+            }
+            else
+            {
+                // result 值返回改写: ret expr 等价 result.value = expr (Object/T 字段语义), 跳过函数返回类型比对
+                if( !m_IsResultValueReturn )
+                {
+                    // void 互斥检查: void 函数的 ret 不允许携带返回值表达式; 非 void 函数不允许裸 ret。
+                    // (CompareLeftRightMetaType 对非数值类型走 CompareMetaClass 的宽松兜底, void 与任意类型的比对会被放行, 故此处专项拦截)
+                    if( mdt != null && mdt.metaClass == CoreMetaClassManager.voidMetaClass )
+                    {
+                        if( m_Express != null )
+                        {
+                            Log.AddMetaCoreLog(LID.MetaCoreReturnStatementVoidWithExpress, m_Token,
+                                "ret 带返回值表达式，但函数返回类型为 void: " + m_ReturnMetaDefineType?.ToString());
+                        }
+                    }
+                    else if( mdt != null )
+                    {
+                        if( m_Express == null )
+                        {
+                            Log.AddMetaCoreLog(LID.MetaCoreReturnStatementVoidFuncBareRet, m_Token,
+                                "函数声明了返回类型 " + mdt.ToString() + "，ret 必须携带返回值表达式");
+                        }
+                    }
+
+                    if( !TypeManager.CompareLeftRightMetaType(mdt, m_ReturnMetaDefineType, m_Token, out MetaType convertMt  ) )
+                    {
+                        Log.AddMetaCoreLog(LID.MetaCoreReturnStatementLeftCompareRight, m_Token, "left compare right " + m_ReturnMetaDefineType?.ToString(), mdt?.ToString() ?? "null");
+                    }
+                }
             }
         }        
         public override string ToFormatString()
@@ -108,7 +174,7 @@ namespace SimpleLanguage.Core
             }
             if (!TypeManager.CompareLeftRightMetaType(m_ReturnMetaType, mdt, m_Token, out MetaType convertMt))
             {
-                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "left compare right " + m_ReturnMetaType.ToString(), mdt.ToString());
+                Log.AddMetaCoreLog(LID.MetaCoreReturnStatementLeftCompareRight2, m_Token, "left compare right " + m_ReturnMetaType.ToString(), mdt.ToString());
             }
         }
         public override string ToFormatString()

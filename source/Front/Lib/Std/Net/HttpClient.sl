@@ -1,15 +1,16 @@
 
 namespace Http
 {
-    public enum EMethod
+    enum EMethod
     {
-        Get,
-        Post,
+        Get = 0
+        Post
         Update
     }
     public class Response
     {
-
+        codeState = 0
+        content = ""
     }
     public class Client
     {
@@ -34,10 +35,10 @@ namespace Http
 
             if response.codeState == 200
             {
-                Console.Write( response.content )
+                Console.write( response.content )
             }
 
-            c2 = Client(Uri.parse(https://www.qq.com" ) )
+            c2 = Client( "https://www.qq.com" ) 
             res = c2.send()
             if res.codeState == 200 
             {

@@ -1,5 +1,3 @@
-import Std
-import CSharp.System
 
 class Base1
 {

@@ -1,0 +1,58 @@
+{
+  "project":
+  {
+    "name": "FinalProbe",
+    "desc": "final keyword probe (compile-error cases, errors expected)",
+    "mainVersion": 0,
+    "subVersion": 0,
+    "buildVersion": 1,
+    "buildSubVersion": 0
+  },
+  "source": {
+    "root": "."
+  },
+  "compile": {
+    "optimize": false,
+    "target": "x64",
+    "debug": true,
+    "isUseForceSemiColonInLineEnd": false,
+    "isForceUseClassKey": false,
+    "isSupportDoublePlus": false,
+    "requireSameNumericTypes": false
+  },
+  "compileFiles": {
+    "files": [
+      { "path": "FinalProbe.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 }
+    ]
+  },
+  "compileFilter": {
+    "isAllGroup": true,
+    "isAllTag": true
+  },
+  "global": {
+    "imports": [
+      "Std.Console"
+    ]
+  },
+  "references": [
+    { "path": "../../../out/export/Core", "uuid":"123123123213", "name": "Core.module.json" },
+    { "path": "../../../out/export/Std", "uuid":"456456456456", "name": "Std.module.json" }
+  ],
+  "export": {
+    "moduleName": "FinalProbe",
+    "outputDir": "..\\..\\out\\export",
+    "versionMain": 0,
+    "versionSub": 0,
+    "versionPatch": 1,
+    "includeMetadata": true,
+    "debugText": {
+      "outputDir": "",
+      "code": false,
+      "token": false,
+      "node": false,
+      "file": false,
+      "meta": false,
+      "ir": false
+    }
+  }
+}

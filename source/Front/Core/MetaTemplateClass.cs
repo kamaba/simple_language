@@ -9,7 +9,6 @@
 using SimpleLanguage.Compile;
 using SimpleLanguage.Logging;
 using System.Collections.Generic;
-using System.Diagnostics;
 
 namespace SimpleLanguage.Core
 {
@@ -76,7 +75,7 @@ namespace SimpleLanguage.Core
                     {
                         if( !m_InnderDefine )
                         {
-                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, fmc.token, "Error 定义模式名称重复!!");
+                            Log.AddMetaCoreLog(LID.MetaCoreTemplateClassDuplicateDefine, fmc.token, "Error 定义模式名称重复!!");
                         }
                     }
                     else
@@ -181,12 +180,12 @@ namespace SimpleLanguage.Core
                                     }
                                     else
                                     {
-                                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "没有找到父级别自己模板生成时的数据!!");
+                                        Log.AddMetaCoreLog(LID.MetaCoreTemplateClassNotFoundData, "没有找到父级别自己模板生成时的数据!!");
                                     }
                                 }
                                 else
                                 {
-                                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "没有找到父级别自己模板生成时的数据!!");
+                                    Log.AddMetaCoreLog(LID.MetaCoreTemplateClassNotFoundData2, "没有找到父级别自己模板生成时的数据!!");
                                 }
                             }
                         }
@@ -387,6 +386,54 @@ namespace SimpleLanguage.Core
             }
             return null;
         }
+        /// <summary>
+        /// 以 MetaType 列表物化模板类（支持 data/enum 等无 MetaClass 的实参形态）。
+        /// 旧 AddInstanceMetaClass(List&lt;MetaClass&gt;) 只能表达类形态实参，
+        /// data 实参（如 Serialize.toText&lt;T&gt;(obj, Codec&lt;T,string&gt;) 中 T 绑定 data）
+        /// 在旧入口下 metaClass 为 null 会 NRE。
+        /// </summary>
+        public MetaGenTemplateClass AddInstanceMetaTypeClass(List<MetaType> list, bool isParse = false)
+        {
+            if (list == null || list.Count == 0)
+            {
+                return null;
+            }
+            if (this.m_MetaTemplateList.Count != list.Count)
+            {
+                return null;
+            }
+            List<MetaGenTemplate> list2 = new List<MetaGenTemplate>();
+            for (int i = 0; i < this.metaTemplateList.Count; i++)
+            {
+                var argMt = list[i];
+                if (argMt == null)
+                {
+                    return null;
+                }
+                if (argMt.eMetaTypeType == EMetaTypeType.MetaClass && argMt.metaClass.isTemplateClass)
+                {
+                    if (argMt.metaClass is not MetaGenTemplateClass)
+                    {
+                        return null;
+                    }
+                }
+                var classTemplate = this.metaTemplateList[i];
+                MetaGenTemplate mgt = new MetaGenTemplate(classTemplate, argMt);
+                list2.Add(mgt);
+            }
+            MetaGenTemplateClass mgtc = GetGenTemplateMetaClassByTemplateList(list2);
+            if (mgtc == null)
+            {
+                mgtc = new MetaGenTemplateClass(this, list2);
+                this.AddGenTemplateMetaClass(mgtc);
+                if (isParse)
+                {
+                    mgtc.ParseGenTemplateClass(mgtc);
+                    mgtc.ParseGenMemberVarible();
+                }
+            }
+            return mgtc;
+        }
         //public virtual void ParseGenTemplateClassMetaType()
         //{
         //    //生成已有模板里边的内容
@@ -417,7 +464,7 @@ namespace SimpleLanguage.Core
         //    }
         //    if (mtc == null)
         //    {
-        //        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 没有找到合适的Template");
+        //        Log.AddMetaCoreLog(LID.MetaCoreTemplateClassTemplate, "Error 没有找到合适的Template");
         //    }
         //    return mtc;
         //}

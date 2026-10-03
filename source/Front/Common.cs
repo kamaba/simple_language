@@ -80,12 +80,6 @@ namespace SimpleLanguage
             }
             return rootDir;
         }
-
-        public static string SetDebugCode(string path)
-        {
-            return GetDebugCodeDir(path);
-        }
-
         public static string GetDebugCodeDir(string path)
         {
             var rootDir = GetDebugCodeRootDir();

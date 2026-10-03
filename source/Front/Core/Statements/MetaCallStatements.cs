@@ -7,6 +7,7 @@
 //****************************************************************************
 
 using SimpleLanguage.Compile;
+using SimpleLanguage.Logging;
 using System;
 using System.Text;
 
@@ -16,11 +17,13 @@ namespace SimpleLanguage.Core
     {
         public MetaCallLink metaCallLink => m_MetaCallLink;
         public bool isHasReturnMetaVariable => m_IsHasReturnMetaVariable;
+        public MetaExpressNodeBase expressNode => m_ExpressNode;
 
         private MetaCallLink m_MetaCallLink = null;
         private FileMetaCallSyntax m_FileMetaCallSyntax = null;
         private AllowUseSettings m_AllowUseSettings = new AllowUseSettings();
         private bool m_IsHasReturnMetaVariable = false;
+        private MetaExpressNodeBase m_ExpressNode = null;
         public MetaCallStatements(MetaBlockStatements mbs, FileMetaCallSyntax fmcl) : base(mbs)
         {
             m_FileMetaCallSyntax = fmcl;
@@ -30,21 +33,59 @@ namespace SimpleLanguage.Core
             m_AllowUseSettings.callConstructFunction = true;
             m_AllowUseSettings.callFunction = true;
 
-            m_MetaCallLink = new MetaCallLink(fmcl.variableRef, mbs.ownerMetaBase, mbs, null, null );
-            m_MetaCallLink.Parse(m_AllowUseSettings);
-
-            // Standalone call statements have no receiver for the return value.
-            // If the final call returns a non-void value, mark it so the IR layer
-            // can emit a Pop to discard the unused return value from the stack.
-            var finalNode = m_MetaCallLink.finalCallNode;
-            if (finalNode != null &&
-                (finalNode.visitType == MetaVisitNode.EVisitType.MethodCall ||
-                 finalNode.visitType == MetaVisitNode.EVisitType.SystemCall))
+            if (fmcl.expressTerm != null)
             {
-                var fun = finalNode.methodCall?.function;
-                if (fun != null && fun.returnMetaVariable?.defineMetaType?.metaClass?.eType != EType.Void)
+                // Expression statement (e.g. "try riskyFunc()")
+                CreateExpressParam cep = new CreateExpressParam()
                 {
-                    m_IsHasReturnMetaVariable = true;
+                    ownerMetaBase = mbs.ownerMetaClass,
+                    ownerMBS = mbs,
+                    fme = fmcl.expressTerm,
+                    isStatic = false,
+                    isConst = false,
+                    parsefrom = EParseFrom.StatementRightExpress,
+                };
+                // 记录解析前的诊断计数：若解析失败且内部未产出任何 Error/Warning，
+                // 说明语句会被静默丢弃(不进 IR)，此时兜底报编译 Error
+                int errorBegin = Log.errorCount;
+                int warningBegin = Log.warningCount;
+                var men = ExpressManager.CreateExpressNodeByCEP(cep);
+                if (men != null)
+                {
+                    men.Parse(new AllowUseSettings() { parseFrom = EParseFrom.StatementRightExpress });
+                    // Solidify the expression's return type (e.g. "try voidFunc()"):
+                    // IRCallStatements reads GetReturnMetaType() to decide whether
+                    // to emit a Pop. Without this, the type is null and a void call
+                    // would wrongly get a Pop -> OpCode_Pop stack underflow assert.
+                    men.CalcReturnType();
+                    m_ExpressNode = men;
+                }
+                else if (Log.errorCount == errorBegin && Log.warningCount == warningBegin)
+                {
+                    // 表达式语句解析失败且无先行诊断：此前整条语句被无声丢弃(IR 中消失)，
+                    // 升为编译 Error 阻断导出
+                    Log.AddMetaCoreLog(LID.MetaCoreParseCallLinkFailed, fmcl.expressTerm.token,
+                        "Express statement parse failed!", fmcl.expressTerm.token.ToLexemeAllString());
+                }
+            }
+            else
+            {
+                m_MetaCallLink = new MetaCallLink(fmcl.variableRef, mbs.ownerMetaBase, mbs, null, null );
+                m_MetaCallLink.Parse(m_AllowUseSettings);
+
+                // Standalone call statements have no receiver for the return value.
+                // If the final call returns a non-void value, mark it so the IR layer
+                // can emit a Pop to discard the unused return value from the stack.
+                var finalNode = m_MetaCallLink.finalCallNode;
+                if (finalNode != null &&
+                    (finalNode.visitType == MetaVisitNode.EVisitType.MethodCall ||
+                     finalNode.visitType == MetaVisitNode.EVisitType.SystemCall))
+                {
+                    var fun = finalNode.methodCall?.function;
+                    if (fun != null && fun.returnMetaVariable?.defineMetaType?.metaClass?.eType != EType.Void)
+                    {
+                        m_IsHasReturnMetaVariable = true;
+                    }
                 }
             }
         }

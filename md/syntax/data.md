@@ -433,6 +433,71 @@ str6 = sr.toString(DataType.jsonTrim)  #输出json格式不带换行相关
 json1 = sr.toJson()  #输出一个json格式
 ```
 
+### 4.2.3 toJson() / toJsonPretty()（data -> JSON 正向）
+
+`toJson()` 返回紧凑 JSON 文本；`toJsonPretty()` 返回缩进美化版。成员映射规则：
+
+| data 成员类型 | JSON 形态 | 说明 |
+| --- | --- | --- |
+| 标量（int/float/bool） | 数值 / `true`/`false` | 浮点用最短往返表示；bool 小写 |
+| string | 字符串 | |
+| enum | 底层整数值 | `kind = JtKind.Advanced` -> `"kind":2` |
+| data（嵌套） | `{}` 对象 | 递归展开（内置方式，不调方法） |
+| class（标 `@Serializable()`） | `{}` 对象 | 与 data 同款成员展开（成员过滤规则生效，见下） |
+| class（未标注，有 `toJson()`） | 嫁接子树 | 虚调 `toJson()`，返回文本解析后接为该名字的子节点 |
+| class（未标注，无 `toJson()`） | 字符串叶子 | 回退虚调 `toString()` |
+| 数组（含嵌套数组） | `[]` 数组 | |
+| List / HashSet / Tuple 等 | `[]` 数组 | 顶层容器也适用（`BaseJson.fromData(list)`） |
+| Map | `{}` 对象 | key 作成员名（string/enum/标量可作 key，复杂对象 key 跳过） |
+| null / null 引用成员 | `null` | |
+
+data 自身默认全量成员参与（`@Serializable()` 为可选显式标注）。成员级可叠加序列化标签，优先级 `@NonSerialized()` > `@SerializeField()` > 默认：`@NonSerialized()` 淘汰任意成员；`static` 成员一律排除；data 成员无可见性修饰，默认全量。标签语义详见 [attribute.md](attribute.md)。
+
+```sl
+data JtMeta { level = 1, passed = false }
+
+data JtSample
+{
+    sid = 7
+    name = "sam"
+    kind = JtKind.Advanced
+    meta = JtMeta()
+    scores = [95, 88, 91]
+}
+
+JtSample s = new()
+str = s.toJson()        # {"sid":7,"name":"sam","kind":2,"meta":{"level":1,"passed":false},"scores":[95,88,91]}
+```
+
+也可用 `BaseJson.fromData(s)` 得到可继续路径取值的 `BaseJson` 实例（树版正向）。
+
+### 4.2.4 JSON -> data 反向（BaseJson.toData）
+
+已有 `BaseJson` 实例可反向还原出已定义的 data 实例：
+
+```sl
+BaseJson j = BaseJson.fromData(s)      # 或 BaseJson(text) 解析文本
+
+JtSample back = j.toData<JtSample>()   # 糖形式：模板实参即目标类型，返回强类型
+var back2 = j.toData("JtSample")       # 显式类型名：返回 object
+var nil = j.toData("NoSuchType")       # 未知类型名 -> null
+```
+
+反向还原规则：
+
+- data 成员：对象节点按成员名匹配写入（标量 / string / enum 按底层值 / 嵌套 data / 数组均可还原）。
+- `@Serializable()` class 引用成员：**可还原**（按成员名递归填充，过滤规则与正向对称）。
+- 未标注 class 引用成员：**不还原**，保持 null（正向可转出，反向丢失引用）。
+- JSON 中多余成员忽略；缺失成员保持 data 默认值。
+
+已知限制：
+
+- `object as DataName`（as 转到 data 类型）前端暂不支持，强类型还原请用糖形式 `j.toData<DataName>()`。
+- data 定义中具名 data 成员的花括号覆盖值当前不生效（`meta = JtMeta(){ level = 3 }` 运行时仍取默认值），需构造后显式赋值 `s.meta.level = 3`；class 成员的同语法生效。
+- data 定义内不能声明 List/Map 等容器成员（顶层 `BaseJson.fromData(list)` 不受影响）。
+- 嵌套深度上限 64。
+- 正反向往返以 `toJson()` 文本一致为准：`back.toJson() == s.toJson()`。
+
 
 ## 5. Meta 层规则
 

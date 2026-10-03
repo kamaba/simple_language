@@ -61,16 +61,6 @@
 | `source/VM/Object/IntObject.cs` | 整数类对象族（含有符号/无符号实现）。 |
 | `source/VM/Object/FloatObject.cs` | 浮点对象族。 |
 
-## `NativeBridge`
-
-| 文件 | 作用 |
-|---|---|
-| `source/VM/NativeBridge/NativeBridge.cs` | 原生桥接总入口。 |
-| `source/VM/NativeBridge/CSharpBridgeRegistry.cs` | C# Bridge 元数据注册、方法绑定缓存与解析。 |
-| `source/VM/NativeBridge/CallCSharpDynamicLib.cs` | 调用 C# 动态库。 |
-| `source/VM/NativeBridge/CallNativeDynamicLib.cs` | 调用 Native 动态库。 |
-| `source/VM/NativeBridge/CallJavaDynmaicLib.cs` | 调用 Java 动态库（桥接入口）。 |
-
 ## `LocalRuntime`
 
 | 文件 | 作用 |

@@ -32,6 +32,7 @@
 - **工程配置（当前）**：入口 **`<项目名>.sp`** 与 **同名 `<项目名>.jsonc`** 放在同一目录；JSONC 中配置源码根、入口文件、编译列表、`compile`/`global`/`references` 等。详见 [`md/project/project-config-jsonc-guide.md`](md/project/project-config-jsonc-guide.md)。  
 - **入口与 `global`**：`_main_` / `_test_` 约定，`global` 与 `Project{}`、`jsonc` 里 `global.data` 的注入关系见 [`md/project/project_sp-guide.md`](md/project/project_sp-guide.md)。  
 - **调试与导出路径**：编译与 VM 产物、日志与 `DebugCode` 流水线见 [`md/ai/DEBUG_WORKFLOW.md`](md/ai/DEBUG_WORKFLOW.md)、[`md/ai/EXPORT_PATHS.md`](md/ai/EXPORT_PATHS.md)。  
+- **测试引导**：`test/` 测试用例集（测什么、源码在哪）与 `project/` 测试宿主工程（默认跑哪个测试集）对照及运行方式见 [`md/project/test-guide.md`](md/project/test-guide.md)。  
 - **常用 CLI**（摘自工程配置说明）：`sl new project`、`sl new classfile`、`sl c`、`sl c -e ir` 等，与 `jsonc` 联动方式见上文 jsonc 指南。
 
 ### 语言初体验
