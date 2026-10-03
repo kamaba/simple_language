@@ -28,7 +28,7 @@ namespace Net
         ConnectFailed = { code = 2 }
         # 3 主机名解析失败（对应 C 侧 HOST_NOT_FOUND）
         HostNotFound = { code = 3 }
-        # 4 连接超时
+        # 4 超时（connect / accept / 读 / 写超时窗口到期）
         Timeout = { code = 4 }
         # 5 UDP 绑定失败（端口占用等）
         BindFailed = { code = 5 }
@@ -107,6 +107,7 @@ namespace Net
         }
 
         # 非阻塞 recv：写入 dst 可写区，返回本次读入字节数；0 = EOF（对端关闭）
+        # setReadTimeout 配置超时后，等待超过窗口抛 NetError.Timeout
         public Int32 recv( ByteBuffer dst ) throws
         {
             if !this.isOpen
@@ -120,12 +121,17 @@ namespace Net
             Int32 n = SystemTcpRecv( this._sid, dst.handle )
             if n < 0
             {
+                if SystemNetLastError() == 4
+                {
+                    throw NetError.Timeout
+                }
                 throw NetError.IoError
             }
             ret n
         }
 
         # 全量发送：写出多少推进 src.readerIndex 多少（重挂起由 C 层透明处理）
+        # setWriteTimeout 配置超时后，等待超过窗口抛 NetError.Timeout
         public void send( ByteBuffer src ) throws
         {
             if !this.isOpen
@@ -137,12 +143,35 @@ namespace Net
                 Int32 n = SystemTcpSend( this._sid, src.handle )
                 if n < 0
                 {
+                    if SystemNetLastError() == 4
+                    {
+                        throw NetError.Timeout
+                    }
                     throw NetError.IoError
                 }
                 if n == 0
                 {
                     ret
                 }
+            }
+        }
+
+        # 读超时毫秒（<= 0 = 取消超时，无限等待）。作用于 recv 的挂起等待，
+        # 窗口自 recv 首次挂起时锚定（跨挂起重执行不重置）
+        public void setReadTimeout( Int32 timeoutMs )
+        {
+            if this._sid != 0
+            {
+                SystemNetSetReadTimeout( this._sid, timeoutMs )
+            }
+        }
+
+        # 写超时毫秒（<= 0 = 取消超时，无限等待）。作用于 send 的挂起等待
+        public void setWriteTimeout( Int32 timeoutMs )
+        {
+            if this._sid != 0
+            {
+                SystemNetSetWriteTimeout( this._sid, timeoutMs )
             }
         }
 
@@ -206,6 +235,11 @@ namespace Net
                 {
                     throw NetError.HostNotFound
                 }
+                # begin 阶段即失败（如本机端口被拒立即返回）：归 ConnectFailed
+                if e == 2
+                {
+                    throw NetError.ConnectFailed
+                }
                 throw NetError.SocketCreate
             }
             Int32 r = SystemTcpConnectWait( sid, timeoutMs )
@@ -266,14 +300,28 @@ namespace Net
             ret TcpStream( sock )
         }
 
+        # setAcceptTimeout 配置超时后，等待超过窗口抛 NetError.Timeout
         public TcpSocket acceptSocket() throws
         {
             Int64 sid = SystemTcpAccept( this._listenSid )
             if sid == 0
             {
+                if SystemNetLastError() == 4
+                {
+                    throw NetError.Timeout
+                }
                 throw NetError.AcceptFailed
             }
             ret TcpSocket( sid )
+        }
+
+        # accept 挂起等待的超时毫秒（<= 0 = 取消超时，无限等待）
+        public void setAcceptTimeout( Int32 timeoutMs )
+        {
+            if this._listenSid != 0
+            {
+                SystemNetSetReadTimeout( this._listenSid, timeoutMs )
+            }
         }
 
         # 回调形态（Phase 1 由协程组合模拟，设计 §6.7）：

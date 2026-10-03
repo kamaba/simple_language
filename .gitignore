@@ -421,3 +421,5 @@
 /test/out/export/MyTest/MyTest.module.json
 /test/out/export/MyTest
 /test/out/
+/test/NetTest/build
+/t_group_run.log

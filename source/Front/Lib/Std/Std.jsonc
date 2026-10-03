@@ -408,6 +408,8 @@
     { "name": "SystemTcpLocalAddress",           "returnType": "string", "params": ["Int64"], "isVariadic": false, "cvmFunction": "libstd_net_tcp_local_address" },
     { "name": "SystemTcpLocalPort",              "returnType": "Int32",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "libstd_net_tcp_local_port" },
     { "name": "SystemTcpSetNoDelay",             "returnType": "bool",   "params": ["Int64", "bool"], "isVariadic": false, "cvmFunction": "libstd_net_tcp_set_nodelay" },
+    { "name": "SystemNetSetReadTimeout",         "returnType": "bool",   "params": ["Int64", "Int32"], "isVariadic": false, "cvmFunction": "libstd_net_set_read_timeout" },
+    { "name": "SystemNetSetWriteTimeout",         "returnType": "bool",   "params": ["Int64", "Int32"], "isVariadic": false, "cvmFunction": "libstd_net_set_write_timeout" },
     { "name": "SystemUdpBind",                   "returnType": "Int64",  "params": ["string", "Int32"], "isVariadic": false, "cvmFunction": "libstd_net_udp_bind" },
     { "name": "SystemUdpRecvFrom",               "returnType": "Int32",  "params": ["Int64", "Int64"], "isVariadic": false, "cvmFunction": "libstd_net_udp_recv_from" },
     { "name": "SystemUdpSendTo",                 "returnType": "Int32",  "params": ["Int64", "Int64", "string", "Int32"], "isVariadic": false, "cvmFunction": "libstd_net_udp_send_to" },

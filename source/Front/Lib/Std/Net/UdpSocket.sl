@@ -6,7 +6,7 @@ namespace Net
     #
     # 用法:
     #   import Std;
-    #   var s = Net.Udp.bind( 9000 )                    # 绑定端口得 UdpStream
+    #   var s = Net.Udp.open( 9000 )                    # 绑定端口得 UdpStream
     #   s.sendTo( buf, "127.0.0.1", 9001 )              # 定向发送
     #   var n = s.read( dst )                           # 挂起收一报写入 dst
     #   var dgs = s.datagrams()                         # 报文流（Stream 体系直连）
@@ -34,7 +34,8 @@ namespace Net
         }
 
         # 挂起直到有数据报：一次收一报写入 dst 可写区，返回本报字节数；
-        # 空数据报返回 0（UDP 合法报文，非错误）
+        # 空数据报返回 0（UDP 合法报文，非错误）。
+        # setReadTimeout 配置超时后，等待超过窗口抛 NetError.Timeout
         public Int32 recvFrom( ByteBuffer dst ) throws
         {
             if this._sid == 0
@@ -44,9 +45,23 @@ namespace Net
             Int32 n = SystemUdpRecvFrom( this._sid, dst.handle )
             if n < 0
             {
+                if SystemNetLastError() == 4
+                {
+                    throw NetError.Timeout
+                }
                 throw NetError.IoError
             }
             ret n
+        }
+
+        # 读超时毫秒（<= 0 = 取消超时，无限等待）。作用于 recvFrom 的挂起
+        # 等待（sendTo 无挂起等待，不受影响）
+        public void setReadTimeout( Int32 timeoutMs )
+        {
+            if this._sid != 0
+            {
+                SystemNetSetReadTimeout( this._sid, timeoutMs )
+            }
         }
 
         # 全量发送：写出多少推进 src.readerIndex 多少（重挂起由 C 层透明处理）
@@ -107,12 +122,12 @@ namespace Net
 
     public class Udp
     {
-        public static UdpStream bind( Int32 port ) throws
+        public static UdpStream open( Int32 port ) throws
         {
-            ret Udp.bindAddress( "0.0.0.0", port )
+            ret Udp.openAddress( "0.0.0.0", port )
         }
 
-        public static UdpStream bindAddress( string host, Int32 port ) throws
+        public static UdpStream openAddress( string host, Int32 port ) throws
         {
             Int64 sid = SystemUdpBind( host, port )
             if sid == 0
@@ -133,15 +148,15 @@ namespace Net
         string _address = ""
         Int32 _port = 0
 
-        _init_( ByteBuffer data, string address, Int32 port )
+        _init_( ByteBuffer payload, string address, Int32 port )
         {
-            this._data = data
+            this._data = payload
             this._address = address
             this._port = port
         }
 
         # 报文负载（收报后 readerIndex 从 0 起，直接按 ByteBuffer 读取）
-        public get ByteBuffer data()
+        public get ByteBuffer payload()
         {
             ret this._data
         }

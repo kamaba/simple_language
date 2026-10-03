@@ -60,6 +60,26 @@ namespace Net
                 SystemTcpSetNoDelay( this._sid, enabled )
             }
         }
+
+        # 读超时毫秒透传（<= 0 = 取消超时，无限等待；超时窗口到期后
+        # recv / recvFrom 抛 NetError.Timeout，连接保持可用）
+        public void setReadTimeout( Int32 timeoutMs )
+        {
+            if this._sid != 0
+            {
+                SystemNetSetReadTimeout( this._sid, timeoutMs )
+            }
+        }
+
+        # 写超时毫秒透传（<= 0 = 取消超时，无限等待；仅 TCP send 挂起路径生效，
+        # UDP sendTo 不挂起不受影响）
+        public void setWriteTimeout( Int32 timeoutMs )
+        {
+            if this._sid != 0
+            {
+                SystemNetSetWriteTimeout( this._sid, timeoutMs )
+            }
+        }
     }
 
     # ============================================================================

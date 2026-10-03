@@ -1307,8 +1307,15 @@ namespace SimpleLanguage.Core
             {
                 if (mc == CoreMetaClassManager.objectMetaClass)
                     break;
-                
+
                 if( mc == parentClass)
+                {
+                    return true;
+                }
+                // 模板实例化包装类（如 Codec<object,ByteBuffer>）的 metaTemplateClass
+                // 指向模板定义类（Codec）。具体类 extends 泛型实例时 extend 链上挂的是
+                // 包装类而非模板定义类，需剥壳比较，与 ExtendClassContainMetaClass 一致。
+                if( mc is MetaGenTemplateClass genTc && genTc.metaTemplateClass == parentClass)
                 {
                     return true;
                 }

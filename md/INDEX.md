@@ -117,7 +117,8 @@
 | [syntax/std/Sqlite.md](./syntax/std/Sqlite.md) | Sqlite 数据库（DB.Sqlite3） |
 | [../../../csimple_lang/md/design/PROCESS_DESIGN.md](../../../csimple_lang/md/design/PROCESS_DESIGN.md) | Std.OS.Process 外部进程执行（run/start/wait、stdio 三态管道、kill/terminate、环境变量；SL API + C 层设计） |
 | [../../../csimple_lang/md/design/ATTRIBUTE_DESIGN.md](../../../csimple_lang/md/design/ATTRIBUTE_DESIGN.md) | attribute 系统四时点重构（PreCompile/Compiling/Preload/Runtime × 五注册点 × enter/exit；内建迁移映射 + P1..P8 分期） |
-| [../../../csimple_lang/md/design/NETSTREAM_DESIGN.md](../../../csimple_lang/md/design/NETSTREAM_DESIGN.md) | NetStream 家族与 Tcp/Udp 网络层（非阻塞 fd + 单 IO 线程 poll + Option A 挂起；SL API 全签名 + C 层设计 + syscall 清单 20 项 + 分期路线） |
+| [syntax/net.md](./syntax/net.md) | **网络编程 Net**（`namespace Net`）：Tcp/TcpServer/Udp/TcpStream/UdpStream 协程化挂起读写（Option A：未就绪挂起→IO 线程 poll 唤醒→指令重执行）、connectTimeout 连接超时、shutdown 半关闭、UdpDatagram 数据报与 datagrams() 元素流、NetError 错误码、LengthPrefix 分帧组合、与协程/isolate 的关系、限制与偏差（Phase 1） |
+| [../../../csimple_lang/md/design/NET_DESIGN.md](../../../csimple_lang/md/design/NET_DESIGN.md) | Net 网络层设计**唯一真源**（Tcp/Udp/NetStream：非阻塞 fd + 单 IO 线程 poll + Option A 挂起；SL API + C 层三层架构 + syscall 清单 + 分期路线）；历史版 NETSTREAM_DESIGN.md 不再更新，仅作快照参考 |
 | [syntax/core/Lz4.md](./syntax/core/Lz4.md) | Lz4 块压缩（Core 库：自包含容器格式 + ByteBuffer 底座） |
 | [syntax/core/ProtocalBuffers.md](./syntax/core/ProtocalBuffers.md) | ProtocalBuffers / protobuf 线格式编解码（Core 库：PbWriter / PbReader，proto3 兼容子集） |
 | [syntax/core/Stream.md](./syntax/core/Stream.md) | Stream 元素流（Core 库：Stream\<T\>/Controller/Transformer，推/拉双模 + 背压） |

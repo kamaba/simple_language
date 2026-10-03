@@ -384,7 +384,18 @@ namespace SimpleLanguage.Export.SLIR
                     nsMap[nsName] = nsPkg;
                     module.namespaceList.Add(nsPkg);
                 }
-                nsPkg.typeList.Add(new SLTypePackage { fullName = full, name = typeName, templateParameterCount = c.templateParameterCount });
+                var nsPkgType = new SLTypePackage { fullName = full, name = typeName, templateParameterCount = c.templateParameterCount };
+                nsPkg.typeList.Add(nsPkgType);
+
+                // extends 泛型实例（如 BinaryCodec extends Codec<object,ByteBuffer> 物化为
+                // MetaGenTemplateClass）时剥壳取模板定义类 id：实例 classId 是导出方运行时
+                // 动态生成的，不在导出类表中，跨模块加载时 s_ClassLookup 查不到导致 extends
+                // 丢失。实参映射由 templateRelationList 完整记录，加载侧按模板 id + mapping 重建。
+                var exportBaseCls = c.OwnerMetaClass?.extendClass;
+                if (exportBaseCls is MetaGenTemplateClass exportBaseGenTc)
+                {
+                    exportBaseCls = exportBaseGenTc.metaTemplateClass;
+                }
 
                 var cm = new SLClassPackage
                 {
@@ -407,7 +418,7 @@ namespace SimpleLanguage.Export.SLIR
                     // enum（MetaEnum : MetaBase，非 MetaClass 子类）的 extends 走 OwnerMetaEnum；
                     // IRMetaClass.OwnerMetaClass 对 enum 恒为 null，漏掉会导致 baseClassId 导出 0，
                     // 跨模块导入后 isErrorEnum 丢失（throw enum extends Error 校验失败）。
-                    baseClassId = c.OwnerMetaClass?.extendClass?.classId
+                    baseClassId = exportBaseCls?.classId
                         ?? c.OwnerMetaEnum?.extendClass?.classId ?? 0,
                 };
                 // export class-level attributes（class 与 data 类型级：@Serializable 等）

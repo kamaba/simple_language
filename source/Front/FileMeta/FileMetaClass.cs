@@ -24,7 +24,6 @@ namespace SimpleLanguage.Compile
         public bool isData { get { return m_DataToken != null; } }
         public bool isPartial => m_PartialToken != null;
         public Token preInterfaceToken => m_PreInterfaceToken;
-        public Token permissionToken => m_PermissionToken;
         public MetaClass metaClass => m_MetaClass;
         public MetaEnum metaEnum => m_MetaEnum;
         public MetaData metaData => m_MetaData;
