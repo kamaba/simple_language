@@ -30,7 +30,9 @@
       { "path": "NetCloseTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "NetIsolateTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "NetTimeoutTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
-      { "path": "NetSuspendTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 }
+      { "path": "NetSuspendTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "TlsTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "HttpTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 }
     ]
   },
   "compileFilter": {

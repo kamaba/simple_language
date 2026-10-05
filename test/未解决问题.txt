@@ -1,7 +1,7 @@
 函数名称和类名冲突时候的处理  
 
 编码相关的
-Tcp/Udp/HttpClient/Websocket/NetStream相关接口
+HttpClient/Websocket相关接口  window要支持iocp  Linux要支持epoll
 Yaml/Xml/RegExp
 
 TankGame.sl 引入Math类。把一些 二维的都使用Int32_2 Int32_3

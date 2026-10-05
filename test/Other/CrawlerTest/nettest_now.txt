@@ -1,0 +1,125 @@
+﻿SimpleLanguage VM 0.0.01 (C Runtime)
+===== TcpBasicTest start =====
+
+========== A: Tcp 基础收发 ==========
+
+[TcpBasicTest] A1 echo round-trip : OK
+
+[TcpBasicTest] A1 remote address : OK
+
+[TcpBasicTest] A1 remote port and server port : OK
+
+[TcpBasicTest] A2 peer close yields EOF : OK
+
+[TcpBasicTest] A4 connection refused -> ConnectFailed : OK
+
+[TcpBasicTest] A5 host not found : OK
+
+===== TcpBasicTest end =====
+
+===== NetFrameTest start =====
+
+========== C: LengthPrefix 分帧 ==========
+
+[NetFrameTest] C1 two frames from one write : OK
+
+[NetFrameTest] C2 frame split across two writes : OK
+
+[NetFrameTest] C3 decodeStream two frames : OK
+
+[NetFrameTest] C3 decodeStream ends on close : OK
+
+===== NetFrameTest end =====
+
+===== UdpEchoTest start =====
+
+========== D: UDP 收发 ==========
+
+[UdpEchoTest] D1 udp round-trip : OK
+
+[UdpEchoTest] D2 datagram boundaries kept : OK
+
+[UdpEchoTest] D3 double bind -> BindFailed : OK
+
+[UdpEchoTest] D4 close idempotent : OK
+
+===== UdpEchoTest end =====
+
+===== NetStreamComposeTest start =====
+
+========== G: Stream 组合 ==========
+
+[NetStreamComposeTest] G1 datagram stream payloads : OK
+
+[NetStreamComposeTest] G1 datagram source address : OK
+
+[NetStreamComposeTest] G2 add suspends on full buffer : OK
+
+[NetStreamComposeTest] G2 values delivered in order : OK
+
+[NetStreamComposeTest] G2 producer resumed then closed : OK
+
+===== NetStreamComposeTest end =====
+
+===== NetConcurrentTest start =====
+
+========== E: 并发连接 ==========
+
+[NetConcurrentTest] E1 10 concurrent echo round-trips : OK
+
+===== NetConcurrentTest end =====
+
+===== NetCloseTest start =====
+
+========== F: 关闭语义 ==========
+
+[NetCloseTest] F1 half-close keeps data then EOF : OK
+
+[NetCloseTest] F2 read after closeRead -> Closed : OK
+
+[NetCloseTest] F3 recv after socket close -> Closed : OK
+
+[NetCloseTest] F4 close idempotent : OK
+
+===== NetCloseTest end =====
+
+===== NetIsolateTest start =====
+
+========== H: isolate 组合 ==========
+
+[NetIsolateTest] H1 isolate workers echo : OK
+
+[NetIsolateTest] H2 failed worker returns null : OK
+
+[NetIsolateTest] H2 server unaffected by failed worker : OK
+
+===== NetIsolateTest end =====
+
+===== NetTimeoutTest start =====
+
+========== T: 读写超时 ==========
+
+[NetTimeoutTest] T1 recv read-timeout -> Timeout : OK
+
+[NetTimeoutTest] T1 timeout window honored : OK
+
+[NetTimeoutTest] T2 conn alive after timeout : OK
+
+[NetTimeoutTest] T3 accept timeout -> Timeout : OK
+
+[NetTimeoutTest] T3 timeout window honored : OK
+
+[NetTimeoutTest] T3 accept alive after timeout : OK
+
+[NetTimeoutTest] T4 recvFrom timeout -> Timeout : OK
+
+[NetTimeoutTest] T4 timeout window honored : OK
+
+[NetTimeoutTest] T4 udp alive after timeout : OK
+
+===== NetTimeoutTest end =====
+
+===== TlsTest start =====
+
+========== K: TLS 加密流 ==========
+

@@ -41,6 +41,7 @@
       { "path": "Net/TcpSocket.sl", "group": "std", "tag": "net", "ignore": false, "priority": 0 },
       { "path": "Net/UdpSocket.sl", "group": "std", "tag": "net", "ignore": false, "priority": 0 },
       { "path": "Net/NetStream.sl", "group": "std", "tag": "net", "ignore": false, "priority": 0 },
+      { "path": "Net/TlsStream.sl", "group": "std", "tag": "net", "ignore": false, "priority": 0 },
       { "path": "Net/Uri.sl", "group": "std", "tag": "net", "ignore": false, "priority": 0 },
       { "path": "Component.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
       { "path": "Debug/Log.sl", "group": "std", "tag": "debug", "ignore": false, "priority": 0 },
@@ -138,7 +139,11 @@
                 { "class": "NetStream" },
                 { "class": "TcpStream" },
                 { "class": "UdpStream" },
-                { "class": "Uri" }
+                { "class": "Uri" },
+                { "enum": "HttpError" },
+                { "class": "HttpHeaders" },
+                { "class": "HttpRequest" },
+                { "class": "HttpResponse" }
             ]
       },
       // { "namespace": "Data", "children":
@@ -415,7 +420,19 @@
     { "name": "SystemUdpSendTo",                 "returnType": "Int32",  "params": ["Int64", "Int64", "string", "Int32"], "isVariadic": false, "cvmFunction": "libstd_net_udp_send_to" },
     { "name": "SystemUdpGetLastFromAddress",     "returnType": "string", "params": ["Int64"], "isVariadic": false, "cvmFunction": "libstd_net_udp_last_from_address" },
     { "name": "SystemUdpGetLastFromPort",        "returnType": "Int32",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "libstd_net_udp_last_from_port" },
-    { "name": "SystemUdpClose",                  "returnType": "bool",   "params": ["Int64"], "isVariadic": false, "cvmFunction": "libstd_net_udp_close" }
+    { "name": "SystemUdpClose",                  "returnType": "bool",   "params": ["Int64"], "isVariadic": false, "cvmFunction": "libstd_net_udp_close" },
+    // ---- TLS calls (Std/Net/TlsStream.sl, design: csimple_lang/md/design/STREAM_DESIGN.md §9.5 / §15.8 P3) ----
+    // 挂起语义：Handshake / Recv / Send 在 C VM 侧经 CORO_BLOCK_IO 挂起当前协程
+    // （Option A 指令重执行；等待事件经 libsys_tls_get_net_sid 反查底层 TCP sid 提交）。
+    // 读写超时复用底层 TCP 锚点（SystemNetSetRead/WriteTimeout 作用之，
+    // TlsStream 装饰 TcpStream，超时随装饰继承）。失败 = 哨兵值 +
+    // SystemTlsLastError 可查，SL 层负责 throw。
+    { "name": "SystemTlsLastError",              "returnType": "Int32",  "params": [], "isVariadic": false, "cvmFunction": "libstd_tls_last_error" },
+    { "name": "SystemTlsSessionNew",             "returnType": "Int64",  "params": ["Int64", "bool", "string", "string", "string", "string"], "isVariadic": false, "cvmFunction": "libstd_tls_session_new" },
+    { "name": "SystemTlsHandshake",              "returnType": "Int32",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "libstd_tls_handshake" },
+    { "name": "SystemTlsRecv",                   "returnType": "Int32",  "params": ["Int64", "Int64"], "isVariadic": false, "cvmFunction": "libstd_tls_recv" },
+    { "name": "SystemTlsSend",                   "returnType": "Int32",  "params": ["Int64", "Int64"], "isVariadic": false, "cvmFunction": "libstd_tls_send" },
+    { "name": "SystemTlsClose",                  "returnType": "bool",   "params": ["Int64"], "isVariadic": false, "cvmFunction": "libstd_tls_close" }
   ],
   "export": {
     "moduleName": "Std",
