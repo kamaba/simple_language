@@ -79,6 +79,7 @@
       { "path": "DataStruct/BaseCsv.sl", "group": "container", "tag": "datastruct", "ignore": false, "priority": 0 },
       { "path": "Text/BaseJson.sl", "group": "container", "tag": "datastruct", "ignore": false, "priority": 0 },
       { "path": "Text/JsonValue.sl", "group": "container", "tag": "datastruct", "ignore": false, "priority": 0 },
+      { "path": "Text/BaseXml.sl", "group": "container", "tag": "datastruct", "ignore": false, "priority": 0 },
       { "path": "Coroutine.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "Container/Channel.sl", "group": "container", "tag": "container", "ignore": false, "priority": 0 },
       { "path": "IO/ByteBuffer.sl", "group": "io", "tag": "io", "ignore": false, "priority": 0 },
@@ -491,6 +492,9 @@
     // ---- Json scalar helpers (Text/JsonValue.sl): node view typed access ----
     { "name": "SystemJsonIsNumberText",       "returnType": "bool",   "params": ["string"], "isVariadic": false, "cvmFunction": "vm_sys_json_is_number_text" },
     { "name": "SystemJsonParseInt64",         "returnType": "Int64",  "params": ["string"], "isVariadic": false, "cvmFunction": "vm_sys_json_parse_int64" },
+    // ---- Xml native calls (Text/BaseXml.sl): xml text <-> TreeNode tree ----
+    { "name": "SystemXmlParse",               "returnType": "object", "params": ["object", "string"], "isVariadic": false, "cvmFunction": "vm_sys_xml_parse" },
+    { "name": "SystemXmlToString",            "returnType": "string", "params": ["object", "bool"], "isVariadic": false, "cvmFunction": "vm_sys_xml_to_string" },
     // ---- Tree native calls (DataStruct/Tree.sl): binary BinaryNode/BinaryTree ----
     { "name": "SystemBinarySetRoot",          "returnType": "void",   "params": ["object", "object"], "isVariadic": false, "cvmFunction": "vm_sys_binary_set_root" },
     { "name": "SystemBinaryLink",             "returnType": "bool",   "params": ["object", "object", "bool"], "isVariadic": false, "cvmFunction": "vm_sys_binary_link" },

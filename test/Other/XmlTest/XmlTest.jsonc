@@ -1,8 +1,8 @@
 {
   "project":
   {
-    "name": "JsonTest",
-    "desc": "Json test project - BaseJson(Core) text parse/serialize + Text.Json(Std) file io",
+    "name": "XmlTest",
+    "desc": "Xml test project - BaseXml(Core) text parse/serialize + Text.Xml(Std) file io",
     "mainVersion": 0,
     "subVersion": 0,
     "buildVersion": 1,
@@ -22,7 +22,7 @@
   },
   "compileFiles": {
     "files": [
-      { "path": "JsonTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 }
+      { "path": "XmlTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 }
     ]
   },
   "compileFilter": {
@@ -45,7 +45,7 @@
   "struct": [
   ],
   "export": {
-    "moduleName": "JsonTest",
+    "moduleName": "XmlTest",
     "outputDir": "..\\..\\..\\out\\export",
     "versionMain": 0,
     "versionSub": 0,
