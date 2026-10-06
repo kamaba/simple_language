@@ -2,7 +2,7 @@
 
 编码相关的
 HttpClient/Websocket相关接口  window要支持iocp  Linux要支持epoll
-Yaml/Xml/RegExp
+RegExp
 
 TankGame.sl 引入Math类。把一些 二维的都使用Int32_2 Int32_3
 

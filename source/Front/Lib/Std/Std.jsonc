@@ -33,6 +33,7 @@
       { "path": "Text/Json.sl", "group": "std", "tag": "text", "ignore": false, "priority": 0 },
       { "path": "Text/Json5.sl", "group": "std", "tag": "text", "ignore": false, "priority": 0 },
       { "path": "Text/Xml.sl", "group": "std", "tag": "text", "ignore": false, "priority": 0 },
+      { "path": "Text/Yaml.sl", "group": "std", "tag": "text", "ignore": false, "priority": 0 },
       { "path": "OS/DateTime.sl", "group": "std", "tag": "os", "ignore": false, "priority": 0 },
       { "path": "OS/Timer.sl", "group": "std", "tag": "os", "ignore": false, "priority": 0 },
       { "path": "OS/Process.sl", "group": "std", "tag": "os", "ignore": false, "priority": 0 },
@@ -110,7 +111,8 @@
              { "class": "Csv" },
              { "class": "Json" },
              { "class": "Json5" },
-             { "class": "Xml" }
+             { "class": "Xml" },
+             { "class": "Yaml" }
          ]
       },
       { "namespace": "OS", "children":
