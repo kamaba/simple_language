@@ -36,7 +36,7 @@
 | 特性 | 说明 |
 |---|---|
 | **同步写法，异步执行** | `read` / `write` / `accept` / `recvFrom` 写法与阻塞式 API 一致，但未就绪时挂起当前协程（`CORO_BLOCK_IO`），其它协程照常推进 |
-| **挂起协议 Option A** | 系统调用（`SystemTcpRecv` 等）返回「未就绪」哨兵 → C VM 挂起当前协程 → fd 就绪（IO 线程 poll）→ 协程恢复后**指令重执行**自行完成读写 |
+| **挂起协议 Option A** | 系统调用（`SystemTcpRecv` 等）返回「未就绪」哨兵 → C VM 挂起当前协程 → fd 就绪（IO 线程就绪后端：Windows IOCP / Linux epoll / 其余 Unix poll）→ 协程恢复后**指令重执行**自行完成读写 |
 | **root 可挂起** | `fun()` 入口被包装为 root 协程，`read` / `accept` / `Coroutine.delay` 等可直接写在最外层，无需先 spawn |
 | **ByteStream 子类** | `NetStream` extends `ByteStream`：`read(ByteBuffer)` / `write(ByteBuffer)` / `closeRead` / `closeWrite` / `close` 与文件流同构，可直连 Stream 体系（`LengthPrefix` 等） |
 | **TLS 装饰器** | `TlsStream.wrap` / `accept` 在 `TcpStream` 上叠加 mbedTLS 加密（握手挂起透明，读写超时继承底层 TCP，见 §9） |
@@ -51,7 +51,7 @@
   └─ SystemTcpRecv(sid) ──► WOULD_BLOCK（未就绪哨兵）
         └─ C VM 挂起协程 A（CORO_BLOCK_IO），登记 fd 等待表
 调度器: 运行其它就绪协程 / 空闲 park
-IO 线程: poll 发现 fd 可读 ──► 唤醒协程 A 入就绪队列
+IO 线程: 就绪后端（IOCP / epoll / poll）发现 fd 可读 ──► 唤醒协程 A 入就绪队列
 调度器: 恢复协程 A ──► 指令重执行 SystemTcpRecv ──► 本次读到数据，返回字节数
 ```
 
@@ -61,7 +61,7 @@ IO 线程: poll 发现 fd 可读 ──► 唤醒协程 A 入就绪队列
 |---|---|
 | SL API | `source/Front/Lib/Std/Net/`（`TcpSocket.sl`、`UdpSocket.sl`、`NetStream.sl`、`TlsStream.sl`、`Uri.sl`、`HttpClient.sl`） |
 | 系统调用注册 | `source/Front/Lib/Std/Std.jsonc` → `files[]` + `systemCalls[]`（SystemTcp* / SystemUdp* / SystemTls* 共 26 项；HTTP 客户端为纯 SL 实现，复用既有系统调用，无新增） |
-| C VM 原语层 | `csimple_lang/src/lib/os/sys_net.c`（非阻塞 socket / poll 包装）、`sys_tls.c`（mbedTLS 会话桥，vendored `third_party/mbedtls/`） |
+| C VM 原语层 | `csimple_lang/src/lib/os/sys_net.c`（非阻塞 socket；就绪后端：Windows IOCP / Linux epoll / 其余 Unix poll）、`sys_tls.c`（mbedTLS 会话桥，vendored `third_party/mbedtls/`） |
 | C VM 等待层 | `csimple_lang/src/vm/runtime/net/vm_net_io.c`（fd 等待表 + IO 线程） |
 | C VM 系统调用 | `csimple_lang/src/vm/system_method_call/net_system_method.c` |
 | 验收用例 | `test/NetTest/`（A 基础收发 / B 挂起唤醒 / C 分帧 / D UDP / E 并发 / F 关闭 / G Stream 组合 / H isolate / T 超时 / K TLS / L HTTP） |
@@ -158,8 +158,8 @@ NetUdpDemo
 | `Net.TlsStream` | TLS 加密流（extends NetStream），`TlsStream.wrap` / `accept` 的返回形态，装饰 `TcpStream`（见 §9） |
 | `Net.TlsOptions` | TLS 会话参数（caPem / certPem / keyPem / hostname，可变字段直接赋值） |
 | `Net.Uri` | URL 解析值对象：构造即解析，`scheme` / `host` / `port` / `path` / `query` / `effectivePort` / `hostHeader` / `pathAndQuery`（非法抛 `HttpError.UriFormat`，见 §10.1） |
-| `Net.HttpClient` | HTTP/1.1 客户端：`send` 完整收发（每请求一连接，自动 `Connection: close`）；静态捷径 `httpGet` / `httpPost`（见 §10） |
-| `Net.HttpRequest` | 请求描述：`method`（Int32：0=GET 1=POST 2=PUT 3=DELETE 4=HEAD）/ `url` / `headers` / `body` 可变字段 |
+| `Net.HttpClient` | HTTP/1.1 客户端：`send` 完整收发（每请求一连接，自动 `Connection: close`）；静态捷径 `httpGet` / `httpPost`；协程异步形态 `httpGetAsync` / `httpPostAsync` / `sendAsync`（直接返回 Task，见 §10.4） |
+| `Net.HttpRequest` | 请求描述：`method`（`Net.HttpMethod` 枚举：Get/Post/Put/Delete/Head）/ `url` / `headers` / `body` 可变字段 |
 | `Net.HttpResponse` | 响应：`statusCode` / `reasonPhrase` / `protocol` / `headers` / `body` + `isOk` / `contentLength` |
 | `Net.HttpHeaders` | 请求 / 响应头集合（名字大小写不敏感：add / setHeader / getHeader / contains） |
 | `Net.HttpError` | HTTP 家族错误枚举（extends Error，code 1~4，Uri 解析与协议处理共用，见 §11） |
@@ -503,7 +503,7 @@ Net.HttpResponse r = Net.HttpClient.httpPost( "http://127.0.0.1:19362/echo",
 
 ```sl
 Net.HttpRequest req = Net.HttpRequest()
-req.method = 1                                        # 0=GET 1=POST 2=PUT 3=DELETE 4=HEAD（默认零值 = GET）
+req.method = Net.HttpMethod.Post                     # 请求方法枚举（Get / Post / Put / Delete / Head，默认 Get）
 req.url    = "https://localhost:19363/secure"          # send 时解析；非法抛 UriFormat，非 http/https 抛 UnsupportedScheme
 req.body   = "ping=1"                                 # 文本 body（UTF-8）
 req.headers.setHeader( "X-Test", "abc" )              # 覆盖式（同名大小写不敏感覆盖，无重复条目）
@@ -522,7 +522,7 @@ resp.isOk                                             # 200~299
 
 | 字段 | 说明 |
 |---|---|
-| `Int32 method` | 请求方法：**0=GET（默认零值）1=POST 2=PUT 3=DELETE 4=HEAD**。不设 `HttpMethod` 枚举——SL 枚举不能作字段类型（ParseMemberExpress 不支持，SocketShutdown / FileMode 等先例均只作方法参数类型） |
+| `HttpMethod method` | 请求方法：`Net.HttpMethod` 枚举（`extends Int32`：Get=0 Post=1 Put=2 Delete=3 Head=4，默认 Get）。枚举作类字段类型的先例：Render/Pipeline/GpuTexture.sl 的 `EFilterMode` |
 | `string url` | 目标 URL（`send` 时解析） |
 | `HttpHeaders headers` | 请求头（构造自带空集合） |
 | `string body` | 文本 body（UTF-8；空串 = 无 body，内嵌 NUL 会被截断） |
@@ -541,9 +541,38 @@ resp.isOk                                             # 200~299
 - 请求行 = `"<METHOD> <pathAndQuery> HTTP/1.1"`（method 未知值按 GET）
 - body 非空且用户未带 `Content-Length` → 自动补
 - 用户未带 `Connection` → 自动补 `Connection: close`（每请求一连接，见 §15 限制表）
-- **不读 body 的两种情况**：method=HEAD，或状态码 204 / 205 / 304
+- **不读 body 的两种情况**：`method == HttpMethod.Head`，或状态码 204 / 205 / 304
 
-### 10.4 body 三态读取（响应侧）
+### 10.4 协程异步形态（httpGetAsync / httpPostAsync / sendAsync）
+
+三个异步入口**直接返回 `Task`**（内部以协程执行对应同步方法），调用方无需自己包装闭包再 spawn：
+
+```sl
+# 单请求：静态异步入口，await 取回 HttpResponse
+Task t1 = Net.HttpClient.httpGetAsync( "https://example.com/a" )
+Net.HttpResponse r1 = await t1 as Net.HttpResponse
+r1.isOk                                             # 200~299
+
+# 并发：实例 sendAsync（connectTimeoutMs / readTimeoutMs / caPem 生效）+ waitAll2
+Net.HttpClient c = Net.HttpClient()
+c.readTimeoutMs = 25000
+Task t2 = c.sendAsync( req2 )
+Task t3 = c.sendAsync( req3 )
+Coroutine.waitAll2( t2, t3 )                        # 两请求 IO 同时挂起等就绪
+Net.HttpResponse r2 = await t2 as Net.HttpResponse
+Net.HttpResponse r3 = await t3 as Net.HttpResponse
+```
+
+| 方法 | 语义 |
+|---|---|
+| `static Task httpGetAsync( string url )` | 异步便捷 GET（协程执行 `httpGet`） |
+| `static Task httpPostAsync( string url, string body, string contentType )` | 异步便捷 POST |
+| `Task sendAsync( HttpRequest req )` | 异步 `send`（实例配置生效） |
+
+- 协程内全部网络 IO（connect / send / recv / TLS 握手）挂起当前协程而不阻塞 VM 线程（挂起协议 Option A，见 `md/syntax/coroutine.md` §16.2）
+- 协程以异常结束 → 异常向 await 该 Task 的等待者重抛，故三个方法**无需 `throws` 声明**（调用方 try / catch 即可）
+
+### 10.5 body 三态读取（响应侧）
 
 | 响应形态 | 读取语义 |
 |---|---|
@@ -553,7 +582,7 @@ resp.isOk                                             # 200~299
 
 读取全部经预读缓冲（`ByteBuffer`）中转，跨 `read` 边界安全行解析；body 全量缓冲为文本后返回。
 
-### 10.5 HttpHeaders（请求 / 响应共用）
+### 10.6 HttpHeaders（请求 / 响应共用）
 
 | 方法 | 语义 |
 |---|---|
@@ -564,7 +593,7 @@ resp.isOk                                             # 200~299
 | `get int count()` | 头数量 |
 | `string nameAt( int index )` / `string valueAt( int index )` | 按序取（遍历用） |
 
-### 10.6 错误路径
+### 10.7 错误路径
 
 - 非法 URL → `HttpError.UriFormat`（建连前抛）
 - 非 http / https scheme → `HttpError.UnsupportedScheme`（建连前抛）
@@ -801,9 +830,11 @@ function ioReader = function( Net.TcpStream c )
 |---|---|
 | `static HttpResponse httpGet( string url ) throws` | 便捷 GET |
 | `static HttpResponse httpPost( string url, string body, string contentType ) throws` | 便捷 POST（文本 body + Content-Type） |
-| `HttpResponse send( HttpRequest req ) throws` | 发送并读完整响应（每请求一连接，自动 `Connection: close`；body 三态读取见 §10.4） |
+| `static Task httpGetAsync( string url )` / `static Task httpPostAsync( string url, string body, string contentType )` | 异步便捷 GET / POST（直接返回 Task，见 §10.4） |
+| `HttpResponse send( HttpRequest req ) throws` | 发送并读完整响应（每请求一连接，自动 `Connection: close`；body 三态读取见 §10.5） |
+| `Task sendAsync( HttpRequest req )` | 异步 `send`（实例配置生效，直接返回 Task，见 §10.4） |
 | `Int32 connectTimeoutMs / Int32 readTimeoutMs / string caPem` | HttpClient 字段：连接超时（默认 10s）/ 响应读超时（默认无限，超时抛 `NetError.Timeout`）/ https CA（空 = 跳过验证） |
-| `Int32 method / string url / HttpHeaders headers / string body` | HttpRequest 字段（method：0=GET 1=POST 2=PUT 3=DELETE 4=HEAD） |
+| `HttpMethod method / string url / HttpHeaders headers / string body` | HttpRequest 字段（method：`Net.HttpMethod` 枚举 Get/Post/Put/Delete/Head） |
 | `get bool isOk()` / `get Int64 contentLength()` | 响应 200~299 / Content-Length 头（缺失 / 非法 -1） |
 | `void add( name, value )` / `void setHeader( name, value )` | HttpHeaders：追加同名头 / 覆盖同名头（大小写不敏感） |
 | `string getHeader( string name )` / `bool contains( string name )` | 取值（不存在 null）/ 存在性（大小写不敏感） |
@@ -822,7 +853,7 @@ function ioReader = function( Net.TcpStream c )
 | **UDP 工厂名是 `open` / `openAddress`** | 设计稿早期记 `bind` / `bindAddress` |
 | **UdpStream read 截断** | 超出 dst 容量的报文尾部由 C 侧丢弃（无粘连，也不报错） |
 | **TLS 已落地（Phase 3 Stage A）** | `TlsStream.sl`（§9）：mbedTLS 3.6.7 源码直编；支持 TLS 1.2 / 1.3（1.3 仅 ephemeral 密钥交换模式）；`caPem` 为空 = 跳过证书链验证（仅自签 / 测试环境使用，生产必须显式 CA）；证书 / 私钥仅支持 PEM 格式；无 ALPN；服务端不开会话票据（客户端可恢复） |
-| **HTTP 客户端已落地（Phase 3 Stage B）** | `Uri.sl` / `HttpClient.sl`（§10）：HTTP/1.1 客户端（GET / POST / PUT / DELETE / HEAD，http / https，body 三态：Content-Length / chunked / EOF），纯 SL 实现。**每请求一连接**（自动 `Connection: close`，无连接复用 / keep-alive / pipeline）；无重定向跟随、无 cookie / proxy / gzip 解压；`HttpRequest.method` 为 Int32 数字约定（无 HttpMethod 枚举——SL 枚举不能作字段类型）；Uri 不支持 userinfo / IPv6 字面量 / percent-encoding / fragment；域名解析仍为同步 getaddrinfo（R-3，Phase 2 异步化） |
+| **HTTP 客户端已落地（Phase 3 Stage B）** | `Uri.sl` / `HttpClient.sl`（§10）：HTTP/1.1 客户端（GET / POST / PUT / DELETE / HEAD，http / https，body 三态：Content-Length / chunked / EOF），纯 SL 实现。**每请求一连接**（自动 `Connection: close`，无连接复用 / keep-alive / pipeline）；无重定向跟随、无 cookie / proxy / gzip 解压；`HttpRequest.method` 为 `Net.HttpMethod` 枚举（Get/Post/Put/Delete/Head）；Uri 不支持 userinfo / IPv6 字面量 / percent-encoding / fragment；域名解析仍为同步 getaddrinfo（R-3，Phase 2 异步化） |
 | **WebSocket / HTTP 服务端未落地** | `Websocket.sl` / `Route.sl` / `IpProtocal.sl` 维持原状（Phase 3 后续） |
 | **网络流不可跨 isolate** | `TcpStream` / `TlsStream` / `UdpStream` / `Channel` / `Task` 均不可 Sendable（§13） |
 | **M:1 协作调度** | 单 VM 内协程为协作式（让出点推进）；网络 IO 挂起不占线程，但 CPU 密集协程需手动让出（`Coroutine.yieldNow`） |

@@ -10,14 +10,15 @@ import Core;
 #   - jsonplaceholder.typicode.com  流行假 REST API（posts 资源 CRUD）
 #   - quotes.toscrape.com           知名爬虫练习站（HTTPS 第二证书域）
 #
-# 覆盖功能点（G 组，依赖 Net.HttpClient / Net.HttpRequest / BaseJson /
-#   Base64 既有能力，无新增系统调用）：
+# 覆盖功能点（G 组，依赖 Net.HttpClient / Net.HttpRequest / Text.Json /
+#   Base64 / 协程（httpGetAsync / sendAsync + await + waitAll2）既有能力，
+#   无新增系统调用）：
 #   G1  明文 HTTP GET        状态行/协议版本/响应头/body；example.com chunked
 #                            （Cloudflare 前置，无 Content-Length 头）+
 #                            httpbin /get 明文 Content-Length 精确读一致性
 #   G2  HTTPS GET            同一 httpGet 入口按 scheme 自动走 TLS
 #                            （caPem 空 = 跳过证书验证，双站点证书域）
-#   G3  GET + query 回显     httpbin /get -> BaseJson args/origin/url 校验
+#   G3  GET + query 回显     httpbin /get -> Text.Json args/origin/url 校验
 #   G4  自定义请求头回显     httpbin /headers -> X-Sl-Test / User-Agent 回显
 #   G5  POST 表单回显        httpbin /post -> form 字段解析回显
 #   G6  PUT 回显             httpbin /put -> data 原文回显
@@ -32,6 +33,9 @@ import Core;
 #   G15 UTF-8 多语言 body    /encoding/utf8 -> 非 ASCII 文本解码
 #   G16 错误路径             ftp 协议(2) / 连接被拒(2) / 域名解析失败(3) /
 #                            空 host(1) / https 读超时(Timeout 4|9)
+#   G17 协程等待 HttpClient  httpGetAsync / sendAsync 原生返回 Task：
+#                            await 取回响应 / waitAll2 并发聚合；协程内
+#                            网络 IO 挂起当前协程（Option A），不阻塞调度器
 #
 # 网络健壮性：每个网络组独立 label{}...catch{}——公网站点偶发抖动只记
 #   一条 FAIL 后继续，不阻断其余组（Crawler.sfFetch 同款取舍）。
@@ -138,7 +142,7 @@ HttpWebTest
         label labTry1
         {
             Net.HttpRequest req = Net.HttpRequest()
-            req.method = 0   # 0 = GET
+            req.method = Net.HttpMethod.Get
             req.url = url
             r = HttpWebTest.sfClient().send( req )
         }
@@ -147,7 +151,7 @@ HttpWebTest
             label labTry2
             {
                 Net.HttpRequest req2 = Net.HttpRequest()
-                req2.method = 0   # 0 = GET
+                req2.method = Net.HttpMethod.Get
                 req2.url = url
                 r = HttpWebTest.sfClient().send( req2 )
             }
@@ -166,7 +170,7 @@ HttpWebTest
         label labTry1
         {
             Net.HttpRequest req = Net.HttpRequest()
-            req.method = 1   # 1 = POST
+            req.method = Net.HttpMethod.Post
             req.url = url
             req.body = body
             req.headers.setHeader( "Content-Type", contentType )
@@ -177,7 +181,7 @@ HttpWebTest
             label labTry2
             {
                 Net.HttpRequest req2 = Net.HttpRequest()
-                req2.method = 1   # 1 = POST
+                req2.method = Net.HttpMethod.Post
                 req2.url = url
                 req2.body = body
                 req2.headers.setHeader( "Content-Type", contentType )
@@ -307,7 +311,7 @@ HttpWebTest
             check( "G3 status 200", r.statusCode == 200 && r.isOk )
             string ct = r.headers.getHeader( "Content-Type" )
             check( "G3 Content-Type json", ct != null && sfFind( ct, "application/json" ) >= 0 )
-            BaseJson j = BaseJson( r.body )
+            Text.Json j = Text.Json( r.body )
             check( "G3 parse non-empty", j.isNotEmpty )
             check( "G3 args/slk echo", j.getStr( "args/slk" ) == "hello" )
             check( "G3 args/num echo", j.getStr( "args/num" ) == "42" )
@@ -336,13 +340,13 @@ HttpWebTest
         label labG4
         {
             Net.HttpRequest req = Net.HttpRequest()
-            req.method = 0   # 0 = GET
+            req.method = Net.HttpMethod.Get
             req.url = "https://www.httpbin.org/headers"
             req.headers.setHeader( "X-Sl-Test", "sl-web" )
             req.headers.setHeader( "User-Agent", "SL-HttpWebTest/1.0" )
             Net.HttpResponse r = HttpWebTest.sfClient().send( req )
             check( "G4 status 200", r.statusCode == 200 && r.isOk )
-            BaseJson j = BaseJson( r.body )
+            Text.Json j = Text.Json( r.body )
             check( "G4 custom header echo", j.getStr( "headers/X-Sl-Test" ) == "sl-web" )
             check( "G4 User-Agent echo", j.getStr( "headers/User-Agent" ) == "SL-HttpWebTest/1.0" )
         }
@@ -368,7 +372,7 @@ HttpWebTest
         {
             Net.HttpResponse r = Net.HttpClient.httpPost( "https://www.httpbin.org/post", "name=sl&ver=1", "application/x-www-form-urlencoded" )
             check( "G5 status 200 + isOk", r.statusCode == 200 && r.isOk )
-            BaseJson j = BaseJson( r.body )
+            Text.Json j = Text.Json( r.body )
             check( "G5 form name echo", j.getStr( "form/name" ) == "sl" )
             check( "G5 form ver echo", j.getStr( "form/ver" ) == "1" )
             check( "G5 Content-Type echo", sfFind( j.getStr( "headers/Content-Type" ), "application/x-www-form-urlencoded" ) >= 0 )
@@ -394,13 +398,13 @@ HttpWebTest
         label labG6
         {
             Net.HttpRequest req = Net.HttpRequest()
-            req.method = 2   # 2 = PUT
+            req.method = Net.HttpMethod.Put
             req.url = "https://www.httpbin.org/put"
             req.body = "put-payload"
             req.headers.setHeader( "Content-Type", "text/plain" )
             Net.HttpResponse r = HttpWebTest.sfClient().send( req )
             check( "G6 status 200 + isOk", r.statusCode == 200 && r.isOk )
-            BaseJson j = BaseJson( r.body )
+            Text.Json j = Text.Json( r.body )
             check( "G6 data echo", j.getStr( "data" ) == "put-payload" )
         }
         catch e
@@ -424,11 +428,11 @@ HttpWebTest
         label labG7
         {
             Net.HttpRequest req = Net.HttpRequest()
-            req.method = 3   # 3 = DELETE
+            req.method = Net.HttpMethod.Delete
             req.url = "https://www.httpbin.org/delete"
             Net.HttpResponse r = HttpWebTest.sfClient().send( req )
             check( "G7 status 200 + isOk", r.statusCode == 200 && r.isOk )
-            BaseJson j = BaseJson( r.body )
+            Text.Json j = Text.Json( r.body )
             check( "G7 url echo", sfFind( j.getStr( "url" ), "/delete" ) >= 0 )
         }
         catch e
@@ -452,7 +456,7 @@ HttpWebTest
         label labG8
         {
             Net.HttpRequest req = Net.HttpRequest()
-            req.method = 4   # 4 = HEAD
+            req.method = Net.HttpMethod.Head
             req.url = "https://www.httpbin.org/get"
             Net.HttpResponse r = HttpWebTest.sfClient().send( req )
             check( "G8 status 200 + isOk", r.statusCode == 200 && r.isOk )
@@ -607,7 +611,7 @@ HttpWebTest
             string cred = Base64.encodeToString( "sluser:slpass" )
             check( "G11 base64 credential vector", cred == "c2x1c2VyOnNscGFzcw==" )
             Net.HttpRequest req = Net.HttpRequest()
-            req.method = 0   # 0 = GET
+            req.method = Net.HttpMethod.Get
             req.url = "https://www.httpbin.org/basic-auth/sluser/slpass"
             req.headers.setHeader( "Authorization", "Basic " + cred )
             r200 = HttpWebTest.sfClient().send( req )
@@ -627,7 +631,7 @@ HttpWebTest
         if r200 != null
         {
             check( "G11 with credentials -> 200", r200.statusCode == 200 && r200.isOk )
-            BaseJson j = BaseJson( r200.body )
+            Text.Json j = Text.Json( r200.body )
             check( "G11 authenticated true", j.getBool( "authenticated" ) )
             check( "G11 user echo", j.getStr( "user" ) == "sluser" )
         }
@@ -687,7 +691,7 @@ HttpWebTest
         if rg != null
         {
             check( "G13 GET status 200", rg.statusCode == 200 && rg.isOk )
-            BaseJson jg = BaseJson( rg.body )
+            Text.Json jg = Text.Json( rg.body )
             check( "G13 GET userId == 1", jg.getInt( "userId" ) == 1 )
             check( "G13 GET id == 1", jg.getInt( "id" ) == 1 )
             check( "G13 GET title non-empty", SystemStringLength( jg.getStr( "title" ) ) > 0 )
@@ -714,7 +718,7 @@ HttpWebTest
         if rp != null
         {
             check( "G13 POST status 201", rp.statusCode == 201 && rp.isOk )
-            BaseJson jp = BaseJson( rp.body )
+            Text.Json jp = Text.Json( rp.body )
             check( "G13 POST echo title", jp.getStr( "title" ) == "sl-title" )
             check( "G13 POST assigned id 101", jp.getInt( "id" ) == 101 )
         }
@@ -724,7 +728,7 @@ HttpWebTest
         label labG13c
         {
             Net.HttpRequest req = Net.HttpRequest()
-            req.method = 2   # 2 = PUT
+            req.method = Net.HttpMethod.Put
             req.url = "https://jsonplaceholder.typicode.com/posts/1"
             req.body = "{\"id\":1,\"title\":\"sl-put\",\"body\":\"sl-put-body\",\"userId\":1}"
             req.headers.setHeader( "Content-Type", "application/json" )
@@ -745,7 +749,7 @@ HttpWebTest
         if ru != null
         {
             check( "G13 PUT status 200", ru.statusCode == 200 && ru.isOk )
-            BaseJson ju = BaseJson( ru.body )
+            Text.Json ju = Text.Json( ru.body )
             check( "G13 PUT echo title", ju.getStr( "title" ) == "sl-put" )
             check( "G13 PUT echo id", ju.getInt( "id" ) == 1 )
         }
@@ -755,7 +759,7 @@ HttpWebTest
         label labG13d
         {
             Net.HttpRequest req2 = Net.HttpRequest()
-            req2.method = 3   # 3 = DELETE
+            req2.method = Net.HttpMethod.Delete
             req2.url = "https://jsonplaceholder.typicode.com/posts/1"
             rd = HttpWebTest.sfClient().send( req2 )
         }
@@ -897,7 +901,7 @@ HttpWebTest
             c.connectTimeoutMs = 15000
             c.readTimeoutMs = 3000
             Net.HttpRequest req = Net.HttpRequest()
-            req.method = 0   # 0 = GET
+            req.method = Net.HttpMethod.Get
             req.url = "https://www.httpbin.org/delay/10"
             Net.HttpResponse r = c.send( req )
         }
@@ -907,6 +911,56 @@ HttpWebTest
             f5 = te5 != null && ( te5.code == 4 || te5.code == 9 )
         }
         check( "G16 https read timeout -> Timeout(4|9)", f5 )
+    }
+
+    # ---- G17: 协程等待 HttpClient（原生异步方法 httpGetAsync / sendAsync） ----
+    static testCoroutine()
+    {
+        Console.println( "----- G17: 协程异步 HttpClient ( httpGetAsync / sendAsync + await / waitAll2 ) -----" )
+        label labG17
+        {
+            # 单请求：静态异步入口直接返回 Task，await 取回 HttpResponse
+            # 协程内网络 IO（connect / send / recv / TLS 握手）挂起当前协程
+            # 而不阻塞调度器（Option A，md/syntax/coroutine.md §16.2）
+            Task t1 = Net.HttpClient.httpGetAsync( "https://www.httpbin.org/get" )
+            Net.HttpResponse r1 = await t1 as Net.HttpResponse
+            check( "G17 await single status 200", r1 != null && r1.statusCode == 200 && r1.isOk )
+            Text.Json j1 = Text.Json( r1.body )
+            check( "G17 await single body json", j1.getStr( "url" ) == "https://www.httpbin.org/get" )
+
+            # 并发聚合：实例 sendAsync（配置生效：连接 15s / 读 25s）+ waitAll2
+            Net.HttpClient c = Net.HttpClient()
+            c.connectTimeoutMs = 15000
+            c.readTimeoutMs = 25000
+            Net.HttpRequest req2 = Net.HttpRequest()
+            req2.method = Net.HttpMethod.Get
+            req2.url = "https://www.httpbin.org/get?slk=coro"
+            Net.HttpRequest req3 = Net.HttpRequest()
+            req3.method = Net.HttpMethod.Get
+            req3.url = "https://example.com/"
+            Task t2 = c.sendAsync( req2 )
+            Task t3 = c.sendAsync( req3 )
+            Coroutine.waitAll2( t2, t3 )
+            Net.HttpResponse r2 = await t2 as Net.HttpResponse
+            Net.HttpResponse r3 = await t3 as Net.HttpResponse
+            check( "G17 waitAll2 first 200", r2 != null && r2.statusCode == 200 && r2.isOk )
+            Text.Json j2 = Text.Json( r2.body )
+            check( "G17 waitAll2 args echo", j2.getStr( "args/slk" ) == "coro" )
+            check( "G17 waitAll2 second 200", r3 != null && r3.statusCode == 200 && r3.isOk )
+            check( "G17 waitAll2 tasks dead", t2.isDead && t3.isDead )
+        }
+        catch e
+        {
+            Error te = e as Error
+            if te != null
+            {
+                groupError( "G17 coroutine await", te.code, te.message )
+            }
+            else
+            {
+                groupError( "G17 coroutine await", -1, "unknown error" )
+            }
+        }
     }
 
     static fun()
@@ -929,6 +983,7 @@ HttpWebTest
         testDelay()
         testUtf8()
         testErrors()
+        testCoroutine()
         Console.println( "===== HttpWebTest end : pass=" + s_pass.toString() + " fail=" + s_fail.toString() + " =====" )
     }
 }

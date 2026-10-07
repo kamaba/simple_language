@@ -8,6 +8,17 @@ public class Text.Json extends BaseJson
     #当前关联的文件路径（load/readFrom/saveAs 成功时记录，save()/reload() 依据它读写）
     string _path = ""
 
+    #从 JSON 文本构造（解析文本入树；null 或非法文本保持空树）
+    #一般场景优先用本类而非 BaseJson（本类在文本解析外另有文件读写门面）
+    override void _init_( string body )
+    {
+        if body == null
+        {
+            ret
+        }
+        this.parseText( body )
+    }
+
     # ---- 静态工厂（从文件加载）----
     #读取文件并解析；文件不可读或内容非法返回空实例
     public static Json load( string path )

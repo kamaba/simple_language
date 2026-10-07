@@ -112,6 +112,14 @@ internal static class Program
             {
                 projectPath = Path.Combine(repoRoot, "test", "Other", "AtSignLabel", "AtSignNegativeTest");
             }
+            else if (arg == "NetTest")
+            {
+                projectPath = Path.Combine(repoRoot, "test", "Other", "NetTest", "ProjectTest");
+            }
+            else if (arg == "HttpWebTest")
+            {
+                projectPath = Path.Combine(repoRoot, "test", "Other", "HttpWebTest", "HttpWebTest");
+            }
             else if (arg == "MyTest")
             {
                 projectPath = Path.Combine(repoRoot, "test", "Other", "MyTest", "MyTest");

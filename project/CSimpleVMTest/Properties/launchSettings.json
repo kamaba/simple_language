@@ -95,6 +95,16 @@
       "commandLineArgs": "AtSignLabel",
       "nativeDebugging": true
     },
+    "NetTest": {
+      "commandName": "Project",
+      "commandLineArgs": "NetTest",
+      "nativeDebugging": true
+    },
+    "HttpWebTest": {
+      "commandName": "Project",
+      "commandLineArgs": "HttpWebTest",
+      "nativeDebugging": true
+    },
     "MyTest": {
       "commandName": "Project",
       "commandLineArgs": "MyTest",

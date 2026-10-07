@@ -13,13 +13,21 @@ namespace Net
     #   resp.headers.getHeader( "Content-Type" )
     #
     #   var req = Net.HttpRequest()
-    #   req.method = 1            # 1 = POST（0=GET 1=POST 2=PUT 3=DELETE 4=HEAD）
+    #   req.method = Net.HttpMethod.Post   # 请求方法枚举（Get/Post/Put/Delete/Head）
     #   req.url = "https://example.com/api"
     #   req.body = "ping=1"
     #   req.headers.add( "Content-Type", "application/x-www-form-urlencoded" )
     #   var c = Net.HttpClient()
     #   c.caPem = caText          # https CA 验证（空 = 跳过验证）
     #   var r2 = c.send( req )
+    #
+    # 协程异步形态（直接返回 Task，调用方无需自己包装闭包）:
+    #   Task t1 = Net.HttpClient.httpGetAsync( "https://example.com/a" )
+    #   Task t2 = c.sendAsync( req2 )            # 实例配置生效（caPem 等）
+    #   Coroutine.waitAll2( t1, t2 )             # 并发：两请求 IO 同时挂起
+    #   Net.HttpResponse r1 = await t1 as Net.HttpResponse
+    #   Net.HttpResponse r2b = await t2 as Net.HttpResponse
+    #   # 异常向 await 处重抛，调用方 try/catch 即可
     #
     # 语义要点:
     #   - 每请求一连接：自动发 Connection: close，响应读毕即关连接
@@ -34,11 +42,9 @@ namespace Net
     #     底层网络异常（NetError / TlsError）原样透传
     # ============================================================================
 
-    # 请求方法约定（HttpRequest.method 为 Int32 字段）:
-    #   0 = GET   1 = POST   2 = PUT   3 = DELETE   4 = HEAD
-    # 注意：不设 HttpMethod 枚举——SL 枚举不能作字段类型（ParseMemberExpress
-    #   不支持，全库先例 SocketShutdown / FileMode / SeekOrigin 均只作方法
-    #   参数类型），枚举值赋值亦无先例，故直接用数字约定
+    # 请求方法：HttpMethod 枚举（extends Int32；Get=0 Post=1 Put=2 Delete=3 Head=4，
+    #   见下方枚举定义）。枚举作类字段类型 / 枚举值赋字段均有先例
+    #   （Render/Pipeline/GpuTexture.sl 的 EFilterMode / EAddressMode 字段）
 
     # ============================================================================
     # HttpHeaders — 请求 / 响应头集合（名字大小写不敏感）
@@ -117,14 +123,27 @@ namespace Net
     }
 
     # ============================================================================
+    # HttpMethod — HTTP 请求方法（HttpRequest.method 字段类型）
+    # ============================================================================
+
+    # 请求方法枚举（底层 Int32；Get 零值 = 请求只置 url 不动 method 时的默认语义）
+    public enum HttpMethod extends Int32
+    {
+        Get = 0
+        Post = 1
+        Put = 2
+        Delete = 3
+        Head = 4
+    }
+
+    # ============================================================================
     # HttpRequest — 请求描述
     # ============================================================================
 
     public class HttpRequest
     {
-        # 请求方法（0=GET 1=POST 2=PUT 3=DELETE 4=HEAD；默认零值 = GET。
-        # 不能用 HttpMethod 枚举类型——SL 枚举不能作字段类型，见文件头注释）
-        public Int32 method = 0
+        # 请求方法（默认 Get；枚举字段先例：Render/Pipeline/GpuTexture.sl 的 EFilterMode）
+        public HttpMethod method = HttpMethod.Get
         public string url = ""
         public HttpHeaders headers = null
         # 文本 body（UTF-8；空串 = 无 body，内嵌 NUL 会被截断）
@@ -188,7 +207,7 @@ namespace Net
         public static HttpResponse httpGet( string url ) throws
         {
             HttpRequest req = HttpRequest()
-            req.method = 0   # 0 = GET
+            req.method = HttpMethod.Get
             req.url = url
             ret HttpClient().send( req )
         }
@@ -197,7 +216,7 @@ namespace Net
         public static HttpResponse httpPost( string url, string body, string contentType ) throws
         {
             HttpRequest req = HttpRequest()
-            req.method = 1   # 1 = POST
+            req.method = HttpMethod.Post
             req.url = url
             req.body = body
             req.headers.add( "Content-Type", contentType )
@@ -269,6 +288,45 @@ namespace Net
             }
             stream.close()
             ret resp
+        }
+
+        # ---- 协程异步形态（直接返回 Task，调用方 await 取回 HttpResponse）----
+        # 语义:
+        #   - 返回的 Task 即协程本体；调用处不阻塞，await 时才等待结果
+        #   - 协程内全部网络 IO（connect / send / recv / TLS 握手）经
+        #     Option A 挂起当前协程，不阻塞调度器（md/syntax/coroutine.md §16.2）
+        #   - 异常向 await 该 Task 的等待者重抛，故这些方法无需 throws 声明
+        #   - 闭包内调用宿主实例方法必须写显式 this. 前缀（coroutine.md §5.3）
+
+        # 异步便捷 GET：Task t = HttpClient.httpGetAsync( url )，之后 await t as HttpResponse
+        public static Task httpGetAsync( string url )
+        {
+            function fn = function( string u )
+            {
+                ret HttpClient.httpGet( u )
+            }
+            ret Coroutine.spawnClosure1( fn, url )
+        }
+
+        # 异步便捷 POST（文本 body + Content-Type）
+        public static Task httpPostAsync( string url, string body, string contentType )
+        {
+            function fn = function( string u, string b, string ct )
+            {
+                ret HttpClient.httpPost( u, b, ct )
+            }
+            ret Coroutine.spawnClosure3( fn, url, body, contentType )
+        }
+
+        # 异步发送（实例配置生效：connectTimeoutMs / readTimeoutMs / caPem）
+        public Task sendAsync( HttpRequest req )
+        {
+            # 实例方法内闭包自动捕获 this；体内调用宿主实例方法须显式 this. 前缀
+            function fn = function( HttpRequest r )
+            {
+                ret this.send( r )
+            }
+            ret Coroutine.spawnClosure1( fn, req )
         }
 
         # ── 响应解析（一切读经 recvBuf 预读缓冲中转）──
@@ -359,7 +417,7 @@ namespace Net
             }
 
             # ---- body 三态 ----
-            bool noBody = req.method == 4   # 4 = HEAD
+            bool noBody = req.method == HttpMethod.Head
             if code == 204 || code == 205 || code == 304
             {
                 noBody = true
@@ -533,26 +591,26 @@ namespace Net
             ret SystemStringRange( line, 0, len )
         }
 
-        # 方法名（Int32 -> 请求行文本；0=GET 1=POST 2=PUT 3=DELETE 4=HEAD）
-        static string _methodName( Int32 m )
+        # 方法名（HttpMethod -> 请求行文本；未知值兜底 GET）
+        static string _methodName( HttpMethod m )
         {
-            if m == 0
+            if m == HttpMethod.Get
             {
                 ret "GET"
             }
-            if m == 1
+            if m == HttpMethod.Post
             {
                 ret "POST"
             }
-            if m == 2
+            if m == HttpMethod.Put
             {
                 ret "PUT"
             }
-            if m == 3
+            if m == HttpMethod.Delete
             {
                 ret "DELETE"
             }
-            if m == 4
+            if m == HttpMethod.Head
             {
                 ret "HEAD"
             }
