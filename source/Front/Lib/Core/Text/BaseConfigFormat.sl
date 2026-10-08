@@ -1,5 +1,5 @@
 
-public class Json interface IDataStruct
+public class ConfitFormat
 {
     override _init_()
     {

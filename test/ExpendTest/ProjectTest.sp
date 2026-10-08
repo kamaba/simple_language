@@ -23,6 +23,7 @@ Project
         ZlibTest.fun()
         GZipTest.fun()
         Base64Test.fun()
+        RegExpTest.fun()
         #EncodingTest.fun() # var 推断暂不支持(Node 层关键字冲突),待 var 语法落地后启用
         #LogTest.fun()
         #IsolateTest.fun()

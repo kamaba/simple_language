@@ -164,6 +164,9 @@ namespace DB
             this._stmtHandle = SystemSqlite3PrepareV2(this._dbHandle, sql)
             if this._stmtHandle == 0
             {
+                # prepare 失败不再静默：打印底层错误（如 no such table），
+                # 否则后续 fetchone/changes 全部空/0 且无任何线索
+                Console.println("[Sqlite3] SQL 准备失败: " + SystemSqlite3Errmsg(this._dbHandle))
                 ret
             }
 

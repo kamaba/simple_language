@@ -52,6 +52,7 @@ Project
         CoroutineTest.fun();
         StringBuilderTest.fun()
         !#
+        EnumTest.fun()
         MonitorTest.fun()
         #ExitTestNS.ExitTest.fun()
         #!

@@ -27,7 +27,8 @@
       { "path": "Loop.sl", "group": "core", "tag": "bench", "ignore": false, "priority": 0 },
       { "path": "Levenshtein.sl", "group": "core", "tag": "bench", "ignore": false, "priority": 0 },
       { "path": "DataTypes.sl", "group": "core", "tag": "bench", "ignore": false, "priority": 0 },
-      { "path": "StringBench.sl", "group": "core", "tag": "bench", "ignore": false, "priority": 0 }
+      { "path": "StringBench.sl", "group": "core", "tag": "bench", "ignore": false, "priority": 0 },
+      { "path": "RegExpBench.sl", "group": "core", "tag": "bench", "ignore": false, "priority": 0 }
     ]
   },
   "compileFilter": {

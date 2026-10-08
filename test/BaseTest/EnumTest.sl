@@ -216,6 +216,15 @@ EnumTest
         EShape.cd = RectShape()
 
         global.println("EErr.First ordinal smoke -> " + EErr.First.value.toString() )
+
+        global.println("----- enum as integer base type -----")
+        Int32 ei = EErr.First as Int32
+        global.println("EErr.First as Int32 -> " + ei.toString() )
+        Float64 ef = EErr.Six as Float64
+        global.println("EErr.Six as Float64 -> " + ef.toString() )
+        EErr eb5 = EErr.Thrill
+        Int32 ei2 = eb5 as Int32
+        global.println("EErr.Thrill as Int32 -> " + ei2.toString() )
         global.println("========== EnumTest (end) ==========")
 
         

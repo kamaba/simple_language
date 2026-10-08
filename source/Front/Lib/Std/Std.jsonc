@@ -28,12 +28,11 @@
       { "path": "IO/FileStream.sl", "group": "std", "tag": "io", "ignore": false, "priority": 0 },
       { "path": "IO/Path.sl", "group": "std", "tag": "io", "ignore": false, "priority": 0 },
       { "path": "IO/StdStream.sl", "group": "std", "tag": "io", "ignore": false, "priority": 0 },
-      { "path": "Text/IDataStruct.sl", "group": "std", "tag": "text", "ignore": false, "priority": 0 },
       { "path": "Text/Csv.sl", "group": "std", "tag": "text", "ignore": false, "priority": 0 },
       { "path": "Text/Json.sl", "group": "std", "tag": "text", "ignore": false, "priority": 0 },
-      { "path": "Text/Json5.sl", "group": "std", "tag": "text", "ignore": false, "priority": 0 },
       { "path": "Text/Xml.sl", "group": "std", "tag": "text", "ignore": false, "priority": 0 },
       { "path": "Text/Yaml.sl", "group": "std", "tag": "text", "ignore": false, "priority": 0 },
+      { "path": "Text/RegExp.sl", "group": "std", "tag": "text", "ignore": false, "priority": 0 },
       { "path": "OS/DateTime.sl", "group": "std", "tag": "os", "ignore": false, "priority": 0 },
       { "path": "OS/Timer.sl", "group": "std", "tag": "os", "ignore": false, "priority": 0 },
       { "path": "OS/Process.sl", "group": "std", "tag": "os", "ignore": false, "priority": 0 },
@@ -44,6 +43,7 @@
       { "path": "Net/NetStream.sl", "group": "std", "tag": "net", "ignore": false, "priority": 0 },
       { "path": "Net/TlsStream.sl", "group": "std", "tag": "net", "ignore": false, "priority": 0 },
       { "path": "Net/Uri.sl", "group": "std", "tag": "net", "ignore": false, "priority": 0 },
+      { "path": "Net/Websocket.sl", "group": "std", "tag": "net", "ignore": false, "priority": 0 },
       { "path": "Component.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
       { "path": "Debug/Log.sl", "group": "std", "tag": "debug", "ignore": false, "priority": 0 },
       { "path": "Debug/Profiling.sl", "group": "std", "tag": "debug", "ignore": false, "priority": 0 },
@@ -67,6 +67,7 @@
       { "path": "Zip/Zip.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
       { "path": "Zip/GZip.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
       { "path": "Encoding/Base64.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
+      { "path": "Encoding/Sha1.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
       { "path": "Encoding/Encoding.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 }
     ]
   },
@@ -110,9 +111,14 @@
          [
              { "class": "Csv" },
              { "class": "Json" },
-             { "class": "Json5" },
              { "class": "Xml" },
-             { "class": "Yaml" }
+             { "class": "Yaml" },
+             { "enum": "RegExpError" },
+             { "class": "RegExpCharSet" },
+             { "class": "RegExpInst" },
+             { "class": "RegExpMatch" },
+             { "class": "RegExpState" },
+             { "class": "RegExp" }
          ]
       },
       { "namespace": "OS", "children":
@@ -145,7 +151,15 @@
                 { "enum": "HttpError" },
                 { "class": "HttpHeaders" },
                 { "class": "HttpRequest" },
-                { "class": "HttpResponse" }
+                { "class": "HttpResponse" },
+                { "enum": "WsError" },
+                { "enum": "WsOpCode" },
+                { "enum": "WsCloseCode" },
+                { "enum": "WsState" },
+                { "class": "WsMessage" },
+                { "class": "WsCloseInfo" },
+                { "class": "WsOptions" },
+                { "class": "WebSocketStream" }
             ]
       },
       // { "namespace": "Data", "children":
@@ -201,6 +215,9 @@
       // 类作用域被空壳枚举污染，EncodingCode.XXX 成员解析全部失败 ----
       { "enum": "Base64Error" },
       { "class": "Base64" },
+      // ---- Std/Encoding/Sha1.sl：根级注册（同 Base64，无 namespace 声明）----
+      { "enum": "Sha1Error" },
+      { "class": "Sha1" },
       { "enum": "EncodingCode" },
       { "enum": "EncodingError" },
       { "class": "Encoding" },
@@ -392,6 +409,14 @@
     { "name": "SystemBase64EncodeBound",       "returnType": "Int32", "params": ["Int32"], "isVariadic": false, "cvmFunction": "vm_sys_base64_encode_bound" },
     { "name": "SystemBase64Encode",            "returnType": "Int64", "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_base64_encode" },
     { "name": "SystemBase64Decode",            "returnType": "Int64", "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_base64_decode" },
+    // ---- SHA-1 FIPS 180-1 calls (Std/Encoding/Sha1.sl, core: sl_core_sha1.c) ----
+    // 摘要写入新 ByteBuffer（byte_buffer 注册表项），失败 0。
+    // 主要消费方：Std/Net/Websocket.sl 握手 Sec-WebSocket-Accept。
+    { "name": "SystemSha1",                    "returnType": "Int64", "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_sha1_digest" },
+    // ---- crypto random fill (lib: sys_random.c, 消费方 Std/Net/Websocket.sl) ----
+    // 填充 length 字节密码学随机数到新 ByteBuffer（byte_buffer 注册表项），失败 0。
+    // 用途：握手 Sec-WebSocket-Key 与客户端帧掩码。
+    { "name": "SystemRandomFill",              "returnType": "Int64", "params": ["Int32"], "isVariadic": false, "cvmFunction": "vm_sys_random_fill" },
     // ---- text encoding calls (Std/Encoding/Encoding.sl, core: sl_core_encoding.c) ----
     { "name": "SystemEncodingMaxByteCount",    "returnType": "Int32", "params": ["Int32", "Int32"], "isVariadic": false, "cvmFunction": "vm_sys_encoding_max_byte_count" },
     { "name": "SystemEncodingMaxCharCount",    "returnType": "Int32", "params": ["Int32", "Int32"], "isVariadic": false, "cvmFunction": "vm_sys_encoding_max_char_count" },

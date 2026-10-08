@@ -224,14 +224,24 @@ namespace Net
             ret Uri.eqFold( this._scheme, "https" )
         }
 
-        # 端口未显式给出时按 scheme 补默认（http=80 / https=443）
+        public get bool isWs()
+        {
+            ret Uri.eqFold( this._scheme, "ws" )
+        }
+
+        public get bool isWss()
+        {
+            ret Uri.eqFold( this._scheme, "wss" )
+        }
+
+        # 端口未显式给出时按 scheme 补默认（http/ws=80 / https/wss=443）
         public get Int32 effectivePort()
         {
             if this._port >= 0
             {
                 ret this._port
             }
-            if this.isHttps
+            if this.isHttps || this.isWss
             {
                 ret 443
             }

@@ -1,7 +1,7 @@
 {
   "project":
   {
-    "name": "SLMysql",
+    "name": "SLangMysql",
     "desc": "MySQL client library module - namespace SL: Mysql (entry + native bindings) / MysqlConnection / MysqlCursor / MysqlRow, backed by sl_mysql_lib.dll (MySQL Connector/C)",
     "mainVersion": 0,
     "subVersion": 1,
@@ -47,7 +47,7 @@
   },
   "compileFiles": {
     "files": [
-      { "path": "SLMysql.sl", "group": "mysql", "tag": "db", "ignore": false, "priority": 0 }
+      { "path": "SLangMysql.sl", "group": "mysql", "tag": "db", "ignore": false, "priority": 0 }
     ]
   },
   "compileFilter": {
@@ -68,7 +68,7 @@
     { "path": "../Core", "name": "Core" }
   ],
   "struct": [
-    { "namespace": "SL", "children": [
+    { "namespace": "SLang", "children": [
       { "class": "Mysql" },
       { "class": "MysqlConnection" },
       { "class": "MysqlCursor" },
@@ -76,7 +76,7 @@
     ]}
   ],
   "export": {
-    "moduleName": "SLMysql",
+    "moduleName": "SLangMysql",
     "outputDir": "..\\..\\..\\..\\out\\export",
     "versionMain": 1,
     "versionSub": 0,

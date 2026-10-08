@@ -14,6 +14,7 @@ Project
         Levenshtein.fun()
         DataTypes.fun()
         StringBench.fun()
+        RegExpBench.fun()
         
 
         nowMs = Environment.sys.nowMillis() - nowMs

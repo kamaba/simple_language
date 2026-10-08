@@ -1,7 +1,7 @@
 函数名称和类名冲突时候的处理  
 
 编码相关的
-HttpClient/Websocket相关接口  window要支持iocp  Linux要支持epoll
+Websocket相关接口  mqtt协议
 RegExp
 
 TankGame.sl 引入Math类。把一些 二维的都使用Int32_2 Int32_3
@@ -40,7 +40,6 @@ ffmpeg的dll 引入
 
 优化FrontEnd层
 增加tcp/udp/ip等协议 是否网络包，要独立 ，而不在std里边
-再增加一些ErrorShow, netStream,
 把静态绑定dll 参数尽量扩展下， 如果定义的export c的函数 是 比如char/char*/short/ushort/ptr* 等数型，都没有处理需要扩展，但貌似匹配机制你先看下还有没有更合理的机制 感觉现在要写的匹配太多了
 
 1. this的使用，还没有整合
@@ -83,3 +82,17 @@ sl_aot_skeleton_new_inner这个函数的话，原来的llvm生成的数据，是
 增加对WebAssembly的支持，然后让网页上跑起来示例
 
 MLIR把结构体，也就是我设计 的class/data/enum 要转化成对应的 llvm.struct   在变的过程，最好还能在这个结构里边带上一些其它的信息，比较类的id, 名称, 如果模板类，需要把模板的成员也变成一个指针（Int64)放在里边 最好还有一个字段去描述这个指针的，这样，不可以使用llvm.struct 去对应我的class/data/enum 了 
+
+
+if 和下一个if 之间 必须再空一行，防止读取错误， if/elif/elif 必须连着，不能空一行 示例  
+if true 
+{}
+
+if true{}  这样属于正常的
+if true {} 这种的需要空一行，要提示错误 
+
+
+if true{}
+elif false {} 这种的必须挨着,这个是正常的示例
+
+elif false {} 这种是错误的示例

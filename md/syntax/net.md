@@ -1,8 +1,8 @@
-# 网络编程（Net）：Tcp / Udp / Tls / Http / NetStream
+# 网络编程（Net）：Tcp / Udp / Tls / Http / WebSocket / NetStream
 
-> **本文档以「当前实现」为准**，对应 `source/Front/Lib/Std/Net/`（`TcpSocket.sl` / `UdpSocket.sl` / `NetStream.sl` / `TlsStream.sl` / `Uri.sl` / `HttpClient.sl`）
-> 与 `test/NetTest/`（A~L 组验收用例——含 T 超时 / K TLS / L HTTP——全部通过）。
-> 设计规格见 `csimple_lang/md/design/NET_DESIGN.md`（唯一真源）；差异与偏差见本文 §15。
+> **本文档以「当前实现」为准**，对应 `source/Front/Lib/Std/Net/`（`TcpSocket.sl` / `UdpSocket.sl` / `NetStream.sl` / `TlsStream.sl` / `Uri.sl` / `HttpClient.sl` / `Websocket.sl`）
+> 与 `test/NetTest/`（A~L 组验收用例——含 T 超时 / K TLS / L HTTP——全部通过）、`test/Other/WebsocketTest/`（WebSocket 验收用例）。
+> 设计规格见 `csimple_lang/md/design/NET_DESIGN.md`（唯一真源）；差异与偏差见本文 §16。
 > 相关文档：`md/syntax/coroutine.md`（协程——网络挂起的载体）、`md/syntax/core/Stream.md`（Stream 元素流）、
 > `md/syntax/string.md` / ByteBuffer 用法见 `Core/IO/ByteBuffer.sl`。
 
@@ -20,11 +20,12 @@
 8. [UDP（Udp / UdpSocket / UdpDatagram）](#8-udpudp--udpsocket--udpdatagram)
 9. [TLS 加密流（TlsStream / TlsOptions）](#9-tls-加密流tlsstream--tlsoptions)
 10. [HTTP 客户端（Uri / HttpClient）](#10-http-客户端uri--httpclient)
-11. [错误处理（NetError / TlsError / HttpError）](#11-错误处理neterror--tlserror--httperror)
-12. [组合范式](#12-组合范式)
-13. [与协程 / isolate 的关系](#13-与协程--isolate-的关系)
-14. [API 速查总表](#14-api-速查总表)
-15. [限制与已知偏差（必读）](#15-限制与已知偏差必读)
+11. [WebSocket（WebSocketClient / WebSocketStream）](#11-websocketwebsocketclient--websocketstream)
+12. [错误处理（NetError / TlsError / HttpError / WsError）](#12-错误处理neterror--tlserror--httperror--wserror)
+13. [组合范式](#13-组合范式)
+14. [与协程 / isolate 的关系](#14-与协程--isolate-的关系)
+15. [API 速查总表](#15-api-速查总表)
+16. [限制与已知偏差（必读）](#16-限制与已知偏差必读)
 
 ---
 
@@ -41,6 +42,7 @@
 | **ByteStream 子类** | `NetStream` extends `ByteStream`：`read(ByteBuffer)` / `write(ByteBuffer)` / `closeRead` / `closeWrite` / `close` 与文件流同构，可直连 Stream 体系（`LengthPrefix` 等） |
 | **TLS 装饰器** | `TlsStream.wrap` / `accept` 在 `TcpStream` 上叠加 mbedTLS 加密（握手挂起透明，读写超时继承底层 TCP，见 §9） |
 | **HTTP 客户端** | `HttpClient` 在 `TcpStream` / `TlsStream` 之上实现 HTTP/1.1 客户端（纯 SL，无新增系统调用）：GET / POST / PUT / DELETE / HEAD，http / https，body 三态读取（见 §10） |
+| **WebSocket** | `WebSocketStream` 在 `TcpStream` / `TlsStream` 之上实现 RFC 6455（纯 SL 协议层 + 两个系统调用 `SystemSha1` / `SystemRandomFill`）：ws / wss，握手校验，帧编解码（分片 / 掩码 / 控制帧）；`WebSocketClient` 高层门面提供 onOpen / onMessage / onClose / onError 事件回调模型（见 §11） |
 | **失败 = 异常** | SL 层方法 `throws` 抛 `NetError` / `TlsError` / `HttpError`（均 extends Error；HttpError 为纯 SL 错误族）；C 层用哨兵值 + `SystemNetLastError` / `SystemTlsLastError`，SL 负责归类抛出 |
 | **关闭即取消** | `close()` 释放句柄的同时，C 侧取消挂在该 socket 上的全部在途等待（挂起协程以错误返回唤醒） |
 
@@ -59,12 +61,12 @@ IO 线程: 就绪后端（IOCP / epoll / poll）发现 fd 可读 ──► 唤�
 
 | 层 | 文件 |
 |---|---|
-| SL API | `source/Front/Lib/Std/Net/`（`TcpSocket.sl`、`UdpSocket.sl`、`NetStream.sl`、`TlsStream.sl`、`Uri.sl`、`HttpClient.sl`） |
-| 系统调用注册 | `source/Front/Lib/Std/Std.jsonc` → `files[]` + `systemCalls[]`（SystemTcp* / SystemUdp* / SystemTls* 共 26 项；HTTP 客户端为纯 SL 实现，复用既有系统调用，无新增） |
-| C VM 原语层 | `csimple_lang/src/lib/os/sys_net.c`（非阻塞 socket；就绪后端：Windows IOCP / Linux epoll / 其余 Unix poll）、`sys_tls.c`（mbedTLS 会话桥，vendored `third_party/mbedtls/`） |
+| SL API | `source/Front/Lib/Std/Net/`（`TcpSocket.sl`、`UdpSocket.sl`、`NetStream.sl`、`TlsStream.sl`、`Uri.sl`、`HttpClient.sl`、`Websocket.sl`）+ `source/Front/Lib/Std/Encoding/Sha1.sl` |
+| 系统调用注册 | `source/Front/Lib/Std/Std.jsonc` → `files[]` + `systemCalls[]`（SystemTcp* / SystemUdp* / SystemTls* / SystemSha1 共 27 项；HTTP 客户端为纯 SL 实现，复用既有系统调用）+ `Core.jsonc`（SystemRandomFill） |
+| C VM 原语层 | `csimple_lang/src/lib/os/sys_net.c`（非阻塞 socket；就绪后端：Windows IOCP / Linux epoll / 其余 Unix poll）、`sys_tls.c`（mbedTLS 会话桥，vendored `third_party/mbedtls/`）、`sys_random.c`（密码学随机字节） |
 | C VM 等待层 | `csimple_lang/src/vm/runtime/net/vm_net_io.c`（fd 等待表 + IO 线程） |
-| C VM 系统调用 | `csimple_lang/src/vm/system_method_call/net_system_method.c` |
-| 验收用例 | `test/NetTest/`（A 基础收发 / B 挂起唤醒 / C 分帧 / D UDP / E 并发 / F 关闭 / G Stream 组合 / H isolate / T 超时 / K TLS / L HTTP） |
+| C VM 系统调用 | `csimple_lang/src/vm/system_method_call/net_system_method.c`（Tcp/Udp/Tls）、`byte_buffer_system_method.c`（SystemSha1，core `sl_core_sha1.c`）、`random_system_method.c`（SystemRandomFill） |
+| 验收用例 | `test/NetTest/`（A 基础收发 / B 挂起唤醒 / C 分帧 / D UDP / E 并发 / F 关闭 / G Stream 组合 / H isolate / T 超时 / K TLS / L HTTP）、`test/Other/WebsocketTest/`（握手 / echo / 分片 / ping-pong / close 协商 / Stream 消费 / 协程 / isolate） |
 
 ---
 
@@ -158,13 +160,20 @@ NetUdpDemo
 | `Net.TlsStream` | TLS 加密流（extends NetStream），`TlsStream.wrap` / `accept` 的返回形态，装饰 `TcpStream`（见 §9） |
 | `Net.TlsOptions` | TLS 会话参数（caPem / certPem / keyPem / hostname，可变字段直接赋值） |
 | `Net.Uri` | URL 解析值对象：构造即解析，`scheme` / `host` / `port` / `path` / `query` / `effectivePort` / `hostHeader` / `pathAndQuery`（非法抛 `HttpError.UriFormat`，见 §10.1） |
+| `Net.WebSocketClient` | WebSocket 高层客户端门面（HttpClient 风格 + Python WebSocketApp 事件模型）：`onOpen` / `onMessage` / `onClose` / `onError` 回调 + `connect` / `sendText` / `sendBinary` / `close` / `waitClosed`（见 §11.1） |
+| `Net.WebSocketStream` | WebSocket 双向消息流（extends NetStream），`connect` / `accept` 的返回形态；`receive()` / `messages()` 消费、`sendText` / `sendBinary` 发送（见 §11） |
+| `Net.WsMessage` | 收到的消息值对象：`op` / `payload` + `isText` / `isBinary` / `size` / `text()` / `binary()` / `release()` |
+| `Net.WsCloseInfo` | 关闭信息：`code` / `reason` / `wasClean` |
+| `Net.WsOptions` | 连接参数（protocols / maxMessageSize / handshakeTimeoutMs / autoPong / caPem，可变字段直接赋值） |
+| `Net.WsOpCode` / `Net.WsCloseCode` / `Net.WsState` | 操作码（Text=1 / Binary=2 / Close=8 / Ping=9 / Pong=10…）/ 关闭码（Normal=1000…）/ 连接态（Connecting / Open / Closing / Closed）枚举 |
+| `Net.WsError` | WebSocket 家族错误枚举（extends Error，code 1~5，见 §12） |
 | `Net.HttpClient` | HTTP/1.1 客户端：`send` 完整收发（每请求一连接，自动 `Connection: close`）；静态捷径 `httpGet` / `httpPost`；协程异步形态 `httpGetAsync` / `httpPostAsync` / `sendAsync`（直接返回 Task，见 §10.4） |
 | `Net.HttpRequest` | 请求描述：`method`（`Net.HttpMethod` 枚举：Get/Post/Put/Delete/Head）/ `url` / `headers` / `body` 可变字段 |
 | `Net.HttpResponse` | 响应：`statusCode` / `reasonPhrase` / `protocol` / `headers` / `body` + `isOk` / `contentLength` |
 | `Net.HttpHeaders` | 请求 / 响应头集合（名字大小写不敏感：add / setHeader / getHeader / contains） |
-| `Net.HttpError` | HTTP 家族错误枚举（extends Error，code 1~4，Uri 解析与协议处理共用，见 §11） |
+| `Net.HttpError` | HTTP 家族错误枚举（extends Error，code 1~4，Uri 解析与协议处理共用，见 §12） |
 | `Net.TlsError` | TLS 错误枚举（extends Error，code 1~9，与 NetError 相互独立） |
-| `Net.NetError` | 网络错误枚举（extends Error，code 1~9，见 §11） |
+| `Net.NetError` | 网络错误枚举（extends Error，code 1~9，见 §12） |
 | `Net.SocketShutdown` | 关闭方向（Read=0 / Write=1 / Both=2） |
 
 ---
@@ -451,7 +460,7 @@ UriDemo
         u.scheme          # "https"（原样保留；isHttp / isHttps 比较忽略大小写）
         u.host            # "example.com"
         u.port            # 8443（URL 未显式给出为 -1）
-        u.effectivePort   # 8443（缺省按 scheme 补默认：http=80 / https=443）
+        u.effectivePort   # 8443（缺省按 scheme 补默认：http/ws=80 / https/wss=443）
         u.path            # "/a/b"（空路径补 "/"）
         u.query           # "q=1"（不含 '?'）
         u.pathAndQuery    # "/a/b?q=1"（请求行用）
@@ -472,14 +481,14 @@ UriDemo
 | `get string path()` | 路径（空补 `/`） |
 | `get string query()` | query 原样（不含 `?`） |
 | `get string pathAndQuery()` | 请求行路径（query 非空拼 `?query`） |
-| `get Int32 effectivePort()` | 显式端口或 scheme 默认（http=80 / https=443） |
+| `get Int32 effectivePort()` | 显式端口或 scheme 默认（http/ws=80 / https/wss=443） |
 | `get string hostHeader()` | Host 请求头（非默认端口拼 `host:port`） |
-| `get bool isHttp()` / `get bool isHttps()` | scheme 判别（忽略大小写） |
+| `get bool isHttp()` / `get bool isHttps()` / `get bool isWs()` / `get bool isWss()` | scheme 判别（忽略大小写；ws/wss 供 `WebSocketStream.connect` 用） |
 | `override string toString()` | 原始 URL 文本 |
 | `static bool eqFold( string a, string b )` | ASCII 忽略大小写全串比较（`HttpHeaders` 复用） |
 | `static Int32 fold( Int32 c )` | ASCII 小写折叠（`'A'~'Z'` → `'a'~'z'`） |
 
-> 不支持 userinfo（`user@host`）、IPv6 字面量、percent-encoding、fragment——见 §15 限制表。
+> 不支持 userinfo（`user@host`）、IPv6 字面量、percent-encoding、fragment——见 §16 限制表。
 
 ### 10.2 便捷方法（httpGet / httpPost）
 
@@ -540,7 +549,7 @@ resp.isOk                                             # 200~299
 - `Host` 头自动填 `uri.hostHeader`（显式非默认端口拼 `host:port`）
 - 请求行 = `"<METHOD> <pathAndQuery> HTTP/1.1"`（method 未知值按 GET）
 - body 非空且用户未带 `Content-Length` → 自动补
-- 用户未带 `Connection` → 自动补 `Connection: close`（每请求一连接，见 §15 限制表）
+- 用户未带 `Connection` → 自动补 `Connection: close`（每请求一连接，见 §16 限制表）
 - **不读 body 的两种情况**：`method == HttpMethod.Head`，或状态码 204 / 205 / 304
 
 ### 10.4 协程异步形态（httpGetAsync / httpPostAsync / sendAsync）
@@ -604,7 +613,251 @@ Net.HttpResponse r3 = await t3 as Net.HttpResponse
 
 ---
 
-## 11. 错误处理（NetError / TlsError / HttpError）
+## 11. WebSocket（WebSocketClient / WebSocketStream）
+
+`WebSocketStream` 是 `TcpStream` / `TlsStream` 之上的 **RFC 6455 消息流**（纯 SL 协议层，仅新增 `SystemSha1` / `SystemRandomFill` 两个系统调用）：`Uri` 解析 ws/wss URL → `Tcp.connectTimeout` 建连（wss 再 `TlsStream.wrap`）→ HTTP Upgrade 握手（`Sec-WebSocket-Key` / `Accept` 校验）→ 之后 `receive` / `sendText` / `sendBinary` 走帧协议。挂起语义与底层一致（未就绪协程挂起，不阻塞 VM 线程）。
+
+在此之上提供两层消费形态：
+
+| 形态 | 类型 | 适用 |
+|---|---|---|
+| **高层门面（推荐）** | `WebSocketClient` | Python `WebSocketApp` 风格事件回调：`onOpen` / `onMessage` / `onClose` / `onError`，connect 后自动跑事件循环，收发即调（见 §11.1） |
+| 底层流 | `WebSocketStream` | 自管收发循环 / 服务端接入 / Stream 体系消费（`messages()`）/ 精细状态控制（见 §11.2~11.9） |
+
+### 11.1 高层客户端（WebSocketClient 事件模型）
+
+`WebSocketClient` 是 HttpClient 风格门面 + Python `websocket-client`（`WebSocketApp`）事件模型：**先赋回调与配置字段，`connect` 建连握手并启动事件循环协程，之后收到的消息自动推给 `onMessage`，连接收尾回调 `onClose`**。
+
+```sl
+import Std;
+import Core;
+
+WsClientDemo
+{
+    static fun()
+    {
+        var c = Net.WebSocketClient()
+
+        # ---- 事件回调（连接前赋值；null = 不通知）----
+        c.onOpen = function()
+        {
+            Console.println( "opened" )
+        }
+        c.onMessage = function( Net.WsMessage m )
+        {
+            Console.println( "recv: " + m.text() )
+            m.release()                         # 载荷归回调所有，用完释放
+        }
+        c.onClose = function( Net.WsCloseInfo info )
+        {
+            # info 可能为 null（异常断开，无协商信息）
+            Console.println( "closed" )
+        }
+        c.onError = function( Error e )
+        {
+            Console.println( "error: " + e.toString() )
+        }
+
+        # ---- 配置字段（连接前赋值，语义同 WsOptions）----
+        c.protocols = "chat,superchat"          # 子协议协商（可选）
+        c.handshakeTimeoutMs = 10000            # 握手超时（默认 10s）
+        c.maxMessageSize = 16777216             # 单条消息上限（默认 16 MiB）
+        c.closeTimeoutMs = 5000                 # 优雅关闭等回显超时（默认 5s）
+
+        # ---- 连接 + 启动事件循环（握手失败原地抛，调用方直接 catch）----
+        c.connect( "ws://127.0.0.1:19371/echo" )
+
+        c.sendText( "hi" )                      # 发送直调（转发底层连接）
+        c.sendBinary( Utf8.encode( "bytes" ) )
+        c.sendPing()
+
+        c.close()                               # 优雅关闭（发 Close 帧等回显；不阻塞）
+        c.waitClosed()                          # 等事件循环收尾（onClose 已送达）
+    }
+}
+```
+
+**事件顺序契约**：`onOpen` 恰一次 → `onMessage` 0..N 次 → `[onError` 0..1 次`]` → `onClose` 恰一次。
+
+| 回调 / 字段 | 签名 / 类型 | 语义 |
+|---|---|---|
+| `Function onOpen` | `function()` | 握手完成时调用一次 |
+| `Function onMessage` | `function( WsMessage msg )` | 每条 Text / Binary 消息（**msg 归回调所有，消费完调 `msg.release()`**） |
+| `Function onClose` | `function( WsCloseInfo info )` | 连接收尾时调用一次（info 可能为 null——异常断开无协商信息） |
+| `Function onError` | `function( Error err )` | 事件循环异常（协议违例 / onMessage 内抛错）；未设置时异常吞掉 |
+| `string protocols` / `string caPem` | 配置 | 子协议清单（逗号分隔）/ wss CA 链 PEM（空 = 跳过验证） |
+| `Int32 handshakeTimeoutMs` / `Int32 maxMessageSize` / `bool autoPong` | 配置 | 语义同 `WsOptions` 同名字段（默认 10000 / 16777216 / true） |
+| `Int32 closeTimeoutMs` | 配置 | 优雅关闭等对端回显 Close 的超时（默认 5000；超时强制收尾防事件循环挂起） |
+
+**方法**：
+
+| 方法 | 语义 |
+|---|---|
+| `WebSocketClient connect( string url ) throws` | 连接 + 握手 + 启动事件循环协程（返回 this 便于链式）；握手失败原地抛（`WsError.Handshake` 等，异常路径连接已清理）；**重复 connect 拒绝**（抛 `WsError.Closed`，重连语义 = 新建 WebSocketClient） |
+| `void sendText( string text ) throws` / `void sendBinary( ByteBuffer / UInt8Array ) throws` / `void sendPing() throws` | 发送族（未连接抛 `WsError.Closed`；转发底层 `WebSocketStream` 同名方法） |
+| `void close()` / `void close( Int32 code, string reason )` | 优雅关闭：发 Close 帧（失败不阻断）+ 超时看门狗协程（`closeTimeoutMs` 后对端未回显则强制关闭）；事件循环随后收尾触发 `onClose`（携带协商 `closeInfo`）。**不阻塞、不等待** |
+| `void abort()` | 立即强制关闭：不等回显，事件循环立即结束（`onClose` 的 info 可能为 null） |
+| `void waitClosed()` | 阻塞等事件循环结束（`onClose` 已送达后返回） |
+| `get WsState state()` / `get bool isOpen()` | 连接态（未连接 = Closed）/ 是否 Open |
+| `get WsCloseInfo closeInfo()` / `get string protocol()` | 关闭协商信息 / 协商出的子协议（未连接 null / ""） |
+
+实现要点：事件循环为 `Coroutine.spawnClosure0` 启动的独立协程（`_runLoop` 静态方法），内部 `receive()` 循环把消息推给 `onMessage`；循环体受 label-catch 保护——协议违例或回调抛错先送 `onError`，随后 `onClose` 恰一次收尾并兜底释放底层连接（对端发起关闭时 receive 返回 null 但底层流未关）。回调与 this 在闭包捕获前先拷局部（`messages()` 同款约定）。
+
+> 验收：`test/Other/WebsocketTest/`（门面事件顺序 / 回调收发 / close 协商 / abort 强断）。
+
+### 11.2 底层客户端（WebSocketStream.connect / connectAsync）
+
+```sl
+import Std;
+import Core;
+
+WsDemo
+{
+    static fun()
+    {
+        # 最简形态（默认 10s 握手超时；wss 时 caPem 为空 = 跳过验证，同 TlsOptions）
+        Net.WebSocketStream ws = Net.WebSocketStream.connect( "ws://127.0.0.1:19371/echo" )
+
+        ws.sendText( "hello" )                      # 发文本帧（客户端自动掩码）
+        Net.WsMessage m = ws.receive()              # 收一条消息（挂起直到有数据）
+        if m != null && m.isText
+        {
+            Console.println( "echo = " + m.text() ) # "echo = hello"
+            m.release()                             # 释放消息载荷（幂等）
+        }
+
+        ws.sendClose( Net.WsCloseCode.Normal, "bye" )   # 主动关闭（回显等待见 11.6）
+        ws.close()
+    }
+}
+```
+
+| 方法 | 语义 |
+|---|---|
+| `static WebSocketStream connect( string url ) throws` | 连接 + 握手（默认 `WsOptions`）；非 ws / wss scheme 抛 `HttpError.UnsupportedScheme`，握手失败抛 `WsError.Handshake`（状态码非 101 / Upgrade 头不符 / Accept 不匹配等） |
+| `static WebSocketStream connect( string url, WsOptions opt ) throws` | 带参数连接（opt 判 null 自动取默认值） |
+| `static Task connectAsync( string url )` / `static Task connectAsync( string url, WsOptions opt )` | 协程异步形态（直接返回 Task，`await t as Net.WebSocketStream` 取回；语义同 HttpClient §10.4） |
+
+握手细节：`Sec-WebSocket-Key = Base64(16 随机字节)`（`SystemRandomFill`）；响应 `Sec-WebSocket-Accept` 必须**精确匹配** `Base64(SHA-1(key + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"))`（大小写敏感）；`Upgrade: websocket` 与 `Connection: upgrade` 头忽略大小写校验；子协议回显校验（客户端请求的协议之一必须出现在响应 `Sec-WebSocket-Protocol` 中）。
+
+### 11.3 服务端（accept）
+
+```sl
+# 在已 accept 的明文 TcpStream 上完成 Upgrade 握手（wss 则先 TlsStream.accept 再传）
+Net.TcpServer srv = Net.Tcp.listen( 19371 )
+Net.TcpStream raw = srv.accept()
+Net.WebSocketStream ws = Net.WebSocketStream.accept( raw )     # 读 Upgrade 请求 → 回 101
+
+Net.WsMessage m = ws.receive()
+ws.sendText( "pong" )
+ws.close()
+```
+
+| 方法 | 语义 |
+|---|---|
+| `static WebSocketStream accept( TcpStream raw ) throws` | 服务端握手：读 GET 请求行 + 头（Key 非空、Upgrade / Connection / Version 校验同客户端）→ 计算 Accept 回 101 响应（含协商出的 `Sec-WebSocket-Protocol`）；成功后 **raw 所有权转移**（勿再操作 raw），失败抛 `WsError.Handshake` 并关闭底层连接 |
+| `static WebSocketStream accept( TcpStream raw, WsOptions opt ) throws` | 带参数（opt.protocols 为服务端支持的子协议清单，与客户端请求交集协商） |
+
+### 11.4 收消息（receive / messages）
+
+```sl
+# 形态一：同步循环（null = 连接关闭）
+Net.WsMessage m = ws.receive()
+while m != null
+{
+    if m.isText { Console.println( m.text() ) }
+    else if m.isBinary { ByteBuffer b = m.binary() }
+    m.release()
+    m = ws.receive()
+}
+
+# 形态二：Stream 消费（内部引流协程泵进 StreamController，收完 / 出错自动 close）
+Stream<Net.WsMessage> msgs = ws.messages()
+msgs.listen( void( Net.WsMessage msg )
+{
+    if msg.isText { Console.println( "recv: " + msg.text() ) }
+    msg.release()
+} )
+```
+
+| 方法 | 语义 |
+|---|---|
+| `WsMessage receive() throws` | 挂起收一条**完整消息**（分片自动重组）；**null = 对端关闭 / 连接断开**（`closeInfo` 可查详情）；消息超 `maxMessageSize` 抛 `WsError.MessageTooBig` |
+| `Stream<WsMessage> messages()` | 消息流：内部 `spawnClosure0` 引流协程循环 `receive` 灌进 `StreamController`（缓冲 64）；`receive` 返回 null 后 `ctrl.close()` 收尾，未正常关闭则先 `addError(WsError.Closed)` |
+
+**协议自动处理**（对 `receive` 透明）：收到 Ping 且 `autoPong` 开启 → 自动回 Pong（尽力发送）；收到 Pong → 跳过；收到 Close → 解析关闭码后**自动回显 Close**（遵守 RFC 6455 关闭握手）再以 null 返回；Continuation 分片按 FIN 重组（乱序 / 无首发分片抛 `WsError.Protocol`）。
+
+### 11.5 发送（sendText / sendBinary / sendPing / sendPong）
+
+```sl
+ws.sendText( "hello" )                        # 文本帧（UTF-8）
+ws.sendBinary( Utf8.encode( "bytes" ) )       # 二进制帧（ByteBuffer；内部 slice 零拷贝视图）
+UInt8Array arr = UInt8Array( 4 )              # 或 UInt8Array（内部拷贝为 ByteBuffer）
+ws.sendBinary( arr )
+ws.sendPing()                                 # 心跳探测（空载荷）
+ws.sendPong()                                 # 手动回 Pong（autoPong 关闭时用）
+```
+
+| 方法 | 语义 |
+|---|---|
+| `void sendText( string text ) throws` | 发 Text 帧（单帧整发，不分片） |
+| `void sendBinary( ByteBuffer data ) throws` / `void sendBinary( UInt8Array data ) throws` | 发 Binary 帧（前者 `slice()` 零拷贝视图，不推进原缓冲索引；后者拷贝） |
+| `void sendPing() throws` / `void sendPong() throws` | 发空载荷控制帧（≤125 字节合规） |
+| 发送约束 | 已 Closed 或 Closing（非 Close 帧）状态发送抛 `WsError.Closed`；**客户端帧自动掩码、服务端帧禁止掩码**（方向校验，违反对端帧掩码方向抛 `WsError.Protocol`）；RSV 位非 0 抛 `Protocol` |
+
+### 11.6 关闭协商（sendClose / close / closeInfo）
+
+```sl
+ws.sendClose( Net.WsCloseCode.Normal, "bye" )    # 发 Close 帧（code + reason，reason 截断 123 字节）
+Net.WsMessage m = ws.receive()                   # 对端回显 Close 后 receive 返回 null
+Console.println( ws.closeInfo.code.toString() )  # 对端关闭码（1000 = Normal）
+ws.close()                                       # 关底层连接（幂等；内部尽力 sendClose）
+```
+
+| 方法 / 属性 | 语义 |
+|---|---|
+| `void sendClose() throws` | 发 Normal(1000) 空原因 Close 帧（幂等：已发送过则忽略），置 `Closing` 态 |
+| `void sendClose( Int32 code, string reason ) throws` | 发指定关闭码 + 原因（见 `WsCloseCode` 枚举） |
+| `override void close() throws` | 尽力发 Close（失败吞掉）→ 关底层流 → 封口全部状态（幂等；分片累积缓冲一并回收） |
+| `override void closeWrite() throws` | `flush` + 尽力 `sendClose`（ByteStream 半关闭语义映射） |
+| `get WsCloseInfo closeInfo()` | 关闭信息：`code`（载荷 <2 字节为 1005 NoStatus）/ `reason` / `wasClean`（收到 Close 帧关闭 = true，连接直接断 = false） |
+| `get WsState state()` | 连接态：`Connecting(0)` / `Open(1)` / `Closing(2)` / `Closed(3)` |
+| `get string protocol()` | 协商出的子协议（未协商为 ""） |
+| `get bool isClient()` | 客户端 / 服务端侧（决定掩码方向） |
+
+### 11.7 WsOptions 字段
+
+| 字段 | 说明 |
+|---|---|
+| `string protocols` | 请求 / 支持的子协议清单（逗号分隔，如 `"chat,superchat"`；协商结果回填 `ws.protocol`） |
+| `Int32 maxMessageSize` | 单条消息上限字节（默认 16777216 = 16 MiB；超限抛 `WsError.MessageTooBig`） |
+| `Int32 handshakeTimeoutMs` | TCP 连接超时（透传 `Tcp.connectTimeout`，默认 10000） |
+| `bool autoPong` | 收 Ping 自动回 Pong（默认 true） |
+| `string caPem` | wss CA 证书链 PEM（空串 = 跳过验证，同 `TlsOptions`） |
+
+### 11.8 ByteStream 接入（read / write）
+
+`WebSocketStream` extends `NetStream`（`isMessageOriented=true` / `canWrite=false`），可作 `ByteStream` 消费（如 `LengthPrefix` 无关场景的逐消息读取）：
+
+| 方法 | 语义 |
+|---|---|
+| `override Int32 read( ByteBuffer dst ) throws` | 按消息读：`receive` 一条 Text/Binary，截取 `writableBytes` 拷入 dst 后释放；null（关闭）置 EOF 返回 0 |
+| `override void write( ByteBuffer src ) throws` | 守卫拒绝（WebSocket 消息边界语义，不提供裸字节写——发送一律 `sendText` / `sendBinary`） |
+| `override void flush() throws` | 空操作（发送同步完成，无用户态缓冲） |
+
+### 11.9 协议实现要点
+
+- **帧头 2~14 字节大端**：b0 = FIN(0x80) | opcode；b1 = MASK(0x80) | len7（126 → 2 字节 U16 扩展，127 → 8 字节 U64 扩展）；掩码 key 4 字节（有 MASK 时）；载荷 XOR 掩码逐字节
+- **控制帧约束**：Close / Ping / Pong 必须 FIN=1 且载荷 ≤125 字节；opcode 3~7 / 11~15 未知值抛 `WsError.Protocol`
+- **SHA-1**：`Sha1.digest / digestHex`（`Encoding/Sha1.sl`，core `sl_core_sha1.c`，FIPS 180-1），握手 Accept 计算 = `Base64.encode( Sha1.digest( key + GUID ) )`
+- **随机源**：`SystemRandomFill(n)` 返回 n 字节密码学随机 `ByteBuffer`（失败返回 0 → 抛 `WsError.RandomSource`）
+- 收发路径全部经 `_recvBuf`（握手预读缓冲复用）与 `ByteBuffer` 视图（`slice`），无多余拷贝
+
+> 验收用例：`test/Other/WebsocketTest/`（握手 / echo 文本+二进制 / 分片重组 / ping-pong / close 协商 / messages() Stream 消费 / connectAsync 协程 / isolate worker 融合）。
+
+---
+
+## 12. 错误处理（NetError / TlsError / HttpError / WsError）
 
 `NetError extends Error`，code 位镜像 C VM `sys_net.h` 的错误段：
 
@@ -643,7 +896,17 @@ Net.HttpResponse r3 = await t3 as Net.HttpResponse
 | `HttpError.Protocol` | 3 | 响应不符合 HTTP/1.1 报文格式（连接截断 / 非法状态行 / 非法块长度等） |
 | `HttpError.IoError` | 4 | 预留；当前底层 IO 异常按原样透传 `NetError` / `TlsError`，不转换为本枚举 |
 
-> 三个枚举相互独立：TCP 层错误（连接 / DNS / 裸 socket 收发）抛 `NetError`，TLS 层错误（握手 / 证书 / 加密收发）抛 `TlsError`，HTTP 层错误（URL 解析 / 协议报文）抛 `HttpError`（底层网络异常原样透传前两者）。判别写法同下（`e as Net.TlsError` / `e as Net.HttpError`）。
+`WsError extends Error`（WebSocket 层，纯 SL 协议层无 C 侧镜像）：
+
+| 枚举 | code | 触发场景 |
+|---|---|---|
+| `WsError.Handshake` | 1 | 握手失败：响应状态码非 101 / `Upgrade` / `Connection` / `Sec-WebSocket-Accept` 头不符（Accept 必须与本地计算值精确比对，大小写敏感） |
+| `WsError.Protocol` | 2 | 帧违规：RSV 位非 0 / 掩码方向错误（客户端帧必掩码、服务端帧禁掩码）/ 未知 opcode / 分片乱序（控制帧出现于分片中间、首帧非首） |
+| `WsError.MessageTooBig` | 3 | 重组消息超过 `maxMessageSize`（默认 16 MiB）或 64 位长度字段溢出 |
+| `WsError.Closed` | 4 | 已关闭（或握手未完成）后发送 |
+| `WsError.RandomSource` | 5 | 握手 Key / 帧掩码随机源失败（`SystemRandomFill` 返回 0） |
+
+> 四个枚举相互独立：TCP 层错误（连接 / DNS / 裸 socket 收发）抛 `NetError`，TLS 层错误（握手 / 证书 / 加密收发）抛 `TlsError`，HTTP 层错误（URL 解析 / 协议报文）抛 `HttpError`，WebSocket 层错误（握手校验 / 帧协议）抛 `WsError`（底层网络异常原样透传前三者）。判别写法同下（`e as Net.TlsError` / `e as Net.HttpError` / `e as Net.WsError`）。
 
 ```sl
 # 预期异常的标准写法（组方法不声明 throws，正常路径裸写）
@@ -663,7 +926,7 @@ refusedLabel:
 
 ---
 
-## 12. 组合范式
+## 13. 组合范式
 
 ### LengthPrefix 分帧（Stream 体系直连）
 
@@ -725,14 +988,14 @@ function ioReader = function( Net.TcpStream c )
 
 ---
 
-## 13. 与协程 / isolate 的关系
+## 14. 与协程 / isolate 的关系
 
-- **与协程**：网络挂起与 `Channel` / `delay` 走同一个 `CORO_BLOCK_IO` / timer 通道与唤醒路径，天然正交组合。root 协程（`fun()` 主体）可直接在网络调用上挂起——`Coroutine.delay` 期间网络协程照常被唤醒推进（NetTest B1 验证）。
-- **与 isolate**：`TcpStream` / `UdpStream` / `TlsStream` / `Channel` / `Task` **均不可 Sendable**——网络流不能跨 isolate 传递。范式：网络 IO 协程留在主 VM，把「不可信 / 易崩」的协议解析（string / TransferableData 等可发送数据）丢进 isolate，解析崩了也不影响主 VM 的其它连接（NetTest H 组验证）。
+- **与协程**：网络挂起与 `Channel` / `delay` 走同一个 `CORO_BLOCK_IO` / timer 通道与唤醒路径，天然正交组合。root 协程（`fun()` 主体）可直接在网络调用上挂起——`Coroutine.delay` 期间网络协程照常被唤醒推进（NetTest B1 验证）。`WebSocketClient` 事件循环 / `WebSocketStream.connectAsync` / `messages()` 均基于该机制（消息流每条消息一唤醒）。
+- **与 isolate**：`TcpStream` / `UdpStream` / `TlsStream` / `WebSocketStream` / `Channel` / `Task` **均不可 Sendable**——网络流（含 WebSocket 流）不能跨 isolate 传递。范式：网络 IO 协程留在主 VM，把「不可信 / 易崩」的协议解析（string / TransferableData 等可发送数据）丢进 isolate，解析崩了也不影响主 VM 的其它连接（NetTest H 组验证）。WebSocket 同理：`receive()` 拿到 `WsMessage` 后把 `op == WsOpCode.Text` 的消息文本丢进 isolate worker 解析（WebsocketTest G 组验证）。
 
 ---
 
-## 14. API 速查总表
+## 15. API 速查总表
 
 ### Net.Tcp（外观）
 
@@ -820,9 +1083,43 @@ function ioReader = function( Net.TcpStream c )
 | `_init_( string text ) throws` | 构造即解析（非法抛 `HttpError.UriFormat`） |
 | `get string scheme()` / `get string host()` / `get Int32 port()` | 解析结果（port 未显式给出 -1） |
 | `get string path()` / `get string query()` / `get string pathAndQuery()` | 路径 / 查询串 / 请求行路径（空 path 补 `/`） |
-| `get Int32 effectivePort()` / `get string hostHeader()` | scheme 默认端口（http=80 / https=443）/ Host 请求头（非默认端口拼 host:port） |
-| `get bool isHttp()` / `get bool isHttps()` | scheme 判别（忽略大小写） |
+| `get Int32 effectivePort()` / `get string hostHeader()` | scheme 默认端口（http / ws=80，https / wss=443）/ Host 请求头（非默认端口拼 host:port） |
+| `get bool isHttp()` / `get bool isHttps()` / `get bool isWs()` / `get bool isWss()` | scheme 判别（忽略大小写） |
 | `static bool eqFold( string a, string b )` / `static Int32 fold( Int32 c )` | ASCII 忽略大小写比较 / 小写折叠 |
+
+### Net.WebSocketClient（高层门面，详见 §11.1）
+
+| 方法 / 字段 | 说明 |
+|---|---|
+| `WebSocketClient connect( string url ) throws` | 建连 + 握手 + 启动事件循环协程（返回 this）；握手失败原地抛；重复 connect 拒绝（重连 = 新建实例） |
+| `Function onOpen` / `Function onMessage` / `Function onClose` / `Function onError` | 四事件回调（连接前赋值）：握手完成 / 每条消息（用完 `release()`）/ 收尾（info 可 null）/ 事件循环异常 |
+| `void sendText( string ) throws` / `void sendBinary( ByteBuffer / UInt8Array ) throws` / `void sendPing() throws` | 发送族（未连接抛 `WsError.Closed`） |
+| `void close()` / `void close( Int32 code, string reason )` | 优雅关闭（发 Close + 超时看门狗；不阻塞，收尾触发 `onClose`） |
+| `void abort()` | 强制立即关闭（不等回显） |
+| `void waitClosed()` | 等事件循环结束（onClose 已送达） |
+| `get WsState state()` / `get bool isOpen()` | 连接态（未连接 = Closed）/ 是否 Open |
+| `get WsCloseInfo closeInfo()` / `get string protocol()` | 关闭协商信息 / 选定子协议（未连接 null / ""） |
+| `protocols / caPem / handshakeTimeoutMs / maxMessageSize / autoPong / closeTimeoutMs` | 配置字段（语义同 `WsOptions` + 优雅关闭超时默认 5000ms） |
+
+### Net.WebSocketStream / WsMessage / WsCloseInfo / WsOptions（详见 §11.2~11.9）
+
+| 方法 / 字段 | 说明 |
+|---|---|
+| `static WebSocketStream connect( string url ) throws` | 客户端握手（10s 超时；ws=TCP / wss=TLS） |
+| `static WebSocketStream connect( string url, WsOptions opt ) throws` | 带配置握手 |
+| `static Task connectAsync( string url )` / `static Task connectAsync( string url, WsOptions opt )` | 异步握手（Task 结果为 WebSocketStream） |
+| `static WebSocketStream accept( TcpStream raw ) throws` | 服务端握手（raw 已完成 TCP accept） |
+| `static WebSocketStream accept( TcpStream raw, WsOptions opt ) throws` | 带配置服务端握手 |
+| `WsMessage receive() throws` | 挂起收一条完整消息（自动应答 Ping；连接关闭返回 null） |
+| `Stream<WsMessage> messages()` | 消息流形态（`each` 消费；关闭后自然结束） |
+| `void sendText( string text ) throws` / `void sendBinary( ByteBuffer ) throws` / `void sendBinary( UInt8Array ) throws` | 发文本 / 二进制消息（自动分片按 maxMessageSize） |
+| `void sendPing() throws` / `void sendPong() throws` | 心跳控制帧（负载 0 字节） |
+| `void sendClose() throws` / `void sendClose( Int32 code, string reason ) throws` | 主动关闭（发 Close 帧） |
+| `override void close() throws` | 发 Close 并关底层（幂等；closeInfo 置 wasClean） |
+| `get WsState state()` / `get WsCloseInfo closeInfo()` / `get string protocol()` / `get bool isClient()` | 连接态（Connecting/Open/Closed）/ 关闭协商结果 / 选定子协议 / 角色 |
+| `WsOpCode op` / `ByteBuffer payload` / `get Int32 size()` | WsMessage 三属性（op：Text/Binary/Close/Ping/Pong） |
+| `Int32 code` / `string reason` / `bool wasClean` | WsCloseInfo 三属性（code：1000 正常关闭；1005 = 无码） |
+| `string protocols` / `Int32 maxMessageSize` / `Int32 handshakeTimeoutMs` / `bool autoPong` / `string caPem` | WsOptions 五字段（子协议列表逗号分隔 / 重组上限默认 16 MiB / 握手超时默认 10s / 自动应答 Ping 默认开 / wss CA 空为跳过验证） |
 
 ### Net.HttpClient / HttpRequest / HttpResponse / HttpHeaders（详见 §10）
 
@@ -842,7 +1139,7 @@ function ioReader = function( Net.TcpStream c )
 
 ---
 
-## 15. 限制与已知偏差（必读）
+## 16. 限制与已知偏差（必读）
 
 | 事项 | 说明 |
 |---|---|
@@ -854,8 +1151,8 @@ function ioReader = function( Net.TcpStream c )
 | **UdpStream read 截断** | 超出 dst 容量的报文尾部由 C 侧丢弃（无粘连，也不报错） |
 | **TLS 已落地（Phase 3 Stage A）** | `TlsStream.sl`（§9）：mbedTLS 3.6.7 源码直编；支持 TLS 1.2 / 1.3（1.3 仅 ephemeral 密钥交换模式）；`caPem` 为空 = 跳过证书链验证（仅自签 / 测试环境使用，生产必须显式 CA）；证书 / 私钥仅支持 PEM 格式；无 ALPN；服务端不开会话票据（客户端可恢复） |
 | **HTTP 客户端已落地（Phase 3 Stage B）** | `Uri.sl` / `HttpClient.sl`（§10）：HTTP/1.1 客户端（GET / POST / PUT / DELETE / HEAD，http / https，body 三态：Content-Length / chunked / EOF），纯 SL 实现。**每请求一连接**（自动 `Connection: close`，无连接复用 / keep-alive / pipeline）；无重定向跟随、无 cookie / proxy / gzip 解压；`HttpRequest.method` 为 `Net.HttpMethod` 枚举（Get/Post/Put/Delete/Head）；Uri 不支持 userinfo / IPv6 字面量 / percent-encoding / fragment；域名解析仍为同步 getaddrinfo（R-3，Phase 2 异步化） |
-| **WebSocket / HTTP 服务端未落地** | `Websocket.sl` / `Route.sl` / `IpProtocal.sl` 维持原状（Phase 3 后续） |
-| **网络流不可跨 isolate** | `TcpStream` / `TlsStream` / `UdpStream` / `Channel` / `Task` 均不可 Sendable（§13） |
+| **WebSocket 已落地（Phase 3 Stage C）** | `Websocket.sl`（§11）：RFC 6455 客户端 + 服务端（握手 / 帧编解码 / 分片重组 / 掩码 / 控制帧 / 关闭协商），ws / wss，纯 SL 协议层 + 两个系统调用（`SystemSha1` / `SystemRandomFill`）；消费三形态——`WebSocketClient` 事件门面（onOpen / onMessage / onClose / onError，§11.1）/ `receive`（单条挂起）/ `messages()`（Stream 消费）；事件循环协程内不自动重连（重连 = 新建 WebSocketClient）；**无 permessage-deflate 压缩扩展**；wss 依赖 `TlsStream`（caPem 空 = 跳过验证）；`Sha1.sl` 为根级类（同 Base64）。HTTP 服务端（`Route.sl` / `IpProtocal.sl`）仍未落地 |
+| **网络流不可跨 isolate** | `TcpStream` / `TlsStream` / `UdpStream` / `WebSocketStream` / `Channel` / `Task` 均不可 Sendable（§14） |
 | **M:1 协作调度** | 单 VM 内协程为协作式（让出点推进）；网络 IO 挂起不占线程，但 CPU 密集协程需手动让出（`Coroutine.yieldNow`） |
 | **root 挂起** | root 协程可挂起（delay / 网络 IO 均安全）；但 root 返回后若仍有挂起协程，仅网络等待类由守卫保活到就绪（NetTest B3） |
 | **onConnection 不返回** | 内部无限 accept 循环，须放进独立协程调用 |

@@ -29,6 +29,9 @@ Sqlite3Test
 
         var cursor = conn.cursor()
 
+        # 建表（ttest 资源文件为空库，test1 必须先建）
+        cursor.execute("CREATE TABLE IF NOT EXISTS test1 (uid INTEGER, name TEXT)")
+
         # 清空表数据
         cursor.execute("DELETE FROM test1")
         Console.println("清空表数据，影响行数: " + cursor.changes())

@@ -303,6 +303,17 @@ namespace SimpleLanguage.Compile
 
                 if (curNode.nodeType == ENodeType.Comment)
                 {
+                    if (condition != null
+                        && condition.isFirstKey
+                        && keynodeStruct.keyNode == null
+                        && keynodeStruct.tokenType == ETokenType.None)
+                    {
+                        // follow-key 探测（if/elif/else、try/catch/finally）时跳过行注释：
+                        // 词法层行注释会连 '\n' 一起消费，注释与下一行关键字之间无 LineEnd，
+                        // 注释成为唯一分隔 —— 若此处 break，'}' 块后隔注释行的 else/elif/catch
+                        // 将与主键失配、整块被静默丢弃（镜像下方 LineEnd 分支的探测跳过）
+                        continue;
+                    }
                     index += AttachTrailingBraceNode(pnode, tCurIndex, keynodeStruct);
                     break;
                 }
