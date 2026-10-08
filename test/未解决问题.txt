@@ -1,17 +1,12 @@
 函数名称和类名冲突时候的处理  
 
-编码相关的
-Websocket相关接口  mqtt协议
-RegExp
-
 TankGame.sl 引入Math类。把一些 二维的都使用Int32_2 Int32_3
 
 1. 接入 quickjs 
+2. nodejs的接入 v8js
 2. 接入python
 3. 接入java
-4. 接一个c
 5. 接一个asm 
-6. nodejs的接入 v8js
 
 改二进制的大工程
 

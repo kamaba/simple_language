@@ -33,6 +33,7 @@ Project
         MiTest.fun()
         AttributeExcludeTest.fun()
         AttributeRuntimeTest.fun()
+        MqttTest.fun()
     }
     CompileBefore()
     {

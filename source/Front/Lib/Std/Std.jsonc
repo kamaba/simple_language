@@ -44,6 +44,7 @@
       { "path": "Net/TlsStream.sl", "group": "std", "tag": "net", "ignore": false, "priority": 0 },
       { "path": "Net/Uri.sl", "group": "std", "tag": "net", "ignore": false, "priority": 0 },
       { "path": "Net/Websocket.sl", "group": "std", "tag": "net", "ignore": false, "priority": 0 },
+      { "path": "Net/Mqtt.sl", "group": "std", "tag": "net", "ignore": false, "priority": 0 },
       { "path": "Component.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
       { "path": "Debug/Log.sl", "group": "std", "tag": "debug", "ignore": false, "priority": 0 },
       { "path": "Debug/Profiling.sl", "group": "std", "tag": "debug", "ignore": false, "priority": 0 },
@@ -159,7 +160,15 @@
                 { "class": "WsMessage" },
                 { "class": "WsCloseInfo" },
                 { "class": "WsOptions" },
-                { "class": "WebSocketStream" }
+                { "class": "WebSocketStream" },
+                { "enum": "MqttError" },
+                { "enum": "MqttQoS" },
+                { "enum": "MqttPacketType" },
+                { "class": "MqttMessage" },
+                { "class": "MqttConnectOptions" },
+                { "class": "MqttCodec" },
+                { "class": "MqttClient" },
+                { "class": "_MqttPacket" }
             ]
       },
       // { "namespace": "Data", "children":
