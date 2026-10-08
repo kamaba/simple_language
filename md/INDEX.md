@@ -1,6 +1,6 @@
 # SimpleLanguage 文档总索引
 
-本页按**主题**汇总仓库内 Markdown，路径以仓库根目录为基准。深入语法细节以 `md/syntax/` 下各章为准；工程与编译以 `md/project/` 与 `md/ai/EXPORT_PATHS.md` 为准。
+本页按**主题**汇总仓库内 Markdown，链接相对于本文件所在 `md/` 目录。深入语法细节以 `md/syntax/` 下各章为准；库使用文档以 `md/lib/` 为准；工程与编译以 `md/project/` 与 `md/ai/EXPORT_PATHS.md` 为准。
 
 ---
 
@@ -29,6 +29,9 @@
 | [project/optimization.md](./project/optimization.md) | **编译优化等级（CLI `-O0..-O3`）**：各等级优化内容（null peephole / 常数融合 store / 小函数自动 inline——O1≤2 / O2≤4 / O3≤7 条）、排除集、与 jsonc `compile.optimize` 的关系 |
 | [project/environment-guide.md](./project/environment-guide.md) | **Environment 平台环境**：`Environment.*` API（current/probe/Override/env/custom/sys）、`Platform` 定义枚举全表、jsonc `platform` 段全量关键字（require 18 字段 / override / variants）、运行期覆盖四通道 |
 | [project/ffi.md](./project/ffi.md) | **FFI 外部函数接口（已落地）**：普通 FFI 调用、`FFI.Library` / `FFI.StaticLibrary`、`dllImports` 配置、`@DllImport` 与 `@DllStaticImport`(opcode 77)、sig 规则、内部原理 |
+| [project/project-system-method-call-guide.md](./project/project-system-method-call-guide.md) | **System Method Call 绑定指南**：热点方法下沉 CVM 原生实现的完整链路——cvm 扩展 DLL 绑定函数编写、库 jsonc `systemCalls` / `vmDlls` / `dllImports` 声明、VS 工程配置；以 Math 库与 `cvm_math_lib` 为完整范例 |
+| [project/exporter.md](./project/exporter.md) | **AOT Exporter**：项目 IR → LLVM IR 文本（`.ll`）导出（类型映射、对象=运行时不透明指针、指令降级分期），供 LLVM 工具链后续原生编译 |
+| [project/project_arguments.md](./project/project_arguments.md) | InputArgsTest 工程说明：`global._inputArgs`（系统集成的 CLI 程序参数）专用测试用例 |
 | [project/test-guide.md](./project/test-guide.md) | **测试引导**：`test/` 各测试用例集（测什么、代表用例）与 `project/` 各测试宿主工程（默认测试集、C VM / C# VM）对照表、运行方式（VS / dotnet / Debug vs Release） |
 
 ---
@@ -55,6 +58,7 @@
 | [syntax/float8_16.md](./syntax/float8_16.md) | 低精度浮点类型：`Float8`/`Float8_E5M2`/`Float16`/`Float16_Brain` 字面量后缀、存储约定、转换与运算语义 |
 | [syntax/string.md](./syntax/string.md) | 字符串 |
 | [syntax/data.md](./syntax/data.md) | 数据类型 |
+| [syntax/array.md](./syntax/array.md) | 数组 |
 | [syntax/type.md](./syntax/type.md) | 类型 |
 | [syntax/typealias.md](./syntax/typealias.md) | 类型别名 |
 | [syntax/express.md](./syntax/express.md) | 表达式 |
@@ -68,6 +72,7 @@
 | [syntax/if.md](./syntax/if.md) | 条件 |
 | [syntax/switch.md](./syntax/switch.md) | `switch` |
 | [syntax/forwhiledowhile.md](./syntax/forwhiledowhile.md) | 循环 |
+| [syntax/range.md](./syntax/range.md) | 范围 / range |
 | [syntax/labelgoto.md](./syntax/labelgoto.md) | 标签与 goto |
 | [syntax/try.md](./syntax/try.md) | 异常处理（throw / throws / try / catch / checked） |
 
@@ -80,6 +85,7 @@
 | [syntax/interface.md](./syntax/interface.md) | 接口 |
 | [syntax/extend.md](./syntax/extend.md) | 继承 |
 | [syntax/attribute.md](./syntax/attribute.md) | 特性 / 注解（四时点 PreCompile/Compiling/Preload/Runtime × 五注册点 Class/Data/Enum/Field/Method；`_enter_`/`_exit_` 触发 + 三查询 API；内建全景与旧语法迁移） |
+| [../../csimple_lang/md/design/ATTRIBUTE_DESIGN.md](../../csimple_lang/md/design/ATTRIBUTE_DESIGN.md) | attribute 系统四时点重构（C VM 侧设计真源：PreCompile/Compiling/Preload/Runtime × 五注册点 × enter/exit；内建迁移映射 + P1..P8 分期） |
 | [syntax/function.md](./syntax/function.md) | 方法 / 函数 |
 | [syntax/enum.md](./syntax/enum.md) | 枚举 |
 
@@ -89,69 +95,97 @@
 |------|------|
 | [syntax/template.md](./syntax/template.md) | 模板与泛型 |
 | [syntax/marco.md](./syntax/marco.md) | 宏 |
-| [syntax/virtualmachine.md](./syntax/virtualmachine.md) | 虚拟机相关语法与概念 |
-| [syntax/exporter.md](./syntax/exporter.md) | 导出 / IR 侧说明 |
 | [syntax/coroutine.md](./syntax/coroutine.md) | 协程（Coroutine）与通道（Channel） |
 | [syntax/isolate.md](./syntax/isolate.md) | 隔离岛（Isolate）：跨堆并行、端口消息通信（深拷贝）、生命周期控制、TransferableData 零拷贝转移 |
 | [syntax/inline_lambda.md](./syntax/inline_lambda.md) | 内联体：`=>` 内联表达式（调用点编译期就地展开、参数可选类型标注 + 调用点类型校验）+ `inline` 方法修饰符（语义层普通函数规则、IR 层体替换无 Call、实例隐含 final、Result 兜底）、禁止项与错误码（spawn/isolate/await/try/递归/跨边界/类型不匹配 21456/体超限 21453/throws 互斥 21457/初始化器禁调 21458）、与 function 闭包边界 |
-| [syntax/csharp_mono.md](./syntax/csharp_mono.md) | `@csharp_mono(){}` 内联 C# 块：`<-` 通道（仅块体头区/尾区）、小括号参数占位校验、csharp_mono 插件 frontendLibs 解析器（SLLabelParser）生成 C# `Main`（import 提升 using）、Front 语言无关圈地（AtSignLabelSourceRewriter）+ 脱糖哨兵、IR 拦截发射 `OpCode_CallAtSignLabel(124)`、导出期 `atSignLabel[]` 表 + csc 融合 `SLAtSign.dll`、CVM 装配绑定 + 运行期插件 labelExec（LID 20054-20057 / 22135-22138；CVM -86~-89） |
-
-### 3.6 集合与容器（`md/syntax/contraint/`）
-
-| 文档 | 说明 |
-|------|------|
-| [syntax/array.md](./syntax/array.md) | 数组 |
-| [syntax/contraint/list.md](./syntax/contraint/list.md) | List |
-| [syntax/contraint/set.md](./syntax/contraint/set.md) | Set |
-| [syntax/contraint/map.md](./syntax/contraint/map.md) | Map |
-| [syntax/contraint/tuple.md](./syntax/contraint/tuple.md) | Tuple |
-| [syntax/contraint/queue.md](./syntax/contraint/queue.md) | Queue |
-| [syntax/contraint/stack.md](./syntax/contraint/stack.md) | Stack |
-
-### 3.7 标准库与其它
-
-| 文档 | 说明 |
-|------|------|
-| [syntax/std/env.md](./syntax/std/env.md) | 环境相关 |
-| [syntax/std/Component.md](./syntax/std/Component.md) | Component 组件基类（组件即节点组合树：查询 / 门控 / 消息） |
-| [syntax/std/Sqlite.md](./syntax/std/Sqlite.md) | Sqlite 数据库（DB.Sqlite3） |
-| [../../../csimple_lang/md/design/PROCESS_DESIGN.md](../../../csimple_lang/md/design/PROCESS_DESIGN.md) | Std.OS.Process 外部进程执行（run/start/wait、stdio 三态管道、kill/terminate、环境变量；SL API + C 层设计） |
-| [../../../csimple_lang/md/design/ATTRIBUTE_DESIGN.md](../../../csimple_lang/md/design/ATTRIBUTE_DESIGN.md) | attribute 系统四时点重构（PreCompile/Compiling/Preload/Runtime × 五注册点 × enter/exit；内建迁移映射 + P1..P8 分期） |
-| [syntax/net.md](./syntax/net.md) | **网络编程 Net**（`namespace Net`）：Tcp/TcpServer/Udp/TcpStream/UdpStream 协程化挂起读写（Option A：未就绪挂起→IO 线程 poll 唤醒→指令重执行）、connectTimeout 连接超时、shutdown 半关闭、UdpDatagram 数据报与 datagrams() 元素流、**TlsStream/TlsOptions TLS 加密流（mbedTLS 3.6.7：wrap/accept 装饰 TcpStream，显式 CA 可选跳过验证，TLS 1.2/1.3）**、**Uri/HttpClient HTTP/1.1 客户端（GET/POST/PUT/DELETE/HEAD、http/https、body 三态：Content-Length/chunked/EOF，纯 SL 实现无新增系统调用）**、**WebSocketClient/WebSocketStream（RFC 6455：事件回调门面 onOpen/onMessage/onClose/onError + 底层消息流 receive/messages()，ws/wss，握手/分片/掩码/关闭协商）**、NetError/TlsError/HttpError/WsError 错误码、LengthPrefix 分帧组合、与协程/isolate 的关系、限制与偏差 |
-| [../../../csimple_lang/md/design/NET_DESIGN.md](../../../csimple_lang/md/design/NET_DESIGN.md) | Net 网络层设计**唯一真源**（Tcp/Udp/NetStream：非阻塞 fd + 单 IO 线程 poll + Option A 挂起；SL API + C 层三层架构 + syscall 清单 + 分期路线）；历史版 NETSTREAM_DESIGN.md 不再更新，仅作快照参考 |
-| [syntax/core/Lz4.md](./syntax/core/Lz4.md) | Lz4 块压缩（Core 库：自包含容器格式 + ByteBuffer 底座） |
-| [syntax/core/ProtocalBuffers.md](./syntax/core/ProtocalBuffers.md) | ProtocalBuffers / protobuf 线格式编解码（Core 库：PbWriter / PbReader，proto3 兼容子集） |
-| [syntax/core/Stream.md](./syntax/core/Stream.md) | Stream 元素流（Core 库：Stream\<T\>/Controller/Transformer，推/拉双模 + 背压） |
 | [syntax/system_method.md](./syntax/system_method.md) | 系统方法 |
-| [syntax/range.md](./syntax/range.md) | 范围 / range |
 | [syntax/result.md](./syntax/result.md) | Result 等结果类型 |
 
 ---
 
-## 4. 虚拟机与运行时
+## 4. 库文档（`md/lib/`）
+
+> 2026-10-08 结构调整：原 `syntax/std`、`syntax/core`、`syntax/contraint` 三个子目录整体迁入 `md/lib/`，按 Contraint / Core / Math / Std / AtSign 分组。
+
+### 4.1 容器（`lib/Contraint/`）
+
+| 文档 | 说明 |
+|------|------|
+| [lib/Contraint/List.md](./lib/Contraint/List.md) | `List<T>` 泛型列表 |
+| [lib/Contraint/Map.md](./lib/Contraint/Map.md) | `Map<K,V>` 键值映射 |
+| [lib/Contraint/HasSet.md](./lib/Contraint/HasSet.md) | `Set<T>` 无序不重复集合（仿 C# HashSet；哈希桶 `_buckets`+`_entries`，查找/插入/删除/集合运算经 `SystemSet*` 下沉 CVM `set_system_method.c`） |
+| [lib/Contraint/Tuple.md](./lib/Contraint/Tuple.md) | `Tuple` 元组 |
+| [lib/Contraint/Queue.md](./lib/Contraint/Queue.md) | `Queue` 队列 |
+| [lib/Contraint/Stack.md](./lib/Contraint/Stack.md) | `Stack` 栈 |
+| [lib/Contraint/LinkedList.md](./lib/Contraint/LinkedList.md) | `Std.LinkedList<T>` 双向链表（SL/C 双层架构：SL 层 Node 创建与泛型实例化，C 层指针操作与遍历） |
+
+### 4.2 Core（`lib/Core/`）
+
+| 文档 | 说明 |
+|------|------|
+| [lib/Core/Lz4.md](./lib/Core/Lz4.md) | Lz4 块压缩（Core 库：自包含容器格式 + ByteBuffer 底座） |
+| [lib/Core/ProtocalBuffers.md](./lib/Core/ProtocalBuffers.md) | ProtocalBuffers protobuf 线格式编解码（PbWriter/PbReader，proto3 兼容子集）+ ProtoCodec\<T\> 消息对象编解码与 LengthPrefix 分帧流式三件套（decodeStream/encodeSink/bindStream） |
+| [lib/Core/Stream.md](./lib/Core/Stream.md) | Stream 元素流（Core 库：Stream\<T\>/Controller/Transformer，推/拉双模 + 背压） |
+
+### 4.3 Math（`lib/Math/`）
+
+| 文档 | 说明 |
+|------|------|
+| [lib/Math/Math.md](./lib/Math/Math.md) | **Math 数学库总览**：三精度数学函数（Mathd/Mathf/Mathh）、向量与矩阵值类型、大数与数论（BigNumber/BigDecimal/Factor）三大块 |
+| [lib/Math/Math-Functions.md](./lib/Math/Math-Functions.md) | Mathd(Float64)/Mathf(Float32)/Mathh(Float16) 数学函数：同一 API 面三精度平行；Mathd 经 FFI 直调 `math_lib.dll`（回退纯 SL 泰勒级数/牛顿迭代），Mathf 委托 Mathd 中转，Mathh 委托 Mathf |
+| [lib/Math/Math-BigNumbers.md](./lib/Math/Math-BigNumbers.md) | BigNumber(任意精度有符号整数，别名 BigInt)/BigDecimal(定点小数 unscaled/10^scale)/Factor(数论工具 18 静态方法)，纯 SL 实现 |
+| [lib/Math/Math-Vectors.md](./lib/Math/Math-Vectors.md) | 向量值类型：2/3/4 维 × Float16/Float32/Float64 三精度共 9 类，public 字段 + 运算符重载，@Nickname 多别名（Vec2/float3…） |
+| [lib/Math/Math-Matrices.md](./lib/Math/Math-Matrices.md) | 固定尺寸矩阵值类型：3x3/4x4 × 三精度共 6 类，行主序 `m{row}{col}` 字段，乘/加/转置/行列式/求逆等经 systemCalls 下沉 cvm（`math_lib.dll` 按对象内存直读） |
+| [lib/Math/Matrix.md](./lib/Math/Matrix.md) | `Math.Matrix`（别名 Mat）通用动态矩阵：任意维度、`Array<Float32>` 行主序，与固定尺寸值类型互补 |
+
+### 4.4 Std（`lib/Std/`）
+
+| 文档 | 说明 |
+|------|------|
+| [lib/Std/Env.md](./lib/Std/Env.md) | 环境相关 |
+| [lib/Std/Component.md](./lib/Std/Component.md) | Component 组件基类（组件即节点组合树：查询 / 门控 / 消息） |
+| [lib/Std/Sqlite.md](./lib/Std/Sqlite.md) | Sqlite 数据库（DB.Sqlite3） |
+| [lib/Std/net/Net.md](./lib/Std/net/Net.md) | **网络编程 Net 总览**（`namespace Net`）：Tcp/TcpServer/Udp/TcpStream/UdpStream 协程化挂起读写（Option A：未就绪挂起→IO 线程 poll 唤醒→指令重执行）、connectTimeout 连接超时、shutdown 半关闭、UdpDatagram 数据报与 datagrams() 元素流、**TlsStream/TlsOptions TLS 加密流（mbedTLS 3.6.7：wrap/accept 装饰 TcpStream，显式 CA 可选跳过验证，TLS 1.2/1.3）**、**Uri/HttpClient HTTP/1.1 客户端（GET/POST/PUT/DELETE/HEAD、http/https、body 三态：Content-Length/chunked/EOF，纯 SL 实现无新增系统调用）**、**WebSocketClient/WebSocketStream（RFC 6455：事件回调门面 onOpen/onMessage/onClose/onError + 底层消息流 receive/messages()，ws/wss，握手/分片/掩码/关闭协商）**、NetError/TlsError/HttpError/WsError 错误码、LengthPrefix 分帧组合、与协程/isolate 的关系、限制与偏差 |
+| [lib/Std/net/Tcp.md](./lib/Std/net/Tcp.md) | Net.Tcp：TCP 客户端与服务端（Tcp/TcpServer/TcpSocket：connectTimeoutMs 连接超时、shutdown 半关闭、挂起式读写、NetError 错误码） |
+| [lib/Std/net/Udp.md](./lib/Std/net/Udp.md) | Net.Udp：UDP 数据报（UdpSocket/Udp/UdpDatagram、datagrams() 元素流、UdpStream 流式封装） |
+| [lib/Std/net/StreamImplent.md](./lib/Std/net/StreamImplent.md) | Std/Net 实现的流体系（L0 ByteStream 契约、MemoryStream、NetStream/TcpStream/UdpStream 挂起式读写、TlsStream/TlsOptions TLS 加密流、L1 Stream\<T\> 桥接、L2 Codec；与 `lib/Core/Stream.md` 元素流专题相互区分） |
+| [lib/Std/net/Http.md](./lib/Std/net/Http.md) | Net.Http：HTTP/1.1 客户端（HttpClient 静态便捷/实例 send、HttpMethod、body 三态 Content-Length/chunked/EOF、httpGetAsync+await 异步、Uri 解析） |
+| [lib/Std/net/Websocket.md](./lib/Std/net/Websocket.md) | Net.WebSocket：RFC 6455（WebSocketStream 底层消息流 + WebSocketClient 事件回调门面 onOpen/onMessage/onClose/onError；握手/分片重组/掩码/关闭协商、ws/wss） |
+| [lib/Std/net/Mqtt.md](./lib/Std/net/Mqtt.md) | Net.Mqtt：MQTT 3.1.1 客户端使用说明（connect/subscribe/publish/QoS、事件回调） |
+| [../../csimple_lang/md/design/PROCESS_DESIGN.md](../../csimple_lang/md/design/PROCESS_DESIGN.md) | Std.OS.Process 外部进程执行（run/start/wait、stdio 三态管道、kill/terminate、环境变量；SL API + C 层设计） |
+| [../../csimple_lang/md/design/NET_DESIGN.md](../../csimple_lang/md/design/NET_DESIGN.md) | Net 网络层设计**唯一真源**（Tcp/Udp/NetStream：非阻塞 fd + 单 IO 线程 poll + Option A 挂起；SL API + C 层三层架构 + syscall 清单 + 分期路线）；历史版 NETSTREAM_DESIGN.md 不再更新，仅作快照参考 |
+
+### 4.5 AtSign（`lib/AtSign/`）
+
+| 文档 | 说明 |
+|------|------|
+| [lib/AtSign/CSharp_Mono.md](./lib/AtSign/CSharp_Mono.md) | `@csharp_mono(){}` 内联 C# 块：`<-` 通道（仅块体头区/尾区）、小括号参数占位校验、csharp_mono 插件 frontendLibs 解析器（SLLabelParser）生成 C# `Main`（import 提升 using）、Front 语言无关圈地（AtSignLabelSourceRewriter）+ 脱糖哨兵、IR 拦截发射 `OpCode_CallAtSignLabel(124)`、导出期 `atSignLabel[]` 表 + csc 融合 `SLAtSign.dll`、CVM 装配绑定 + 运行期插件 labelExec（LID 20054-20057 / 22135-22138；CVM -86~-89） |
+
+---
+
+## 5. 虚拟机与运行时（`md/vm/`）
 
 | 文档 | 说明 |
 |------|------|
 | [vm/VM_FileRoles.md](./vm/VM_FileRoles.md) | VM 侧文件角色说明 |
+| [vm/VirtualMachine.md](./vm/VirtualMachine.md) | 虚拟机相关语法与概念（IR 语句） |
 
 ---
 
-## 5. 日志
+## 6. 日志（`md/Log/`）
 
 | 文档 | 说明 |
 |------|------|
-| [log/log-system-guide.md](./log/log-system-guide.md) | 日志系统与诊断 |
-| [log/log-debug-usage.md](./log/log-debug-usage.md) | **SLang.Log/Logger/Profiling/Trace/Monitor 使用指南**：级别/文件落盘/显示配置、`Log.fatal` VM 硬停语义、调试工作流、测试用例（MonitorTest/LogTest/LogFatalTest） |
+| [Log/log-system-guide.md](./Log/log-system-guide.md) | 日志系统与诊断 |
+| [Log/log-debug-usage.md](./Log/log-debug-usage.md) | **SLang.Log/Logger/Profiling/Trace/Monitor 使用指南**：级别/文件落盘/显示配置、`Log.fatal` VM 硬停语义、调试工作流、测试用例（MonitorTest/LogTest/LogFatalTest） |
 
----
-
-### 5.1 设计与规划
+### 6.1 设计与规划
 
 > `md/design/` 目录已于 2026-09-13 整体删除，历史设计文档（MLIR_AOT / TENSOR / STREAM / COROUTINE / ISOLATE / ffi 等 13 篇）不再随仓库维护。落地现状以源码与 `md/syntax/` 为准；三期 MLIR/AOT 方向仅存 `source/Front/Export/MLIR/MLIR_AOT_实现与待办.md`。
 
 ---
 
-## 6. AI 协作与仓库维护
+## 7. AI 协作与仓库维护
 
 | 文档 | 说明 |
 |------|------|
@@ -165,10 +199,12 @@
 
 ---
 
-## 7. 其它根级文档
+## 8. 其它根级文档
 
 | 文档 | 说明 |
 |------|------|
+| [GUIDE.md](./GUIDE.md) | MD 文档引导（入口说明，指向本索引） |
+| [CLI.md](./CLI.md) | CLI 说明（`cx` 命令体系） |
 | [code.md](./code.md) | 代码相关说明 |
 | [SL语法与编码规范总表.md](./SL语法与编码规范总表.md) | **语法与编码规范单点引用总表**（由 syntax/ 48 篇 + code.md 提炼去重）：编码规范（命名/对齐/注释/提交/Core 库）、关键字总表（词法保留 + 非词法保留 + 类型词）、语法糖总表、语法速查 21 节（声明与语句格式）、Core 类型清单、16 条已知坑 |
 | [../README_CN.md](../README_CN.md) / [../README.md](../README.md) | 项目主自述（中/英） |
@@ -179,4 +215,4 @@
 
 ---
 
-**维护提示**：新增语法章节时请在本文件对应小节补链；避免使用已不存在的文件名（旧索引中的 `ranage.md` / `module.md` 等已按实际文件修正；`num.md` 已并入 `number.md`）。
+**维护提示**：新增章节时请在本文件对应小节补链；目录结构调整后请同步修正本索引（2026-10-08：`syntax/std|core|contraint` → `md/lib/`；`syntax/virtualmachine.md` → `vm/VirtualMachine.md`；`syntax/exporter.md` → `project/exporter.md`；`syntax/csharp_mono.md` → `lib/AtSign/CSharp_Mono.md`；日志目录为 `Log/`；2026-10-08 晚：`net/Stream.md` → `net/StreamImplent.md`（Std 流实现专题，与 Core/Stream.md 元素流区分）、`net/protocalbuffer.md` 删除（ProtoCodec\<T\> 独有内容并入 `lib/Core/ProtocalBuffers.md` §7））。避免使用已不存在的文件名（旧索引中的 `ranage.md` / `module.md` 等已按实际文件修正；`num.md` 已并入 `number.md`）。

@@ -3,7 +3,7 @@
 > **本文档以「当前实现」为准**，对应 `source/Front/Lib/Std/Net/`（`TcpSocket.sl` / `UdpSocket.sl` / `NetStream.sl` / `TlsStream.sl` / `Uri.sl` / `HttpClient.sl` / `Websocket.sl`）
 > 与 `test/NetTest/`（A~L 组验收用例——含 T 超时 / K TLS / L HTTP——全部通过）、`test/Other/WebsocketTest/`（WebSocket 验收用例）。
 > 设计规格见 `csimple_lang/md/design/NET_DESIGN.md`（唯一真源）；差异与偏差见本文 §16。
-> 相关文档：`md/syntax/coroutine.md`（协程——网络挂起的载体）、`md/syntax/core/Stream.md`（Stream 元素流）、
+> 相关文档：`md/syntax/coroutine.md`（协程——网络挂起的载体）、`md/lib/Core/Stream.md`（Stream 元素流）、
 > `md/syntax/string.md` / ByteBuffer 用法见 `Core/IO/ByteBuffer.sl`。
 
 ---

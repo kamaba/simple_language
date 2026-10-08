@@ -12,7 +12,7 @@ Stream<T> / StreamController<T>       （SL，Lib/Core/IO/Stream.sl）
   └─ ByteStream × Codec<S,T>           fromByteStream：L0×L2×L1 三层桥接（decode 方向）
 ```
 
-配套：`syntax/core/Lz4.md`（L0 压缩原语）、`Core/IO/ByteStream.sl` 与 `Core/IO/Codec.sl`（同批 P1 交付，见 §2.4）。设计文档 `md/design/STREAM_DESIGN.md` 已随 `md/design/` 目录移除（2026-09-13），语义以本文与源码为准。
+配套：`lib/Core/Lz4.md`（L0 压缩原语）、`Core/IO/ByteStream.sl` 与 `Core/IO/Codec.sl`（同批 P1 交付，见 §2.4）。设计文档 `md/design/STREAM_DESIGN.md` 已随 `md/design/` 目录移除（2026-09-13），语义以本文与源码为准。
 
 ---
 
