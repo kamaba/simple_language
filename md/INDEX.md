@@ -31,6 +31,7 @@
 | [project/ffi.md](./project/ffi.md) | **FFI 外部函数接口（已落地）**：普通 FFI 调用、`FFI.Library` / `FFI.StaticLibrary`、`dllImports` 配置、`@DllImport` 与 `@DllStaticImport`(opcode 77)、sig 规则、内部原理 |
 | [project/project-system-method-call-guide.md](./project/project-system-method-call-guide.md) | **System Method Call 绑定指南**：热点方法下沉 CVM 原生实现的完整链路——cvm 扩展 DLL 绑定函数编写、库 jsonc `systemCalls` / `vmDlls` / `dllImports` 声明、VS 工程配置；以 Math 库与 `cvm_math_lib` 为完整范例 |
 | [project/exporter.md](./project/exporter.md) | **AOT Exporter**：项目 IR → LLVM IR 文本（`.ll`）导出（类型映射、对象=运行时不透明指针、指令降级分期），供 LLVM 工具链后续原生编译 |
+| [../../csimple_lang/md/design/SLB_DESIGN.md](../../csimple_lang/md/design/SLB_DESIGN.md) | **SLB 二进制模块包格式**（设计真源）：`export.format = json/binary` 二选一导出 `.module.slb`、SLB 容器 v1.0 字节级规范（头部/段表/池化/zlib 压缩/四道校验门）、P0-P5 分期与执行记录、SLBRoundTrip 工具用法 |
 | [project/project_arguments.md](./project/project_arguments.md) | InputArgsTest 工程说明：`global._inputArgs`（系统集成的 CLI 程序参数）专用测试用例 |
 | [project/test-guide.md](./project/test-guide.md) | **测试引导**：`test/` 各测试用例集（测什么、代表用例）与 `project/` 各测试宿主工程（默认测试集、C VM / C# VM）对照表、运行方式（VS / dotnet / Debug vs Release） |
 

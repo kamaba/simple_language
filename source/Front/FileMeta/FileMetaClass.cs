@@ -297,8 +297,7 @@ namespace SimpleLanguage.Compile
                     if (token.type == ETokenType.Public
                         || token.type == ETokenType.Private
                         || token.type == ETokenType.Projected
-                        || token.type == ETokenType.Extern
-                        || token.type == ETokenType.Export)
+                        || token.type == ETokenType.Extern)
                     {
                         if (permissionToken == null)
                         {

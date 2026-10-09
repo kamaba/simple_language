@@ -48,7 +48,6 @@ namespace SimpleLanguage.Compile
             switch( permission )
             {
                 // export 关键字已移除：类级显式导出标记由 extern 接替（extern class → EPermission.Export）
-                case EPermission.Export: return "extern";
                 case EPermission.Public: return "public";
                 case EPermission.Protected: return "protected";
                 case EPermission.Private: return "private";

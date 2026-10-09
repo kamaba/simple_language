@@ -142,6 +142,8 @@ namespace SimpleLanguage.Logging
         ProjectPlatformRequireValueInvalid = 20036,
         ProjectPlatformAotFeatureConflict = 20037,
         ProjectExportPublicExportInvalid = 20038,
+        ProjectExportFormatInvalid = 20039,
+        ProjectExportBinaryInMemoryUnsupported = 20040,
         // ---- Process 模块 ----
         // SystemMethodCall
         ProcessSystemMethodCallNotFoundImportSystem = 20051,

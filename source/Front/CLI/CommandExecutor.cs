@@ -85,6 +85,7 @@ Options:
   -o, --output <dir>      Output directory
   -e ir, --export ir      Export IR during compile
   --in-memory             Keep the exported package JSON in memory (no module.json write)
+  --format <json|binary>  Export format override (default json; binary = .module.slb)
   -t, --test              Run in test mode
   --release              Build in release mode
   --debug                Build in debug mode (default)
@@ -125,6 +126,7 @@ Examples:
                 // 导出阶段：前置阶段(RefModule/File/MetaCore/IR)全部成功才会执行，否则被跳过
                 // --in-memory: 导出阶段改为内存构建 package JSON（不写 module.json 文件）
                 ExportLangManager.MemoryExportMode = inputArgs.inMemoryExport;
+                ApplyFormatOverride(inputArgs);
                 ProcessManager.instance.RunPhase(ECompilePhase.Export);
             }
 
@@ -148,6 +150,7 @@ Examples:
                 // 导出阶段：前置阶段(RefModule/File/MetaCore/IR)全部成功才会执行，否则被跳过
                 // --in-memory: 导出阶段改为内存构建 package JSON（不写 module.json 文件）
                 ExportLangManager.MemoryExportMode = inputArgs.inMemoryExport;
+                ApplyFormatOverride(inputArgs);
                 ProcessManager.instance.RunPhase(ECompilePhase.Export);
             }
 
@@ -169,9 +172,22 @@ Examples:
             // 导出阶段：前置阶段(RefModule/File/MetaCore/IR)全部成功才会执行，否则被跳过
             // --in-memory: 导出阶段改为内存构建 package JSON（不写 module.json 文件）
             ExportLangManager.MemoryExportMode = inputArgs.inMemoryExport;
+            ApplyFormatOverride(inputArgs);
             ProcessManager.instance.RunPhase(ECompilePhase.Export);
             Console.WriteLine("Export completed.");
             return true;
+        }
+
+        /// <summary>
+        /// --format &lt;json|binary&gt; 覆盖 jsonc export.format（须在 ProjectManager.Run 加载
+        /// jsonc 之后、导出阶段执行之前调用；非法值由 ExportLangManager 分派时校验报错）。
+        /// </summary>
+        static void ApplyFormatOverride(CommandInputArgs inputArgs)
+        {
+            if (!string.IsNullOrEmpty(inputArgs.exportFormat) && ProjectManager.config?.Export != null)
+            {
+                ProjectManager.config.Export.Format = inputArgs.exportFormat;
+            }
         }
 
         #endregion

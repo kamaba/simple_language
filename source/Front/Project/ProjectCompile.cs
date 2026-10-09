@@ -81,7 +81,7 @@ namespace SimpleLanguage.Project
             {
                 string compilefile = projectName + ".sp";
 
-                var fp = new FileParse(compilefile, new ParseFileParam());
+                var fp = new FileParse(compilefile);
                 fp.structParseComplete = null;
                 fp.buildParseComplete = null;
                 fp.grammerParseComplete = null;
@@ -412,7 +412,7 @@ namespace SimpleLanguage.Project
                 return;
             }
 
-            var fp = new FileParse( path, new ParseFileParam() );
+            var fp = new FileParse( path );
             fp.structParseComplete = null;
             fp.buildParseComplete = null;
             fp.grammerParseComplete = null;

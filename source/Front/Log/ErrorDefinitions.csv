@@ -639,6 +639,8 @@ id,logType,enableAssert,pass,paramCount,domesticTips,zhMessage,,zhFixedTips,enMe
 20036,Error,TRUE,FALSE,4,,"platform.require.{0} 中的 '{1}' 不是合法值；{2}。{3}",,,,
 20037,Error,TRUE,FALSE,3,,"export.aot.features 与 platform.require {0} 矛盾：{1}（features '{2}'）",,,,
 20038,Error,TRUE,FALSE,2,,"export.publicExport '{0}' 不是合法值；可选值：none/public/extern（缺省=public）。{1}",,,,
+20039,Error,TRUE,FALSE,1,,"export.format '{0}' 不是合法值；可选值：json/binary（缺省=json）。",,,,
+20040,Error,TRUE,FALSE,0,,"export.format=binary 与 --in-memory 组合暂不支持（P2 内存直传实现前二进制导出仅落盘）；本次导出已跳过。",,,,
 20051,Error,TRUE,FALSE,0,,"import system method call param type not found! name={}, paramType={}",,,,
 20052,Error,TRUE,FALSE,0,,"import system method call param type not found! name={}, paramType={}",,,,
 20053,Error,TRUE,FALSE,0,,import system method call name had define!,,,,

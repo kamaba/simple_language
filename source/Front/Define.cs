@@ -14,7 +14,6 @@ namespace SimpleLanguage
     public enum EPermission
     {
         Null,
-        Export,
         Public,
         Protected,
         Private,
@@ -209,8 +208,6 @@ namespace SimpleLanguage
         Extern,
         /// <summary> public </summary>
         Public,
-        /// <summary> Export </summary>
-        Export,
         /// <summary> projected </summary>
         Projected,
         /// <summary> private</summary>

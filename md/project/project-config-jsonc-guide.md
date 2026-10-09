@@ -117,6 +117,8 @@
 - `export.outputDir`：导出目录（相对 `.jsonc` 所在目录）。
 - `export.publicExport`：**public 类导出门槛三态**（默认 `public`），见下表。
 - `export.includeMetadata`：是否在 SLIR 包内携带元数据。
+- `export.format`：**导出格式二选一**（默认 `"json"`）——`"json"` = SLIR JSON `<M>.module.json`（全仓现状）；`"binary"` = SLB 二进制 `<M>.module.slb`（规范见 `csimple_lang/md/design/SLB_DESIGN.md`）。一次导出只产出一个文件，两者共用同一份中间数据；非法值报 LID 20039 阻断编译。可被 CLI `--format <json|binary>` 覆盖。
+- `export.binary`：SLB 二进制选项（仅 `format="binary"` 时生效）：`compressed`（默认 `true`，DataArea 整体 zlib 压缩）、`includeDebugInfo`（默认 `true`，P5 瘦身模式预留）、`strictDigest`（默认 `false`，P5 预留）。
 - `export.debugText`：DebugCode 调试快照开关（code/token/node/file/meta/ir），见 `md/ai/DEBUG_WORKFLOW.md`。
 
 ### publicExport 三态

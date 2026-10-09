@@ -9,6 +9,7 @@
 using SimpleLanguage.Export;
 using SimpleLanguage.Export.MLIR;
 using SimpleLanguage.Export.SLIR;
+using SimpleLanguage.Export.SLIR.Binary;
 using SimpleLanguage.IR;
 using SimpleLanguage.Logging;
 using SimpleLanguage.Project;
@@ -77,6 +78,35 @@ namespace SimpleLanguage.ExportLanguage
             // PluginSection.Lib/Libs 供下方 module.json 导出（§4.2/§5.3②）。
             // 先于 SLModulePackageWriter.Write 运行；失败仅记日志不中断导出。
             PluginLibExportManager.Run(outDir);
+
+            // 导出格式二选一（jsonc export.format / CLI --format 覆盖）：
+            // json = SLIR JSON module.json（缺省，全仓现状）；binary = SLB .module.slb
+            //（规范见 csimple_lang/md/design/SLB_DESIGN.md）。两者共用同一份
+            // SLModulePackage 中间数据（Build 一次、双通道投影），没有并存导出。
+            var exportFormat = ProjectManager.config?.Export?.Format;
+            if (string.IsNullOrEmpty(exportFormat))
+                exportFormat = "json";
+            if (!string.Equals(exportFormat, "json", StringComparison.OrdinalIgnoreCase)
+                && !string.Equals(exportFormat, "binary", StringComparison.OrdinalIgnoreCase))
+            {
+                Log.AddProjectLog(LID.ProjectExportFormatInvalid, "", exportFormat);
+                return;
+            }
+
+            if (string.Equals(exportFormat, "binary", StringComparison.OrdinalIgnoreCase))
+            {
+                // P0：二进制导出仅落盘；--in-memory（供宿主机内直传）组合待 P2 实现
+                if (MemoryExportMode)
+                {
+                    Log.AddProjectLog(LID.ProjectExportBinaryInMemoryUnsupported, "");
+                    return;
+                }
+                var binaryPath = Path.Combine(outDir, filePrefix + ".module.slb");
+                var package = SLModulePackageWriter.Build(IRManager.instance, moduleName);
+                SLBWriter.Write(package, binaryPath,
+                    ProjectManager.config?.Export?.Binary?.Compressed ?? true);
+                return;
+            }
 
             // Unified JSON export (VM symmetric)
             string exportIRPath = Path.Combine(outDir, filePrefix + ".module.json");

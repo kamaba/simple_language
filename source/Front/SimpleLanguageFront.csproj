@@ -42,6 +42,11 @@
     <PackageReference Include="System.Diagnostics.Debug" Version="4.3.0" />
   </ItemGroup>
   <ItemGroup>
+    <!-- SLB round-trip 测试工程（tools/SLBRoundTrip）需访问 internal 的
+         SLModulePackageWriter.Read/BuildPackageJson 与 payload converter -->
+    <InternalsVisibleTo Include="SLBRoundTrip" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\..\..\simple_language_plugins\csharp_mono\frontend\SLCSharpMonoFrontend.csproj" />
     <ProjectReference Include="..\..\..\simple_language_plugins\java_hotspot\frontend\SLJavaHotspotFrontend.csproj" />
   </ItemGroup>

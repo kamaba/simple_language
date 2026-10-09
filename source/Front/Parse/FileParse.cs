@@ -15,10 +15,6 @@ using System.Text;
 
 namespace SimpleLanguage.Compile
 {
-    public struct ParseFileParam
-    {
-
-    }
     public class FileParse
 	{
 		public FileMeta file => m_File;
@@ -39,7 +35,7 @@ namespace SimpleLanguage.Compile
 
         FileCompileState m_FileCompileState = new FileCompileState("");
 
-        public FileParse( string path, ParseFileParam param )
+        public FileParse( string path )
         {
             m_FilePath = path;
             m_File = new FileMeta(m_FilePath);

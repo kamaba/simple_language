@@ -373,7 +373,7 @@ namespace SimpleLanguage.Export.SLIR
                 var publicExportMode = ProjectManager.config?.Export.PublicExportMode
                     ?? ProjectConfig.EPublicExportMode.Public;
                 var ownerPerm = c.typeOwner?.permission ?? EPermission.Public;
-                if (ownerPerm != EPermission.Export)
+                if (ownerPerm != EPermission.Extern)
                 {
                     if (ownerPerm != EPermission.Public)
                     {
@@ -420,7 +420,7 @@ namespace SimpleLanguage.Export.SLIR
                     // publicExport="extern" 档下 public 类也记 Export（对外视为显式导出类）。
                     permission = (int)(ownerPerm == EPermission.Public
                         && publicExportMode == ProjectConfig.EPublicExportMode.Extern
-                        ? EPermission.Export
+                        ? EPermission.Extern
                         : ownerPerm),
                     isDynamic = c.OwnerMetaData?.isDynamic ?? false,
                     // 类级 final 导出：final 类不可被继承。仅 class 类型有效
@@ -1472,7 +1472,7 @@ namespace SimpleLanguage.Export.SLIR
             {
                 case EPermission.Private: flags |= 1; break;
                 case EPermission.Public: flags |= 2; break;
-                case EPermission.Export: flags |= 4; break;
+                case EPermission.Extern: flags |= 4; break;
                 case EPermission.Protected: flags |= 8; break;
             }
 

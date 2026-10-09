@@ -448,6 +448,16 @@ namespace SimpleLanguage.Project
             // Include additional metadata like owner class id, visibility flags
             public bool IncludeMetadata { get; set; } = true;
 
+            /// <summary>
+            /// 导出格式二选一（jsonc "export"."format"）："json"（缺省，SLIR JSON module.json）
+            /// / "binary"（SLB 二进制 .module.slb，规范见 csimple_lang/md/design/SLB_DESIGN.md）。
+            /// 只有二选一，没有并存导出。
+            /// </summary>
+            public string Format { get; set; } = "json";
+
+            /// <summary>SLB 二进制导出选项（jsonc "export"."binary" 段，仅 format="binary" 时生效）。</summary>
+            public BinaryExportSection Binary { get; set; } = new BinaryExportSection();
+
             public int VersionMain { get; set; } = 0;
             public int VersionSub { get; set; } = 1;
             public int VersionPatch { get; set; } = 0;
@@ -481,6 +491,20 @@ namespace SimpleLanguage.Project
             public string Cpu { get; set; } = string.Empty;
             /// <summary>llc -mattr 特性列表（如 "+avx2,+fma"，"-name" 为禁用，§11.4）。空 = llc 宿主默认；非空时与 platform.require.cpu 做一致性校验（Error 20037）。</summary>
             public string Features { get; set; } = string.Empty;
+        }
+
+        /// <summary>
+        /// jsonc "export"."binary" 段：SLB 二进制导出选项（仅 export.format="binary" 时生效，
+        /// 规范见 csimple_lang/md/design/SLB_DESIGN.md §5/§12-P0）。
+        /// </summary>
+        public class BinaryExportSection
+        {
+            /// <summary>是否 zlib 压缩 DataArea（缺省 true；false = 落盘未压缩明文布局）。</summary>
+            public bool Compressed { get; set; } = true;
+            /// <summary>是否写 DEBUG 段（缺省 true；false 时不写指令级调试信息）。</summary>
+            public bool IncludeDebugInfo { get; set; } = true;
+            /// <summary>P5 预留（当前恒 false 且读侧拒载 strictDigest 包）：严格摘要校验开关。</summary>
+            public bool StrictDigest { get; set; } = false;
         }
 
         public class DebugTextExportSection

@@ -272,7 +272,7 @@ namespace SimpleLanguage.IR
             m_IsStatic = (flags & 32) != 0;
             m_IsConst = (flags & 16) != 0;
             if ((flags & 1) != 0) m_Permission = EPermission.Private;
-            else if ((flags & 4) != 0) m_Permission = EPermission.Export;
+            else if ((flags & 4) != 0) m_Permission = EPermission.Extern;
             else if ((flags & 8) != 0) m_Permission = EPermission.Protected;
             else m_Permission = EPermission.Public;
             m_Order = field?.order ?? -1;

@@ -184,6 +184,30 @@ namespace SimpleLanguage.Project
                 }
                 cfg.Export.IncludeMetadata = GetBool(exportObj, "includeMetadata", cfg.Export.IncludeMetadata);
 
+                // 导出格式二选一（json/binary，缺省 json）；非法值报 Error 阻断编译
+                {
+                    var rawFormat = GetStr(exportObj, "format", null);
+                    if (rawFormat != null)
+                    {
+                        switch (rawFormat)
+                        {
+                            case "json": cfg.Export.Format = "json"; break;
+                            case "binary": cfg.Export.Format = "binary"; break;
+                            default:
+                                Log.AddProjectLog(LID.ProjectExportFormatInvalid, "", rawFormat);
+                                break;
+                        }
+                    }
+                }
+
+                // SLB 二进制导出选项（仅 format="binary" 时生效）
+                if (TryGetObj(exportObj, "binary", out var binaryObj))
+                {
+                    cfg.Export.Binary.Compressed = GetBool(binaryObj, "compressed", cfg.Export.Binary.Compressed);
+                    cfg.Export.Binary.IncludeDebugInfo = GetBool(binaryObj, "includeDebugInfo", cfg.Export.Binary.IncludeDebugInfo);
+                    cfg.Export.Binary.StrictDigest = GetBool(binaryObj, "strictDigest", cfg.Export.Binary.StrictDigest);
+                }
+
                 cfg.Export.VersionMain = GetInt(exportObj, "versionMain", cfg.Export.VersionMain);
                 cfg.Export.VersionSub = GetInt(exportObj, "versionSub", cfg.Export.VersionSub);
                 cfg.Export.VersionPatch = GetInt(exportObj, "versionPatch", cfg.Export.VersionPatch);

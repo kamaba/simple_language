@@ -35,6 +35,8 @@ public class CommandInputArgs
     // --in-memory: build the module package JSON in memory instead of writing
     // <Module>.module.json; host reads ExportLangManager.LastMemoryPackageJson.
     public bool inMemoryExport { get; private set; } = false;
+    // --format <json|binary>: 导出格式二选一，覆盖 jsonc export.format（null = 不覆盖走配置）
+    public string exportFormat { get; private set; } = null;
     public string projectSpPath { get; private set; } = null;
     public string compileProjectName { get; private set; } = null;
     public string compileProjectDir { get; private set; } = null;
@@ -252,6 +254,15 @@ public class CommandInputArgs
                 continue;
             }
 
+            // --format <json|binary>: 导出格式二选一（覆盖 jsonc export.format）
+            if (string.Equals(a, "--format", StringComparison.OrdinalIgnoreCase)
+                && i + 1 < args.Length)
+            {
+                exportFormat = args[i + 1];
+                i++;
+                continue;
+            }
+
             // -O0 / -O1 / -O2 / -O3 (also accepts lowercase -o0..-o3)
             if (a.Length == 3 && a[0] == '-'
                 && (a[1] == 'O' || a[1] == 'o')
@@ -282,6 +293,11 @@ public class CommandInputArgs
             {
                 inMemoryExport = true;
                 exportIR = true;
+            }
+            else if (string.Equals(args[i], "--format", StringComparison.OrdinalIgnoreCase) && i + 1 < args.Length)
+            {
+                exportFormat = args[i + 1];
+                i++;
             }
             else if ((string.Equals(args[i], "--macro", StringComparison.OrdinalIgnoreCase)
                  || string.Equals(args[i], "-m", StringComparison.OrdinalIgnoreCase)) && i + 1 < args.Length)

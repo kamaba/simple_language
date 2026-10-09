@@ -2350,9 +2350,6 @@ namespace SimpleLanguage.Compile
                 case "goto":
                     tokenType = ETokenType.Goto;
                     break;
-                case "export":
-                    tokenType = ETokenType.Export;
-                    break;
                 case "extern":
                     tokenType = ETokenType.Extern;
                     break;
@@ -2371,10 +2368,6 @@ namespace SimpleLanguage.Compile
                 case "interface":
                     tokenType = ETokenType.Interface;
                     break;
-                //case "virtual":
-                //    Debug.Write("Error virtual 浣嗕笉鑳藉湪浠ｇ爜涓娇鐢?!");
-                //    tokenType = ETokenType.Virtual;
-                //    return;
                 case "override":
                     tokenType = ETokenType.Override;
                     break;
@@ -2386,15 +2379,6 @@ namespace SimpleLanguage.Compile
                     break;
                 case "ret":
                     tokenType = ETokenType.Return;
-                    break;
-                case "return":
-                    {
-                        // 返回语句是 ret；return 不是本语言关键字。历史上作为普通标识符
-                        // 流入下游，产生 "Name:return not found" 等误导性报错（2026-10-08 拦截）
-                        Log.AddTokenByString(LID.TokenLexerReturnNotSupported, m_Path, m_SourceLine, m_SourceChar, m_SourceLine, m_SourceChar,
-                            "Lex: " + m_Builder.ToString() + " Path:" + m_Path + " Line: " + (m_SourceLine + 1) + " Pos: " + (m_SourceChar + 1));
-                        tokenType = ETokenType.Identifier;
-                    }
                     break;
                 case "label":
                     tokenType = ETokenType.Label;
@@ -2468,11 +2452,7 @@ namespace SimpleLanguage.Compile
                 case "array":
                     tokenType = ETokenType.Identifier;
                     extend = EType.Array;
-                    break;
-                case "async":
-                    // Define.cs 中 ETokenType.Async 已被注释禁用，async 按普通标识符处理
-                    tokenType = ETokenType.Identifier;
-                    break;
+                    break;                
                 case "await":
                     tokenType = ETokenType.Await;
                     break;

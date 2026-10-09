@@ -160,7 +160,7 @@ namespace SimpleLanguage.Core
                 return;
             }
             var p = permissionToken.type == ETokenType.Extern
-                ? EPermission.Export
+                ? EPermission.Extern
                 : CompilerUtil.GetPerMissionByType(permissionToken.type);
             if (p == EPermission.Null)
             {
