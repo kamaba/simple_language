@@ -1053,13 +1053,6 @@ namespace SimpleLanguage.Core
             m_FileMetaClassDict.Add(fmc.token, fmc);
             AddPingToken(fmc.token);
 
-            // 类级权限 token（public/private/extern/export）传播到 Meta 层，
-            // 供 SLIR 导出按 export.publicExport 配置过滤；partial 重复绑定时以最后一次声明为准。
-            if (fmc.permissionToken != null)
-            {
-                m_Permission = CompilerUtil.GetPerMissionByType(fmc.permissionToken.type);
-            }
-
             if (fmc.attributeList != null && fmc.attributeList.Count > 0)
             {
                 AddAttributes(fmc.attributeList);

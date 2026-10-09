@@ -81,6 +81,21 @@
       { "namespace": "Core" },
       { "class": "Std.Console" }
     ]
+  },
+  "export": {
+    "moduleName": "Core",
+    "outputDir": "../../out/export",
+    "publicExport": "public",
+    "includeMetadata": true,
+    "debugText": {
+      "outputDir": "",
+      "code": false,
+      "token": false,
+      "node": false,
+      "file": false,
+      "meta": false,
+      "ir": false
+    }
   }
 }
 ```
@@ -95,6 +110,31 @@
   宏值只能在 `.sp` 的 `CompileBefore(){}` 中修改，详见 `md/project/static-if.md`。
   编译前也可由外部环境注入覆盖初值：CLI `--macro name=value`（可重复）或环境变量 `SL_MACRO_<name>=<value>`，
   优先级 `jsonc 初值 < 环境变量 < CLI < CompileBefore()`。
+
+## 2.2 `export` 段说明
+
+- `export.moduleName`：导出模块名（生成 `<moduleName>.module.json`）。
+- `export.outputDir`：导出目录（相对 `.jsonc` 所在目录）。
+- `export.publicExport`：**public 类导出门槛三态**（默认 `public`），见下表。
+- `export.includeMetadata`：是否在 SLIR 包内携带元数据。
+- `export.debugText`：DebugCode 调试快照开关（code/token/node/file/meta/ir），见 `md/ai/DEBUG_WORKFLOW.md`。
+
+### publicExport 三态
+
+源码中类级显式导出标记为 `extern` 关键字（`extern class` / `extern data` / `extern enum`，语义见 `md/syntax/class.md` 导出权限章节）；
+`publicExport` 只决定**未显式标记的类**（`public class` 与无标记 `class`）是否随包导出：
+
+| 取值 | extern 标记类 | public / 无标记类 | private / protected 类 |
+|------|--------------|-------------------|------------------------|
+| `"none"` | 导出（包内 permission 记 Export） | **不导出** | 不导出 |
+| `"public"`（默认） | 导出（permission 记 Export） | 照常导出（permission 记 Public） | 不导出 |
+| `"extern"` | 导出（permission 记 Export） | 照常导出，且包内 permission 记 Export（对外表现为显式导出） | 不导出 |
+
+判定优先级：`extern` 标记恒导出 > `private`/`protected` 恒不导出 > 其余按上表档位过滤。
+探针用例：`test/Other/ExportPermTest/`（切换 `publicExport` 三档重编译并检查 `module.json` 的 `classList[].permission`）。
+
+> 注意：旧语法 `export class` / `export data` / `export enum` 的 `export` 关键字已移除权限语义（映射为不导出），
+> 类级显式导出统一改用 `extern` 关键字声明。
 
 ## 3. CLI 与配置联动
 

@@ -32,6 +32,9 @@ public class CommandInputArgs
     // --- compile options ---
     public ECommandType commandType { get; private set; } = ECommandType.None;
     public bool exportIR { get; private set; } = false;
+    // --in-memory: build the module package JSON in memory instead of writing
+    // <Module>.module.json; host reads ExportLangManager.LastMemoryPackageJson.
+    public bool inMemoryExport { get; private set; } = false;
     public string projectSpPath { get; private set; } = null;
     public string compileProjectName { get; private set; } = null;
     public string compileProjectDir { get; private set; } = null;
@@ -241,6 +244,14 @@ public class CommandInputArgs
                 continue;
             }
 
+            // --in-memory: keep the exported package JSON in memory (no file write)
+            if (string.Equals(a, "--in-memory", StringComparison.OrdinalIgnoreCase))
+            {
+                inMemoryExport = true;
+                exportIR = true;
+                continue;
+            }
+
             // -O0 / -O1 / -O2 / -O3 (also accepts lowercase -o0..-o3)
             if (a.Length == 3 && a[0] == '-'
                 && (a[1] == 'O' || a[1] == 'o')
@@ -266,6 +277,11 @@ public class CommandInputArgs
             {
                 exportIR = true;
                 i++;
+            }
+            else if (string.Equals(args[i], "--in-memory", StringComparison.OrdinalIgnoreCase))
+            {
+                inMemoryExport = true;
+                exportIR = true;
             }
             else if ((string.Equals(args[i], "--macro", StringComparison.OrdinalIgnoreCase)
                  || string.Equals(args[i], "-m", StringComparison.OrdinalIgnoreCase)) && i + 1 < args.Length)

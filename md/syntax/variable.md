@@ -29,7 +29,7 @@ Main()
     float xx = Class1.Variable3; #静态变量需要，使用[类名.静态名称]的读取。
 }
 ```
-规则: 在使用类的变量时，不允许有任何重名，包括父类与子类中的名称， 如果父类定义了name,则在子类中不允再重新定义该名称，所以在定义的时候，尽量只歧义的名称， 在新建对象时，子类对象会继承父类对象的非静态成员，并且计算大小。 静态成员，只能通过原类名.静态成员名称的方式访问。
+规则: 在使用类的变量时，不允许有任何重名，包括父类与子类中的名称， 如果父类定义了name,则在子类中不允再重新定义该名称，所以在定义的时候，尽量只歧义的名称， 在新建对象时，子类对象会继承父类对象的非静态成员，并且计算大小。 静态成员，只能通过原类名.静态成员名称的方式访问。 类成员变量声明必须初始化：不支持 `int v;` 无初始化声明，必须写 `int v = 1;`（2026-10-08 起违反报 Error 21472 MetaCoreMemberVariableRequireInit，明确提示并附修复指引；此前误报 MetaCoreExpressIsNull 且 extend 拼接"传入参数与要求参数不对应"兜底文案）。local{} 块合成成员等无源初始化场景不受影响。
 
 ------------------
 ## 全局变量 是指通过ProjectConfig配置，然后在代码中通过global关键字，直接访问
@@ -115,6 +115,17 @@ Class0 c = Class0();
 c.CF = 100;        # 错误: const 成员不允许赋值（MetaCoreAssignStatementConst）
 Class0.SCF = 5;    # 错误: 静态 const 成员同样拦截
 ```
+
+const 标记随 SLIR 导出（字段 `flags` bit16），**跨模块**导入的类其 const 成员同样被拦截
+（2026-10-08 补齐成员字段链路；只读访问不受影响）：
+
+```python
+# 引用其它模块导出的 ConstLib 后
+Int32 r = ConstLib.SCF;    # 正确: 跨模块只读访问 const 静态成员
+ConstLib.SCF = 5;          # 错误: 跨模块 const 成员赋值同样拦截（MetaCoreAssignStatementConst）
+```
+
+探针用例：`test/Other/ConstProbe/`（ConstLib 导出 / ConstCross 跨模块引用）。
 
 ### 2. const 局部变量（语句）
 

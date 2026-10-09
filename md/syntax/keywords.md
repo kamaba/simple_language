@@ -24,7 +24,7 @@
 | `data` | data 数据类 | [data.md](./data.md) |
 | `dynamic` | 动态类型 | [type.md](./type.md) |
 | `void` | 无返回 | [function.md](./function.md) |
-| `extern` | 外部声明（FFI 体系） | [../project/ffi.md](../project/ffi.md) |
+| `extern` | 外部声明（FFI 体系）；类级显式导出标记（`extern class/data/enum`，恒导出） | [../project/ffi.md](../project/ffi.md)、[class.md](./class.md) §1.5.1 |
 | `bind` | 绑定 | [base.md](./base.md) |
 | `label` | 标签 | [labelgoto.md](./labelgoto.md) |
 

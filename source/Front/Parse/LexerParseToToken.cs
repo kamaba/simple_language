@@ -2387,6 +2387,15 @@ namespace SimpleLanguage.Compile
                 case "ret":
                     tokenType = ETokenType.Return;
                     break;
+                case "return":
+                    {
+                        // 返回语句是 ret；return 不是本语言关键字。历史上作为普通标识符
+                        // 流入下游，产生 "Name:return not found" 等误导性报错（2026-10-08 拦截）
+                        Log.AddTokenByString(LID.TokenLexerReturnNotSupported, m_Path, m_SourceLine, m_SourceChar, m_SourceLine, m_SourceChar,
+                            "Lex: " + m_Builder.ToString() + " Path:" + m_Path + " Line: " + (m_SourceLine + 1) + " Pos: " + (m_SourceChar + 1));
+                        tokenType = ETokenType.Identifier;
+                    }
+                    break;
                 case "label":
                     tokenType = ETokenType.Label;
                     break;

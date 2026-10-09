@@ -331,9 +331,19 @@ namespace SimpleLanguage.Core
             }
             if (m_Express == null && m_FileMetaMemeberVariable != null)
             {
-                // 仅在有源表达式却创建失败时报错；
-                // 合成成员变量（如 local{} 块生成的 _Local 类成员）没有源表达式，属合法情况
-                Log.AddMetaCoreLog(LID.MetaCoreExpressIsNull, m_Token, "express");
+                if (m_FileMetaMemeberVariable.express == null)
+                {
+                    // 源码未写初始化（如 int v;）：明确报"成员变量声明必须初始化"（2026-10-08）。
+                    // 历史上此处统一报 MetaCoreExpressIsNull，其 extend 被拼上
+                    // "传入参数与要求参数不对应"兜底文案，严重误导排查方向
+                    string owner = this.ownerMetaClass != null ? this.ownerMetaClass.allName + "." : "";
+                    Log.AddMetaCoreLog(LID.MetaCoreMemberVariableRequireInit, m_Token, owner + this.m_Name);
+                }
+                else
+                {
+                    // 有源表达式但创建失败：保留通用报错（创建失败的具体原因已在 CreateMetaExpress 阶段报过）
+                    Log.AddMetaCoreLog(LID.MetaCoreExpressIsNull, m_Token, "express");
+                }
             }
             return true;
         }

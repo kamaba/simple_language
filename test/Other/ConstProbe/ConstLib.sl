@@ -2,6 +2,9 @@ import Std;
 
 class ConstLib
 {
+    const Int32 CF = 10;                    # 实例 const 成员：跨模块导入后赋值应被拦截
+    public static const Int32 SCF = 20;     # 静态 const 成员：跨模块导入后赋值应被拦截
+
     # const 形参：函数体内只读（合法），供跨模块调用验证 isConst 导出
     public static Int32 addOne( const Int32 a )
     {

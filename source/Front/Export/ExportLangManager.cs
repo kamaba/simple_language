@@ -10,6 +10,7 @@ using SimpleLanguage.Export;
 using SimpleLanguage.Export.MLIR;
 using SimpleLanguage.Export.SLIR;
 using SimpleLanguage.IR;
+using SimpleLanguage.Logging;
 using SimpleLanguage.Project;
 using System;
 using System.IO;
@@ -24,6 +25,22 @@ namespace SimpleLanguage.ExportLanguage
     }
     public class ExportLangManager
     {
+        // In-memory export mode (--in-memory): the Export(SLIR) phase builds the
+        // module package JSON text in memory instead of writing <Module>.module.json.
+        // The host reads LastMemoryPackageJson after compile and hands it to the
+        // C VM memory entry; LastMemoryExportDir is the directory the file would
+        // have been written to (C-side base_dir for reference/plugin resolution).
+        public static bool MemoryExportMode { get; set; }
+        public static string LastMemoryPackageJson { get; private set; }
+        public static string LastMemoryExportDir { get; private set; }
+
+        /// <summary>Clears the last in-memory export result (call before each compile
+        /// so a skipped Export phase can be detected by a null LastMemoryPackageJson).</summary>
+        public static void ResetMemoryExport()
+        {
+            LastMemoryPackageJson = null;
+            LastMemoryExportDir = null;
+        }
 
         // Explicit export entrypoint.
         // Use env vars to avoid changing default compile flow:
@@ -63,7 +80,21 @@ namespace SimpleLanguage.ExportLanguage
 
             // Unified JSON export (VM symmetric)
             string exportIRPath = Path.Combine(outDir, filePrefix + ".module.json");
-            SLModulePackageWriter.Write(IRManager.instance, exportIRPath, moduleName);
+            if (MemoryExportMode)
+            {
+                // In-memory export: build the package JSON text without writing the file,
+                // so the host can hand it straight to the C VM memory entry
+                // (cli_run_module_in_memory). LastMemoryExportDir doubles as the C-side
+                // base_dir: reference packages and plugin libs resolve against it.
+                LastMemoryPackageJson = SLModulePackageWriter.BuildPackageJson(IRManager.instance, moduleName);
+                LastMemoryExportDir = outDir;
+                Log.AddIRLog(LID.ExportSLModulePackageExportModuleSuccess,
+                    "export module success (in-memory): " + exportIRPath);
+            }
+            else
+            {
+                SLModulePackageWriter.Write(IRManager.instance, exportIRPath, moduleName);
+            }
 
             //// Optional: keep binary writer for debugging/back-compat
             //if (Environment.GetEnvironmentVariable("SIMPLELANG_SLIR_BINARY") == "1")

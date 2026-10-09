@@ -84,6 +84,20 @@ namespace SimpleLanguage.Export.SLIR
             if (ir == null) throw new ArgumentNullException(nameof(ir));
             if (string.IsNullOrWhiteSpace(outputPath)) throw new ArgumentNullException(nameof(outputPath));
 
+            var packageJson = BuildPackageJson(ir, moduleName);
+
+            Directory.CreateDirectory(Path.GetDirectoryName(outputPath) ?? ".");
+            File.WriteAllText(outputPath, packageJson);
+
+            Log.AddIRLog(LID.ExportSLModulePackageExportModuleSuccess, "export module success: " + outputPath);
+        }
+
+        /// <summary>Builds the SLModulePackage JSON text in memory (no file IO).
+        /// Produces byte-identical output to Write, used by the in-memory export path.</summary>
+        internal static string BuildPackageJson(IRManager ir, string moduleName = "SimpleLanguage")
+        {
+            if (ir == null) throw new ArgumentNullException(nameof(ir));
+
             var pkg = Build(ir, moduleName);
 
             var options = new JsonSerializerOptions
@@ -95,10 +109,7 @@ namespace SimpleLanguage.Export.SLIR
             options.Converters.Add(new JsonStringEnumConverter());
             options.Converters.Add(new InstructionPayloadByteArrayJsonConverter());
 
-            Directory.CreateDirectory(Path.GetDirectoryName(outputPath) ?? ".");
-            File.WriteAllText(outputPath, JsonSerializer.Serialize(pkg, options));
-
-            Log.AddIRLog(LID.ExportSLModulePackageExportModuleSuccess, "export module success: " + outputPath);
+            return JsonSerializer.Serialize(pkg, options);
         }
 
         internal static SLModulePackage Read(string inputPath)
@@ -1466,6 +1477,7 @@ namespace SimpleLanguage.Export.SLIR
             }
 
             // 16: const, 32: static
+            if (v.isConst) flags |= 16;
             if (v.isStatic) flags |= 32;
 
             return flags;

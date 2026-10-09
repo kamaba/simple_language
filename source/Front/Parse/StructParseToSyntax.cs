@@ -631,6 +631,66 @@ namespace SimpleLanguage.Compile
             return false;
         }
 
+        /* 扫描 pnode.childList [startIndex ..) 区间: 跳过 LineEnd/Comment,
+         * 统计最大连续 LineEnd 数(词法层每个 '\n' 一个 LineEnd 节点, 连续 >= 2 即存在空行),
+         * 返回第一个显著节点(非 LineEnd/Comment); 返回 null 表示扫描到末尾。只读探测, 不推进 parseIndex。 */
+        private static Node PeekFirstSignificantNode(Node pnode, int startIndex, out int maxConsecutiveLineEnd)
+        {
+            maxConsecutiveLineEnd = 0;
+            int consecutive = 0;
+            for (int peek = startIndex; peek < pnode.childList.Count; peek++)
+            {
+                var pn = pnode.childList[peek];
+                if (pn == null) { break; }
+                if (pn.nodeType == ENodeType.LineEnd)
+                {
+                    consecutive++;
+                    if (consecutive > maxConsecutiveLineEnd)
+                    {
+                        maxConsecutiveLineEnd = consecutive;
+                    }
+                    continue;
+                }
+                if (pn.nodeType == ENodeType.Comment)
+                {
+                    consecutive = 0;
+                    continue;
+                }
+                return pn;
+            }
+            return null;
+        }
+
+        /* 空行规范-规则二: elif/else 必须与上一个语句块紧挨着, 中间不允许空行。
+         * probeStart = 链内上一语句(if/elif/else 块)消费后的首个未消费节点,
+         * followKeyNode = 本次收集到的 ElseIf/Else 主键节点(报错定位)。 */
+        private void CheckFollowKeyBlankLine(Node pnode, int probeStart, Node followKeyNode)
+        {
+            PeekFirstSignificantNode(pnode, probeStart, out int maxConsecutiveLineEnd);
+            if (maxConsecutiveLineEnd >= 2)
+            {
+                Log.AddNodeLog(LID.NodeStructParseElseIfHasBlankLine, followKeyNode?.token,
+                    "Error elif/else必须与上一个语句块紧挨着(中间不能空行)!!! 空行数:" + (maxConsecutiveLineEnd - 1));
+            }
+        }
+
+        /* 空行规范-规则一: if 链结束后紧邻的下一个语句是 if 时, 两者之间必须空一行(防止读取错误)。
+         * 探测起点 = 链最后一个语句消费后的 pnode.parseIndex(探测失败不推进, 停在链后首个未消费节点)。 */
+        private void CheckNextIfNoBlankLine(Node pnode)
+        {
+            Node firstNode = PeekFirstSignificantNode(pnode, pnode.parseIndex, out int maxConsecutiveLineEnd);
+            if (firstNode == null) { return; }
+            if (firstNode.nodeType != ENodeType.Key
+                || firstNode.token == null
+                || firstNode.token.type != ETokenType.If)
+            {
+                return;
+            }
+            if (maxConsecutiveLineEnd >= 2) { return; }
+            Log.AddNodeLog(LID.NodeStructParseIfNextNoBlankLine, firstNode.token,
+                "Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!");
+        }
+
         private FileMetaSyntax CrateFileMetaSyntaxNoKey(List<Node> pNodeList)
         {
             // @<tag>(...){...} 不透明内联块拦截（统一 @ 识别：出现在语句/成员位置 = 代码段内 → AtSignLabel 语义）
@@ -2107,6 +2167,7 @@ namespace SimpleLanguage.Compile
                     {
                         Condition condition = new Condition(ETokenType.ElseIf);
                         condition.AddTokenTypeList(ETokenType.Else);
+                        int probeStart = pnode.parseIndex;
                         SyntaxNodeStruct cakss = GetOneSyntax(pnode, condition);
                         if (cakss == null  )
                         {
@@ -2119,17 +2180,22 @@ namespace SimpleLanguage.Compile
 
                         if (cakss.tokenType == ETokenType.ElseIf)
                         {
+                            CheckFollowKeyBlankLine(pnode, probeStart, cakss.keyNode);
                             pnode.parseIndex += cakss.moveIndex;
                             akss.followKeySyntaxStructList.Add(cakss);
                             continue;
                         }
                         else if (cakss.tokenType == ETokenType.Else)
                         {
+                            CheckFollowKeyBlankLine(pnode, probeStart, cakss.keyNode);
                             pnode.parseIndex += cakss.moveIndex;
                             akss.followKeySyntaxStructList.Add(cakss);
                         }
                         break;
                     }
+
+                    // 空行规范-规则一: if 链结束后的下一个语句是 if 时, 两者之间必须空一行
+                    CheckNextIfNoBlankLine(pnode);
 
                     // static if 编译期条件编译已废弃 (ATTRIBUTE_DESIGN §7 旧隔离机制收编为 @Exclude):
                     // 保留 static 修饰检测并显式报 Error, 防止旧代码静默退化为运行期 if

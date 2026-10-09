@@ -174,6 +174,8 @@ namespace SimpleLanguage.Logging
         // ParseNode
         TokenParseNodeIssue = 20116,
         TokenParseNodeIssue2 = 20117,
+        // Lexer：return 关键字误用拦截（返回语句是 ret）
+        TokenLexerReturnNotSupported = 20118,
         // ---- Node 模块 ----
         // StructFrame
         NodeStructFrameAddParseClassNodeInfo = 20200,
@@ -262,6 +264,8 @@ namespace SimpleLanguage.Logging
         NodeStructParseNumberStringBool = 20282,
         NodeStructParseType = 20283,
         NodeStructParseNameIsKeyword = 20287,
+        NodeStructParseIfNextNoBlankLine = 20288,
+        NodeStructParseElseIfHasBlankLine = 20289,
         // ParseNode
         NodeParseNodeGreaterCountZero = 20284,
         NodeParseNodeSign = 20285,
@@ -788,6 +792,8 @@ namespace SimpleLanguage.Logging
         MetaCoreFinalClassCannotExtend = 21469,
         FileMetaClassFinal = 21470,
         FileMetaClassAbstractFinal = 21471,
+        // 成员变量必须初始化拦截（源码未写 = 初始值，如 int v;）
+        MetaCoreMemberVariableRequireInit = 21472,
         // TemplateClass
         MetaCoreTemplateClassDuplicateDefine = 21321,
         MetaCoreTemplateClassNotFoundData = 21322,

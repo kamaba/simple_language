@@ -1,0 +1,17 @@
+Project
+{
+    _main_()
+    {
+        MiniSmoke.runMain()
+    }
+    _test_()
+    {
+        MiniSmoke.runTest()
+    }
+    CompileBefore()
+    {
+    }
+    CompileAfter()
+    {
+    }
+}

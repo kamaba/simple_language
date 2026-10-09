@@ -1,4 +1,5 @@
 using SimpleLanguage.Compile.Process;
+using SimpleLanguage.ExportLanguage;
 using SimpleLanguage.Logging;
 using System;
 using System.IO;
@@ -83,6 +84,7 @@ Options:
   -p, --project <path>   Project path (directory or .sp file)
   -o, --output <dir>      Output directory
   -e ir, --export ir      Export IR during compile
+  --in-memory             Keep the exported package JSON in memory (no module.json write)
   -t, --test              Run in test mode
   --release              Build in release mode
   --debug                Build in debug mode (default)
@@ -121,6 +123,8 @@ Examples:
             if (inputArgs.exportIR)
             {
                 // 导出阶段：前置阶段(RefModule/File/MetaCore/IR)全部成功才会执行，否则被跳过
+                // --in-memory: 导出阶段改为内存构建 package JSON（不写 module.json 文件）
+                ExportLangManager.MemoryExportMode = inputArgs.inMemoryExport;
                 ProcessManager.instance.RunPhase(ECompilePhase.Export);
             }
 
@@ -142,6 +146,8 @@ Examples:
             if (inputArgs.exportIR)
             {
                 // 导出阶段：前置阶段(RefModule/File/MetaCore/IR)全部成功才会执行，否则被跳过
+                // --in-memory: 导出阶段改为内存构建 package JSON（不写 module.json 文件）
+                ExportLangManager.MemoryExportMode = inputArgs.inMemoryExport;
                 ProcessManager.instance.RunPhase(ECompilePhase.Export);
             }
 
@@ -161,6 +167,8 @@ Examples:
             Console.WriteLine($"Exporting IR: {spPath}");
             ProjectManager.Run(spPath, inputArgs);
             // 导出阶段：前置阶段(RefModule/File/MetaCore/IR)全部成功才会执行，否则被跳过
+            // --in-memory: 导出阶段改为内存构建 package JSON（不写 module.json 文件）
+            ExportLangManager.MemoryExportMode = inputArgs.inMemoryExport;
             ProcessManager.instance.RunPhase(ECompilePhase.Export);
             Console.WriteLine("Export completed.");
             return true;

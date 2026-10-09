@@ -201,6 +201,10 @@ namespace SimpleLanguage.IR
             m_IsStatic = mmv.isStatic;
             m_Permission = mmv.permission;
             m_Order = mmv.parseOrder;
+            /* const 成员标记透传到 IR 层（供 SLIR 导出 SLFieldPackage.flags bit16）：
+             * 取 isExplicitConst 而非 isConst——排除 jsonc global.data 注入（Manual）的
+             * 初始值折叠标记（isolate 既有语义），只导出用户显式 const 声明。 */
+            m_IsConst = mmv.isExplicitConst;
             if (mmv.isStatic )
                 m_IRMetaVariableFrom = IRMetaVariableFrom.Static;
             else

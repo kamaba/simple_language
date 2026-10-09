@@ -28,7 +28,7 @@ public Int32 sum(Int32 x, Int32 y) {
 }
 ```
 
-- `ret` 用作返回语句关键字（也可使用 `return` 的别名，视实现）。
+- `ret` 是唯一的返回语句关键字（`ret;` 或 `ret 表达式;`）。`return` **不是**本语言的关键字：2026-10-08 起词法层即报 Error 20118（`TokenLexerReturnNotSupported`）并阻断编译，报错信息指引改用 `ret`；此前 `return` 会作为普通标识符流入语义层，产生 `Name:return not found!` 等误导性报错。
 - 若函数标注返回类型则编译器在类型检查阶段会校验返回值；若未显式返回类型，则采用 `dynamic`/`object` 或根据上下文推断。
 
 ---
