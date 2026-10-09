@@ -90,6 +90,27 @@ MyClass {
     - private：仅类内可见
     - internal/projected：特殊作用域
 
+    #### 1.5.1 类的导出权限（extern 标记 + publicExport 三态，2026-10-08 实装）
+
+    类是否随模块包（`*.module.json`）导出，由**类级显式标记**与 jsonc 配置共同决定：
+
+    - `extern class` / `extern data` / `extern enum`：类级**显式导出标记**，不受配置影响恒导出（SLIR 包内 permission 记 Export）
+    - `public class` 与无标记 `class`：按工程 `.jsonc` 的 `export.publicExport` 三态决定
+      （`"none"`=不导出 / `"public"`=照常导出（默认）/ `"extern"`=照常导出且包内记 Export）
+    - `private` / `protected`：恒不导出
+    - 旧语法 `export class` / `export data` / `export enum` 的 `export` 关键字已移除权限语义（映射为不导出），
+      显式导出统一使用 `extern` 声明
+
+    ```s
+    extern class LibApi { }        # 显式导出：恒导出
+    public class Helper { }        # 按 publicExport 三态
+    class Internal { }             # 按 publicExport 三态
+    private class Hidden { }       # 恒不导出
+    ```
+
+    三态取值表与判定优先级详见 [../project/project-config-jsonc-guide.md](../project/project-config-jsonc-guide.md) §2.2；
+    探针用例：`test/Other/ExportPermTest/`。
+
     ### 1.6 继承与 final
     - 继承：`class Child extends Parent {}`
     - final：禁止被继承或重写
@@ -98,6 +119,52 @@ MyClass {
     final Application.MyClass2 { }
     class MyChild extends MyClass { }
     ```
+
+    #### final 类与 final 方法（2026-10-02 已实现）
+
+    **final 类**：
+    - 语法：`final class X { ... }` 或 `final X { ... }`（final 置于 class 关键字/类名之前）
+    - 语义：final 类不允许被任何类 `extends` 继承；final 类本身可正常实例化、调用其成员
+    - final 仅允许用于 `class`；出现在 `data` / `enum` / `interface` 上报错 21470
+    - `abstract final` 组合无意义，报错 21471
+    - 跨模块约束：final 标记随 SLIR 导出（module.json 类节点 `isFinal` 字段），引用方模块 `extends` 其它模块导出的 final 类同样被拦截
+    - 错误码：21469 MetaCoreFinalClassCannotExtend（`类[X] 继承了 final 类： Y`）
+
+    **final 方法**（详见 md/syntax/function.md）：
+    - 语法：`final int locked() { ... }`
+    - 语义：子类不允许 `override` 父类的 final 方法；错误码 12274 MetaCoreFinalFunctionCannotOverride
+
+    ```s
+    # final 类：禁止继承
+    final class SealedBase {
+        int v = 0;
+        int getV()
+        {
+            ret this.v
+        }
+        final int sealedGet()      # final 方法：禁止 override
+        {
+            ret this.v * 10
+        }
+    }
+
+    # class SealedChild extends SealedBase { }   # 编译错误 21469
+
+    class MethodBase
+    {
+        final int locked()
+        {
+            ret 100
+        }
+    }
+
+    class MethodChild extends MethodBase
+    {
+        # override int locked() { ret 200 }      # 编译错误 12274
+    }
+    ```
+
+    测试用例：`test/Other/FinalProbe/`（FinalLib 正向 / FinalProbe 拦截 / FinalCross 跨模块）。
 
     ### 1.7 泛型与嵌套类
     - 泛型：`List<T> extends Object { ... }`
@@ -240,6 +307,7 @@ MyClass {
     - 接口：`interface` 关键字
     - final：`final class` 或 `final` 成员
     - 访问修饰符：`public`/`private`/`internal`/`projected`
+    - 类级导出标记：`extern class`/`extern data`/`extern enum`（恒导出，见 1.5.1）
     - 泛型：`class List<T> { ... }`
     - 嵌套类/命名空间：`namespace X { class Y { ... } }`
     - 数据成员/匿名对象/数组/枚举：均支持

@@ -54,13 +54,28 @@ namespace SimpleLanguage.Core
             }
             if (fmmv.staticToken != null)
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error Enum 中不允许使用 static 关键字，枚举值的静态语义由系统处理!!");
+                Log.AddMetaCoreLog(LID.MetaCoreMemberEnumEnumStatic, m_Token, "Error Enum 中不允许使用 static 关键字，枚举值的静态语义由系统处理!!");
             }
             if (m_FileMetaMemeberVariable.permissionToken?.type != null)
             {
-                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "Error Enum中，不允许使用public/private等权限关键字!!");
+                Log.AddMetaCoreLog(LID.MetaCoreMemberEnumEnumPublicPrivate, m_Token, "Error Enum中，不允许使用public/private等权限关键字!!");
             }
 
+            SetOwnerMetaBase(mc);
+        }
+        /// <summary>
+        /// Creates a MetaMemberEnum from IR/slir data (no source FileMetaMemberVariable required).
+        /// </summary>
+        public MetaMemberEnum(MetaEnum mc, string name, int index) : base()
+        {
+            m_OwnerMetaBase = mc;
+            m_Name = name;
+            m_Index = index;
+            m_FromType = EFromType.Code;
+            m_VariableFrom = EVariableFrom.EnumMember;
+            m_Permission = EPermission.Public;
+            m_IsConst = true;
+            m_IsStatic = false;
             SetOwnerMetaBase(mc);
         }
         public override void ParseDefineMetaType()
@@ -82,7 +97,7 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                Log.AddMetaCoreLog( LID.MetaCoreAssertShowMessage, m_Token, "Error Enum成员没有找到定义类型，无法解析!!");
+                Log.AddMetaCoreLog( LID.MetaCoreMemberEnumEnum, m_Token, "Error Enum成员没有找到定义类型，无法解析!!");
             }
             CreateCalcParseLevel();
         }
@@ -114,7 +129,7 @@ namespace SimpleLanguage.Core
 
                     if (m_Express == null)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error 没有解析到Express的内容 在MetaMemberData 里边 372");
+                        Log.AddMetaCoreLog(LID.MetaCoreMemberEnumExpressMetaMemberData, m_Token, "Error 没有解析到Express的内容 在MetaMemberData 里边 372");
                     }
                     else
                     {
@@ -132,12 +147,12 @@ namespace SimpleLanguage.Core
                 m_Express = ExpressManager.ConvertNewExpress(m_Express, null );
 
 
-                if (m_RelationMemberVariable.express is MetaNewObjectExpressNode mnoen)
+                if (m_RelationMemberVariable != null && m_RelationMemberVariable.express is MetaNewObjectExpressNode mnoen)
                 {
                     var valueMv = CoreMetaClassManager.memberMetaClass.GetMetaMemberVariableByName("value");
                     if (valueMv == null)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error Core.Member 缺少 name/value/index 字段，无法构造 Member 初始化");
+                        Log.AddMetaCoreLog(LID.MetaCoreMemberEnumCoreMemberName, m_Token, "Error Core.Member 缺少 name/value/index 字段，无法构造 Member 初始化");
                         return false;
                     }
                     var list = mnoen.assignStatementsList;
@@ -169,7 +184,7 @@ namespace SimpleLanguage.Core
             var indexMv = memberClass.GetMetaMemberVariableByName("index");
             if (nameMv == null || valueMv == null || indexMv == null)
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, fmmv.token, "Error Core.Member 缺少 name/value/index 字段，无法构造 Member 初始化");
+                Log.AddMetaCoreLog(LID.MetaCoreMemberEnumCoreMemberName2, fmmv.token, "Error Core.Member 缺少 name/value/index 字段，无法构造 Member 初始化");
                 return null;
             }
 
@@ -203,15 +218,6 @@ namespace SimpleLanguage.Core
             exportVariable.SetExpress(wrappedNewObject);
 
             return exportVariable;
-        }
-        private void FillMemberNewObjectAssignList(
-            MetaNewObjectExpressNode newMember,
-            MetaBlockStatements mbs,
-            MetaBase owmb,
-            MetaExpressNodeBase valueExpr,
-            string memberName,
-            int memberIndex)
-        {
         }
         public override string ToFormatString()
         {

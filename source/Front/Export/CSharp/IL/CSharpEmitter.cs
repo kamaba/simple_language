@@ -131,6 +131,13 @@ namespace SimpleLanguage.Export
                             il.EmitCall(System.Reflection.Emit.OpCodes.Call, miPop, null);
                             il.Emit(System.Reflection.Emit.OpCodes.Stelem_Ref);
                             break;
+                        case EIROpCode.StoreArgument:
+                            il.Emit(System.Reflection.Emit.OpCodes.Ldarg_0);
+                            il.Emit(System.Reflection.Emit.OpCodes.Ldc_I4, d.index);
+                            il.Emit(System.Reflection.Emit.OpCodes.Ldloc, localStack);
+                            il.EmitCall(System.Reflection.Emit.OpCodes.Call, miPop, null);
+                            il.Emit(System.Reflection.Emit.OpCodes.Stelem_Ref);
+                            break;
                         case EIROpCode.Ret:
                             // return PopObject(stack)
                             il.Emit(System.Reflection.Emit.OpCodes.Ldloc, localStack);

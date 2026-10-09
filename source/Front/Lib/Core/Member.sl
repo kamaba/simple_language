@@ -4,10 +4,10 @@ public class Member extends Object
     public string name = "";
     public int index = -1;
     public object value = null;
-    void _init_()
+    override void _init_()
     {
     }
-    public string toString()
+    public override string toString()
     {
         string nameText = this.name == null ? "" : this.name
         string indexText = this.index.toString()

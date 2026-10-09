@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      ArrayMetaClass.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -15,7 +15,9 @@ namespace SimpleLanguage.Core
             m_Type = EType.Range;
             SetExtendClass(CoreMetaClassManager.objectMetaClass);
             m_InnderDefine = true;
-            m_MetaTemplateList.Add( new MetaTemplate(this, "T", CoreMetaClassManager.numMetaClass, ECovariance.None ) );
+            var mt = new MetaTemplate(this, "T", CoreMetaClassManager.numMetaClass, ECovariance.None );
+            mt.SetIndex(0);
+            m_MetaTemplateList.Add( mt );
         }
         public static MetaClass CreateMetaClass()
         {

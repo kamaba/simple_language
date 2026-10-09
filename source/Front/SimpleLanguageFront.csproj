@@ -39,10 +39,15 @@
     <EmbeddedResource Include="Log\ErrorDefinitions.csv" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="libLLVM" Version="21.1.8" />
-    <PackageReference Include="libLLVM.runtime.win-x64" Version="21.1.8" />
-    <PackageReference Include="swigged.llvm" Version="70.0.1" />
-    <PackageReference Include="LLVMSharp" Version="20.1.2" />
     <PackageReference Include="System.Diagnostics.Debug" Version="4.3.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- SLB round-trip 测试工程（tools/SLBRoundTrip）需访问 internal 的
+         SLModulePackageWriter.Read/BuildPackageJson 与 payload converter -->
+    <InternalsVisibleTo Include="SLBRoundTrip" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\simple_language_plugins\csharp_mono\frontend\SLCSharpMonoFrontend.csproj" />
+    <ProjectReference Include="..\..\..\simple_language_plugins\java_hotspot\frontend\SLJavaHotspotFrontend.csproj" />
   </ItemGroup>
 </Project>

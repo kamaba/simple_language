@@ -1,0 +1,58 @@
+{
+  "project":
+  {
+    "name": "SBAProbe",
+    "desc": "P3 SBA reclaim evidence probe - GC mode garbage allocation triggers vm_sba_reclaim",
+    "mainVersion": 0,
+    "subVersion": 0,
+    "buildVersion": 1,
+    "buildSubVersion": 0
+  },
+  "source": {
+    "root": "."
+  },
+  "compile": {
+    "optimize": false,
+    "target": "x64",
+    "debug": true,
+    "isUseForceSemiColonInLineEnd": true,
+    "isForceUseClassKey": false,
+    "isSupportDoublePlus": false,
+    "requireSameNumericTypes": false
+  },
+  "compileFiles": {
+    "files": []
+  },
+  "compileFilter": {
+    "isAllGroup": true,
+    "isAllTag": true
+  },
+  "global": {
+    "imports": [
+      "Std.Console"
+    ]
+  },
+  "references": [
+    { "path": "../../out/export/Core", "uuid":"123123123213", "name": "Core.module.json" }
+  ],
+  "struct": [
+      { "namespace": "SBAProbe", "children": [] }
+  ],
+  "export": {
+    "moduleName": "SBAProbe",
+    "outputDir": "..\\..\\out\\export",
+    "versionMain": 0,
+    "versionSub": 0,
+    "versionPatch": 1,
+    "includeMetadata": true,
+    "debugText": {
+      "outputDir": "",
+      "code": false,
+      "token": false,
+      "node": false,
+      "file": false,
+      "meta": false,
+      "ir": false
+    }
+  }
+}

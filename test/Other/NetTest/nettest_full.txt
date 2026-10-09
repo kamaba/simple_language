@@ -1,0 +1,243 @@
+﻿SimpleLanguage VM 0.0.01 (C Runtime)
+===== TcpBasicTest start =====
+
+========== A: Tcp 基础收发 ==========
+
+[TcpBasicTest] A1 echo round-trip : OK
+
+[TcpBasicTest] A1 remote address : OK
+
+[TcpBasicTest] A1 remote port and server port : OK
+
+[TcpBasicTest] A2 peer close yields EOF : OK
+
+[TcpBasicTest] A4 connection refused -> ConnectFailed : OK
+
+[TcpBasicTest] A5 host not found : OK
+
+===== TcpBasicTest end =====
+
+===== NetFrameTest start =====
+
+========== C: LengthPrefix 分帧 ==========
+
+[NetFrameTest] C1 two frames from one write : OK
+
+[NetFrameTest] C2 frame split across two writes : OK
+
+[NetFrameTest] C3 decodeStream two frames : OK
+
+[NetFrameTest] C3 decodeStream ends on close : OK
+
+===== NetFrameTest end =====
+
+===== UdpEchoTest start =====
+
+========== D: UDP 收发 ==========
+
+[UdpEchoTest] D1 udp round-trip : OK
+
+[UdpEchoTest] D2 datagram boundaries kept : OK
+
+[UdpEchoTest] D3 double bind -> BindFailed : OK
+
+[UdpEchoTest] D4 close idempotent : OK
+
+===== UdpEchoTest end =====
+
+===== NetStreamComposeTest start =====
+
+========== G: Stream 组合 ==========
+
+[NetStreamComposeTest] G1 datagram stream payloads : OK
+
+[NetStreamComposeTest] G1 datagram source address : OK
+
+[NetStreamComposeTest] G2 add suspends on full buffer : OK
+
+[NetStreamComposeTest] G2 values delivered in order : OK
+
+[NetStreamComposeTest] G2 producer resumed then closed : OK
+
+===== NetStreamComposeTest end =====
+
+===== NetConcurrentTest start =====
+
+========== E: 并发连接 ==========
+
+[NetConcurrentTest] E1 10 concurrent echo round-trips : OK
+
+===== NetConcurrentTest end =====
+
+===== NetCloseTest start =====
+
+========== F: 关闭语义 ==========
+
+[NetCloseTest] F1 half-close keeps data then EOF : OK
+
+[NetCloseTest] F2 read after closeRead -> Closed : OK
+
+[NetCloseTest] F3 recv after socket close -> Closed : OK
+
+[NetCloseTest] F4 close idempotent : OK
+
+===== NetCloseTest end =====
+
+===== NetIsolateTest start =====
+
+========== H: isolate 组合 ==========
+
+[NetIsolateTest] H1 isolate workers echo : OK
+
+[NetIsolateTest] H2 failed worker returns null : OK
+
+[NetIsolateTest] H2 server unaffected by failed worker : OK
+
+===== NetIsolateTest end =====
+
+===== NetTimeoutTest start =====
+
+========== T: 读写超时 ==========
+
+[NetTimeoutTest] T1 recv read-timeout -> Timeout : OK
+
+[NetTimeoutTest] T1 timeout window honored : OK
+
+[NetTimeoutTest] T2 conn alive after timeout : OK
+
+[NetTimeoutTest] T3 accept timeout -> Timeout : OK
+
+[NetTimeoutTest] T3 timeout window honored : OK
+
+[NetTimeoutTest] T3 accept alive after timeout : OK
+
+[NetTimeoutTest] T4 recvFrom timeout -> Timeout : OK
+
+[NetTimeoutTest] T4 timeout window honored : OK
+
+[NetTimeoutTest] T4 udp alive after timeout : OK
+
+===== NetTimeoutTest end =====
+
+===== TlsTest start =====
+
+========== K: TLS 加密流 ==========
+
+[TlsTest] K1 insecure wrap + echo : OK
+
+[TlsTest] K1 peer close_notify -> clean EOF : OK
+
+[TlsTest] K2 verified wrap (CA + SNI + SAN) + echo : OK
+
+[TlsTest] K2 peer close_notify -> clean EOF : OK
+
+[TlsTest] K3 tls read-timeout -> Timeout : OK
+
+[TlsTest] K3 timeout window honored : OK
+
+[TlsTest] K3 conn alive after timeout : OK
+
+===== TlsTest end =====
+
+===== HttpTest start =====
+
+========== L: HTTP 客户端 ==========
+
+[HttpTest] L1 uri scheme/host/port : OK
+
+[HttpTest] L1 uri path/query/pathAndQuery : OK
+
+[HttpTest] L1 uri flags + effectivePort : OK
+
+[HttpTest] L1 uri hostHeader (explicit 8080) : OK
+
+[HttpTest] L1 uri https defaults : OK
+
+[HttpTest] L1 uri https effectivePort/hostHeader : OK
+
+[HttpTest] L1 uri empty path -> / : OK
+
+[HttpTest] L1 uri empty host -> UriFormat(1) : OK
+
+[HttpTest] L1 ftp scheme -> UnsupportedScheme(2) : OK
+
+[HttpTest] L2 server request line : OK
+
+[HttpTest] L2 server Host header : OK
+
+[HttpTest] L2 server Connection: close : OK
+
+[HttpTest] L2 GET status line : OK
+
+[HttpTest] L2 GET body via content-length : OK
+
+[HttpTest] L2 GET response headers (case-insensitive get) : OK
+
+[HttpTest] L2 GET contentLength == 12 : OK
+
+[HttpTest] L2 GET isOk : OK
+
+[HttpTest] L2 GET headers.count >= 2 : OK
+
+[HttpTest] L3 server request line : OK
+
+[HttpTest] L3 server Content-Type header : OK
+
+[HttpTest] L3 server Content-Length: 10 : OK
+
+[HttpTest] L3 server body after blank line : OK
+
+[HttpTest] L3 POST status + isOk : OK
+
+[HttpTest] L3 chunked body aggregation (2 chunks) : OK
+
+[HttpTest] L3 contentLength -1 + chunked header : OK
+
+L4 dbg: client certs loaded
+
+L4 dbg: client connecting
+
+L4 dbg: server accepted
+
+L4 dbg: server tls accepted
+
+L4 dbg: server req read
+
+[HttpTest] L4 server https request line : OK
+
+[HttpTest] L4 server Host header : OK
+
+[HttpTest] L4 server setHeader override value : OK
+
+[HttpTest] L4 server setHeader no stale copy : OK
+
+L4 dbg: client response got
+
+[HttpTest] L4 https GET status : OK
+
+[HttpTest] L4 https GET body : OK
+
+===== HttpTest end =====
+
+===== NetSuspendTest start =====
+
+========== B: 挂起与唤醒 ==========
+
+[NetSuspendTest] B1 accept suspended : OK
+
+[NetSuspendTest] B1 recv suspended : OK
+
+[NetSuspendTest] B1 wakeup round-trip : OK
+
+[NetSuspendTest] B2 server suspended on recv : OK
+
+[NetSuspendTest] B2 echo after wakeup : OK
+
+[NetSuspendTest] B3 server suspended on accept before root returns : OK
+
+[NetSuspendTest] B3 root returning (server suspended on accept)
+
+===== NetSuspendTest end =====
+
+[NetSuspendTest] B3 guard kept VM alive for late delivery : OK
+

@@ -25,7 +25,6 @@ This document gives a concise map of the repository and the responsibilities of 
   - `Object/*` ? `SObject` and runtime wrappers
   - `InnerCLRRuntime/*` ? instructions, `SValue`, CLR bridge (`CLRRRuntimeVM`, ¡Ä)
   - `NewObject/*`, `LocalRuntime/*` ? allocation and local VM
-  - `NativeBridge/*` ? dynamic libraries and language bridges
   - `Runtime/` ? VM facades and types (`CLRVM`, `EVMType`, ¡Ä)
 
 - **`source/Log`** ? logging and diagnostics (`Log`, `Diagnostic`, `ErrorDefinition`, ¡Ä)

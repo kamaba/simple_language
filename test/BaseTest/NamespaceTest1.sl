@@ -1,5 +1,3 @@
-import Std
-
 namespace Std.Layer1_1;    #这种方式 只适合于在外屋已经定义类名后，然后在该节点下有类名的前缀
 
 namespace Std.Layer1_1
@@ -44,7 +42,7 @@ Layer1_1.C2                     #搜索命名空间定义
 #    2. 另外，可以内嵌套的方式，即 namespace N1{ namespace N2{ class C1{} } class C2{} }这种形式
 # 关于类的前缀空间定义 如果使用了前缀定义，要不与namespace{}这种形式的嵌套定义，要不就以搜索结尾定义
 
-NamespaceTest1Smoke
+NamespaceTest1
 {
     static fun()
     {

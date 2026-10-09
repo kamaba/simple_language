@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      ExportLangManager.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -6,8 +6,12 @@
 //  Description:  manager Export other lanuage or il etc.
 //****************************************************************************
 
+using SimpleLanguage.Export;
+using SimpleLanguage.Export.MLIR;
 using SimpleLanguage.Export.SLIR;
+using SimpleLanguage.Export.SLIR.Binary;
 using SimpleLanguage.IR;
+using SimpleLanguage.Logging;
 using SimpleLanguage.Project;
 using System;
 using System.IO;
@@ -22,6 +26,22 @@ namespace SimpleLanguage.ExportLanguage
     }
     public class ExportLangManager
     {
+        // In-memory export mode (--in-memory): the Export(SLIR) phase builds the
+        // module package JSON text in memory instead of writing <Module>.module.json.
+        // The host reads LastMemoryPackageJson after compile and hands it to the
+        // C VM memory entry; LastMemoryExportDir is the directory the file would
+        // have been written to (C-side base_dir for reference/plugin resolution).
+        public static bool MemoryExportMode { get; set; }
+        public static string LastMemoryPackageJson { get; private set; }
+        public static string LastMemoryExportDir { get; private set; }
+
+        /// <summary>Clears the last in-memory export result (call before each compile
+        /// so a skipped Export phase can be detected by a null LastMemoryPackageJson).</summary>
+        public static void ResetMemoryExport()
+        {
+            LastMemoryPackageJson = null;
+            LastMemoryExportDir = null;
+        }
 
         // Explicit export entrypoint.
         // Use env vars to avoid changing default compile flow:
@@ -37,64 +57,80 @@ namespace SimpleLanguage.ExportLanguage
             var filePrefix = ResolveProjectNamePrefix();
             var moduleName = ResolveModuleName();
 
+            // AOT 导出必须先于 module.json：stage 1-3 的结果（mlir/dll/methods manifest）
+            // 会被 SLModulePackageWriter.Build 合并进 module.json 的 "aot" 字段。
+            // 管线细节全部封装在 Export/MLIR 目录（MLIRExportManager）。
+            MLIRExportManager.Instance.Run(outDir);
+
+            // vmDlls：编译 jsonc "vmDlls" 段配置的 VS 工程并把产出 DLL 拷到 outDir
+            //（module.json 同目录），供 cvm 加载时按 package 目录预加载。
+            // 失败仅记日志不中断导出。
+            VmDllBuildManager.Run(outDir);
+
+            // @<tag>(){} 块（AtSignLabelBlockCollector 登记的插件临时代码）：按标签
+            // 分发给对应构建 handler 生成目标库（首期 csharp_mono = .NET Framework
+            // csc 编译 SLAtSign.dll 并部署到插件 lib 目录，运行期 assemblies_path
+            // 兜底加载）。失败仅记日志不中断导出。
+            AtSignLabelBuildManager.Run(outDir);
+
+            // plugins[].lib 对象：按四级目录回退（lib/<os>-<arch>/ → <os>/ →
+            // <arch>/ → lib/）求值平台库并拷到 outDir/plugins/<id>/，写回
+            // PluginSection.Lib/Libs 供下方 module.json 导出（§4.2/§5.3②）。
+            // 先于 SLModulePackageWriter.Write 运行；失败仅记日志不中断导出。
+            PluginLibExportManager.Run(outDir);
+
+            // 导出格式二选一（jsonc export.format / CLI --format 覆盖）：
+            // json = SLIR JSON module.json（缺省，全仓现状）；binary = SLB .module.slb
+            //（规范见 csimple_lang/md/design/SLB_DESIGN.md）。两者共用同一份
+            // SLModulePackage 中间数据（Build 一次、双通道投影），没有并存导出。
+            var exportFormat = ProjectManager.config?.Export?.Format;
+            if (string.IsNullOrEmpty(exportFormat))
+                exportFormat = "json";
+            if (!string.Equals(exportFormat, "json", StringComparison.OrdinalIgnoreCase)
+                && !string.Equals(exportFormat, "binary", StringComparison.OrdinalIgnoreCase))
+            {
+                Log.AddProjectLog(LID.ProjectExportFormatInvalid, "", exportFormat);
+                return;
+            }
+
+            if (string.Equals(exportFormat, "binary", StringComparison.OrdinalIgnoreCase))
+            {
+                // P0：二进制导出仅落盘；--in-memory（供宿主机内直传）组合待 P2 实现
+                if (MemoryExportMode)
+                {
+                    Log.AddProjectLog(LID.ProjectExportBinaryInMemoryUnsupported, "");
+                    return;
+                }
+                var binaryPath = Path.Combine(outDir, filePrefix + ".module.slb");
+                var package = SLModulePackageWriter.Build(IRManager.instance, moduleName);
+                SLBWriter.Write(package, binaryPath,
+                    ProjectManager.config?.Export?.Binary?.Compressed ?? true);
+                return;
+            }
+
             // Unified JSON export (VM symmetric)
             string exportIRPath = Path.Combine(outDir, filePrefix + ".module.json");
-            SLModulePackageWriter.Write(IRManager.instance, exportIRPath, moduleName);
+            if (MemoryExportMode)
+            {
+                // In-memory export: build the package JSON text without writing the file,
+                // so the host can hand it straight to the C VM memory entry
+                // (cli_run_module_in_memory). LastMemoryExportDir doubles as the C-side
+                // base_dir: reference packages and plugin libs resolve against it.
+                LastMemoryPackageJson = SLModulePackageWriter.BuildPackageJson(IRManager.instance, moduleName);
+                LastMemoryExportDir = outDir;
+                Log.AddIRLog(LID.ExportSLModulePackageExportModuleSuccess,
+                    "export module success (in-memory): " + exportIRPath);
+            }
+            else
+            {
+                SLModulePackageWriter.Write(IRManager.instance, exportIRPath, moduleName);
+            }
 
             //// Optional: keep binary writer for debugging/back-compat
             //if (Environment.GetEnvironmentVariable("SIMPLELANG_SLIR_BINARY") == "1")
             //{
             //    SLIRWriter.WriteModule(IRManager.instance, Path.Combine(outDir, "module.slir"));
             //}
-
-            /*
-            foreach (var kv in irManager.IRMethodDict)
-            {
-                var m = kv.Value;
-                if (m == null) continue;
-
-                if (string.Equals(kind, "llvm", StringComparison.OrdinalIgnoreCase))
-                {
-                    var llvm = new LLVMEmitter();
-                    llvm.EmitMethod(m, Path.Combine(outDir, m.onlyFunctionName + ".ll"));
-                }
-                else if (string.Equals(kind, "mlir", StringComparison.OrdinalIgnoreCase))
-                {
-                    var mlirPath = Path.Combine(outDir, m.onlyFunctionName + ".mlir");
-                    var lower = Environment.GetEnvironmentVariable("SIMPLELANG_MLIR_LOWER") == "1";
-                    if (!lower)
-                    {
-                        MLIRExporter.ExportToFile(m, mlirPath);
-                    }
-                    else
-                    {
-                        var nativeOut = Environment.GetEnvironmentVariable("SIMPLELANG_MLIR_NATIVE_OUT");
-                        if (string.IsNullOrWhiteSpace(nativeOut))
-                        {
-                            nativeOut = Path.Combine(outDir, m.onlyFunctionName + ".exe");
-                        }
-
-                        MLIRExporter.ExportAndOptionallyLower(m, mlirPath, new MLIRExporter.ExportOptions
-                        {
-                            RunToolchain = true,
-                            NativeOutputPath = nativeOut,
-                        });
-                    }
-                }
-                else if (string.Equals(kind, "slir", StringComparison.OrdinalIgnoreCase))
-                {
-                    var slirPath = Path.Combine(outDir, "module.slir");
-                    SLIRWriter.WriteModule(irManager, slirPath);
-
-                    if (Environment.GetEnvironmentVariable("SIMPLELANG_SLIR_DUMP") == "1")
-                    {
-                        SLIRDump.DumpToText(slirPath, Path.Combine(outDir, "module.slir.txt"));
-                    }
-                    // one module file is enough; stop after first iteration
-                    break;
-                }
-            }
-            */
         }
 
         private static string ResolveOutDir()

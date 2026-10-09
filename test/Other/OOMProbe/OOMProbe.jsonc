@@ -1,0 +1,58 @@
+{
+  "project":
+  {
+    "name": "OOMProbe",
+    "desc": "P5-2 + P5-3 acceptance probe - pool-exhaustion throws catchable Core.MemoryError.OOM",
+    "mainVersion": 0,
+    "subVersion": 0,
+    "buildVersion": 1,
+    "buildSubVersion": 0
+  },
+  "source": {
+    "root": "."
+  },
+  "compile": {
+    "optimize": false,
+    "target": "x64",
+    "debug": true,
+    "isUseForceSemiColonInLineEnd": true,
+    "isForceUseClassKey": false,
+    "isSupportDoublePlus": false,
+    "requireSameNumericTypes": false
+  },
+  "compileFiles": {
+    "files": []
+  },
+  "compileFilter": {
+    "isAllGroup": true,
+    "isAllTag": true
+  },
+  "global": {
+    "imports": [
+      "Std.Console"
+    ]
+  },
+  "references": [
+    { "path": "../../out/export/Core", "uuid":"123123123213", "name": "Core.module.json" }
+  ],
+  "struct": [
+      { "namespace": "OOMProbe", "children": [] }
+  ],
+  "export": {
+    "moduleName": "OOMProbe",
+    "outputDir": "..\\..\\out\\export",
+    "versionMain": 0,
+    "versionSub": 0,
+    "versionPatch": 1,
+    "includeMetadata": true,
+    "debugText": {
+      "outputDir": "",
+      "code": false,
+      "token": false,
+      "node": false,
+      "file": false,
+      "meta": false,
+      "ir": false
+    }
+  }
+}

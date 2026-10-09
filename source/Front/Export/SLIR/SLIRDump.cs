@@ -48,7 +48,7 @@ namespace SimpleLanguage.Export.SLIR
                 for (int i = 0; i < meth.Instructions.Count; i++)
                 {
                     var ins = meth.Instructions[i];
-                    sb.AppendLine($"  [{i}] op={ins.OpCode} index={ins.Index} offset={ins.Offset} payloadLen={ins.Payload.Length}");
+                    sb.AppendLine($"  [{i}] op={ins.OpCode} payloadLen={ins.Payload.Length}");
                 }
                 sb.AppendLine();
             }

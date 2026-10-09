@@ -44,7 +44,7 @@ public class Float32_3
         this._value[2] *= _scale[2]
     }
 
-    @AotCompile()
+    @AOT()
     Float32 dot( Float32_3 lhs, Float32_3 rhs )
     {
         ret lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z 
