@@ -181,12 +181,6 @@ namespace SimpleLanguage.Compile
             }
             return true;
         }
-
-        /// <summary>一次完成 Token -> Node -> File 三个小步骤（兼容旧流程）</summary>
-        public bool StructParse()
-        {
-            return ParseTokenStep() && ParseNodeStep() && ParseFileStep();
-        }
         public void CreateNamespace()
         {
             m_File.CreateNamespace();

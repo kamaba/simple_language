@@ -443,9 +443,6 @@ namespace SimpleLanguage.Compile
                         {
                             m_CurrentNode.AddChild(node);
                         }
-
-                        //tempNode.lastNode = node;
-
                         m_TokenIndex++;
                     }
                     break;
@@ -850,12 +847,12 @@ namespace SimpleLanguage.Compile
         }
         public void WriteNodeString(bool isWriteFile)
         {
+            if (m_RootNode == null) return;
+            if (!Common.ShouldExportDebugText("Node.txt")) return;
             try
             {
-                if (m_RootNode == null) return;
                 if (isWriteFile)
                 {
-                    if (!Common.ShouldExportDebugText("Node.txt")) return;
                     var outFile = Common.GetDebugCodeFilePath(m_FileMeta.path, "Node.txt");
                     string content = m_RootNode.ToFormatString();
                     File.WriteAllText(outFile, content);

@@ -6,8 +6,6 @@
 //  Description: 
 //****************************************************************************
 using SimpleLanguage.Core;
-using SimpleLanguage.Project;
-using SimpleLanguage.Logging;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -27,9 +25,6 @@ namespace SimpleLanguage.Compile
         private FileMetaLocalSyntax m_FileMetaLocalSyntax = null;
         // for example: namespace a.b.c;
         private List<FileMetaNamespace> m_FileDefineNamespaceList = new List<FileMetaNamespace>();
-        //private List<FileMetaNamespace> m_FileSearchNamespaceList = new List<FileMetaNamespace>(); 去掉搜索namespace 原因是 要把这个移植到项目配置中
-        // for example: namespace a{ namespace b{}}
-        //private List<FileMetaNamespace> m_FileMetaNamespaceList = new List<FileMetaNamespace>();
         private List<FileMetaClass> m_FileMetaClassList = new List<FileMetaClass>();
 
         private List<FileMetaNamespace> m_FileMetaAllNamespaceList = new List<FileMetaNamespace>();
@@ -87,12 +82,6 @@ namespace SimpleLanguage.Compile
         {
             return m_FileMetaLocalSyntax;
         }
-
-        public void SetFileMetaGlobalSyntax(FileMetaLocalSyntax global)
-        {
-            // global{} parsing is removed in Front; keep API for compatibility.
-        }
-
         public FileMetaLocalSyntax GetFileMetaGlobalSyntax()
         {
             return null;
@@ -102,11 +91,6 @@ namespace SimpleLanguage.Compile
             fdn.SetFileMeta(this);
             m_FileDefineNamespaceList.Add(fdn);
         }
-        //public void AddFileSearchNamespace(FileMetaNamespace fdn )
-        //{
-        //    fdn.SetFileMeta(this);
-        //    m_FileSearchNamespaceList.Add(fdn);
-        //}
         public void AddFileMetaAllNamespace( FileMetaNamespace fmn )
         {
             fmn.SetFileMeta(this);
@@ -187,21 +171,6 @@ namespace SimpleLanguage.Compile
                     }
                     break;
                 }
-                //else
-                //{
-                //    if (imn.refFromType == RefFromType.CSharp)
-                //    {
-                //        mb = CSharpManager.FindCSharpClassOrNameSpace(imn.name, cname);
-                //    }
-                //    else
-                //    {
-                //        mb = imn.metaNode.GetChildrenMetaNodeByName(name);
-                //    }
-                //    if( mb == null )
-                //    {
-                //        break;
-                //    }
-                //}
             }
             return mb;
         }
@@ -274,58 +243,6 @@ namespace SimpleLanguage.Compile
             }
             return mb;
         }
-        /*
-        public MetaNode GetMetaNodeByImportNamespace( string name )
-        {
-            for (int i = 0; i < m_ImportMetaNamespaceList.Count; i++)
-            {
-                var imn = m_ImportMetaNamespaceList[i];
-                if (imn.refFromType == RefFromType.CSharp)
-                {
-                    MetaNode getmb = CSharpManager.FindCSharpClassOrNameSpace(imn.name, name);
-                    if (getmb != null)
-                        return getmb;
-                }
-                else
-                {
-                    return imn.metaNode.GetChildrenMetaNodeByName(name);
-                }
-            }
-            return null;
-        }
-        */
-        //public MetaNode GetMetaBaseByName( string name )
-        //{
-        //    MetaModule mm = ModuleManager.instance.GetMetaModuleByName(name);
-        //    if( mm != null )
-        //    {
-        //        return mm;
-        //    }
-        //    else
-        //    {
-        //        MetaNode m2 = ModuleManager.instance.GetChildrenMetaNodeByName(name);
-        //        if (m2 != null)
-        //        {
-        //            return m2;
-        //        }
-        //    }
-
-        //    for (int i = 0; i < m_ImportMetaNamespaceList.Count; i++)
-        //    {
-        //        var imn = m_ImportMetaNamespaceList[i];
-        //        if( imn.refFromType == RefFromType.CSharp )
-        //        {
-        //            MetaNode getmb = CSharpManager.FindCSharpClassOrNameSpace(imn.name, name);
-        //            if (getmb != null)
-        //                return getmb;
-        //        }
-        //        else
-        //        {
-        //            //return imn.GetChildrenMetaBaseByName(name);
-        //        }
-        //    }
-        //    return null;
-        //}
         public void CreateNamespace()
         {
             MetaNode parentNode = ModuleManager.instance.selfModule.metaNode;
@@ -333,18 +250,6 @@ namespace SimpleLanguage.Compile
             {
                 m_FileDefineNamespaceList[i].CreateNamespace(parentNode);
             }
-            //for (int i = 0; i < m_FileSearchNamespaceList.Count; i++)
-            //{
-            //    var fmn = m_FileSearchNamespaceList[i];
-            //    if (ProjectManager.useDefineNamespaceType != EUseDefineType.NoUseProjectConfigNamespace)
-            //    {
-            //        //if (!ProjectManager.data.IsIncludeDefineStruct(fmn.namespaceStatementBlock.namespaceList))
-            //        //{
-            //        //    Log.AddFileMetaLog( LID.FileMetaFileNamespace, "Error 暂不允许使用namespace 定义命名空间!!!" + fmn.ToFormatString() + " 位置: " + fmn.token.ToLexemeAllString());
-            //        //}
-            //    }
-            //    NamespaceManager.instance.CreateMetaNamespaceByFineDefineNamespace(fmn, parentNode);
-            //}
         }
         public void CombineFileMeta()
         {
@@ -355,27 +260,8 @@ namespace SimpleLanguage.Compile
             for (int i = 0; i < m_FileMetaAllClassList.Count; i++)
             {
                 var fns = m_FileMetaAllClassList[i];
-
-                //for( int j = 0; j < m_FileSearchNamespaceList.Count; j++)
-                //{
-                //    fns.AddExtendMetaNamespace(m_FileSearchNamespaceList[j]);
-                //}
-
                 ClassManager.instance.AddClass(fns);
             }
-        }
-        //public void HandleExtendData()
-        //{
-        //    for (int i = 0; i < m_FileMetaAllClassList.Count; i++)
-        //    {
-        //        var fns = m_FileMetaAllClassList[i];
-
-        //        ClassManager.instance.HandleExtendContent(fns);
-        //    }
-        //}
-        public void ParseInface()
-        {
-
         }
         public override void SetDeep(int _deep)
         {
@@ -392,10 +278,6 @@ namespace SimpleLanguage.Compile
             {
                 m_FileDefineNamespaceList[i].SetDeep(m_Deep);
             }
-            //for (int i = 0; i < m_FileSearchNamespaceList.Count; i++)
-            //{
-            //    m_FileSearchNamespaceList[i].SetDeep(m_Deep);
-            //}
             for (int i = 0; i < m_FileMetaClassList.Count; i++)
             {
                 m_FileMetaClassList[i].SetDeep(m_Deep);

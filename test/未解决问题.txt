@@ -13,8 +13,23 @@ _before_
 _after_
 把在project.sp里边的，改成这两函数，_before_ 这个是在编译前调用的，_after_ 是在编译后，导出ir前调用的 把想着的逻辑都改动下，然后把想着的配置还有逻辑放那里
 
+像识别到非关键字，但语法不符合的，也要进行报错处理，像return 不是关键字，是错误的语法，所以这个需要报错的
+D:\project\lang\simple_language\source\Front\FileMeta\FileMeta.cs 这里边 m_FileMetaAllClassList  m_FileMetaClassList是不是重复了  看看把这两合并下吧
+
+import NS.a as NSA 的用法，还有typealias的用法的完善
+
+语法中，像final 不能和 atstract 一起用  还有const不能对class里边解析 需要报错处理  在定义FileMetaClass中，如果是data 才能使用static 其它的都不允许使用static
+
 project.jsonc的配置整理。
 把global.data 确定了 下边的关联元素确定下，还有调用方式
+
+创建表达式的过程，是不是可以优化下，怎么感觉好多地方有调 用二次的情况，你审核下代码，给个优化方案，我看下
+
+把Log里边 如果可以 放到Token尽量的放下token
+
+ExportProjectGuideMarkdown 这个在生成的时候，可以 选择不生成，通过传入参数控制  如果传入生成.md，可能通过模板生成后，再通过AI对项目有个描述。
+
+Environment.SetEnvironmentVariable 尽量不要使用这种的，而是使用配置 文件 就可以 了。
 
 
 写更多的使用用例，测试cvm的功能点。

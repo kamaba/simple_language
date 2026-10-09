@@ -6,7 +6,6 @@
 //  Description:
 //****************************************************************************
 
-using SimpleLanguage.Compile;
 using System.Text;
 
 namespace SimpleLanguage.Compile

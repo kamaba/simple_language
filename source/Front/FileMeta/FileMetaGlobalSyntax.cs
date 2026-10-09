@@ -214,11 +214,6 @@ namespace SimpleLanguage.Compile
                 }
             }
 
-            if (mb?.name == "CSharp")
-            {
-                return ResolveCSharpImportNamespace(mb, startIndex);
-            }
-
             for (int i = startIndex; i < m_NamespaceStatement.tokenList.Count; i++)
             {
                 string name = m_NamespaceStatement.tokenList[i].lexeme.ToString();
@@ -229,56 +224,6 @@ namespace SimpleLanguage.Compile
                     return null;
                 }
                 mb = findmb;
-            }
-
-            return mb;
-        }
-
-        private MetaNode ResolveCSharpImportNamespace(MetaNode csharpModuleNode, int startIndex)
-        {
-            MetaNode mb = csharpModuleNode;
-            string allname = "";
-            for (int i = startIndex; i < m_NamespaceStatement.tokenList.Count; i++)
-            {
-                string name = m_NamespaceStatement.tokenList[i].lexeme.ToString();
-
-                if (string.IsNullOrEmpty(allname))
-                {
-                    allname = name;
-                }
-                else
-                {
-                    allname = allname + "." + name;
-                }
-
-                //if (CSharpManager.IsFindMetaCSharpNamespace(allname))
-                //{
-                //    var findmb = mb.GetChildrenMetaNodeByName(name);
-
-                //    if (findmb != null)
-                //    {
-                //        if (findmb.metaNamespace is MetaNamespaceCSharp)
-                //        {
-                //            mb = findmb;
-                //        }
-                //        else
-                //        {
-                //            Log.AddFileMetaLog(LID.FileMetaGlobalSyntaxImport5, "解析Import语句发生错误，没有找到对应的命名空间路径: " + allname
-                //                + "Token: " + m_NamespaceStatement.tokenList[i].sourceBeginLine.ToString());
-                //            return null;
-                //        }
-                //    }
-                //    else
-                //    {
-                //        MetaNamespaceCSharp mn = new MetaNamespaceCSharp(name);
-                //        mb = mb.AddMetaNamespace(mn);
-                //    }
-                //}
-            }
-
-            if (mb == null)
-            {
-                return null;
             }
 
             return mb;

@@ -5,9 +5,6 @@
 //  DateTime: 2022/11/2 12:00:00
 //  Description: 
 //****************************************************************************
-
-
-using SimpleLanguage;
 using SimpleLanguage.Core;
 using SimpleLanguage.Export.SLIR.Types;
 using SimpleLanguage.Logging;

@@ -381,7 +381,6 @@ namespace SimpleLanguage.Compile
             if (list == null || list.Count == 0) return;
             m_AttributeList.AddRange(list);
         }
-
         public void AddAttribute(FileMetaAttributeSyntax attr)
         {
             if (attr == null) return;

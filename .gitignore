@@ -423,3 +423,5 @@
 /test/out/
 /test/NetTest/build
 /t_group_run.log
+/tools/SLBRoundTrip/bin
+/tools/SLBRoundTrip/obj

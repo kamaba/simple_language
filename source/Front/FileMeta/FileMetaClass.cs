@@ -17,6 +17,9 @@ namespace SimpleLanguage.Compile
     {
         public List<FileMetaAttributeSyntax> attributeList => m_AttributeList;
 
+        /// <summary>类级权限 token（public/private/projected/extern）。
+        /// extern 是类级显式导出标记（映射 EPermission.Export；export 关键字已移除）。</summary>
+        public Token permissionToken => m_PermissionToken;
         public bool innerClass { get; set; } = false;
         public bool isConst { get { return m_ConstToken != null; } }
         public bool isStatic { get { return m_StaticToken != null; } }
@@ -679,25 +682,10 @@ namespace SimpleLanguage.Compile
                 }
             }
         }
-        public void SetPartialToken(Token partialToken)
-        {
-            m_PartialToken = partialToken;
-        }
         public void SetPermissionToken(Token permissionToken)
         {
             m_PermissionToken = permissionToken;
         }
-        /// <summary>类级权限 token（public/private/projected/extern）。
-        /// extern 是类级显式导出标记（映射 EPermission.Export；export 关键字已移除）。</summary>
-        public Token permissionToken => m_PermissionToken;
-        //public void SetParentClassNameToken(List<Token> tokenList, Node angleNode)
-        //{
-        //    if( tokenList != null && tokenList.Count > 0 )
-        //    {
-        //        FileMetaClassDefine fmcd = new FileMetaClassDefine(m_FileMeta, tokenList, angleNode);
-        //        SetExtendClass(fmcd);
-        //    }
-        //}
         public void SetMetaClass(MetaClass mc)
         {
             m_MetaClass = mc;
@@ -723,10 +711,6 @@ namespace SimpleLanguage.Compile
         {
             m_MetaData = md;
         }
-        //public MetaBase GetChildrenMetaBaseByName( string name )
-        //{
-        //    return  m_MetaClass.GetChildrenMetaBaseByName(name);
-        //}
         public void AddFileMetaClass(FileMetaClass fmc)
         {
             fmc.m_Deep = this.deep + 1;
@@ -914,8 +898,6 @@ namespace SimpleLanguage.Compile
 
             return stringBuilder.ToString();
         }
-
-
         public override string ToString()
         {
             return this.name;

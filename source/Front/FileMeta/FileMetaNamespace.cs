@@ -18,7 +18,6 @@ namespace SimpleLanguage.Compile
 {
     public sealed class FileMetaNamespace : FileMetaBase
     {
-        //public bool isSearchNamespace => m_IsSearchNamespace;
         public Node namespaceNode => m_NamespaceNode;
         public Node namespaceNameNode => m_NamespaceNameNode;
 
@@ -26,7 +25,6 @@ namespace SimpleLanguage.Compile
         private Node m_NamespaceNameNode = null;
         private Token m_BraceBeginToken = null;
         private Token m_BraceEndToken = null;
-        //private bool m_IsSearchNamespace = false;
         private MetaNode m_MetaNode = null;
 
         public new string name
@@ -48,27 +46,6 @@ namespace SimpleLanguage.Compile
         private List<FileMetaClass> m_ChildrenClassList = new List<FileMetaClass>();
 
         private static Stack<FileMetaNamespace> s_MetaNamespaceStack = new Stack<FileMetaNamespace>();
-        //public Stack<FileMetaNamespace> namespaceStack
-        //{
-        //    get
-        //    {
-        //        s_MetaNamespaceStack.Clear();
-        //        var t = topLevelFileMetaNamespace;
-        //        while (t != null)
-        //        {
-        //            s_MetaNamespaceStack.Push(t);
-        //            t = t.topLevelFileMetaNamespace;
-        //        }
-        //        s_MetaNamespaceStack.Push(this);
-
-        //        return s_MetaNamespaceStack;
-        //    }
-        //}
-        //public FileMetaNamespace( FileMetaNamespace fmn )
-        //{
-        //    this.m_NamespaceNode = fmn.m_NamespaceNode;
-        //    this.m_NamespaceNameNode = fmn.m_NamespaceNameNode;
-        //}
 
         public FileMetaNamespace(Node namespaceNode, Node namespaceNameNode)
         {
@@ -83,12 +60,10 @@ namespace SimpleLanguage.Compile
                 return;
             }
             Node blockNode = namespaceNode.blockNode;
-            //m_IsSearchNamespace = true;
             if (blockNode != null )
             {
                 m_BraceBeginToken = blockNode.token;
                 m_BraceEndToken = blockNode.endToken;
-                //m_IsSearchNamespace = false;
             }
             m_NamespaceStateBlock = NamespaceStatementBlock.CreateStateBlock(m_NamespaceNameNode.GetLinkTokenList());
 
@@ -99,32 +74,12 @@ namespace SimpleLanguage.Compile
             {
                 Log.AddFileMetaLog( LID.FileMetaNamespaceNamespace2, this.m_Token, "Error 暂不允许使用namespace 定义命名空间!!!" );
             }
-            //metaNode = SearchTopLevelFileMetaNamespace( this, metaNode);
             m_MetaNode = CreateMetaNamespaceHandle(this, metaNode);
             foreach ( var v in m_MetaNamespaceList )
             {
                 v.CreateNamespace(m_MetaNode);
             }
         }
-        //public MetaNode SearchTopLevelFileMetaNamespace(FileMetaNamespace fns, MetaNode parentNode = null)
-        //{
-        //    MetaNode findNode = parentNode;
-        //    if (fns.topLevelFileMetaNamespace != null)
-        //    {
-        //        findNode = SearchTopLevelFileMetaNamespace(fns.topLevelFileMetaNamespace, findNode);
-        //        for (int i = 0; i < fns.topLevelFileMetaNamespace.namespaceStatementBlock.tokenList.Count; i++)
-        //        {
-        //            string name = fns.topLevelFileMetaNamespace.namespaceStatementBlock.tokenList[i].lexeme.ToString();
-        //            var findNode2 = findNode.GetChildrenMetaNodeByName(name);
-        //            if (findNode2 == null)
-        //            {
-        //                break;
-        //            }
-        //            findNode = findNode2;
-        //        }
-        //    }
-        //    return findNode;
-        //}
         MetaNode CreateMetaNamespaceHandle(FileMetaNamespace fns, MetaNode parentNode )
         {
             MetaNode mnode = parentNode;

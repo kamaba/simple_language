@@ -487,7 +487,6 @@ namespace SimpleLanguage.Compile
             return m_Token?.ToConstString();
         }
     }
-    // 
     public class FileMetaCallTerm : FileMetaBaseTerm
     {
         public FileMetaCallLink callLink => m_CallLink;
@@ -541,8 +540,6 @@ namespace SimpleLanguage.Compile
     public class FileMetaParTerm : FileMetaBaseTerm
     {
         public Token endToken => m_EndToken;
-
-        private Node m_Node = null;
         private Token m_EndToken = null;
 
         // Array a = ( 1,2 3,4 );  Class c = ( 1,2 );    int a = ( 1 + 2 + GetX() )  Enum e = Enum.Value( {} );
@@ -551,7 +548,6 @@ namespace SimpleLanguage.Compile
             m_FileMeta = fm;
             m_Token = node.token;
             m_EndToken = node.endToken;
-            m_Node = node;
 
             var childList = node.childList;
 

@@ -797,10 +797,6 @@ namespace SimpleLanguage.Compile
             //    Log.AddFileMetaLog(LID.FileMetaCommonTClassName, "Error 在<T in> or <T []> or <T ClassName> 使用方法不正确,请使用 <T in []>或者是 <T in ClassName> !!");
             //}
         }
-        public void Parse()
-        {
-
-        }
         public override string ToFormatString()
         {
             StringBuilder sb = new StringBuilder();

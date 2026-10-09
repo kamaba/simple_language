@@ -75,7 +75,7 @@ namespace SimpleLanguage.Compile
                 else
                 {
                     //Debug.Assert(false, "");
-                    Log.AddFileMetaLog(LID.FileMetaSyntaxFileMetaConditionExpressSyntaxInit, "FileMetaConditionExpressSyntax init");
+                    Log.AddFileMetaLog(LID.FileMetaSyntaxFileMetaConditionExpressSyntaxInit, _ifToken, "FileMetaConditionExpressSyntax init");
                 }
             }
             else
@@ -228,95 +228,6 @@ namespace SimpleLanguage.Compile
             private List<FileMetaConstValueTerm> m_ConstValueTokenList = new List<FileMetaConstValueTerm>();
             private FileMetaBlockSyntax m_ExecuteBlockSyntax = null;
             public int deep { get; set; } = 0;
-
-            public void aaaa()
-            {
-                /*
-                var fmkcs = new FileMetaKeySwitchSyntax.FileMetaKeyCaseSyntax(m_FileMeta, castnode.token);
-
-                var parlist = castnode.parNode.childList;
-                if (parlist.Count == 0)
-                {
-                    Debug.Write("Error Case语句不允许没有检查值!!");
-                }
-                List<Node> childList = new List<Node>();
-                bool isComma = false;
-                for (int i = 0; i < parlist.Count; i++)
-                {
-                    if (parlist[i].token?.type == ETokenType.Comma)
-                    {
-                        isComma = true;
-                        continue;
-                    }
-                    childList.Add(parlist[i]);
-                }
-                if (isComma)
-                {
-                    bool isSame = true;//是否通过,号切后的类型是相同的
-                    for (int i = 0; i < childList.Count - 1; i++)
-                    {
-                        var curNode = childList[i];
-                        var nextNode = childList[i + 1];
-                        var type = curNode.token.type;
-                        if (type != ETokenType.Number && type != ETokenType.String)
-                        {
-                            Debug.Write("Error 逗号分割只允许number,string");
-                            break;
-                        }
-                        if (type != nextNode.token.type)
-                        {
-                            isSame = false;
-                            break;
-                        }
-                    }
-                    if (!isSame)
-                    {
-                        Debug.Write("Error 使用逗号切割开后，类型不相同!!");
-                    }
-                    for (int i = 0; i < childList.Count; i++)
-                    {
-                        fmkcs.AddConstValueTokenList(new FileMetaConstValueTerm(m_FileMeta, childList[i].token));
-                    }
-                }
-                else
-                {
-                    if (parlist.Count == 2)
-                    {
-                        if (parlist[0].token?.type == ETokenType.Identifier
-                            || parlist[1].token?.type == ETokenType.Identifier)
-                        {
-                            fmkcs.SetDefineClassNode(parlist[0]);
-                            fmkcs.SetVariableToken(parlist[1].token);
-                        }
-                    }
-                    else if (parlist.Count == 1)
-                    {
-                        var ttype = parlist[0].token?.type;
-                        if (ttype == ETokenType.Type
-                            || ttype == ETokenType.Identifier)
-                        {
-                            fmkcs.SetDefineClassNode(parlist[0]);
-                        }
-                        else if (ttype == ETokenType.Number
-                            || ttype == ETokenType.String)
-                        {
-                            fmkcs.AddConstValueTokenList(new FileMetaConstValueTerm(m_FileMeta, parlist[0].token));
-                        }
-                    }
-                }
-                FileMetaBlockSyntax executeBlock = new FileMetaBlockSyntax(m_FileMeta, castnode.blockNode.token, castnode.blockNode.endToken);
-                fmkcs.SetExecuteBlockSyntax(executeBlock);
-                ParseCurrentNodeInfo pcnic = new ParseCurrentNodeInfo(executeBlock);
-                m_CurrentNodeInfoStack.Push(pcnic);
-                ParseSyntax(castnode.blockNode);
-                m_CurrentNodeInfoStack.Pop();
-
-                if (j != castlist.Count - 1)
-                    fmkcs.isContinueNextCastSyntax = true;
-
-                fms.AddFileMetaKeyCaseSyntaxList(fmkcs);
-                */
-            }
             public FileMetaKeyCaseSyntax(FileMeta fm, Token castToken)
             {
                 m_FileMeta = fm;
@@ -843,14 +754,6 @@ namespace SimpleLanguage.Compile
 
         private FileMetaBaseTerm m_ReturnExpress = null;
         private List<Node> m_ReturnNodeList = new List<Node>();
-
-        //public static FileMetaKeyReturnSyntax ParseIfSyntax(FileMeta fm, StructParse.SyntaxNodeStruct akss)
-        //{
-        //    var cnode = akss.keyNode;
-        //    FileMetaBaseTerm conditionExpress = FileMetatUtil.CreateFileMetaExpress(fm, akss.keyContent, FileMetaTermExpress.EExpressType.Common);
-        //    var fms = new FileMetaKeyReturnSyntax(fm, cnode.token, conditionExpress);
-        //    return fms;
-        //}
         public FileMetaKeyReturnSyntax(FileMeta fm, Token _token, FileMetaBaseTerm _express, List<Node> _returnNodeList )
         {
             m_FileMeta = fm;

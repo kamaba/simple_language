@@ -103,8 +103,6 @@ namespace SimpleLanguage.Project
                 // 这里的 path 现在视为 .sp 文件路径
                 LoadProject(path);
             }
-            //CSharpManager.InitCanSearchAssemblyList();
-
             CoreMetaClassManager.instance.Init();
             SystemMethodCallDeclarationRegistry.LoadConfigSystemCall();
 
@@ -305,7 +303,7 @@ namespace SimpleLanguage.Project
             "_add_", "_sub_", "_mul_", "_truediv_", "_mod_",
             "_iadd_", "_imul_", "_itruediv_",
             "_lt_", "_le_", "_gt_", "_ge_", "_eq_", "_ne_",
-            "_getItem_", "_setItem_",
+            "_getItem_", "_setItem_", "_before_", "_after_",
         };
 
         /// <summary>M4 (-O 自动 inline): 遍历源函数清单, 按优化等级阈值给小函数自动标记 inline。
