@@ -49,6 +49,13 @@ namespace SimpleLanguage.Project
         // IR optimization level (set from CLI -O0..-O3; >= 3 enables const-fused stores)
         public static int optimizeLevel { get; set; } = 1;
 
+        /// <summary>
+        /// 项目向导 Markdown 三态覆盖：CLI --guide / --no-guide 注入。
+        /// null = 不覆盖，走 jsonc "export"."guide"（缺省 false 不生成）。
+        /// 每次 Run 重置，供 ProjectCompile.LoadProject 门控读取。
+        /// </summary>
+        public static bool? guideOverride { get; set; } = null;
+
         public static void SetConfig(ProjectConfig cfg)
         {
             m_Config = cfg ?? new ProjectConfig();
@@ -64,6 +71,8 @@ namespace SimpleLanguage.Project
             if (cinputArgs != null)
             {
                 optimizeLevel = cinputArgs.optimizeLevel;
+                // 项目向导 Markdown 覆盖：--guide / --no-guide（null = 走 jsonc export.guide）
+                guideOverride = cinputArgs.exportGuide;
                 // 外部宏：CLI --macro name=value 在编译前注入 global.macro
                 // 优先级高于 jsonc global.macro 初值，低于 CompileBefore()（编译期仍可再修改）
                 CompileBeforeManager.ClearExternalMacros();
@@ -74,6 +83,10 @@ namespace SimpleLanguage.Project
                         CompileBeforeManager.SetExternalMacro(kv.Key, kv.Value);
                     }
                 }
+            }
+            else
+            {
+                guideOverride = null;
             }
             int index = path.LastIndexOf("\\");
             if (index != -1)

@@ -471,6 +471,12 @@ namespace SimpleLanguage.Project
             /// <summary>MLIR AOT 导出开关（jsonc "export"."aot" 段）。</summary>
             public AotExportSection Aot { get; set; } = new AotExportSection();
 
+            /// <summary>
+            /// 是否生成项目向导 Markdown（&lt;ProjectName&gt;.md，模板 + AI 描述预留段）。
+            /// jsonc "export"."guide"：缺省 false（不生成）；CLI --guide/--no-guide 覆盖此项。
+            /// </summary>
+            public bool Guide { get; set; } = false;
+
             public DebugTextExportSection DebugText { get; set; } = new DebugTextExportSection();
         }
 

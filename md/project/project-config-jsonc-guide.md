@@ -119,6 +119,7 @@
 - `export.includeMetadata`：是否在 SLIR 包内携带元数据。
 - `export.format`：**导出格式二选一**（默认 `"json"`）——`"json"` = SLIR JSON `<M>.module.json`（全仓现状）；`"binary"` = SLB 二进制 `<M>.module.slb`（规范见 `csimple_lang/md/design/SLB_DESIGN.md`）。一次导出只产出一个文件，两者共用同一份中间数据；非法值报 LID 20039 阻断编译。可被 CLI `--format <json|binary>` 覆盖。
 - `export.binary`：SLB 二进制选项（仅 `format="binary"` 时生效）：`compressed`（默认 `true`，DataArea 整体 zlib 压缩）、`includeDebugInfo`（默认 `true`，P5 瘦身模式预留）、`strictDigest`（默认 `false`，P5 预留）。
+- `export.guide`：**项目向导 Markdown 开关**（默认 `false` 不生成）。置 `true` 时编译会在 `.sp`/`.jsonc` 同目录生成 `<ProjectName>.md`——内容取自内嵌模板 `source/Front/Project/Templates/ProjectGuideTemplate.md`（含 `_main_`/`_test_` 入口约定、`global`/`data` 集成说明、当前 jsonc data 键清单），顶部带 `AI-DESCRIPTION:BEGIN/END` 标记的 AI 描述预留区，**重新生成时标记区内的 AI 描述会被保留**。可被 CLI `--guide` / `--no-guide` 覆盖（优先级：CLI > jsonc > 默认 false）。
 - `export.debugText`：DebugCode 调试快照开关（code/token/node/file/meta/ir），见 `md/ai/DEBUG_WORKFLOW.md`。
 
 ### publicExport 三态
@@ -146,7 +147,9 @@
 
 - `<name>.sp`
 - `<name>.jsonc`
-- `Main.sl`
+- `<name>.md`（项目向导：模板生成 + AI 描述预留区，缺省生成；加 `--no-guide` 跳过，如 `sl new project MyApp --no-guide`）
+
+> `new project` 生成的 `.jsonc` 不含 `"export"."guide"`，因此后续编译缺省**不会**再生成/覆盖该 `.md`；需要刷新模板部分（保留 AI 描述区）时用 `sl c -p <project> --guide` 或在 jsonc 配 `"guide": true`。
 
 ### `sl new classfile [filename]`
 

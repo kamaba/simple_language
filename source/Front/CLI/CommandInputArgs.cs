@@ -37,6 +37,9 @@ public class CommandInputArgs
     public bool inMemoryExport { get; private set; } = false;
     // --format <json|binary>: 导出格式二选一，覆盖 jsonc export.format（null = 不覆盖走配置）
     public string exportFormat { get; private set; } = null;
+    // --guide / --no-guide: 是否生成项目向导 Markdown（&lt;ProjectName&gt;.md）。
+    // null = 不覆盖，走 jsonc "export"."guide"（缺省 false 不生成）。
+    public bool? exportGuide { get; private set; } = null;
     public string projectSpPath { get; private set; } = null;
     public string compileProjectName { get; private set; } = null;
     public string compileProjectDir { get; private set; } = null;
@@ -263,6 +266,18 @@ public class CommandInputArgs
                 continue;
             }
 
+            // --guide / --no-guide: 项目向导 Markdown 开关（覆盖 jsonc export.guide）
+            if (string.Equals(a, "--guide", StringComparison.OrdinalIgnoreCase))
+            {
+                exportGuide = true;
+                continue;
+            }
+            if (string.Equals(a, "--no-guide", StringComparison.OrdinalIgnoreCase))
+            {
+                exportGuide = false;
+                continue;
+            }
+
             // -O0 / -O1 / -O2 / -O3 (also accepts lowercase -o0..-o3)
             if (a.Length == 3 && a[0] == '-'
                 && (a[1] == 'O' || a[1] == 'o')
@@ -298,6 +313,14 @@ public class CommandInputArgs
             {
                 exportFormat = args[i + 1];
                 i++;
+            }
+            else if (string.Equals(args[i], "--guide", StringComparison.OrdinalIgnoreCase))
+            {
+                exportGuide = true;
+            }
+            else if (string.Equals(args[i], "--no-guide", StringComparison.OrdinalIgnoreCase))
+            {
+                exportGuide = false;
             }
             else if ((string.Equals(args[i], "--macro", StringComparison.OrdinalIgnoreCase)
                  || string.Equals(args[i], "-m", StringComparison.OrdinalIgnoreCase)) && i + 1 < args.Length)
@@ -408,7 +431,32 @@ public class CommandInputArgs
 
         if (args.Length > nameIndex)
         {
-            newProjectName = args[nameIndex]?.Trim();
+            var candidate = args[nameIndex]?.Trim();
+            // 名字不能以 '-' 开头（避免把 --guide/--no-guide 等开关误当项目名）
+            if (!string.IsNullOrEmpty(candidate) && !candidate.StartsWith("-"))
+            {
+                newProjectName = candidate;
+            }
+        }
+
+        // --guide / --no-guide: 项目向导 Markdown 开关（new project 缺省生成，--no-guide 跳过）
+        for (int i = 2; i < args.Length; i++)
+        {
+            var a = args[i];
+            if (string.Equals(a, "-p", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(a, "--path", StringComparison.OrdinalIgnoreCase))
+            {
+                i++; // 跳过路径值
+                continue;
+            }
+            if (string.Equals(a, "--guide", StringComparison.OrdinalIgnoreCase))
+            {
+                exportGuide = true;
+            }
+            else if (string.Equals(a, "--no-guide", StringComparison.OrdinalIgnoreCase))
+            {
+                exportGuide = false;
+            }
         }
     }
 }

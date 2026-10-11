@@ -1110,6 +1110,19 @@ namespace SimpleLanguage.Project
             }
         }
 
+        // ---- 项目向导 Markdown（模板 + AI 描述预留段） ----
+
+        // 模板内嵌资源尾名（SimpleLanguageFront.csproj: Project\Templates\ProjectGuideTemplate.md）
+        const string GuideTemplateNameTail = "ProjectGuideTemplate.md";
+        // AI 描述区标记：重新生成 .md 时保留两标记之间的内容（AI 填写的项目描述不被覆盖）
+        const string AiDescriptionBeginMarker = "<!-- AI-DESCRIPTION:BEGIN -->";
+        const string AiDescriptionEndMarker = "<!-- AI-DESCRIPTION:END -->";
+
+        /// <summary>
+        /// 生成项目向导 Markdown（&lt;ProjectName&gt;.md，与 .sp/.jsonc 同目录）。
+        /// 内容来自内嵌模板 ProjectGuideTemplate.md；若目标已存在且带 AI 描述区标记，
+        /// 重新生成时保留 AI 描述区内容，只刷新模板部分。生成与否由调用方门控。
+        /// </summary>
         public static void ExportProjectGuideMarkdown(string spFilePath, string jsoncPath)
         {
             if (string.IsNullOrWhiteSpace(spFilePath))
@@ -1127,94 +1140,125 @@ namespace SimpleLanguage.Project
                 }
 
                 var mdPath = Path.Combine(dir, projectName + ".md");
-                var sb = new StringBuilder();
 
-                sb.AppendLine("# " + projectName + " Project Guide");
-                sb.AppendLine();
-                sb.AppendLine("- Project Entry File: `" + Path.GetFileName(spFilePath) + "`");
-                sb.AppendLine("- Project Config File: `" + Path.GetFileName(jsoncPath) + "`");
-                sb.AppendLine();
-
-                sb.AppendLine("## Project Entry Conventions");
-                sb.AppendLine();
-                sb.AppendLine("### `_main_`\n");
-                sb.AppendLine("Primary runtime entry. Normal execution starts here.");
-                sb.AppendLine();
-                sb.AppendLine("### `_test_`\n");
-                sb.AppendLine("Test entry. Used when test mode is enabled.");
-                sb.AppendLine();
-                sb.AppendLine("### `_before_`\n");
-                sb.AppendLine("Compile pre-hook entry (from `Compile` class). Executed before compile core flow when configured.");
-                sb.AppendLine();
-                sb.AppendLine("### `_after_`\n");
-                sb.AppendLine("Compile post-hook entry (from `Compile` class). Executed after compile core flow when configured.");
-                sb.AppendLine();
-
-                sb.AppendLine("## Global Integration");
-                sb.AppendLine();
-                sb.AppendLine("`global.xxx` / `global.func()` is integrated with `Project{}` semantic source.");
-                sb.AppendLine();
-                sb.AppendLine("### JSONC `data` on `Project`");
-                sb.AppendLine();
-                sb.AppendLine("Prefer a root-level `\"data\": { ... }` block. Legacy `\"global\".\"data\"` is still read; root keys override on name clash.");
-                sb.AppendLine();
-                sb.AppendLine("- Primitive values (`int32`/`string`/`float`/`bool`/`null`) are injected as **static members on `Project`** (not on the compiler `global` MetaData shell). Access via `global.<name>`. ");
-                sb.AppendLine("- Array values are supported (primitive and nested arrays), e.g. `global.arr[0]`, `global.arr2[1][0]`. ");
-                sb.AppendLine("- Object values become `MetaData` shape types, still as **fields on `Project`**, e.g. `global.vardata2.a`. ");
-                sb.AppendLine();
-
-                var rootData = ProjectManager.config?.JsoncProjectData;
-                if (rootData != null && rootData.Count > 0)
+                var template = LoadProjectGuideTemplate();
+                if (string.IsNullOrEmpty(template))
                 {
-                    sb.AppendLine("### Current root `data` keys");
-                    sb.AppendLine();
-                    foreach (var kv in rootData)
-                    {
-                        sb.AppendLine("- `" + kv.Key + "` (`" + kv.Value.ValueKind + "`)");
-                    }
-                    sb.AppendLine();
+                    Log.AddProjectLog(LID.ProjectProjectClassExportProjectGuide,
+                        "Project guide template not found (embedded resource: " + GuideTemplateNameTail + ")");
+                    return;
                 }
 
-                var legacyGlobalData = ProjectManager.config?.Global?.Data;
-                if (legacyGlobalData != null && legacyGlobalData.Count > 0)
+                // 已有 .md 时保留其 AI 描述区内容；无则填占位说明
+                var aiDescription = ReadExistingAiDescription(mdPath);
+                if (string.IsNullOrWhiteSpace(aiDescription))
                 {
-                    sb.AppendLine("### Current `global.data` keys (legacy)");
-                    sb.AppendLine();
-                    foreach (var kv in legacyGlobalData)
-                    {
-                        sb.AppendLine("- `" + kv.Key + "` (`" + kv.Value.ValueKind + "`)");
-                    }
-                    sb.AppendLine();
+                    aiDescription = "> AI TODO: 此区由 AI 在项目向导生成后填写——描述项目用途、模块结构、关键入口等。\n"
+                        + "> 重新生成本文件（CLI --guide 或 jsonc \"export\".\"guide\"）时，AI-DESCRIPTION 标记之间的内容会被保留。";
                 }
 
-                sb.AppendLine("## Example");
-                sb.AppendLine();
-                sb.AppendLine("```jsonc");
-                sb.AppendLine("\"data\": {");
-                sb.AppendLine("  \"var1\": 12,");
-                sb.AppendLine("  \"arr\": [1,2,3],");
-                sb.AppendLine("  \"arr2\": [[1,2],[3,4]],");
-                sb.AppendLine("  \"vardata2\": { \"a\": 10, \"b\": 20, \"flags\": [true,false] }");
-                sb.AppendLine("},");
-                sb.AppendLine("\"global\": {");
-                sb.AppendLine("  \"imports\": [\"Some.Module\"]");
-                sb.AppendLine("}");
-                sb.AppendLine("```");
-                sb.AppendLine();
-                sb.AppendLine("Access:");
-                sb.AppendLine();
-                sb.AppendLine("- `global.var1`");
-                sb.AppendLine("- `global.arr[0]`");
-                sb.AppendLine("- `global.arr2[1][0]`");
-                sb.AppendLine("- `global.vardata2.a`");
-                sb.AppendLine("- `global.vardata2.b`");
+                var content = template
+                    .Replace("{{ProjectName}}", projectName)
+                    .Replace("{{EntryFile}}", Path.GetFileName(spFilePath))
+                    .Replace("{{ConfigFile}}", Path.GetFileName(jsoncPath) ?? string.Empty)
+                    .Replace("{{AiDescription}}", aiDescription)
+                    .Replace("{{RootDataKeys}}", BuildRootDataKeysSection())
+                    .Replace("{{LegacyGlobalDataKeys}}", BuildLegacyGlobalDataKeysSection());
 
-                File.WriteAllText(mdPath, sb.ToString(), new UTF8Encoding(true));
+                // 压缩占位段为空时残留的连续空行
+                while (content.Contains("\n\n\n"))
+                {
+                    content = content.Replace("\n\n\n", "\n\n");
+                }
+
+                File.WriteAllText(mdPath, content, new UTF8Encoding(true));
             }
             catch (System.Exception ex)
             {
                 Log.AddProjectLog(LID.ProjectProjectClassExportProjectGuide, "Export project guide markdown failed: " + ex.Message);
             }
+        }
+
+        /// <summary>加载内嵌的项目向导模板（EndsWith 匹配，兼容不同 RootNamespace 的资源名）。</summary>
+        static string LoadProjectGuideTemplate()
+        {
+            var asm = typeof(ProjectClass).Assembly;
+            foreach (var resName in asm.GetManifestResourceNames())
+            {
+                if (!resName.EndsWith(GuideTemplateNameTail, System.StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+                using var stream = asm.GetManifestResourceStream(resName);
+                if (stream == null)
+                {
+                    continue;
+                }
+                using var reader = new StreamReader(stream, new UTF8Encoding(false));
+                return reader.ReadToEnd().Replace("\r\n", "\n");
+            }
+            return null;
+        }
+
+        /// <summary>读取已有 .md 的 AI 描述区内容（两标记之间），文件或标记不存在时返回 null。</summary>
+        static string ReadExistingAiDescription(string mdPath)
+        {
+            if (!File.Exists(mdPath))
+            {
+                return null;
+            }
+
+            var text = File.ReadAllText(mdPath).Replace("\r\n", "\n");
+            var begin = text.IndexOf(AiDescriptionBeginMarker, System.StringComparison.Ordinal);
+            if (begin < 0)
+            {
+                return null;
+            }
+            begin += AiDescriptionBeginMarker.Length;
+            var end = text.IndexOf(AiDescriptionEndMarker, begin, System.StringComparison.Ordinal);
+            if (end < 0 || end <= begin)
+            {
+                return null;
+            }
+            return text.Substring(begin, end - begin).Trim('\n', ' ', '\t');
+        }
+
+        /// <summary>构建当前 jsonc 根级 `data` 键清单段（无数据时返回空串）。</summary>
+        static string BuildRootDataKeysSection()
+        {
+            var rootData = ProjectManager.config?.JsoncProjectData;
+            if (rootData == null || rootData.Count == 0)
+            {
+                return string.Empty;
+            }
+
+            var sb = new StringBuilder();
+            sb.Append("### Current root `data` keys\n\n");
+            foreach (var kv in rootData)
+            {
+                sb.Append("- `" + kv.Key + "` (`" + kv.Value.ValueKind + "`)\n");
+            }
+            sb.Append('\n');
+            return sb.ToString();
+        }
+
+        /// <summary>构建当前 legacy `global.data` 键清单段（无数据时返回空串）。</summary>
+        static string BuildLegacyGlobalDataKeysSection()
+        {
+            var legacyGlobalData = ProjectManager.config?.Global?.Data;
+            if (legacyGlobalData == null || legacyGlobalData.Count == 0)
+            {
+                return string.Empty;
+            }
+
+            var sb = new StringBuilder();
+            sb.Append("### Current `global.data` keys (legacy)\n\n");
+            foreach (var kv in legacyGlobalData)
+            {
+                sb.Append("- `" + kv.Key + "` (`" + kv.Value.ValueKind + "`)\n");
+            }
+            sb.Append('\n');
+            return sb.ToString();
         }
     }
 }

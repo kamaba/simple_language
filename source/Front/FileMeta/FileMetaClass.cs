@@ -355,6 +355,15 @@ namespace SimpleLanguage.Compile
                         }
                         m_FinalToken = token;
                     }
+                    else if (token.type == ETokenType.Static)
+                    {
+                        if (m_StaticToken != null)
+                        {
+                            isError = true;
+                            Log.AddFileMetaLog(LID.FileMetaClassStatic, token, "Error 解析过了一次static!!");
+                        }
+                        m_StaticToken = token;
+                    }
                     else if (token.type == ETokenType.Class)
                     {
                         if (m_EnumToken != null)
@@ -530,6 +539,18 @@ namespace SimpleLanguage.Compile
                     Log.AddFileMetaLog(LID.FileMetaClassFinal, m_FinalToken, "Error Enum方式，不支持final的使用!!");
                     return false;
                 }
+                // static 仅允许 data 使用；enum 的静态语义由枚举成员自带，禁止显式 static
+                if (m_StaticToken != null)
+                {
+                    Log.AddFileMetaLog(LID.FileMetaClassEnumStatic, m_StaticToken, "Error Enum方式，不支持static的使用!! static仅支持data");
+                    return false;
+                }
+                // abstract 是"待继承实现"语义，enum 无继承
+                if (m_AbstractToken != null)
+                {
+                    Log.AddFileMetaLog(LID.FileMetaClassEnumAbstract, m_AbstractToken, "Error Enum方式，不支持abstract的使用!!");
+                    return false;
+                }
 
             }
             else if (m_DataToken != null)
@@ -564,6 +585,12 @@ namespace SimpleLanguage.Compile
                     Log.AddFileMetaLog(LID.FileMetaClassFinal, m_FinalToken, "Error Data方式，不支持final的使用!!");
                     return false;
                 }
+                // abstract 是"待继承实现"语义，data 无继承
+                if (m_AbstractToken != null)
+                {
+                    Log.AddFileMetaLog(LID.FileMetaClassDataAbstract, m_AbstractToken, "Error Data方式，不支持abstract的使用!!");
+                    return false;
+                }
 
             }
             else
@@ -584,6 +611,20 @@ namespace SimpleLanguage.Compile
                 {
                     Log.AddFileMetaLog(LID.FileMetaClassAbstractFinal, m_FinalToken,
                         "Error abstract与final不允许同时使用: abstract类必须被继承，final类禁止被继承!!");
+                    return false;
+                }
+                // const 仅支持 data / enum（只读数据与只读枚举），class/interface 不允许
+                if (m_ConstToken != null)
+                {
+                    Log.AddFileMetaLog(LID.FileMetaClassConstOnlyDataEnum, m_ConstToken,
+                        "Error class方式，不支持const的使用!! const仅支持data与enum");
+                    return false;
+                }
+                // static 仅允许 data 使用（静态数据单例语义），class/interface 不允许
+                if (m_StaticToken != null)
+                {
+                    Log.AddFileMetaLog(LID.FileMetaClassClassStatic, m_StaticToken,
+                        "Error class方式，不支持static的使用!! static仅支持data");
                     return false;
                 }
             }

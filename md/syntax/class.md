@@ -166,6 +166,23 @@ MyClass {
 
     测试用例：`test/Other/FinalProbe/`（FinalLib 正向 / FinalProbe 拦截 / FinalCross 跨模块）。
 
+    ### 1.6.1 类级修饰符使用范围（2026-10-11 FileMetaClass 解析期校验）
+
+    类型声明头部的修饰符按类型种类限定，非法组合在 **File 解析阶段**即报错（不再等到 MetaCore 兜底）：
+
+    | 修饰符 | class | interface | data | enum |
+    |--------|-------|-----------|------|------|
+    | `abstract` | ✅ | ❌ 23014 族 | ❌ 23015 | ❌ 23014 |
+    | `final` | ✅ | ❌ 21470 | ❌ | ❌ |
+    | `static` | ❌ 23012 | ❌ 23012 | ✅（静态数据单例） | ❌ 23011 |
+    | `const` | ❌ 23013 | ❌ 23013 | ✅（只读数据） | ✅（只读枚举） |
+
+    - `static` 仅允许 `data`：`static data X { }` 表示静态数据单例（成员直接经类型名访问；data.md §3.4）；类成员的静态性用**成员级** `static` 修饰，不允许写在类型头
+    - `const` 仅允许 `data` / `enum`：`const data` 只读数据、`const enum` 只读枚举；class/interface 上使用直接报 23013（此前仅 MetaCore 后置兜底）
+    - `abstract + final` 互斥：报 `FileMetaClassAbstractFinal`（abstract 要求被继承，final 禁止继承）
+    - 同一修饰符重复（如 `static static data`）报 23010
+    - 探针用例：`test/Other/ClassModifierProbe/`（负例 6 项逐一报错 / 正例 5 项编译运行通过）
+
     ### 1.7 泛型与嵌套类
     - 泛型：`List<T> extends Object { ... }`
     - 支持类中嵌套类、匿名对象、数组等

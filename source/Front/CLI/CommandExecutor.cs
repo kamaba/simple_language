@@ -89,6 +89,8 @@ Options:
   -t, --test              Run in test mode
   --release              Build in release mode
   --debug                Build in debug mode (default)
+  --guide                Generate project guide markdown (<ProjectName>.md)
+  --no-guide             Skip project guide markdown (overrides jsonc export.guide)
   --verbose              Verbose output
   --no-banner            Suppress banner
   --token                Print tokens during compile
@@ -325,7 +327,11 @@ Examples:
                     new UTF8Encoding(true));
             }
 
-            ProjectClass.ExportProjectGuideMarkdown(spPath, jsoncPath);
+            // 项目向导 Markdown：new project 缺省生成（脚手架自带 AI 描述预留段），--no-guide 跳过
+            if (inputArgs.exportGuide != false)
+            {
+                ProjectClass.ExportProjectGuideMarkdown(spPath, jsoncPath);
+            }
             Console.WriteLine($"Project '{projectName}' created at: {projectDir}");
             return true;
         }

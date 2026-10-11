@@ -67,10 +67,16 @@ namespace SimpleLanguage.Project
                 Log.AddProjectLog(LID.ProjectParseConfigFailed, "", jsoncPath);
                 return;
             }
-            // Generate project guide markdown beside .sp/.jsonc
-            ProjectClass.ExportProjectGuideMarkdown(spFilePath, jsoncPath);
             ProjectManager.SetConfig(config);
             ModuleManager.instance.InitSelfModuleManager(config.Project.Name);
+
+            // 项目向导 Markdown（<ProjectName>.md，模板 + AI 描述预留段）：
+            // jsonc "export"."guide"（缺省 false 不生成），CLI --guide/--no-guide 覆盖。
+            // 须在 SetConfig 之后（生成时要读本项目的 jsonc data 键清单）。
+            if (ProjectManager.guideOverride ?? config.Export.Guide)
+            {
+                ProjectClass.ExportProjectGuideMarkdown(spFilePath, jsoncPath);
+            }
 
             // Logs / DebugCode / *.module.json 均在 {export.outputDir}/{moduleName}/（见 ProjectOutputEnvironment）。
             ProjectOutputEnvironment.ApplyFromConfig(config, projectDir, projectName);

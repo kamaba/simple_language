@@ -34,6 +34,8 @@ const data Rule
 
 - `data` 适合描述一组字段，不强调行为。
 - `const data` 表示只读数据，语义上不应再修改其成员值。
+- `static data` 表示静态数据单例（成员直接经类型名访问，见 §3.4）。
+- 修饰符使用范围（2026-10-11 起解析期校验，class.md §1.6.1）：`static` / `const` 类级修饰**仅 data（与 enum 的 const）允许**——`static` 是 data 独有（23012/23011 拦截 class/enum），`const` 不允许出现在 class/interface（23013）；同一修饰符重复报 23010。
 
 ### 1.1 const 约束
 

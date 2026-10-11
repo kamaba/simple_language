@@ -213,6 +213,9 @@ namespace SimpleLanguage.Project
                 cfg.Export.VersionPatch = GetInt(exportObj, "versionPatch", cfg.Export.VersionPatch);
                 cfg.Export.NativeDll = GetStr(exportObj, "nativeDll", cfg.Export.NativeDll);
 
+                // 项目向导 Markdown 生成开关（缺省 false；CLI --guide/--no-guide 可覆盖）
+                cfg.Export.Guide = GetBool(exportObj, "guide", cfg.Export.Guide);
+
                 if (TryGetObj(exportObj, "aot", out var aotObj))
                 {
                     cfg.Export.Aot.Enabled = GetBool(aotObj, "enabled", cfg.Export.Aot.Enabled);

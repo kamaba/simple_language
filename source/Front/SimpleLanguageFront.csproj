@@ -34,9 +34,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Remove="Log\ErrorDefinitions.csv" />
+    <None Remove="Project\Templates\ProjectGuideTemplate.md" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Log\ErrorDefinitions.csv" />
+    <EmbeddedResource Include="Project\Templates\ProjectGuideTemplate.md" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="System.Diagnostics.Debug" Version="4.3.0" />

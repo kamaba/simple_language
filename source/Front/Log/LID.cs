@@ -1068,6 +1068,13 @@ namespace SimpleLanguage.Logging
         ProjectMacroManagerMacroOnlyModifyInCompileBefore = 23006,
         ProjectMacroManagerMacroNotConst = 23007,
         ProjectMacroManagerExternalMacroApplied = 23009,
+        // ---- FileMetaClass 修饰符使用范围校验（续 203xx 块：static 仅 data；const 仅 data/enum）----
+        FileMetaClassStatic = 23010,
+        FileMetaClassEnumStatic = 23011,
+        FileMetaClassClassStatic = 23012,
+        FileMetaClassConstOnlyDataEnum = 23013,
+        FileMetaClassEnumAbstract = 23014,
+        FileMetaClassDataAbstract = 23015,
 
     }
 }
