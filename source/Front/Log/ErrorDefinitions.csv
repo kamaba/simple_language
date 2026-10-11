@@ -668,6 +668,7 @@ id,logType,enableAssert,pass,paramCount,domesticTips,zhMessage,,zhFixedTips,enMe
 20116,Info,FALSE,TRUE,0,,现在$符必须使用.$方式!!,,,,
 20117,Info,FALSE,TRUE,0,,现在$符必须使用.$方式!!,,,,
 20118,Error,FALSE,FALSE,0,,Error 关键字[return]不受支持：返回语句请使用 ret 关键字!,,,检查函数内返回语句，ret <表达式>，将 return 改为 ret。,,
+20119,Error,FALSE,FALSE,0,,Error 关键字不受支持：该词不是 SL 语言的关键字，SL 中没有对应语法!,,,检查该词是否为 C/C#/Java/Go/Python/Rust 等语言的关键字，改用 SL 对应语法（报错 Extend 附加信息中有具体指引，总表见 md/syntax/keywords.md）。,,
 20200,Info,FALSE,TRUE,0,,Error AddParseClassNodeInfo,,,,
 20201,Info,FALSE,TRUE,0,,Error AddParseVariableInfo,,,,
 20202,Info,FALSE,TRUE,0,,Error AddParseDataInfo,,,,

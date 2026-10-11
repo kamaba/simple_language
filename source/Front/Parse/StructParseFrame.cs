@@ -132,11 +132,8 @@ namespace SimpleLanguage.Compile
         }
         public void AddParseClassNodeInfo(FileMetaClass fmc)
         {
-            if (currentNodeInfo.parseType == EParseNodeType.File)
-            {
-                currentNodeInfo.codeFile.AddFileMetaClass(fmc);
-            }
-            else if (currentNodeInfo.parseType == EParseNodeType.Namespace)
+            // File 级类无需登记到额外容器，统一由下方 AddFileMetaAllClass 管理（顶级类视图从 AllClassList 派生）
+            if (currentNodeInfo.parseType == EParseNodeType.Namespace)
             {
                 currentNodeInfo.codeNamespace.AddFileMetaClass(fmc);
             }
@@ -144,7 +141,7 @@ namespace SimpleLanguage.Compile
             {
                 currentNodeInfo.codeClass.AddFileMetaClass(fmc);
             }
-            else
+            else if (currentNodeInfo.parseType != EParseNodeType.File)
             {
                 Log.AddNodeLog(LID.NodeStructFrameAddParseClassNodeInfo, fmc.token, "Error AddParseClassNodeInfo");
                 return;

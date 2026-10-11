@@ -241,7 +241,7 @@ namespace SimpleLanguage.Compile
                 StringBuilder sb = new StringBuilder();
                 sb.AppendLine("-------------------Meta 文件显示 开始 : Path: " + m_FilePath + "-----------------------");
 
-                var classList = m_File?.fileMetaClassList;
+                var classList = m_File?.GetTopLevelFileMetaClassList();
                 if (classList != null)
                 {
                     for (int i = 0; i < classList.Count; i++)

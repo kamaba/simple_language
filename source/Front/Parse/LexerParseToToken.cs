@@ -2123,13 +2123,37 @@ namespace SimpleLanguage.Compile
             }          
             
         }
+        /* 非本语言关键字的保留字拦截表：其他语言（C/C#/Java/Go/Python/Rust 等）常见、但 SL 无对应语法的关键字。
+           value = (报错 LID, 改写指引)。命中即词法层报 Error 阻断编译，避免其作为普通标识符流入语义层
+           产生 Name:xxx not found! 等误导性报错；return 走文档约定的专用 LID 20118，其余统一走 20119。
+           ⚠ end/fn/match/delete/self/func/nil/then/loop 等在标准库与测试中已作普通标识符使用，禁止加入本表。 */
+        static readonly Dictionary<string, KeyValuePair<LID, string>> s_UnsupportedKeywords = new Dictionary<string, KeyValuePair<LID, string>>
+        {
+            { "return",  new KeyValuePair<LID, string>( LID.TokenLexerReturnNotSupported, "返回语句请使用 ret 关键字" ) },
+            { "foreach", new KeyValuePair<LID, string>( LID.TokenLexerUnsupportedKeyword, "遍历请使用 for ( x in collection ) 语法" ) },
+            { "using",   new KeyValuePair<LID, string>( LID.TokenLexerUnsupportedKeyword, "导入请使用 import 关键字" ) },
+            { "elseif",  new KeyValuePair<LID, string>( LID.TokenLexerUnsupportedKeyword, "多分支请使用 elif 关键字" ) },
+            { "struct",  new KeyValuePair<LID, string>( LID.TokenLexerUnsupportedKeyword, "数据结构请使用 data 或 class" ) },
+            { "let",     new KeyValuePair<LID, string>( LID.TokenLexerUnsupportedKeyword, "变量声明请使用 var 或显式类型" ) },
+            { "raise",   new KeyValuePair<LID, string>( LID.TokenLexerUnsupportedKeyword, "抛出异常请使用 throw 关键字" ) },
+            { "lambda",  new KeyValuePair<LID, string>( LID.TokenLexerUnsupportedKeyword, "闭包请使用 function 表达式或 => 语法" ) },
+            { "def",     new KeyValuePair<LID, string>( LID.TokenLexerUnsupportedKeyword, "函数直接以名称声明" ) },
+            { "package", new KeyValuePair<LID, string>( LID.TokenLexerUnsupportedKeyword, "命名空间请使用 namespace 关键字" ) },
+            { "include", new KeyValuePair<LID, string>( LID.TokenLexerUnsupportedKeyword, "导入请使用 import 关键字" ) },
+            { "impl",    new KeyValuePair<LID, string>( LID.TokenLexerUnsupportedKeyword, "实现请使用 class extends / interface" ) },
+            { "trait",   new KeyValuePair<LID, string>( LID.TokenLexerUnsupportedKeyword, "接口请使用 interface 关键字" ) },
+            { "pub",     new KeyValuePair<LID, string>( LID.TokenLexerUnsupportedKeyword, "访问级别请使用 public" ) },
+            { "unless",  new KeyValuePair<LID, string>( LID.TokenLexerUnsupportedKeyword, "条件请使用 if not ( ... )" ) },
+            { "until",   new KeyValuePair<LID, string>( LID.TokenLexerUnsupportedKeyword, "循环请使用 while not ( ... )" ) },
+        };
+
         void ReadIdentifier()
         {
             m_Builder.Append(m_CurChar);
-            do 
+            do
             {
                 m_TempChar = ReadChar();
-                if (IsIdentifier(m_TempChar)) 
+                if (IsIdentifier(m_TempChar))
                 {
                     m_Builder.Append(m_TempChar);
                 }
@@ -2141,7 +2165,18 @@ namespace SimpleLanguage.Compile
             } while (true);
             ETokenType tokenType;
             object extend = null;
-            switch (m_Builder.ToString())
+            string word = m_Builder.ToString();
+            if ( s_UnsupportedKeywords.TryGetValue( word, out var unsupported ) )
+            {
+                // 非本语言关键字（SL 无对应语法）：词法层即报 Error 阻断编译并指引正确写法；
+                // 仍按普通 Identifier 发 token 保持 token 流完整，编译由 errorCount 阻断
+                int startChar = m_SourceChar - m_Builder.Length + 1;
+                Log.AddTokenByString( unsupported.Key, m_Path, m_SourceLine, startChar, m_SourceLine, m_SourceChar
+                    , $"identifier:[{word}] {unsupported.Value}" );
+                AddToken( ETokenType.Identifier, m_Builder.ToString(), null, m_SourceLine, m_SourceChar );
+                return;
+            }
+            switch (word)
             {
                 case "typealias":
                     tokenType = ETokenType.TypeAlias;

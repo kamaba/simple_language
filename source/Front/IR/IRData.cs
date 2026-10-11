@@ -115,20 +115,20 @@ namespace SimpleLanguage.IR
 
             if (opValue is SLSystemMethodCallPackage smcp)
             {
-                Payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(smcp));
+                Payload = EncodeBinarySystemCall(smcp);
                 return;
             }
 
-            // static FFI fast-call payload: JSON SLFFIStaticCallPackage
+            // static FFI fast-call payload: binary SLFFIStaticCallPackage
             // (lib/symbol/sig + fallback methodId); the CVM assembly build
             // rewrites it into a 4-byte binding index once resolved.
             if (opValue is SLFFIStaticCallPackage ffipkg)
             {
-                Payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(ffipkg));
+                Payload = EncodeBinaryFFIStatic(ffipkg);
                 return;
             }
 
-            // atsign label fast-call payload: JSON SLAtSignLabelCallPackage
+            // atsign label fast-call payload: binary SLAtSignLabelCallPackage
             // (entryIndex/paramCount/tryCatch/methodName/isVoid); the CVM
             // assembly build locates the module atSignLabel[] entry by
             // entryIndex and rewrites the payload into a 4-byte binding
@@ -137,7 +137,7 @@ namespace SimpleLanguage.IR
             // forcing the VM to report -86.
             if (opValue is SLAtSignLabelCallPackage labelPkg)
             {
-                Payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(labelPkg));
+                Payload = EncodeBinaryAtSignLabel(labelPkg);
                 return;
             }
 
@@ -145,7 +145,7 @@ namespace SimpleLanguage.IR
             if (opValue is IRMetaType imt)
             {
                 var exportType = CreateRuntimeDefTypeExport(imt);
-                Payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(exportType));
+                Payload = EncodeBinaryDefTypePayload(exportType);
                 return;
             }
 
@@ -153,7 +153,7 @@ namespace SimpleLanguage.IR
             if (opValue is IRMethodCall imc)
             {
                 var export = CreateRuntimeCallExport(imc);
-                Payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(export));
+                Payload = EncodeBinaryCallPayload(export);
                 return;
             }
 
@@ -274,6 +274,285 @@ namespace SimpleLanguage.IR
             public int templateIndex { get; set; } = -1;
             //public bool isTemplate { get; set; }
             public List<RuntimeDefTypeExport> runtimeDefTypeList { get; set; } = new();
+        }
+
+        // ====================================================================
+        // Binary payload v1 (write side).
+        //
+        // Wire contract, mirrored by the C VM decoder
+        // (csimple_lang/src/vm/runtime/payload/runtime_payload_binary.c);
+        // full spec: csimple_lang/md/design/PAYLOAD_BINARY_FORMAT.md.
+        //
+        //   Format discrimination: payload[0] == 0x01 => binary v1.
+        //   Legacy JSON payloads always start with '{' (0x7B), so old modules
+        //   stay loadable by the same VM (dual-format decode).
+        //
+        //   Primitives (all little-endian):
+        //     i32  : 4 bytes        u16 : 2 bytes
+        //     u8   : 1 byte         bool: 1 byte (0/1)
+        //     str  : [len:u16][utf8 bytes]  (len = byte length)
+        //
+        //   DefType node (recursive, no magic byte):
+        //     [classId:i32][ownerClassId:i32][templateIndex:i32]
+        //     [className:str][ownerClassName:str][childCount:u16][child nodes...]
+        //
+        //   Type payload (LoadConstType/CastClass/NewTemplateObject/NewArray;
+        //   also the owner suffix of LoadStaticField/StoreStaticField after
+        //   the leading 4-byte field index):
+        //     [0x01][node]
+        //
+        //   Call payload (CallStatic/CallDynamic/CallVirt/CallClosure/NewClosure;
+        //   CallVirt embeds it after its leading 4-byte iri.index):
+        //     [0x01][methodId:i32][methodNameHash:i32][paramCount:i32][tryCatch:u8]
+        //     [methodName:str]
+        //     [hasTargetType:u8]([node] when 1)
+        //     [templateCount:u16][node * templateCount]
+        //
+        //   SystemMethod call payload (CallSystemMethod):
+        //     [0x01][id:i32][paramCount:i32][systemMethodKind:i32][name:str]
+        //
+        //   FFI static call payload (CallFFIStatic, pre-rewrite):
+        //     [0x01][methodId:i32][paramCount:i32][tryCatch:u8]
+        //     [lib:str][symbol:str][sig:str][methodName:str]
+        //
+        //   AtSign label call payload (CallAtSignLabel, pre-rewrite):
+        //     [0x01][entryIndex:i32][paramCount:i32][tryCatch:u8][isVoid:u8]
+        //     [methodName:str]
+        // ====================================================================
+        private const byte BinFormatV1 = 0x01;
+
+        private static void BinWriteI32(List<byte> buf, int v)
+        {
+            buf.Add((byte)v);
+            buf.Add((byte)(v >> 8));
+            buf.Add((byte)(v >> 16));
+            buf.Add((byte)(v >> 24));
+        }
+
+        private static void BinWriteU16(List<byte> buf, int v)
+        {
+            buf.Add((byte)(v & 0xFF));
+            buf.Add((byte)((v >> 8) & 0xFF));
+        }
+
+        private static void BinWriteStr(List<byte> buf, string s)
+        {
+            if (string.IsNullOrEmpty(s))
+            {
+                buf.Add(0);
+                buf.Add(0);
+                return;
+            }
+            var b = Encoding.UTF8.GetBytes(s);
+            if (b.Length > 0xFFFF)
+            {
+                throw new InvalidOperationException(
+                    "Binary payload v1 string exceeds u16 length limit: " + b.Length);
+            }
+            buf.Add((byte)(b.Length & 0xFF));
+            buf.Add((byte)((b.Length >> 8) & 0xFF));
+            buf.AddRange(b);
+        }
+
+        private static void BinWriteDefTypeNode(List<byte> buf, RuntimeDefTypeExport node)
+        {
+            BinWriteI32(buf, node.classId);
+            BinWriteI32(buf, node.ownerClassId);
+            BinWriteI32(buf, node.templateIndex);
+            BinWriteStr(buf, node.className);
+            BinWriteStr(buf, node.ownerClassName);
+            var list = node.runtimeDefTypeList;
+            int n = (list != null) ? list.Count : 0;
+            BinWriteU16(buf, n);
+            for (int i = 0; i < n; i++)
+            {
+                BinWriteDefTypeNode(buf, list[i]);
+            }
+        }
+
+        private static byte[] EncodeBinaryDefTypePayload(RuntimeDefTypeExport node)
+        {
+            if (node == null)
+            {
+                return new byte[] { BinFormatV1 };
+            }
+            var buf = new List<byte>(64);
+            buf.Add(BinFormatV1);
+            BinWriteDefTypeNode(buf, node);
+            return buf.ToArray();
+        }
+
+        private static byte[] EncodeBinaryCallPayload(RuntimeCallExport call)
+        {
+            if (call == null)
+            {
+                return new byte[] { BinFormatV1 };
+            }
+            var buf = new List<byte>(96);
+            buf.Add(BinFormatV1);
+            BinWriteI32(buf, call.methodId);
+            BinWriteI32(buf, call.methodNameHash);
+            BinWriteI32(buf, call.paramCount);
+            buf.Add(call.tryCatch ? (byte)1 : (byte)0);
+            BinWriteStr(buf, call.methodName);
+            if (call.runtimeDefType != null)
+            {
+                buf.Add(1);
+                BinWriteDefTypeNode(buf, call.runtimeDefType);
+            }
+            else
+            {
+                buf.Add(0);
+            }
+            var tl = call.templateRuntimeDefTypeList;
+            int n = (tl != null) ? tl.Count : 0;
+            BinWriteU16(buf, n);
+            for (int i = 0; i < n; i++)
+            {
+                BinWriteDefTypeNode(buf, tl[i]);
+            }
+            return buf.ToArray();
+        }
+
+        private static byte[] EncodeBinarySystemCall(SLSystemMethodCallPackage pkg)
+        {
+            var buf = new List<byte>(48);
+            buf.Add(BinFormatV1);
+            BinWriteI32(buf, pkg.id);
+            BinWriteI32(buf, pkg.paramCount);
+            BinWriteI32(buf, pkg.systemMethodKind);
+            BinWriteStr(buf, pkg.name);
+            return buf.ToArray();
+        }
+
+        private static byte[] EncodeBinaryFFIStatic(SLFFIStaticCallPackage pkg)
+        {
+            var buf = new List<byte>(96);
+            buf.Add(BinFormatV1);
+            BinWriteI32(buf, pkg.methodId);
+            BinWriteI32(buf, pkg.paramCount);
+            buf.Add(pkg.tryCatch ? (byte)1 : (byte)0);
+            BinWriteStr(buf, pkg.lib);
+            BinWriteStr(buf, pkg.symbol);
+            BinWriteStr(buf, pkg.sig);
+            BinWriteStr(buf, pkg.methodName);
+            return buf.ToArray();
+        }
+
+        private static byte[] EncodeBinaryAtSignLabel(SLAtSignLabelCallPackage pkg)
+        {
+            var buf = new List<byte>(64);
+            buf.Add(BinFormatV1);
+            BinWriteI32(buf, pkg.entryIndex);
+            BinWriteI32(buf, pkg.paramCount);
+            buf.Add(pkg.tryCatch ? (byte)1 : (byte)0);
+            buf.Add(pkg.isVoid ? (byte)1 : (byte)0);
+            BinWriteStr(buf, pkg.methodName);
+            return buf.ToArray();
+        }
+
+        // ---- Binary payload v1 decode (IR.txt / UnpackOpValueFromPayload) ----
+
+        private static bool BinPeekIsV1(byte[] payload)
+        {
+            return payload != null && payload.Length >= 1 && payload[0] == BinFormatV1;
+        }
+
+        private sealed class BinReader
+        {
+            private readonly byte[] _buf;
+            private int _pos;
+            public BinReader(byte[] buf) { _buf = buf; _pos = 0; }
+            public bool AtEnd { get { return _pos >= _buf.Length; } }
+            private bool Ensure(int n) { return _pos + n <= _buf.Length; }
+            public bool TryReadU8(out byte v)
+            {
+                v = 0;
+                if (!Ensure(1)) return false;
+                v = _buf[_pos]; _pos++;
+                return true;
+            }
+            public bool TryReadU16(out int v)
+            {
+                v = 0;
+                if (!Ensure(2)) return false;
+                v = _buf[_pos] | (_buf[_pos + 1] << 8);
+                _pos += 2;
+                return true;
+            }
+            public bool TryReadI32(out int v)
+            {
+                v = 0;
+                if (!Ensure(4)) return false;
+                v = _buf[_pos] | (_buf[_pos + 1] << 8) | (_buf[_pos + 2] << 16) | (_buf[_pos + 3] << 24);
+                _pos += 4;
+                return true;
+            }
+            public bool TryReadStr(out string s)
+            {
+                s = null;
+                if (!TryReadU16(out int len) || !Ensure(len)) return false;
+                s = Encoding.UTF8.GetString(_buf, _pos, len);
+                _pos += len;
+                return true;
+            }
+        }
+
+        private static bool TryBinDecodeDefTypeNode(BinReader r, out RuntimeDefTypeExport node)
+        {
+            node = null;
+            if (!r.TryReadI32(out int classId)) return false;
+            if (!r.TryReadI32(out int ownerClassId)) return false;
+            if (!r.TryReadI32(out int templateIndex)) return false;
+            if (!r.TryReadStr(out string className)) return false;
+            if (!r.TryReadStr(out string ownerClassName)) return false;
+            if (!r.TryReadU16(out int childCount)) return false;
+
+            node = new RuntimeDefTypeExport
+            {
+                classId = classId,
+                ownerClassId = ownerClassId,
+                templateIndex = templateIndex,
+                className = className,
+                ownerClassName = ownerClassName,
+            };
+            for (int i = 0; i < childCount; i++)
+            {
+                if (!TryBinDecodeDefTypeNode(r, out var child)) return false;
+                node.runtimeDefTypeList.Add(child);
+            }
+            return true;
+        }
+
+        private static bool TryBinDecodeDefTypePayload(byte[] payload, out RuntimeDefTypeExport node)
+        {
+            node = null;
+            if (!BinPeekIsV1(payload)) return false;
+            var r = new BinReader(payload);
+            if (!r.TryReadU8(out _)) return false; /* magic */
+            if (r.AtEnd) return true; /* bare [0x01]: null node */
+            return TryBinDecodeDefTypeNode(r, out node) && r.AtEnd;
+        }
+
+        private static bool TryBinDecodeSystemCall(byte[] payload, out SLSystemMethodCallPackage pkg)
+        {
+            pkg = null;
+            if (!BinPeekIsV1(payload)) return false;
+            var r = new BinReader(payload);
+            if (!r.TryReadU8(out _)) return false; /* magic */
+            if (!r.TryReadI32(out int id)) return false;
+            if (!r.TryReadI32(out int paramCount)) return false;
+            if (!r.TryReadI32(out int kind)) return false;
+            if (!r.TryReadStr(out string name)) return false;
+            if (!r.AtEnd) return false;
+            pkg = new SLSystemMethodCallPackage
+            {
+                id = id,
+                paramCount = paramCount,
+                systemMethodKind = kind,
+                name = name,
+            };
+            return true;
         }
 
         // 更新 ByteLength（仅计算 Payload 长度，未来可扩展为包含头部字段）
@@ -504,6 +783,12 @@ namespace SimpleLanguage.IR
             try
             {
                 if (Payload == null || Payload.Length == 0) return false;
+                /* Dual-format: binary v1 (payload[0] == 0x01) or legacy JSON ('{'). */
+                if (TryBinDecodeSystemCall(Payload, out var binPkg))
+                {
+                    pkg = binPkg;
+                    return pkg != null;
+                }
                 var text = Encoding.UTF8.GetString(Payload);
                 if (string.IsNullOrWhiteSpace(text) || text[0] != '{') return false;
                 pkg = JsonSerializer.Deserialize<SLSystemMethodCallPackage>(text);
@@ -750,6 +1035,13 @@ namespace SimpleLanguage.IR
 
             try
             {
+                /* Dual-format: binary v1 (payload[0] == 0x01) or legacy JSON ('{'). */
+                if (TryBinDecodeDefTypePayload(Payload, out var binNode))
+                {
+                    text = FormatRuntimeDefTypeExport(binNode);
+                    return !string.IsNullOrEmpty(text);
+                }
+
                 var json = Encoding.UTF8.GetString(Payload);
                 if (string.IsNullOrWhiteSpace(json) || json[0] != '{')
                 {

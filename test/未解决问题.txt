@@ -14,6 +14,7 @@ _after_
 把在project.sp里边的，改成这两函数，_before_ 这个是在编译前调用的，_after_ 是在编译后，导出ir前调用的 把想着的逻辑都改动下，然后把想着的配置还有逻辑放那里
 
 像识别到非关键字，但语法不符合的，也要进行报错处理，像return 不是关键字，是错误的语法，所以这个需要报错的
+[已完成 2026-10-11] 词法层统一拦截表 LexerParseToToken.s_UnsupportedKeywords（return→20118、foreach/using/elseif/struct/let/raise/lambda/def/package/include/impl/trait/pub/unless/until→20119）；总表与"刻意不拦截"清单见 md/syntax/keywords.md §1.8
 D:\project\lang\simple_language\source\Front\FileMeta\FileMeta.cs 这里边 m_FileMetaAllClassList  m_FileMetaClassList是不是重复了  看看把这两合并下吧
 
 import NS.a as NSA 的用法，还有typealias的用法的完善
@@ -69,28 +70,6 @@ private static readonly Dictionary<string, int[]> s_BuiltInContracts =
 写更多的使用用例，测试cvm的功能点。
 jsonc整体，增加 AOT, Mix, PureCVM,
 
-我提前说下 DEBUG 这个是在cvm的runtime里边的宏标记  vm->debug是runtime是否支持调试的标记 这两区别在md里边要说明下
-OpCode_LoadConstUInt32 像const的load，能不能直接 vm->ip 转移到 vm->sp 上边，而不用中间增加一个值，如果是非debug模式，直接使用这种方式，如果是debug方式，则还会 中间值的方式 把 CHECK_IP_LENGTH 的逻辑 也合并到DEBUG模式里边吧
-代码基本就是 case OpCode_LoadConstFloat32:{ 
-#if DEBUG
-	原来的逻辑 
-	if (vm->ip + 4 <= code_end)
-	{
-		memcpy(&raw_int32, vm->ip, 4);
-		vm->ip += 4;
-	}
-	else
-	{
-		sl_log_add_runtime_log(LID_ShowMessageAssert, "LoadConstFloat8_E4M3 payload too short. payload_length=%u expected>=1", payload_length);
-	}
-	vm_eval_push_i32(vm, raw_int32);
-#else 
-	直接从vm->ip转移到sp的逻辑 还有类型压栈逻辑 
-	base_memcpy(vm->sp, vm->ip, 4);
-	vm->ip += 4
-	vm->sp += 4	
-	vm->stack_slot_kind[vm->stack_slot_depth++] = (uint8)VM_STACK_SLOT_FLOAT32;	
-#endif
 
 要优化cvm 现在要把irCode统计出来，先确定每个指令使用的数量评估，评估后，然后列出，需要优化的概率，然后再进行优化。
 

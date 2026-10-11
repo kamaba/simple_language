@@ -15,7 +15,6 @@ namespace SimpleLanguage.Compile
     public sealed class FileMeta : FileMetaBase
     {
         public string path => m_Path;
-        public List<FileMetaClass> fileMetaClassList => m_FileMetaClassList;
         public List<FileMetaClass> fileMetaAllClassList => m_FileMetaAllClassList;
 
 
@@ -25,7 +24,6 @@ namespace SimpleLanguage.Compile
         private FileMetaLocalSyntax m_FileMetaLocalSyntax = null;
         // for example: namespace a.b.c;
         private List<FileMetaNamespace> m_FileDefineNamespaceList = new List<FileMetaNamespace>();
-        private List<FileMetaClass> m_FileMetaClassList = new List<FileMetaClass>();
 
         private List<FileMetaNamespace> m_FileMetaAllNamespaceList = new List<FileMetaNamespace>();
         private List<FileMetaClass> m_FileMetaAllClassList = new List<FileMetaClass>();
@@ -130,13 +128,23 @@ namespace SimpleLanguage.Compile
            
             return fmc;
         }
-        public void AddFileMetaClass( FileMetaClass mc )
+        // 文件顶级类视图：AllClassList 中不隶属任何命名空间、也不是内部类的类
+        // （顶级类状态由解析期容器决定：进 namespace 会 SetMetaNamespace，进类会 SetFileMetaClass）
+        public List<FileMetaClass> GetTopLevelFileMetaClassList()
         {
-            m_FileMetaClassList.Add(mc);
+            var list = new List<FileMetaClass>();
+            for (int i = 0; i < m_FileMetaAllClassList.Count; i++)
+            {
+                var fmc = m_FileMetaAllClassList[i];
+                if (fmc.topLevelFileMetaClass == null && fmc.topLevelFileMetaNamespace == null)
+                {
+                    list.Add(fmc);
+                }
+            }
+            return list;
         }
         public void RemoveFileMetaClass( FileMetaClass mc )
         {
-            m_FileMetaClassList.Remove(mc);
             m_FileMetaAllClassList.Remove(mc);
         }
         public MetaNode GetMetaBaseByFileMetaClassRef( FileMetaClassDefine fmcv )
@@ -278,9 +286,11 @@ namespace SimpleLanguage.Compile
             {
                 m_FileDefineNamespaceList[i].SetDeep(m_Deep);
             }
-            for (int i = 0; i < m_FileMetaClassList.Count; i++)
+            // 只对顶级类 SetDeep，命名空间内/内部类由各自容器递归设置深度
+            var topLevelClassList = GetTopLevelFileMetaClassList();
+            for (int i = 0; i < topLevelClassList.Count; i++)
             {
-                m_FileMetaClassList[i].SetDeep(m_Deep);
+                topLevelClassList[i].SetDeep(m_Deep);
             }
         }
         public override string ToFormatString()
@@ -304,9 +314,11 @@ namespace SimpleLanguage.Compile
             //{
             //    sb.Append(m_FileSearchNamespaceList[i].ToFormatString() + Environment.NewLine);
             //}
-            for (int i = 0; i < m_FileMetaClassList.Count; i++)
+            //只打印顶级类，命名空间内/内部类由各自容器的 ToFormatString 递归输出
+            var topLevelClassList = GetTopLevelFileMetaClassList();
+            for (int i = 0; i < topLevelClassList.Count; i++)
             {
-                sb.Append(m_FileMetaClassList[i].ToFormatString() + Environment.NewLine);
+                sb.Append(topLevelClassList[i].ToFormatString() + Environment.NewLine);
             }
             sb.Append("-------------------FileMeta 文件显示 结束 : -----------------------" + Environment.NewLine);
 

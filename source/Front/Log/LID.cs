@@ -178,6 +178,8 @@ namespace SimpleLanguage.Logging
         TokenParseNodeIssue2 = 20117,
         // Lexer：return 关键字误用拦截（返回语句是 ret）
         TokenLexerReturnNotSupported = 20118,
+        // Lexer：非本语言关键字拦截（其他语言常见、SL 无对应语法；return 走专用 20118）
+        TokenLexerUnsupportedKeyword = 20119,
         // ---- Node 模块 ----
         // StructFrame
         NodeStructFrameAddParseClassNodeInfo = 20200,

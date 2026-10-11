@@ -54,7 +54,7 @@
 | `next` | 循环内 = continue；switch case 体内 = 显式贯穿 fall-through | [switch.md](./switch.md) |
 | `continue` / `break` | 循环控制 | [forwhiledowhile.md](./forwhiledowhile.md) |
 | `goto` | 跳转（配合 `label`） | [labelgoto.md](./labelgoto.md) |
-| `ret` | `return` 的语法糖（见 §3.1） | — |
+| `ret` | 返回语句（见 §3.1；`return` 不是关键字，词法层拦截报错，见 §1.8） | — |
 
 ### 1.4 异常
 
@@ -97,6 +97,43 @@
 | `map` `list` `stack` `hashset` `queue` `tuple` `array` `range` | 小写容器构造糖（见 §3.8）。词法按普通标识符处理：可作局部变量/参数名；**禁止作类成员声明名**（字段/方法/getter/setter，MetaCore 层编译报错 LID 11042） |
 | `error` `errmsg` | Result 机制保留名，同上禁止作类成员声明名（见 [result.md](./result.md) §7） |
 | `async` | 已禁用，按普通标识符处理 |
+
+### 1.8 非本语言关键字（词法层拦截报错）
+
+以下词是其他语言（C/C#/Java/Go/Python/Rust 等）的关键字，但 **SL 没有对应语法**。词法层（`LexerParseToToken.ReadIdentifier` 的 `s_UnsupportedKeywords` 拦截表）识别到即报 **Error 并阻断编译**，报错 Extend 附加信息给出改写指引；不会像普通标识符那样流入语义层产生 `Name:xxx not found!` 等误导性报错（2026-10-11 落地；20118 文案 2026-10-08 预留）。
+
+| 拦截词 | SL 正确写法 | LID |
+|--------|------------|-----|
+| `return` | `ret;` / `ret 表达式;`（[function.md](./function.md)） | 20118（专用） |
+| `foreach` | `for ( x in collection )`（[forwhiledowhile.md](./forwhiledowhile.md)） | 20119 |
+| `using` / `include` | `import`（[namespace.md](./namespace.md)） | 20119 |
+| `elseif` | `elif` | 20119 |
+| `struct` | `data` / `class`（[data.md](./data.md)） | 20119 |
+| `let` | `var` 或显式类型声明（[variable.md](./variable.md)） | 20119 |
+| `raise` | `throw`（[try.md](./try.md)） | 20119 |
+| `lambda` | `function` 表达式或 `x => expr`（§3.4） | 20119 |
+| `def` | 函数直接以名称声明（[function.md](./function.md)） | 20119 |
+| `package` | `namespace`（[namespace.md](./namespace.md)） | 20119 |
+| `impl` | `class` + `extends` / `interface` | 20119 |
+| `trait` | `interface`（[interface.md](./interface.md)） | 20119 |
+| `pub` | `public` | 20119 |
+| `unless` | `if not ( ... )` | 20119 |
+| `until` | `while not ( ... )` | 20119 |
+
+**刻意不拦截**的近似词（标准库/测试中已作普通标识符使用，仍按标识符处理；新增拦截词前必须全仓 Grep 复核）：
+
+| 词 | 现存标识符用法示例 |
+|----|------------------|
+| `end` | `String.slice(int start, int end)`、`Monitor.end(string tag)`、`CommandBuffer.end()` |
+| `fn` | `Function fn = this._encoderFn`（BinaryCodec / Encoding / JsonCodec / ProtoCodec / Stream） |
+| `match` | `RegExp.match(string text)` |
+| `delete` | `File.delete(string path)`、`Directory.delete(string path)` |
+| `self` | `Task self = Coroutine.current()`（CoroutineTest） |
+| `func` | `func<int, int>` 函数类型用法（ExpressTest） |
+| `nil` | `var nil = j.toData(...)`（JsonTest） |
+| `then` / `loop` | 过于通用（Promise.then / loop 变量名风险），无强对应误用场景 |
+
+> `@csharp(){}` 等内嵌语言块体由词法器整块原文捕获（`TryCaptureAtSignBlock`，不透明 AtSignBlock token），块内出现 `using` / `return` 等**不受拦截影响**。
 
 ---
 

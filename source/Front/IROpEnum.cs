@@ -107,7 +107,7 @@ namespace SimpleLanguage
         // pops the pushed arguments, marshals them straight into the native
         // call and pushes the return value — no SL frame, no Library.Load.
         // If the binding failed to resolve, the handler falls back to the
-        // original SL method body (methodId embedded in the pre-rewrite JSON).
+        // original SL method body (methodId embedded in the pre-rewrite payload).
         CallFFIStatic,                      // = 77
         CastClass,
 
@@ -149,9 +149,12 @@ namespace SimpleLanguage
         Convert_F16,    // = 103 float -> float16 bits(ushort)
         Convert_F16B,   // = 104 float -> float16brain(bfloat16) bits(ushort)
 
-        // Closure opcodes (FrontEnd-only emit, CVM executes)
-        NewClosure,     // = 105 stack: [..., ctxArray] -> closure object; payload: JSON SLRuntimeCallPackage (methodId)
-        CallClosure,    // = 106 stack: [..., closure, arg0, arg1, ...] -> ret; payload: JSON SLRuntimeCallPackage (paramCount, methodId)
+        // Closure opcodes (FrontEnd-only emit, CVM executes).
+        // Payload encoding: binary v1 (payload[0] == 0x01, see IRData.cs
+        // "Binary payload v1" and csimple_lang/md/design/PAYLOAD_BINARY_FORMAT.md);
+        // legacy JSON payloads from old modules stay loadable (dual-format decode).
+        NewClosure,     // = 105 stack: [..., ctxArray] -> closure object; payload: SLRuntimeCallPackage (methodId)
+        CallClosure,    // = 106 stack: [..., closure, arg0, arg1, ...] -> ret; payload: SLRuntimeCallPackage (paramCount, methodId)
         AllocClosureContext, // = 107 stack: [] -> Object[N] null-filled array (shared capture context); payload: count(int32)
 
         // O3 const-fused store opcodes (only emitted when optimizeLevel >= 3).
