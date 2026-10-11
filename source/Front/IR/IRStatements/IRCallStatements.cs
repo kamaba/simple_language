@@ -8,7 +8,6 @@
 
 using SimpleLanguage.Core;
 using SimpleLanguage.Core.IR;
-
 using System.Text;
 
 namespace SimpleLanguage.IR.Statements

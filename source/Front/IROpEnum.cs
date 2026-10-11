@@ -57,11 +57,6 @@ namespace SimpleLanguage
         StoreStaticField,
         StoreGlobal,
         StoreReturn,
-
-        //SetCurrentClassCallClass,
-        //SetCallClass,
-        //UnSetCallClass,
-
         //运算指令
         Add,                   // +
         Minus,                  // -

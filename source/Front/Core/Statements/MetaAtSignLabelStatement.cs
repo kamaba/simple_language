@@ -1,5 +1,5 @@
 ﻿//****************************************************************************
-//  File:      MetaCallStatements.cs
+//  File:      MetaAtSignLabelStatements.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
 //  DateTime: 2022/8/12 12:00:00
@@ -10,9 +10,9 @@ using System.Text;
 
 namespace SimpleLanguage.Core
 {
-    public class MetaOtherPlatformStatements : MetaStatements
+    public class MetaAtSignLabelStatements : MetaStatements
     {
-        public MetaOtherPlatformStatements(MetaBlockStatements mbs) : base(mbs)
+        public MetaAtSignLabelStatements(MetaBlockStatements mbs) : base(mbs)
         {
         }
         public override string ToFormatString()

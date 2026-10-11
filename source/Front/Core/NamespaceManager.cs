@@ -87,15 +87,6 @@ namespace SimpleLanguage.Core
 
             return findNode;
         }
-        public void CreateMetaNamespaceByFileMetaNamespace( FileMetaNamespace fmn )
-        {
-            MetaBase mn = null;
-            if( fmn.topLevelFileMetaNamespace != null )
-            {
-                //mn = fmn.topLevelFileMetaNamespace.namespaceStatementBlock;
-            }
-            //CreateMetaNamespaceByFineDefineNamespace(fmn, mn);
-        }
         public MetaNode FindFinalMetaNamespaceByNSBlock( NamespaceStatementBlock nsb, MetaNode root = null )
         {
             if( nsb.namespaceList.Count == 0 )

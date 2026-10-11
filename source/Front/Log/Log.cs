@@ -84,8 +84,12 @@ namespace SimpleLanguage.Logging
     }
     public class Log
     {
-        /// <summary>未设置 <c>SIMPLELANG_LOGS_DIR</c> 时的 Front 日志路径（与 Core 默认导出树一致）。</summary>
-        public const string FrontLogDefaultPath = @"F:\project\lang\simple_language\out\export\Core\Logs\Front.txt";
+        /// <summary>未设置 <c>SIMPLELANG_LOGS_DIR</c> 时的 Front 日志兜底路径。
+        /// 早期日志（jsonc 尚未加载、环境变量尚未写入时，如 .sp 路径解析失败）
+        /// 会走本路径：使用临时目录，避免硬编码仓库绝对路径在机器间迁移后
+        /// 抛 DirectoryNotFoundException 掩盖原始错误。</summary>
+        public static string FrontLogDefaultPath { get; } =
+            Path.Combine(Path.GetTempPath(), "SimpleLanguage", "Front.txt");
 
         /// <summary>Front 编译器文本日志路径；加载 jsonc 后为 <c>{export.outputDir}/{moduleName}/Logs/Front.txt</c>。</summary>
         public static string FrontLogFilePath =>
@@ -131,7 +135,7 @@ namespace SimpleLanguage.Logging
             {
                 var path = FrontLogFilePath;
                 var dir = Path.GetDirectoryName(path);
-                if (!string.IsNullOrEmpty(dir) && Directory.Exists( dir ) )
+                if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
                 {
                     Directory.CreateDirectory(dir);
                 }

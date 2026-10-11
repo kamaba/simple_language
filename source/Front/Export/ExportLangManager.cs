@@ -31,8 +31,15 @@ namespace SimpleLanguage.ExportLanguage
         // The host reads LastMemoryPackageJson after compile and hands it to the
         // C VM memory entry; LastMemoryExportDir is the directory the file would
         // have been written to (C-side base_dir for reference/plugin resolution).
+        //
+        // Binary format (export.format=binary, SLB_DESIGN.md P2): the Export phase
+        // builds the SLB byte package in memory instead of writing <Module>.module.slb.
+        // The host reads LastMemoryPackageBytes and hands it to
+        // cli_run_module_in_memory_binary. Exactly one of LastMemoryPackageJson /
+        // LastMemoryPackageBytes is non-null after a successful in-memory export.
         public static bool MemoryExportMode { get; set; }
         public static string LastMemoryPackageJson { get; private set; }
+        public static byte[] LastMemoryPackageBytes { get; private set; }
         public static string LastMemoryExportDir { get; private set; }
 
         /// <summary>Clears the last in-memory export result (call before each compile
@@ -40,6 +47,7 @@ namespace SimpleLanguage.ExportLanguage
         public static void ResetMemoryExport()
         {
             LastMemoryPackageJson = null;
+            LastMemoryPackageBytes = null;
             LastMemoryExportDir = null;
         }
 
@@ -95,14 +103,22 @@ namespace SimpleLanguage.ExportLanguage
 
             if (string.Equals(exportFormat, "binary", StringComparison.OrdinalIgnoreCase))
             {
-                // P0：二进制导出仅落盘；--in-memory（供宿主机内直传）组合待 P2 实现
-                if (MemoryExportMode)
-                {
-                    Log.AddProjectLog(LID.ProjectExportBinaryInMemoryUnsupported, "");
-                    return;
-                }
                 var binaryPath = Path.Combine(outDir, filePrefix + ".module.slb");
                 var package = SLModulePackageWriter.Build(IRManager.instance, moduleName);
+                if (MemoryExportMode)
+                {
+                    // In-memory binary export (SLB_DESIGN.md P2): keep the SLB bytes in
+                    // memory (no .module.slb write); the host hands them straight to
+                    // cli_run_module_in_memory_binary. LastMemoryExportDir doubles as
+                    // the C-side base_dir, same as the json in-memory path.
+                    LastMemoryPackageBytes = SLBWriter.WriteToBytes(
+                        package,
+                        ProjectManager.config?.Export?.Binary?.Compressed ?? true);
+                    LastMemoryExportDir = outDir;
+                    Log.AddIRLog(LID.ExportSLModulePackageExportModuleSuccess,
+                        "export module success (in-memory binary): " + binaryPath);
+                    return;
+                }
                 SLBWriter.Write(package, binaryPath,
                     ProjectManager.config?.Export?.Binary?.Compressed ?? true);
                 return;

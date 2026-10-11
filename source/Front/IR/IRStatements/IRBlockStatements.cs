@@ -9,7 +9,7 @@
 
 using SimpleLanguage.Core;
 using SimpleLanguage.IR.Statements;
-using System.Diagnostics;
+using SimpleLanguage.Logging;
 
 namespace SimpleLanguage.IR
 {
@@ -76,6 +76,27 @@ namespace SimpleLanguage.IR
                             IRContinueStatements mircs = new IRContinueStatements(irMethod);
                             mircs.ParseIRStatements(mcs);
                             m_IRStatements.AddRange(mircs.irStatements);
+                        }
+                        break;
+                    case MetaNextStatements mnexts:
+                        {
+                            /* next：两语义（keywords.md）——
+                             * ① switch case 体内无外围循环：纯贯穿标记，IR 不发射指令，
+                             *   fall-through 由 IRSwitchStatements 按 metaCase.isContinueNext
+                             *   在 case 体后发射分发（MetaSwitchStatements 注释约定）。
+                             * ② 循环体内（或 case 体内有外围循环，"循环优先"绑定）：
+                             *   等价 continue —— 跳回最近循环的 continue 目标。
+                             * 无 continue 目标即 ①，有即 ②，与 Meta 层绑定语义一致。 */
+                            var nextTarget = irMethod?.GetCurrentContinueTarget();
+                            if (nextTarget != null)
+                            {
+                                IRBranch nextBranch = new IRBranch(irMethod, EIROpCode.Br, nextTarget);
+                                if (mnexts.token != null)
+                                {
+                                    nextBranch.SetDebugInfoByToken(mnexts.token);
+                                }
+                                m_IRStatements.Add(nextBranch);
+                            }
                         }
                         break;
                     case MetaGotoLabelStatements mgls:
@@ -186,15 +207,18 @@ namespace SimpleLanguage.IR
                             m_IRStatements.Add(new IRRawData(irMethod, endUnchecked));
                         }
                         break;
-                    case MetaOtherPlatformStatements mops:
+                    case MetaAtSignLabelStatements mops:
                         {
-                            Debug.Write("------------------没有解析IR的语句类型------------");
+                            Log.AddIRLog(LID.IRMethodNotFoundVariable, null, "------------------没有解析IR的语句类型------------");
                             //MetaIRCSharpCallStatements mcsharpcsinst = new MetaCSharpCallStatements(mcsharpcs, )
                         }
                         break;
                     default:
                         {
-                            Debug.Write("------------------没有解析IR的语句类型------------");
+                            /* 插桩：打出具体语句类型名（可观测性；正常语句类型应全部有显式 case） */
+                            Log.AddIRLog(LID.IRMethodNotFoundVariable, null,
+                                "------------------没有解析IR的语句类型------------ type=" +
+                                ((nextmbs != null) ? nextmbs.GetType().Name : "<null>"));
                         }
                         break;
                 }

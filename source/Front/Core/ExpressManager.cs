@@ -10,7 +10,6 @@ using SimpleLanguage.Compile;
 using SimpleLanguage.Logging;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Diagnostics;
 
 namespace SimpleLanguage.Core
 {

@@ -8,7 +8,6 @@
 
 using SimpleLanguage.Core;
 using SimpleLanguage.Logging;
-using SimpleLanguage.Project;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;

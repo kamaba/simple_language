@@ -245,19 +245,6 @@ namespace SimpleLanguage.IR
                     return;
                 // 自动 inline 环守卫命中 (间接递归 A->B->A): 静默回退正常 Call
             }
-            
-            //MetaMemberFunctionCSharp mmfcsharp = mf as MetaMemberFunctionCSharp;
-            //if (mmfcsharp != null)
-            //{
-            //    m_MethodInfo = mmfcsharp.methodInfo;
-            //    IRData data = new IRData();
-            //    data.opCode = EIROpCode.Ca;
-            //    data.opValue = this;
-            //    data.SetDebugInfoByToken(mmfcsharp.GetToken());
-            //    AddIRData(data);
-            //    return;
-            //}
-
 
             int callMethodIndex = -1;
             string fname = "";

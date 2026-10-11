@@ -126,40 +126,7 @@ namespace SimpleLanguage.IR
                 Log.AddIRLog(LID.IRParseMetaTypeMetaClassIsNull, "irOwnerMetaClass");
             }
             return irmt;
-        }
-
-
-        /*
-        public IRMetaType( MetaType type )
-        {
-            //this.m_IsArray = type.isArray;
-            if (type.eMetaTypeType == EMetaTypeType.MetaClass)
-            {
-                m_IRMetaClass = IRManager.instance.GetIRMetaClassById(type.GetTemplateMetaClass().GetHashCode());
-                m_IROwnerMetaClass = IRManager.instance.GetIRMetaClassById(type.GetTemplateMetaClass().GetHashCode());
-            }
-            else if (type.eMetaTypeType == EMetaTypeType.Template)
-            {
-                m_TemplateIndex = type.metaTemplate.index;
-                m_IROwnerMetaClass = IRManager.instance.GetIRMetaClassById(type.metaTemplate.ownerClass.GetHashCode());
-                m_IRMetaClass = IRManager.instance.GetIRMetaClassById(type.GetTemplateMetaClass().GetHashCode());
-            }
-            else
-            {
-                m_IRMetaClass = IRManager.instance.GetIRMetaClassById(type.GetTemplateMetaClass().GetHashCode());
-                m_IROwnerMetaClass = IRManager.instance.GetIRMetaClassById(type.GetTemplateMetaClass().GetHashCode());
-            }
-            if (m_IRMetaClass == null || m_IROwnerMetaClass == null )
-            {
-                Debug.Assert(false, "这个不可以为空!");
-            }
-            for (int i = 0; i < type.defineTemplateMetaTypeList.Count; i++)
-            {
-                m_IRMetaTypeList.Add(IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(type.defineTemplateMetaTypeList[i], m_IROwnerMetaClass));
-            }
-        }
-        */
-        
+        }        
         /// <summary>
         /// 从导出的 SLRuntimeDefTypePackage 直接构建 IRMetaType，用于 ref module 导入。
         /// </summary>

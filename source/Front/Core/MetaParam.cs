@@ -281,36 +281,6 @@ namespace SimpleLanguage.Core
                     }
                 }
                 return false;
-                /*
-                // exact match
-                if (TypeManager.CompareMetaType(md, metaVariable.defineMetaType))
-                {
-                    return true;
-                }
-
-                if ( TypeManager.TryNumberArrayCovarianceAllow(md, metaVariable.defineMetaType, metaVariable))
-                    return true;
-
-                // ??????????????????
-                if (md.IsArray() && metaVariable.defineMetaType.IsArray())
-                    return false;
-
-                // allow match when types are in inheritance relationship (e.g., defined: Num, concrete: SByte)
-                MetaClass thisClass = metaVariable.defineMetaType?.GetTemplateMetaClass();
-                MetaClass otherClass = md?.GetTemplateMetaClass();
-                if (thisClass != null && otherClass != null)
-                {
-                    var relation = TypeManager.ValidateClassTypeRelation(thisClass, otherClass);
-                    if (relation == ETypeRelation.Same
-                        || relation == ETypeRelation.Child
-                        || relation == ETypeRelation.Parent
-                        || relation == ETypeRelation.Interface )
-                    {
-                        return true;
-                    }
-                }
-                */
-                return false;
             }
             return false;
         }

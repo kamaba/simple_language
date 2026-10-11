@@ -24,18 +24,10 @@ namespace SimpleLanguage.IR.Statements
             var breakTarget = irMethod?.GetCurrentBreakTarget();
             irBrach = new IRBranch(irMethod,  EIROpCode.Br, breakTarget );
             m_IRStatements.Add(irBrach);
-            //if (m_FileMetaKeyOnlySyntax.token != null )
-            //{
-            //    irBrach.data.SetDebugInfoByToken( m_FileMetaKeyOnlySyntax.token );
-            //}
-            //if ( m_ForStatements != null )
-            //{
-            //    irBrach.data.opValue = m_ForStatements.endIRData.data;
-            //}
-            //else if( m_WhileStatements != null )
-            //{
-            //    irBrach.data.opValue = m_WhileStatements.endIRData.data;
-            //}
+            if (ms.token != null )
+            {
+                irBrach.data.SetDebugInfoByToken(ms.token );
+            }
         }
     }
     public class IRContinueStatements : IRStatements
@@ -49,19 +41,11 @@ namespace SimpleLanguage.IR.Statements
         {
             var continueTarget = irMethod?.GetCurrentContinueTarget();
             irBrach = new IRBranch(irMethod, EIROpCode.Br, continueTarget );
-            //if (m_FileMetaKeyOnlySyntax.token != null)
-            //{
-            //    irBrach.SetDebugInfoByToken( m_FileMetaKeyOnlySyntax.token );
-            //}
+            if (mcs.token != null)
+            {
+                irBrach.SetDebugInfoByToken(mcs.token);
+            }
             m_IRStatements.Add(irBrach);
-            //if (mcs.m_ForStatements != null)
-            //{
-            //    irBrach.data.opValue = m_ForStatements.forStartIRData.data;
-            //}
-            //else if ( m_WhileStatements != null)
-            //{
-            //     irBrach.data.opValue = m_WhileStatements.whileStartIRData.data;
-            //}
         }
     }
     public class IRGotoLabelStatements : IRStatements

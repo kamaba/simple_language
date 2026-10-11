@@ -10,7 +10,6 @@ using SimpleLanguage.Core;
 using SimpleLanguage.Export.SLIR.Types;
 using SimpleLanguage.Logging;
 using System.Collections.Generic;
-using System.Diagnostics;
 
 namespace SimpleLanguage.IR
 {
@@ -86,7 +85,6 @@ namespace SimpleLanguage.IR
         private string m_DefaultConstValue = null;
         private int m_DefaultConstEType = 0;
         private int m_Order = -1;
-        //private MetaVariable m_MetaVariable = null;
 
         public IRMetaVariable( MetaVariable mv, int index = -1 )
         {

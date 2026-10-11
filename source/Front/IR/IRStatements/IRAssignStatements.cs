@@ -158,33 +158,6 @@ namespace SimpleLanguage.IR
 
                     m_IRStatements.Add(irvar);
                 }
-                /*
-                 * 
-                 *
-                 MetaVariable mv22 = lastCL.GetRetMetaVariable();
-
-                IRMetaType irmt2 = null;
-                IRMetaClass irmc2 = null;
-                IRMetaClass owirmc2 = IRManager.instance.GetIRMetaClassById(mv22.GetOwnerClassTemplateClass().GetHashCode());
-                if (mv22.isStatic)
-                {
-                    if (lastCL.callMetaType != null)
-                    {
-                        irmt = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(cnode.callMetaType, owirmc);
-                    }
-                    else
-                    {
-                        irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mv.defineMetaType, owirmc);
-                    }
-                    irmc = IRManager.instance.GetIRMetaClassById(mv.GetOwnerClassTemplateClass().GetHashCode());
-                }
-                else
-                {
-                    irmc = IRManager.instance.GetIRMetaClassById(mv.GetOwnerClassTemplateClass().GetHashCode());
-                }
-                IRLoadVariable irVar = IRLoadVariable.CreateLoadVariable(irmt, irmc, _irMethod, mv);
-                irList.Add(irVar);
-                 */
 
                 if (ms.autoAddExpressOpSign != ELeftRightOpSign.None)
                 {
@@ -200,11 +173,6 @@ namespace SimpleLanguage.IR
                     {
                         m_IRStatements.Add(new IRDup(this.irMethod));
                     }
-
-                    //if (lastCL.variable.isStatic)
-                    //{
-                    //    Log.AddIRLog(LID.IRAssignStatementIRAssignStatementVisitVariable2, ms.token, "IRAssignStatement visit variable is Static2");
-                    //}
 
                     var list = IRMetaCallLink.ExecOnceCnode(this.irMethod, lastCL);
                     if (list == null)
