@@ -108,14 +108,16 @@
     ],
     "replace": {
       "DEBUG": "true"
-    }
-  },
-  "data": {
-    "var1": 12,
-    "arrvar1": [1, 2, 3, 4, 5],
-    "vardata2": {
-      "a": 10,
-      "b": 20.1
+    },
+    // 数据注入面（根->global->data，唯一位置）：编译期注入为 Project 静态成员，
+    // SL 运行期经 global.<name> 读取。根级 "data" 已废弃（LID 20041）。
+    "data": {
+      "var1": 12,
+      "arrvar1": [1, 2, 3, 4, 5],
+      "vardata2": {
+        "a": 10,
+        "b": 20.1
+      }
     }
   },
   "references": [

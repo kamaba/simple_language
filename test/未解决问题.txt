@@ -8,39 +8,8 @@ TankGame.sl 引入Math类。把一些 二维的都使用Int32_2 Int32_3
 4. 接一个asm 
 
 
-_before_
-_after_
-把在project.sp里边的，改成这两函数，_before_ 这个是在编译前调用的，_after_ 是在编译后，导出ir前调用的 把想着的逻辑都改动下，然后把想着的配置还有逻辑放那里
 
-import NS.a as NSA 的用法，还有typealias的用法的完善
-
-语法中，像final 不能和 atstract 一起用  还有const不能对class里边解析 需要报错处理  在定义FileMetaClass中，如果是data 才能使用static 其它的都不允许使用static
-
-project.jsonc的配置整理。
-把global.data 确定了 下边的关联元素确定下，还有调用方式
-
-创建表达式的过程，是不是可以优化下，怎么感觉好多地方有调 用二次的情况，你审核下代码，给个优化方案，我看下
-
-Environment.SetEnvironmentVariable 尽量不要使用这种的，而是使用配置 文件 就可以 了。
-
-
-D:\project\lang\simple_language\source\Front\IR\IRStatements\IRIfStatements.cs 增加debugInfo信息的传入
-
-
-D:\project\lang\simple_language\source\Front\IR\IRCall.cs
-  MetaAttribute staticAttr = null;
-  if( mmf != null && mmf.attributeList != null )
-  {
-      foreach( var attr in mmf.attributeList )
-      {
-          if( attr != null && attr.name == "DllStaticImport" )
-          {
-              staticAttr = attr;
-              break;
-          }
-      }
-  } 这里写的这种的逻辑 不应该是直接在这里执行，而是在这里注入一些信息，然后在cvm的runtime的时候，如果遇到attribute匹配后，然后再看attribute的逻辑，然后再执行具体的逻辑
-以DllStaticImport为例，在这里的代码 还是去掉，然后按原来的方式去调，然后在cvm的runtime的时候，发现了attribute,里边的_enter_后，然后是执行CallFFIStatic的IRCode 所以就跳转执行了。
+创建表达式 创建表达式的过程，是不是可以优化下，怎么感觉好多地方有调 用二次的情况，你审核下代码，给个优化方案，我看下
 
 
 private static readonly Dictionary<string, int[]> s_BuiltInContracts =
@@ -58,6 +27,71 @@ private static readonly Dictionary<string, int[]> s_BuiltInContracts =
         { "Exclude",         new int[] { StagePreCompile, TargetAll } },
     };  这里边 这两个过程，应该是去识别具体在代码里边的定义，因为他们的代码位置，还有写Attribute会写，那个过程，还有在那个头顶决定 是什么 target上边。解析attribute时，要进行元数据的读取。
 
+
+D:\project\lang\simple_language\source\Front\IR\IRCall.cs
+  MetaAttribute staticAttr = null;
+  if( mmf != null && mmf.attributeList != null )
+  {
+      foreach( var attr in mmf.attributeList )
+      {
+          if( attr != null && attr.name == "DllStaticImport" )
+          {
+              staticAttr = attr;
+              break;
+          }
+      }
+  } 这里写的这种的逻辑 不应该是直接在这里执行，而是在这里注入一些信息，然后在cvm的runtime的时候，如果遇到attribute匹配后，然后再看attribute的逻辑，然后再执行具体的逻辑
+以DllStaticImport为例，在这里的代码 还是去掉，然后按原来的方式去调，然后在cvm的runtime的时候，发现了attribute,里边的_enter_后，然后是执行CallFFIStatic的IRCode 所以就跳转执行了。
+
+在导出二进制的时候，传参增加一个，是否导出.json的选项  如果有这个选项，则文件还要导出一份module.json 的文件 ，主要是用来调 试的， 导出二进制的是必须导出的，json是通过选项判断导出的。 在C#的工程里边比如CSimpleVMCoreTest 像这种的工程，如果是Debug, 增加传入参数，要导出module.json的
+        // ------------------------------------------------------------------
+        // SL 类布局收集（镜像 class 下发）：Build 期 Meta 已装配，扫描本
+        // 标签全部块入通道的类型标记，非 BCL 名（SL data/class 类名）查
+        // ClassManager 递归展开字段布局，随构建请求 slTypes 下发；插件
+        // frontend 据此生成公共字段 C# class（如 csharp_mono 的 namespace
+        // SLAtSign），块内目标语言代码可直接引用。枚举/未解析名跳过
+        // （标量白名单外查不到的不下发，运行期按 Object 兜底）。
+        // ------------------------------------------------------------------
+
+        /// <summary>入通道类型标记的标量白名单（含 C# BCL 别名与 SL Meta
+        /// 标量名）；白名单外即 SL data/class 类名，进布局收集。</summary>
+        private static readonly HashSet<string> s_CSharpBclTypes = new HashSet<string>(StringComparer.Ordinal)
+        {
+            "Int32", "int", "int32", "i32",
+            "Int64", "long", "int64", "i64",
+            "Single", "float", "float32", "f32", "Float32",
+            "Double", "double", "float64", "f64", "Float64",
+            "String", "string",
+            "Boolean", "bool", "boolean",
+            "Object", "object",
+        };
+
+        /// <summary>扫描全部块入通道类型标记，收集 SL data/class 布局进请求 slTypes。</summary>
+        private static void CollectSlTypes( SimpleLanguage.Compile.PluginLabelBuildRequest request,
+            List<SimpleLanguage.Core.AtSignLabelBlock> blocks )
+        {
+            var collected = new Dictionary<string, SimpleLanguage.Compile.PluginLabelSlType>(StringComparer.Ordinal);
+            var visiting = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var block in blocks)
+            {
+                if (block.InChannels == null)
+                {
+                    continue;
+                }
+                foreach (var ch in block.InChannels)
+                {
+                    string slType = ch != null && ch.Length > 2 ? ch[2] : null;
+                    if (string.IsNullOrEmpty(slType) || s_CSharpBclTypes.Contains(slType))
+                    {
+                        continue;
+                    }
+                    CollectSlType(slType, collected, visiting);
+                }
+            }
+            request.SlTypes.AddRange(collected.Values);
+        }
+这块的逻辑，是不是应该在具体的plugin里边呀
+
 写更多的使用用例，测试cvm的功能点。
 jsonc整体，增加 AOT, Mix, PureCVM,
 
@@ -72,7 +106,7 @@ ffmpeg的dll 引入
 
 
 优化FrontEnd层
-增加tcp/udp/ip等协议 是否网络包，要独立 ，而不在std里边
+
 把静态绑定dll 参数尽量扩展下， 如果定义的export c的函数 是 比如char/char*/short/ushort/ptr* 等数型，都没有处理需要扩展，但貌似匹配机制你先看下还有没有更合理的机制 感觉现在要写的匹配太多了
 
 1. this的使用，还没有整合

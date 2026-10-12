@@ -71,10 +71,10 @@ Project
         }
         SystemPrintln( "===== TLSFProbe v1 end =====" )
     }
-    CompileBefore()
+    _before_()
     {
     }
-    CompileAfter()
+    _after_()
     {
     }
 }

@@ -854,6 +854,28 @@ namespace SimpleLanguage.Core
                     //{
                     //    HandleGetTypeByMetaType(m_FrontCallNode.metaType);
                     //}
+                    else if (frontCNT == ECallNodeType.MetaType
+                        && m_FrontCallNode.m_MetaType != null
+                        && m_FrontCallNode.m_MetaType.isEnum)
+                    {
+                        // typealias 指向 enum：AliasEnum.Member / AliasEnum.values
+                        // 与 EnumName 前置节点同路径解析（见 HandleEnumNameMemberAccess）
+                        if (!HandleEnumNameMemberAccess(m_FrontCallNode.m_MetaType.metaEnum))
+                        {
+                            return false;
+                        }
+                    }
+                    else if (frontCNT == ECallNodeType.MetaType
+                        && m_FrontCallNode.m_MetaType != null
+                        && m_FrontCallNode.m_MetaType.isData)
+                    {
+                        // typealias 指向 data：AliasData.Member
+                        // 与 DataName 前置节点同路径解析（见 HandleDataNameMemberAccess）
+                        if (!HandleDataNameMemberAccess(m_FrontCallNode.m_MetaType.metaData))
+                        {
+                            return false;
+                        }
+                    }
                     else if (frontCNT == ECallNodeType.ClassName
                         || frontCNT == ECallNodeType.MetaType)
                     {
@@ -887,91 +909,17 @@ namespace SimpleLanguage.Core
                     }
                     else if (frontCNT == ECallNodeType.DataName)
                     {
-                        var retmmd = m_FrontCallNode.m_MetaData.GetMemberDataByName(m_Name);
-                        m_StaticCallMetaType = new MetaType(m_FrontCallNode.m_MetaData);
-                        if (retmmd == null)
+                        if (!HandleDataNameMemberAccess(m_FrontCallNode.m_MetaData))
                         {
-                            if (GetFunctionOrVariableByOwnerClass(CoreMetaClassManager.dataMetaClass, m_Name))
-                            {
-
-                            }
-                            else
-                            {
-                                Log.AddMetaCoreLog(LID.MetaCoreNotFoundMetaMemberVariable, m_Token, $"data name not found",
-                                    m_FrontCallNode.m_MetaData.allName, m_Name);
-                                return false;
-                            }
-                        }
-                        else
-                        {
-                            m_MetaType = new MetaType(m_FrontCallNode.m_MetaData);
-                            m_MetaVariable = retmmd;
-                            if (retmmd.memberDataType == EMemberDataType.MemberClass)
-                            {
-                                m_CallNodeType = ECallNodeType.MemberVariableName;
-                            }
-                            else if (retmmd.memberDataType == EMemberDataType.ConstValue)
-                            {
-                                if (m_MetaVariable.isConst)
-                                {
-                                    //杩欏潡锛屽彲浠ュ啓鎴愬父閲忔ā寮?
-                                    //m_CallNodeType = ECallNodeType.ConstValue;
-                                    //EType etyp = CoreMetaClassManager.GetETypeByMetaClass(m_MetaVariable.GetFinalMetaType().metaClass);
-                                    //this.m_ExpressNode = new MetaConstExpressNode(etyp, m_MetaVariable.)
-                                    m_CallNodeType = ECallNodeType.MemberVariableName;
-                                }
-                                else
-                                {
-                                    m_CallNodeType = ECallNodeType.MemberVariableName;
-                                }
-                            }
-                            else if (retmmd.memberDataType == EMemberDataType.MemberArray)
-                            {
-                                m_MetaClass = retmmd.GetFinalMetaType()?.metaClass;
-                            }
-                            else if (retmmd.memberDataType == EMemberDataType.MemberData)
-                            {
-                                m_CallNodeType = ECallNodeType.MemberVariableName;
-                                m_MetaVariable = retmmd;
-                            }
-                            else
-                            {
-                                Log.AddMetaCoreLog(LID.MetaCoreCallNotFoundNotFound2, m_Token, "not found memberDataType");
-                            }
+                            return false;
                         }
                     }
                     else if (frontCNT == ECallNodeType.EnumName)
                     {
-                        MetaMemberVariable mmv = null;
-                        if ( m_Name == "values")
+                        if (!HandleEnumNameMemberAccess(m_FrontCallNode.m_MetaEnum))
                         {
-                            mmv = m_FrontCallNode.m_MetaEnum.GetOrCreateValuesVariable() as MetaMemberVariable;
-                        }
-                        else
-                        {
-                            mmv = m_FrontCallNode.m_MetaEnum.GetMetaMemberVariableByName(m_Name);
-                        }
-                        if (mmv == null)
-                        {
-                            Log.AddMetaCoreLog(LID.MetaCoreCallNotFoundNotFound3, m_Token, m_FrontCallNode.m_MetaEnum.name + "not found enum.member?" + m_Name);
                             return false;
                         }
-                        
-                        if (m_IsFunction)// Enum e = Enum.MetaVaraible( 2 )
-                        {
-                            Log.AddMetaCoreLog(LID.MetaCoreCallIssue7, m_Token, m_FrontCallNode.m_MetaEnum.name + "(" + m_Name + ")" + "not allow!");
-                            return false;
-                        }
-                        else
-                        {
-                            m_MetaVariable = mmv;
-                            m_CallNodeType = ECallNodeType.EnumMember; 
-                            if (m_FrontCallNode?.metaEnum != null)
-                            {
-                                m_MetaType = new MetaType(mmv);
-                            }
-                            m_StaticCallMetaType = m_MetaType;
-                        }                        
                     }
                     else if (frontCNT == ECallNodeType.FunctionInnerVariableName
                         || frontCNT == ECallNodeType.MemberVariableName
@@ -1446,6 +1394,101 @@ namespace SimpleLanguage.Core
                 m_MetaType = new MetaType(inputTemplateList[m_MetaType.metaTemplate.index]);
             }
         }
+        /// <summary>
+        /// EnumName 前置节点 / typealias 指向 enum 的 MetaType 前置节点的成员访问
+        /// （Enum.Member / Enum.values / AliasEnum.Member），两条路径共用同一解析逻辑。
+        /// </summary>
+        bool HandleEnumNameMemberAccess(MetaEnum frontEnum)
+        {
+            if (frontEnum == null)
+            {
+                return false;
+            }
+            MetaMemberVariable mmv = null;
+            if (m_Name == "values")
+            {
+                mmv = frontEnum.GetOrCreateValuesVariable() as MetaMemberVariable;
+            }
+            else
+            {
+                mmv = frontEnum.GetMetaMemberVariableByName(m_Name);
+            }
+            if (mmv == null)
+            {
+                Log.AddMetaCoreLog(LID.MetaCoreCallNotFoundNotFound3, m_Token, frontEnum.name + "not found enum.member?" + m_Name);
+                return false;
+            }
+
+            if (m_IsFunction)// Enum e = Enum.MetaVaraible( 2 )
+            {
+                Log.AddMetaCoreLog(LID.MetaCoreCallIssue7, m_Token, frontEnum.name + "(" + m_Name + ")" + "not allow!");
+                return false;
+            }
+            m_MetaVariable = mmv;
+            m_CallNodeType = ECallNodeType.EnumMember;
+            m_MetaType = new MetaType(mmv);
+            m_StaticCallMetaType = m_MetaType;
+            return true;
+        }
+        /// <summary>
+        /// DataName 前置节点 / typealias 指向 data 的 MetaType 前置节点的成员访问
+        /// （Data.Member / AliasData.Member），两条路径共用同一解析逻辑。
+        /// </summary>
+        bool HandleDataNameMemberAccess(MetaData frontData)
+        {
+            if (frontData == null)
+            {
+                return false;
+            }
+            var retmmd = frontData.GetMemberDataByName(m_Name);
+            m_StaticCallMetaType = new MetaType(frontData);
+            if (retmmd == null)
+            {
+                if (GetFunctionOrVariableByOwnerClass(CoreMetaClassManager.dataMetaClass, m_Name))
+                {
+                }
+                else
+                {
+                    Log.AddMetaCoreLog(LID.MetaCoreNotFoundMetaMemberVariable, m_Token, $"data name not found",
+                        frontData.allName, m_Name);
+                    return false;
+                }
+            }
+            else
+            {
+                m_MetaType = new MetaType(frontData);
+                m_MetaVariable = retmmd;
+                if (retmmd.memberDataType == EMemberDataType.MemberClass)
+                {
+                    m_CallNodeType = ECallNodeType.MemberVariableName;
+                }
+                else if (retmmd.memberDataType == EMemberDataType.ConstValue)
+                {
+                    if (m_MetaVariable.isConst)
+                    {
+                        m_CallNodeType = ECallNodeType.MemberVariableName;
+                    }
+                    else
+                    {
+                        m_CallNodeType = ECallNodeType.MemberVariableName;
+                    }
+                }
+                else if (retmmd.memberDataType == EMemberDataType.MemberArray)
+                {
+                    m_MetaClass = retmmd.GetFinalMetaType()?.metaClass;
+                }
+                else if (retmmd.memberDataType == EMemberDataType.MemberData)
+                {
+                    m_CallNodeType = ECallNodeType.MemberVariableName;
+                    m_MetaVariable = retmmd;
+                }
+                else
+                {
+                    Log.AddMetaCoreLog(LID.MetaCoreCallNotFoundNotFound2, m_Token, "not found memberDataType");
+                }
+            }
+            return true;
+        }
         bool HandleMetaClass( ECallNodeType frontCNT, int templateCount)
         {
             //-------------------------------------------------
@@ -1469,9 +1512,10 @@ namespace SimpleLanguage.Core
             MetaNode curMetaNode = null;
             if (frontCNT == ECallNodeType.MetaType)
             {
-                curMetaNode = m_FrontCallNode.m_MetaType.metaClass != null ?
-                    m_FrontCallNode.m_MetaType.metaClass.metaNode :
-                    m_FrontCallNode.m_MetaType.metaClass.metaNode;
+                // typealias 等经 MetaType 进入的前置节点：目标可能是 enum/data（metaClass 为 null），
+                // 取 metaNode 前必须判空（enum 别名成员访问曾在此 NRE 崩溃，见 AliasProbe 探针）
+                var frontAliasMC = m_FrontCallNode.m_MetaType.metaClass;
+                curMetaNode = frontAliasMC != null ? frontAliasMC.metaNode : null;
             }
             //else if( frontCNT == ECallNodeType.GenClassName )
             //{

@@ -664,6 +664,20 @@ namespace SimpleLanguage.Project
                 SystemMethodCallDeclarationRegistry.AddDeclByMt(v.name, v.returnType, v.@params, v.isVariadic, false, v.cvmFunction, v.className );
             }
 
+            /* Register the referenced module's attribute contracts (exported from its
+             * Attribute subclasses' _init_ declarations) into the FrontEnd registry, so
+             * cross-module usage (@DllImport in a project referencing Core, etc.)
+             * resolves stage/targets from metadata — the Front-side hardcoded contract
+             * table (s_BuiltInContracts) is retired. JSON-only field; SLB omits it. */
+            if (package.attributeContracts != null)
+            {
+                foreach (var ac in package.attributeContracts)
+                {
+                    if (ac == null || string.IsNullOrWhiteSpace(ac.name)) continue;
+                    AttributeManager.RegisterRefModuleContract(ac.name, ac.stage, ac.targets);
+                }
+            }
+
             /* Merge the referenced module's dll imports (alias -> path, embedded
              * at export time from its .jsonc "dllImports" section) into the current
              * project config, so @DllImport("alias",...) resolves here without

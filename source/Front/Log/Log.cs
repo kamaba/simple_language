@@ -84,8 +84,8 @@ namespace SimpleLanguage.Logging
     }
     public class Log
     {
-        /// <summary>未设置 <c>SIMPLELANG_LOGS_DIR</c> 时的 Front 日志兜底路径。
-        /// 早期日志（jsonc 尚未加载、环境变量尚未写入时，如 .sp 路径解析失败）
+        /// <summary>未定位到工程 Logs 目录（jsonc 未加载或未配置 <c>export.outputDir</c>，且未外部设置 <c>SIMPLELANG_LOGS_DIR</c> 覆盖）时的 Front 日志兜底路径。
+        /// 早期日志（jsonc 尚未加载时，如 .sp 路径解析失败）
         /// 会走本路径：使用临时目录，避免硬编码仓库绝对路径在机器间迁移后
         /// 抛 DirectoryNotFoundException 掩盖原始错误。</summary>
         public static string FrontLogDefaultPath { get; } =
@@ -97,9 +97,11 @@ namespace SimpleLanguage.Logging
 
         static string ResolveUnderLogsDir(string fileName)
         {
-            var dir = Environment.GetEnvironmentVariable(ProjectOutputEnvironment.LogsDirEnv);
+            /* Logs 目录由 jsonc 派生并保存在 ProjectOutputEnvironment 进程内状态；
+             * SIMPLELANG_LOGS_DIR 仅作为外部手动覆盖入口（只读）。 */
+            var dir = ProjectOutputEnvironment.GetEffectiveLogsDir();
             if (!string.IsNullOrWhiteSpace(dir))
-                return Path.Combine(Path.GetFullPath(dir.Trim()), fileName);
+                return Path.Combine(dir, fileName);
             return FrontLogDefaultPath;
         }
 

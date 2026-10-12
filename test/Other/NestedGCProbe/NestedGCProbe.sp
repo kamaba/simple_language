@@ -70,10 +70,10 @@ Project
         SystemPrintln( "cycles=" + Memory.GcCycleCount().toString() )
         SystemPrintln( "===== NestedGCProbe end =====" )
     }
-    CompileBefore()
+    _before_()
     {
     }
-    CompileAfter()
+    _after_()
     {
     }
 }

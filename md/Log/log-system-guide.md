@@ -48,7 +48,7 @@ id,logType,enableAssert,pass,paramCount,domesticTips,zhMessage,,zhFixedTips,enMe
 2. 多线程：`ConcurrentQueue` 收集、文件写入加锁；Error/Assert 与 Warning 计数用 `Interlocked`。
 3. 调用带 Token 重载时，`WriteCoreByToken` 把 `token.path/sourceBeginLine/sourceBeginChar/sourceEndLine/sourceEndChar` 拷入 LogData（null 安全），`ToString()` 自动输出 `Position:[文件_起行_止行]`。
 4. 阻断：`pass=true` 的定义不计入 `errorCount`；过程管理以阶段内错误数判定 `ProcessPhaseFailed`，后续阶段（IR/Export）被跳过。
-5. 双写：Console + `Logs/Front.txt`（由 `SIMPLELANG_LOGS_DIR` 定向；jsonc 未加载前兜底临时目录，见 `Log.FrontLogDefaultPath`）。
+5. 双写：Console + `Logs/Front.txt`（目录由 jsonc 派生的进程内状态定向，读取入口 `ProjectOutputEnvironment.GetEffectiveLogsDir()`；`SIMPLELANG_LOGS_DIR` 仅作外部只读覆盖。jsonc 未加载前兜底临时目录，见 `Log.FrontLogDefaultPath`）。
 
 ---
 

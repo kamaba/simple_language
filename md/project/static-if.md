@@ -5,7 +5,7 @@
 > ⚠️ **`static if` / `static elif` / `static else` 编译期条件编译已废弃**（attribute 重构，`csimple_lang/md/design/ATTRIBUTE_DESIGN.md` §7 旧隔离机制收编）：
 > 现在写 `static if` 会报 **LID 21467 Error**，不再做编译期分支裁剪，迁移方式见第 2 节。
 >
-> **保留部分**：`global.macro` 宏数据面全套（jsonc 定义 / `CompileBefore()` 编译期修改 / CLI `--macro` / 环境变量 `SL_MACRO_*` / 宿主 API / 运行期只读访问），本文第 3~6 节仍有效。
+> **保留部分**：`global.macro` 宏数据面全套（jsonc 定义 / `_before_()` 钩子编译期修改 / CLI `--macro` / 环境变量 `SL_MACRO_*` / 宿主 API / 运行期只读访问），本文第 3~6 节仍有效。
 
 ---
 
@@ -18,7 +18,7 @@
 | | `global.data` | `global.macro` |
 |---|---|---|
 | 注入形式 | Project 数据成员 `global.<name>` | Project 宏成员 `global.macro.<name>` |
-| 源码内修改入口 | 无（只读） | `.sp` 的 `CompileBefore(){}`（编译期，唯一合法修改点） |
+| 源码内修改入口 | 无（只读） | `.sp` Project 类的 `_before_(){}`（编译期，唯一合法修改点） |
 | 编译前外部注入 | 无 | CLI `--macro` / 环境变量 `SL_MACRO_*` / 宿主 API |
 | 运行期 | 只读 | 只读（值是编译定稿后的最终值） |
 
@@ -55,7 +55,7 @@ class Foo
 
 ## 3. jsonc 配置：global.data 与 global.macro
 
-`data` 的结构放在 `global` 下边（旧版根级 `"data"` 仍兼容读取），`macro` 用来存放编译期宏数据。两者字段定义方式完全一样，值支持**布尔 / 数值 / 字符串**：
+`data` 的结构放在 `global` 下边（根级 `"data"` 已废弃：不再被读取，检测到即告警 LID 20041），`macro` 用来存放编译期宏数据。两者字段定义方式完全一样，值支持**布尔 / 数值 / 字符串**：
 
 ```jsonc
 {
@@ -78,13 +78,13 @@ class Foo
 区别：
 
 - `global.data`：注入为 Project 的数据成员，**运行期可读**（`global.greeting`），用于普通数据。
-- `global.macro`：注入为 Project 的宏成员 `global.macro`，**编译期由 `CompileBefore()` 求值消费**（不进 runtime 语句流）；运行期也可以只读访问 `global.macro.platform`（值是编译定稿后的最终值）。
+- `global.macro`：注入为 Project 的宏成员 `global.macro`，**编译期由 `_before_()` 钩子求值消费**（不进 runtime 语句流）；运行期也可以只读访问 `global.macro.platform`（值是编译定稿后的最终值）。
 
 ---
 
-## 4. 在 .sp（Project）里修改宏值：CompileBefore()
+## 4. 在 .sp（Project）里修改宏值：_before_() 钩子
 
-宏的初始值来自 jsonc。如果需要变化，**只能写在 `.sp` 工程文件的 `CompileBefore(){}` 里**，其它任何地方都不允许对 `global.macro` 赋值：
+宏的初始值来自 jsonc。如果需要变化，**只能写在 `.sp` 工程文件 Project 类的 `_before_(){}` 钩子里**，其它任何地方都不允许对 `global.macro` 赋值：
 
 ```python
 Project
@@ -93,7 +93,7 @@ Project
     {
         global.println(global.macro.platform)
     }
-    CompileBefore()
+    _before_()
     {
         # 编译期把 platform 从 jsonc 里的 "Win32" 改为 "Linux"
         global.macro.platform = "Linux"
@@ -104,8 +104,20 @@ Project
 规则：
 
 - 只允许 `global.macro.X = <常量>` 形式（`==` 不是赋值；复合赋值、`++`/`--` 均不支持）。
-- `CompileBefore()` 内的宏赋值在编译期被求值并**消费掉**——不会出现在最终代码里（不进 runtime）。
-- 在 `CompileBefore()` 之外（任何 `.sl`、`.sp` 的其它函数里）对 `global.macro` 赋值，编译直接报错：**LID 23006**（"global.macro 只能在 Project 的 CompileBefore() 中修改"）。
+- 右值仅限**常量字面量**（布尔/数值/字符串）与**裸宏引用** `global.macro.Y`：带下标/调用/模板参数的宏引用报 **LID 23002**，运算表达式（如 `1 + 2`）报 **LID 23007**。
+- 已知限制：数字一元负号（如 `-1`）在表达式路径解析为符号节点树而非常量项，同样落入 23007——负数宏值请直接写在 jsonc `global.macro` 初值里（jsonc 路径支持负数，如 `"retryLimit": -1`）。
+- `_before_()` 钩子内的宏赋值在编译期被求值并**消费掉**——不会出现在最终代码里（不进 runtime）。
+- 求值失败的赋值语句**不会被移除**，幸存至 Meta 层后连锁报 **LID 23006**（钩子外修改守卫），编译失败。
+- 在 `_before_()` 之外（任何 `.sl`、`.sp` 的其它函数里）对 `global.macro` 赋值，编译直接报错：**LID 23006**（"global.macro 只能在 Project 的 _before_() 钩子中修改"）。
+
+**可执行验证用例**（`test/Other/` 下，2026-10-12 全部实测通过）：
+
+- 正例探针 [HookProbe](../../test/Other/HookProbe/HookProbe.md)：jsonc 初值 + `_before_` 覆盖（含宏引用右值按预扫描顺序读到已覆盖值）+ `_after_` 体存活 + `_main_` 运行期读取定稿值，含 Front 编译与 C VM 运行全链路预期输出。
+- 配套负例（编译必失败，勿注册进任何用例集 jsonc；预期错误与复现命令见各工程 `.sp` 头注释与 `.md`）：
+  - [HookBeforeUndefNegTest](../../test/Other/HookBeforeUndefNegTest/HookBeforeUndefNegTest.md)：右值引用未定义宏 → 23001，连锁 23006；
+  - [HookBeforeSubscriptNegTest](../../test/Other/HookBeforeSubscriptNegTest/HookBeforeSubscriptNegTest.md)：宏引用带下标 → 23002，连锁 23006；
+  - [HookBeforeExprNegTest](../../test/Other/HookBeforeExprNegTest/HookBeforeExprNegTest.md)：右值表达式 `1 + 2` → 23007，连锁 23006（`-1` 一元负号同根因）；
+  - [HookMacroOutsideNegTest](../../test/Other/HookMacroOutsideNegTest/HookMacroOutsideNegTest.md)：`_main_` 内宏赋值 → 23006 单错。
 
 ---
 
@@ -154,16 +166,16 @@ ProjectManager.Run(spPath, inputArgs);
 ### 5.5 优先级链（从低到高）
 
 ```
-jsonc global.macro 初值  <  环境变量 SL_MACRO_*  <  CLI --macro / 宿主 SetExternalMacro  <  CompileBefore() 编译期修改
+jsonc global.macro 初值  <  环境变量 SL_MACRO_*  <  CLI --macro / 宿主 SetExternalMacro  <  _before_() 钩子编译期修改
 ```
 
 - 外部注入可以覆盖 jsonc 里已定义的宏，也可以**追加 jsonc 中没有的新宏**。
-- `CompileBefore()` 依然是最高优先级——即使外部传了 `platform=Mac`，`.sp` 里 `CompileBefore()` 的 `global.macro.platform = "Linux"` 仍会生效。
+- `_before_()` 钩子依然是最高优先级——即使外部传了 `platform=Mac`，`.sp` 里 `_before_()` 的 `global.macro.platform = "Linux"` 仍会生效。
 - 每次应用外部宏时会输出 Info 日志（LID 23009），标注来源（env / cli），便于 CI 排查。
 
 ### 5.6 验证示例
 
-jsonc 初值：`platform="Win32", useFastMath=true, maxThreads=8`，`.sp` 的 `CompileBefore()` 把 platform 改为 `"Linux"`：
+jsonc 初值：`platform="Win32", useFastMath=true, maxThreads=8`，`.sp` 的 `_before_()` 把 platform 改为 `"Linux"`：
 
 ```
 SimpleLanguageFront.exe ProjectTest.sp --macro useFastMath=false --macro maxThreads=2
@@ -176,7 +188,7 @@ macro: 外部设置已应用: useFastMath = false (cli)
 macro: 外部设置已应用: maxThreads = 2 (cli)
 ```
 
-运行期读取定稿值：`global.println(global.macro.platform)` 输出 `Linux`（CompileBefore 优先级高于外部注入）。
+运行期读取定稿值：`global.println(global.macro.platform)` 输出 `Linux`（_before_ 钩子优先级高于外部注入）。
 
 ---
 
@@ -187,7 +199,7 @@ CLI --macro / 宿主 SetExternalMacro ──┐
 环境变量 SL_MACRO_* ──────────────────┤
 jsonc global.macro ───────────────────┼→ InjectProjectData 步骤：
                                           LoadFromConfig 装载 jsonc 初值 → 应用外部宏（env 先、cli 后）
-.sp CompileBefore ────────────────────┘    → 预扫描 CompileBefore 内的 global.macro.X = 常量 赋值，
+.sp _before_ ─────────────────────────┘    → 预扫描 _before_ 内的 global.macro.X = 常量 赋值，
                                             编译期求值写入 CompileBeforeManager，并把该赋值语句从语句流中移除
                                          → 把定稿后的宏值注入为 Project 静态成员（运行期只读可见）
 ```
@@ -205,10 +217,10 @@ jsonc global.macro ───────────────────┼�
 | LID | 名称 | 含义 |
 |---|---|---|
 | 21467 | FileMetaSyntaxStaticIfDeprecated | `static if` 编译期条件编译已废弃：请改用 `@Exclude` attribute（PreCompile）或工程级 `compileFiles.ignore` |
-| 23001 | ProjectMacroManagerMacroUndefined | CompileBefore 引用了未在 `global.macro` 中定义的宏 |
-| 23002 | ProjectMacroManagerNotSupportExpress | CompileBefore 宏表达式不支持该语法 |
+| 23001 | ProjectMacroManagerMacroUndefined | `_before_` 钩子引用了未在 `global.macro` 中定义的宏 |
+| 23002 | ProjectMacroManagerNotSupportExpress | `_before_` 钩子宏表达式不支持该语法 |
 | 23005 | ProjectMacroManagerMacroValueInvalid | 宏值不是布尔/数值/字符串 |
-| 23006 | ProjectMacroManagerMacroOnlyModifyInCompileBefore | 在 `CompileBefore()` 之外对 `global.macro` 赋值 |
+| 23006 | ProjectMacroManagerMacroOnlyModifyInCompileBefore | 在 `_before_()` 之外对 `global.macro` 赋值 |
 | 23007 | ProjectMacroManagerMacroNotConst | 宏赋值右侧不是常量表达式 |
 | 23009 | ProjectMacroManagerExternalMacroApplied | 外部宏注入已应用（Info 日志，标注来源 env/cli，非错误） |
 
@@ -221,10 +233,10 @@ jsonc global.macro ───────────────────┼�
 | 功能 | 文件 |
 |---|---|
 | jsonc 解析 global.data / global.macro | `source/Front/Project/ProjectJsoncLoader.cs` |
-| 宏值存储、CompileBefore 赋值求值 | `source/Front/Project/CompileBeforeManager.cs` |
-| 宏成员注入 + CompileBefore 预扫描 | `source/Front/Project/PorjectClass.cs`（`InjectProjectMacroMember` / `PreScanCompileBeforeMacroAssign`） |
+| 宏值存储、_before_ 钩子赋值求值 | `source/Front/Project/CompileBeforeManager.cs` |
+| 宏成员注入 + _before_ 预扫描 | `source/Front/Project/PorjectClass.cs`（`InjectProjectMacroMember` / `PreScanCompileBeforeMacroAssign`） |
 | `static` 修饰检测（废弃报错 LID 21467） | `source/Front/Parse/StructParseToSyntax.cs` |
-| 非 CompileBefore 赋值检查 | `source/Front/Core/Statements/MetaAssignStatements.cs` |
+| 非 _before_ 钩子赋值检查 | `source/Front/Core/Statements/MetaAssignStatements.cs` |
 | CLI `--macro` / `-m` 参数解析 | `source/Front/CLI/CommandInputArgs.cs`（`macroDefines` / `TryAddMacroDefine`） |
 | 外部宏接线（CLI → CompileBeforeManager） | `source/Front/Project/ProjectManager.cs`（`Run`） |
 | `@Exclude` 处理器（PreCompile 跳过） | `source/Front/Core/AttributeManager.cs`（`RegisterPreCompileExcludeHandler` / `ShouldExcludeByPreCompileAttribute`）、`Lib/Core/Exclude.sl` |

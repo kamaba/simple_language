@@ -15,7 +15,7 @@ Project
     {     
         SystemPrintln("===== ProjectTest _main_ start =====")
         nowMs = Environment.sys.nowMillis()
-        #!
+        
         GlobalTest.fun()
         ObjectTest.fun()
         StringTest.fun()
@@ -51,11 +51,11 @@ Project
         
         CoroutineTest.fun();
         StringBuilderTest.fun()
-        !#
+        
         EnumTest.fun()
         MonitorTest.fun()
         #ExitTestNS.ExitTest.fun()
-        #!
+        
         
         EnvironmentTest.fun()
         PlatformOverrideTest.fun()
@@ -95,15 +95,15 @@ Project
         SwitchTest.fun()
         InputArgsTest.fun();        
         HashSetTest.fun()
-        !#
+        
 
         nowMs = Environment.sys.nowMillis() - nowMs
         SystemPrintln("===== ProjectTest _main_ end [$nowMs.toString() ms]=====")
     }
-    CompileBefore()
+    _before_()
     {
     }
-    CompileAfter()
+    _after_()
     {
     }
 }

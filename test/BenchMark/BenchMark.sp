@@ -20,10 +20,10 @@ Project
         nowMs = Environment.sys.nowMillis() - nowMs
          Console.println("===== BenchMark _main_ end [$nowMs.toString() ms] =====")
     }
-    CompileBefore()
+    _before_()
     {
     }
-    CompileAfter()
+    _after_()
     {
     }
 }

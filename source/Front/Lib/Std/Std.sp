@@ -26,10 +26,10 @@ Project
     _main_()
     {
     }
-    CompileBefore()
+    _before_()
     {
     }
-    CompileAfter()
+    _after_()
     {
     }
 }

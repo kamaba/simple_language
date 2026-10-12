@@ -2,7 +2,7 @@
 
 本文说明 **`{export.outputDir}/{export.moduleName}/`** 下各文件含义，以及推荐阅读顺序。所有与「编译 / 导出 / VM 运行」相关的排查都应先对齐本目录结构。
 
-完整路径约定见 `EXPORT_PATHS.md`；环境变量：`SIMPLELANG_EXPORT_OUTDIR`、`SIMPLELANG_LOGS_DIR`、`SIMPLELANG_DEBUGCODE_ROOT`。
+完整路径约定见 `EXPORT_PATHS.md`。目录由 `.jsonc`（`export.outputDir` + 模块名）派生并保存在进程内状态（`ProjectOutputEnvironment.Current*`）；`SIMPLELANG_EXPORT_OUTDIR` / `SIMPLELANG_LOGS_DIR` / `SIMPLELANG_DEBUGCODE_ROOT` 仅作**外部只读手动覆盖入口**。
 
 ---
 

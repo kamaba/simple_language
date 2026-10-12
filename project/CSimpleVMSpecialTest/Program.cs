@@ -33,13 +33,20 @@ internal static class Program
         }
 
         // Step 1: Compile with Front (in-process or via dotnet run)
+        var dotnetFrontArgs = new List<string>
+        {
+            "run", "--project", Quote(Path.Combine(repoRoot, "source", "Front", "SimpleLanguageFront.csproj")), "--",
+            "compile", "-e", "ir", "-p", projectPath, "--no-banner"
+        };
+#if DEBUG
+        // Debug：改走二进制导出（.module.slb 必产物），并附带导出 module.json 调试副本
+        dotnetFrontArgs.Add("--format");
+        dotnetFrontArgs.Add("binary");
+        dotnetFrontArgs.Add("--export-json");
+#endif
         int frontExit = start
             ? RunFrontInProcess(projectPath)
-            : RunDotnet(new List<string>
-            {
-                "run", "--project", Quote(Path.Combine(repoRoot, "source", "Front", "SimpleLanguageFront.csproj")), "--",
-                "compile", "-e", "ir", "-p", projectPath, "--no-banner"
-            }, "Front compile", repoRoot);
+            : RunDotnet(dotnetFrontArgs, "Front compile", repoRoot);
         if (frontExit != 0)
         {
             Console.WriteLine($"Front compile failed, exit code: {frontExit}");
@@ -238,8 +245,14 @@ internal static class Program
         try
         {
             Console.WriteLine("=== Front compile (in-process) ===");
-            var frontArgs = new[] { "compile", "-e", "ir", "-p", projectPath, "--no-banner" };
-            var inputArgs = new CommandInputArgs(frontArgs);
+            var frontArgs = new List<string> { "compile", "-e", "ir", "-p", projectPath, "--no-banner" };
+#if DEBUG
+            // Debug：改走二进制导出（.module.slb 必产物），并附带导出 module.json 调试副本
+            frontArgs.Add("--format");
+            frontArgs.Add("binary");
+            frontArgs.Add("--export-json");
+#endif
+            var inputArgs = new CommandInputArgs(frontArgs.ToArray());
             bool ok = CommandExecutor.Execute(inputArgs);
             if (!ok || Log.errorCount > 0)
             {
@@ -257,7 +270,9 @@ internal static class Program
 
     static string ResolveModulePackagePath(string repoRoot, string projectPath)
     {
-        var exportDir = Environment.GetEnvironmentVariable(ProjectOutputEnvironment.ExportOutDirEnv);
+        /* 编译同进程完成后从 jsonc 派生的进程内状态取导出目录
+         *（SIMPLELANG_EXPORT_OUTDIR 仅保留为外部手动覆盖入口）。 */
+        var exportDir = ProjectOutputEnvironment.GetEffectiveExportOutDir();
         if (!string.IsNullOrWhiteSpace(exportDir))
         {
             var d = Path.GetFullPath(exportDir.Trim());

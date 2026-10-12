@@ -48,27 +48,6 @@ namespace SimpleLanguage.Core
         private int m_Targets = 0;       // 0 = 未解析
         private bool m_IsParsed = false;
 
-        /// <summary>
-        /// 使用侧跨模块契约兜底表：本模块 .sl 里写的 @X（如 SpecialTest 写 @DllImport），
-        /// Parse() 查到的 X 是 ref 模块壳类（无 FileMeta 解析树），_init_ 静态解释必失败，
-        /// 按名称回退取契约（值与各 .sl 子类 _init_ 定稿一致）。
-        /// 注意：这不是 SLIR 恢复链的兜底——恢复构造直接携带 module.json 导出的 stage/targets。
-        /// </summary>
-        private static readonly Dictionary<string, int[]> s_BuiltInContracts =
-            new Dictionary<string, int[]>(StringComparer.OrdinalIgnoreCase)
-            {
-                { "Nickname",        new int[] { StageCompiling, TargetAll } },
-                { "AOT",             new int[] { StageCompiling, TargetAll } },
-                { "GPU",             new int[] { StageCompiling, TargetMethod } },
-                { "DllImport",       new int[] { StagePreload, TargetMethod } },
-                { "DllStaticImport", new int[] { StagePreload, TargetMethod } },
-                { "Route",           new int[] { StagePreload, TargetAll } },
-                { "Serializable",    new int[] { StageRuntime, TargetClass } },
-                { "SerializeField",  new int[] { StageRuntime, TargetField } },
-                { "NonSerialized",   new int[] { StageRuntime, TargetField } },
-                { "Exclude",         new int[] { StagePreCompile, TargetAll } },
-            };
-
         public MetaAttribute(FileMetaAttributeSyntax attr)
         {
             fileMetaAttribute = attr;
@@ -151,7 +130,8 @@ namespace SimpleLanguage.Core
         /// <summary>
         /// 解析 _attributeStage/_attributeTargets：
         /// 1. 沿继承链静态解释子类 _init_ 中的赋值（FileMeta 层语法树）；
-        /// 2. 失败时查内建契约兜底表（跨模块 ref 壳类无解析树，必走此路）；
+        /// 2. 失败时查引用模块契约注册表（跨模块 ref 壳类无解析树，必走此路；
+        ///    数据源 = 被引模块 module.json 顶层 attributeContracts，装载时已登记）；
         /// 3. 仍未命中：类未找到（拼写/旧语法残留）静默回退 Compiling+All（与旧默认一致）；
         ///    类已找到但未声明则报 Error（设计强制声明）。
         /// </summary>
@@ -159,7 +139,7 @@ namespace SimpleLanguage.Core
         {
             if (ResolveFromInitBlocks())
                 return;
-            if (LookupBuiltInContract())
+            if (LookupRefModuleContract())
                 return;
 
             if (m_AttributeMetaClass != null)
@@ -178,22 +158,40 @@ namespace SimpleLanguage.Core
         /// </summary>
         private bool ResolveFromInitBlocks()
         {
-            var mc = m_AttributeMetaClass;
-            int guard = 0;
-            while (mc != null && guard++ < 16)
+            if (TryResolveContractFromMetaClass(m_AttributeMetaClass, out int stage, out int targets))
             {
-                foreach (var mmf in mc.nonStaticVirtualMetaMemberFunctionList)
+                m_Stage = stage;
+                m_Targets = targets;
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// 静态解释 MetaClass 继承链上的 attribute 契约（解析端第①层与导出端填
+        /// attributeContracts 共用）：沿 extends 链（子类优先，guard 16 层）在各类
+        /// 自身定义的 _init_ 方法体中匹配 this._attributeStage/_attributeTargets = 常量。
+        /// </summary>
+        internal static bool TryResolveContractFromMetaClass(MetaClass mc, out int stage, out int targets)
+        {
+            stage = -1;
+            targets = 0;
+            var cur = mc;
+            int guard = 0;
+            while (cur != null && guard++ < 16)
+            {
+                foreach (var mmf in cur.nonStaticVirtualMetaMemberFunctionList)
                 {
                     if (mmf == null || mmf.name != "_init_") continue;
                     var block = mmf.fileMetaMemberFunction?.fileMetaBlockSyntax;
                     if (block == null) continue;
-                    InterpretAttributeInitBlock(block);
-                    if (m_Stage >= 0 && m_Targets > 0)
+                    InterpretContractBlock(block, ref stage, ref targets);
+                    if (stage >= 0 && targets > 0)
                         return true;
                 }
-                mc = mc.extendClass;
+                cur = cur.extendClass;
             }
-            return m_Stage >= 0 && m_Targets > 0;
+            return stage >= 0 && targets > 0;
         }
 
         /// <summary>
@@ -202,7 +200,7 @@ namespace SimpleLanguage.Core
         /// 其余语句（如 this._nickname = nickname）因右侧非常量被跳过。
         /// 注：调用链中的点号是独立节点（this._x → [this][.][_x]），需过滤后再匹配。
         /// </summary>
-        private void InterpretAttributeInitBlock(FileMetaBlockSyntax block)
+        private static void InterpretContractBlock(FileMetaBlockSyntax block, ref int stage, ref int targets)
         {
             if (block == null) return;
             foreach (var syntax in block.fileMetaSyntax)
@@ -214,14 +212,14 @@ namespace SimpleLanguage.Core
                 int val = InterpretAttributeConstValue(opAssign.express);
                 if (val < 0) continue;
                 if (memberName == "_attributeStage")
-                    m_Stage = val;
+                    stage = val;
                 else if (memberName == "_attributeTargets")
-                    m_Targets = val;
+                    targets = val;
             }
         }
 
         /// <summary>解释赋值右侧常量：EAttributeStage/EAttributeTarget 枚举成员或 int 字面量；无法解释返回 -1</summary>
-        private int InterpretAttributeConstValue(FileMetaBaseTerm term)
+        private static int InterpretAttributeConstValue(FileMetaBaseTerm term)
         {
             if (term is FileMetaCallTerm ct)
             {
@@ -285,13 +283,17 @@ namespace SimpleLanguage.Core
             return -1;
         }
 
-        /// <summary>查内建契约兜底表（跨模块场景），命中则填入 stage/targets</summary>
-        private bool LookupBuiltInContract()
+        /// <summary>
+        /// 查引用模块契约注册表（跨模块场景）：本模块 .sl 里写的 @X，Parse() 查到的 X 是
+        /// ref 模块壳类（无 FileMeta 解析树），第①层静态解释必失败，转而按短名取被引模块
+        /// module.json "attributeContracts" 导出的契约（装载时已登记进 AttributeManager）。
+        /// </summary>
+        private bool LookupRefModuleContract()
         {
-            if (s_BuiltInContracts.TryGetValue(name, out var contract))
+            if (AttributeManager.TryGetRefModuleContract(name, out int stage, out int targets))
             {
-                m_Stage = contract[0];
-                m_Targets = contract[1];
+                m_Stage = stage;
+                m_Targets = targets;
                 return true;
             }
             return false;

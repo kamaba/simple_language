@@ -42,11 +42,11 @@
     ],
     "replace": {
       "DEBUG": "true"
+    },
+    "data": {
+      "defaultBatchSize": 8,
+      "defaultEpochs": 20
     }
-  },
-  "data": {
-    "defaultBatchSize": 8,
-    "defaultEpochs": 20
   },
   "references": [
     { "path": "../../out/export/Core",    "uuid": "123123123213", "name": "Core.module.json" },

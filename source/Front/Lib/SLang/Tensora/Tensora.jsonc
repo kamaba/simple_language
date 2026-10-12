@@ -80,11 +80,11 @@
     ],
     "replace": {
       "DEBUG": "true"
+    },
+    "data": {
+      "defaultBatchSize": 32,
+      "defaultLearningRate": 0.001
     }
-  },
-  "data": {
-    "defaultBatchSize": 32,
-    "defaultLearningRate": 0.001
   },
   "references": [
     { "path": "../Core", "name": "Core" },

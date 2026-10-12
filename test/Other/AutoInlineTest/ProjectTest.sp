@@ -12,10 +12,10 @@ Project
     {
         AutoInlineTest.fun()
     }
-    CompileBefore()
+    _before_()
     {
     }
-    CompileAfter()
+    _after_()
     {
     }
 }

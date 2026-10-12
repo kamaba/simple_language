@@ -81,6 +81,14 @@ namespace SimpleLanguage.Core
         private static Dictionary<string, ECompilingConsumer> s_CompilingConsumers
             = new Dictionary<string, ECompilingConsumer>(StringComparer.OrdinalIgnoreCase);
 
+        // 引用模块 attribute 契约注册表：按类短名注册（OrdinalIgnoreCase）。
+        // 数据源 = 被引模块 module.json 顶层 "attributeContracts"（导出端按各
+        // Attribute 子类 _init_ 静态解释写出），装载时经 RegisterRefModuleContract
+        // 登记于此；MetaAttribute.ResolveStageAndTargets 第②层跨模块解析由此取值，
+        // 替代已退役的 Front 内建硬编码契约表（s_BuiltInContracts）。
+        private static Dictionary<string, int[]> s_RefModuleContracts
+            = new Dictionary<string, int[]>(StringComparer.OrdinalIgnoreCase);
+
         static AttributeManager()
         {
             RegisterBuiltInHandlers();
@@ -115,14 +123,38 @@ namespace SimpleLanguage.Core
         }
 
         /// <summary>
+        /// 登记引用模块导出的 attribute 契约（类短名 → {stage, targets}）。
+        /// 先登记者优先：同短名跨模块冲突时保持先装载模块的契约；重复装载幂等。
+        /// </summary>
+        public static void RegisterRefModuleContract(string attrName, int stage, int targets)
+        {
+            if (string.IsNullOrEmpty(attrName) || stage < 0 || targets <= 0) return;
+            if (s_RefModuleContracts.ContainsKey(attrName)) return;
+            s_RefModuleContracts[attrName] = new int[] { stage, targets };
+        }
+
+        /// <summary>按类短名查询引用模块 attribute 契约（跨模块解析第②层）</summary>
+        public static bool TryGetRefModuleContract(string attrName, out int stage, out int targets)
+        {
+            stage = -1;
+            targets = 0;
+            if (string.IsNullOrEmpty(attrName) || !s_RefModuleContracts.TryGetValue(attrName, out var contract))
+                return false;
+            stage = contract[0];
+            targets = contract[1];
+            return true;
+        }
+
+        /// <summary>
         /// PreCompile 送检入口：宿主（类/成员函数/成员变量）的 FileMeta attribute 列表中
         /// 是否存在 stage==PreCompile 且处理器判定跳过的条目。
         /// 调用点 = 成员构建入口（AddClass / ParseFileMetaClassMemeberVarAndFunc /
         /// GlobalManager / LocalManager），早于语句语义分析；
         /// 命中则宿主符号整体不进入后续编译（不进 Meta/IR/module.json）。
         /// 说明：此处 new MetaAttribute + Parse 的静态解释依赖三层策略——
-        /// 同模块 FileMeta 树解释 / 跨模块 s_BuiltInContracts 契约表兜底（此时
-        /// Attribute 子类 MetaClass 可能尚未构建，查不到属正常，契约表保证 stage 正确）。
+        /// 同模块 FileMeta 树解释 / 跨模块经引用模块契约注册表（被引模块装载时
+        /// 已按 module.json attributeContracts 登记；此时 Attribute 子类 MetaClass
+        /// 可能尚未构建，查不到属正常，注册表保证 stage 正确）。
         /// </summary>
         public static bool ShouldExcludeByPreCompileAttribute(List<FileMetaAttributeSyntax> attrs)
         {

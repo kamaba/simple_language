@@ -37,6 +37,9 @@ public class CommandInputArgs
     public bool inMemoryExport { get; private set; } = false;
     // --format <json|binary>: 导出格式二选一，覆盖 jsonc export.format（null = 不覆盖走配置）
     public string exportFormat { get; private set; } = null;
+    // --export-json / --no-export-json: 二进制导出（--format binary）时是否附带导出
+    // module.json 调试副本。null = 不覆盖，走 jsonc "export"."binary"."exportJson"（缺省 false）。
+    public bool? exportJson { get; private set; } = null;
     // --guide / --no-guide: 是否生成项目向导 Markdown（&lt;ProjectName&gt;.md）。
     // null = 不覆盖，走 jsonc "export"."guide"（缺省 false 不生成）。
     public bool? exportGuide { get; private set; } = null;
@@ -46,7 +49,7 @@ public class CommandInputArgs
     public string outputPath { get; private set; } = null;
 
     // --- external macros (--macro name=value, repeatable) ---
-    // 编译前外部注入 global.macro 宏值：优先级高于 jsonc global.macro，低于 CompileBefore()
+    // 编译前外部注入 global.macro 宏值：优先级高于 jsonc global.macro，低于 _before_() 钩子
     public Dictionary<string, string> macroDefines { get; } = new Dictionary<string, string>();
 
     // --- new project ---
@@ -266,6 +269,19 @@ public class CommandInputArgs
                 continue;
             }
 
+            // --export-json / --no-export-json: 二进制导出时附带导出 module.json 调试副本
+            //（覆盖 jsonc export.binary.exportJson；仅 --format binary 时生效）
+            if (string.Equals(a, "--export-json", StringComparison.OrdinalIgnoreCase))
+            {
+                exportJson = true;
+                continue;
+            }
+            if (string.Equals(a, "--no-export-json", StringComparison.OrdinalIgnoreCase))
+            {
+                exportJson = false;
+                continue;
+            }
+
             // --guide / --no-guide: 项目向导 Markdown 开关（覆盖 jsonc export.guide）
             if (string.Equals(a, "--guide", StringComparison.OrdinalIgnoreCase))
             {
@@ -313,6 +329,14 @@ public class CommandInputArgs
             {
                 exportFormat = args[i + 1];
                 i++;
+            }
+            else if (string.Equals(args[i], "--export-json", StringComparison.OrdinalIgnoreCase))
+            {
+                exportJson = true;
+            }
+            else if (string.Equals(args[i], "--no-export-json", StringComparison.OrdinalIgnoreCase))
+            {
+                exportJson = false;
             }
             else if (string.Equals(args[i], "--guide", StringComparison.OrdinalIgnoreCase))
             {

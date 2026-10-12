@@ -88,11 +88,11 @@
     ],
     "replace": {
       "DEBUG": "true"
+    },
+    "data": {
+      "defaultResolutionWidth": 1280,
+      "defaultResolutionHeight": 720
     }
-  },
-  "data": {
-    "defaultResolutionWidth": 1280,
-    "defaultResolutionHeight": 720
   },
   "references": [
     { "path": "../Core", "name": "Core" },

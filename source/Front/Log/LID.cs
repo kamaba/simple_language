@@ -144,6 +144,7 @@ namespace SimpleLanguage.Logging
         ProjectExportPublicExportInvalid = 20038,
         ProjectExportFormatInvalid = 20039,
         ProjectExportBinaryInMemoryUnsupported = 20040,
+        ProjectJsoncRootDataDeprecated = 20041,
         // ---- Process 模块 ----
         // SystemMethodCall
         ProcessSystemMethodCallNotFoundImportSystem = 20051,
@@ -1061,7 +1062,7 @@ namespace SimpleLanguage.Logging
         // 平台校验（r4：Front 编译期两维校验——当前环境 + 输出 targets，§9.1/§9.3③）
         PluginPlatformMismatchFatal = 22139,
         PluginPlatformSkipped = 22140,
-        // ---- MacroManager（global.macro 宏 / CompileBefore 赋值求值）----
+        // ---- MacroManager（global.macro 宏 / _before_ 钩子赋值求值）----
         ProjectMacroManagerMacroUndefined = 23001,
         ProjectMacroManagerNotSupportExpress = 23002,
         ProjectMacroManagerMacroValueInvalid = 23005,
@@ -1075,6 +1076,8 @@ namespace SimpleLanguage.Logging
         FileMetaClassConstOnlyDataEnum = 23013,
         FileMetaClassEnumAbstract = 23014,
         FileMetaClassDataAbstract = 23015,
+        // ---- typealias 使用点校验（别名目标已实例化，使用点不可再追加模板实参）----
+        MetaCoreTypeAliasTemplateArgsNotAllowed = 23016,
 
     }
 }

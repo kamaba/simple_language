@@ -338,7 +338,7 @@ namespace SimpleLanguage.Core
             // PreCompile 送检（ATTRIBUTE_DESIGN §4.1）：@Exclude 等编译前 attribute 命中 →
             // 整个类（含 data/enum）不进入后续编译（不进 Meta/IR/module.json），
             // 引用点由符号解析报编译 Error（Q2）。返回 null 与"类创建失败"同路，
-            // 两处调用方（FileMeta.ParseClass / PorjectClass.ParseCompileClass）均忽略返回值，静默安全。
+            // 调用方（FileMeta.ParseClass）忽略返回值，静默安全。
             if (AttributeManager.ShouldExcludeByPreCompileAttribute(fmc.attributeList))
             {
                 Log.AddMetaCoreLog(LID.MetaCoreAttributePreCompileSkip, fmc.token,

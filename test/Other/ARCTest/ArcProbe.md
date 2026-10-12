@@ -15,11 +15,11 @@ Test entry. Used when test mode is enabled.
 
 ### `_before_`
 
-Compile pre-hook entry (from `Compile` class). Executed before compile core flow when configured.
+Compile pre-hook entry (Project class). Executed before compilation.
 
 ### `_after_`
 
-Compile post-hook entry (from `Compile` class). Executed after compile core flow when configured.
+Compile post-hook entry (Project class). Executed after compilation, before IR export.
 
 ## Global Integration
 

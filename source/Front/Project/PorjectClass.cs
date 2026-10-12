@@ -19,39 +19,6 @@ namespace SimpleLanguage.Project
 {
     public class ProjectClass
     {
-        public static MetaClass projectEnter = null;
-        public static MetaClass projectDll = null;
-        public static MetaClass compile = null;
-
-        public static MetaFunction s_MainFunction = null;
-        public static MetaFunction s_TestFunction = null;
-        public static MetaFunction s_LoadStartFunction = null;
-        public static MetaFunction s_LoadEndFunction = null;
-        public static MetaFunction s_CompileBeforeFunction = null;
-        public static MetaFunction s_CompileAfterFunction = null;
-        public static void ParseCompileClass()
-        {
-            FileMetaClass fmc = ProjectCompile.projectFileMeta.GetFileMetaClassByName("Compile");
-
-            if (fmc == null) return;
-
-            ClassManager.instance.AddClass(fmc);
-            
-            compile = fmc.metaClass;
-            if (compile == null) return;
-
-            //compile.Parse();
-            compile.ParseDefineComplete();
-            var flist = compile.staticMetaMemberFunctionList;
-            for( int i = 0; i < flist.Count; i++ )
-            {
-                flist[i].ParseStatements();
-            }
-            MetaInputParamCollection mipc = new MetaInputParamCollection(compile, null);
-            s_CompileBeforeFunction = compile.GetMetaDefineGetSetMemberFunctionByName("_before_", mipc, false,false);
-            s_CompileAfterFunction = compile.GetMetaDefineGetSetMemberFunctionByName("_after_", mipc, false, false);
-
-        }
         // Build MetaNode / MetaNamespace tree from StructTreeNode description.
         // parentRoot: existing MetaNode root (通常是 ModuleManager.instance.selfModule.metaNode)
         // node: StructTreeNode from ProjectConfig.StructTree (Root/Namespace/Class)
@@ -171,6 +138,12 @@ namespace SimpleLanguage.Project
                 }
             }
         }
+        /// <summary>
+        /// 编译前管线步骤（File 阶段 PrepareFiles）：清空并按 jsonc 重建命名空间、
+        /// 按优先级填充编译文件列表。.sp Project 类的 `_before_()` 编译前钩子语义
+        /// 锚定于此时机：其函数体中的 global.macro 赋值由 PreScanCompileBeforeMacroAssign
+        /// 在文件解析完成后（MetaCore.InjectProjectData 步骤）编译期求值消费。
+        /// </summary>
         public static void ProjectCompileBefore()
         {
             NamespaceManager.instance.metaNamespaceDict.Clear();
@@ -200,12 +173,6 @@ namespace SimpleLanguage.Project
                     ProjectCompile.AddFileParse(fld.Path);
                 }
             }
-
-            if (s_CompileBeforeFunction!=null)
-            {
-                //InnerCLRRuntimeVM.Init();
-                //InnerCLRRuntimeVM.RunIRMethod(s_CompileBeforeFunction.irMethod);
-            }
         }
         public static bool IsCanAddFile(ProjectConfig.CompileFilterSection cfd, ProjectConfig.CompileFileItem fileData )
         {
@@ -231,13 +198,13 @@ namespace SimpleLanguage.Project
 
             return true;
         }
+        /// <summary>
+        /// 编译后管线步骤（MetaCore 阶段末尾、TranslateIR 之前）：.sp Project 类的
+        /// `_after_()` 钩子语义锚定于此时机（编译完成后、导出 IR 前）。
+        /// 钩子函数体按普通函数编入 IR；当前无编译期消费逻辑，预留为管线扩展点。
+        /// </summary>
         public static void ProjectCompileAfter()
         {
-            if (s_CompileBeforeFunction != null)
-            {
-                //InnerCLRRuntimeVM.Init();
-                //InnerCLRRuntimeVM.RunIRMethod(s_CompileBeforeFunction.irMethod);
-            }
         }
 
         /// <summary>
@@ -272,18 +239,12 @@ namespace SimpleLanguage.Project
         public static void InjectProjectGlobalDataFromConfig()
         {
             var cfg = ProjectManager.config;
+            // 数据注入面：jsonc 根->global->data（"global"."data"）为唯一位置；
+            // 根级 "data" 已废弃（loader 检测到即告警），不再参与注入。
             var merged = new Dictionary<string, JsonElement>();
             if (cfg?.Global?.Data != null)
             {
                 foreach (var kv in cfg.Global.Data)
-                {
-                    merged[kv.Key] = kv.Value;
-                }
-            }
-
-            if (cfg?.JsoncProjectData != null)
-            {
-                foreach (var kv in cfg.JsoncProjectData)
                 {
                     merged[kv.Key] = kv.Value;
                 }
@@ -430,7 +391,7 @@ namespace SimpleLanguage.Project
         }
 
         // global.macro 宏注入（jsonc 宏数据面 + 运行期只读访问）：
-        //   1. LoadFromConfig 载入 jsonc global.macro 段初始值（CompileBefore 预扫描在其后修改宏值）；
+        //   1. LoadFromConfig 载入 jsonc global.macro 段初始值（`_before_` 钩子预扫描在其后修改宏值）；
         //   2. 把最终宏值注入为 Project 静态成员 macro（global.macro.<name>，运行期可读）。
         // 成员定义方式与 jsonc data 的 Object 段一致（匿名 MetaData + MetaNewObjectExpressNode）。
         // 注：static if 编译期条件编译已废弃收编为 @Exclude（ATTRIBUTE_DESIGN §7），
@@ -439,7 +400,7 @@ namespace SimpleLanguage.Project
         {
             // 编译开始：重置为 jsonc global.macro 段初始值
             CompileBeforeManager.instance.LoadFromConfig(ProjectManager.config);
-            // CompileBefore() 预扫描：编译期唯一允许修改 global.macro 的入口
+            // Project 类 `_before_()` 钩子预扫描：编译期唯一允许修改 global.macro 的入口
             PreScanCompileBeforeMacroAssign();
 
             var macroValues = CompileBeforeManager.instance.GetAllMacroValues();
@@ -479,8 +440,8 @@ namespace SimpleLanguage.Project
         }
 
         /// <summary>
-        /// CompileBefore() 预扫描：编译期唯一允许修改 global.macro 的入口。
-        /// 在 .sp 的 Project 类 CompileBefore()（兼容 _before_ / _compile_before_）函数体中
+        /// Project 类 `_before_()` 钩子预扫描：编译期唯一允许修改 global.macro 的入口。
+        /// 在 .sp 的 Project 类 `_before_()` 函数体中
         /// 识别 global.macro.X = 常量/宏引用 赋值，编译期求值后通过 MacroManager.SetMacroValue
         /// 更新宏值，并把这些赋值语句从语法列表移除——不参与后续语义分析与 IR（static 不进 runtime）。
         /// 时序：InjectProjectData 步骤内、LoadFromConfig 之后、macro 成员注入之前。
@@ -497,7 +458,7 @@ namespace SimpleLanguage.Project
             foreach (var fmf in fmc.memberFunctionList)
             {
                 var fname = fmf?.token?.lexeme?.ToString();
-                if (fname == "CompileBefore" || fname == "_before_" || fname == "_compile_before_")
+                if (fname == "_before_")
                 {
                     beforeFunc = fmf;
                     break;
@@ -532,7 +493,7 @@ namespace SimpleLanguage.Project
                 }
             }
 
-            // 移除已消费的赋值语句：CompileBefore 中的 macro 赋值是编译期行为，不进 runtime
+            // 移除已消费的赋值语句：`_before_` 钩子中的 macro 赋值是编译期行为，不进 runtime
             if (removeList != null)
             {
                 for (int i = 0; i < removeList.Count; i++)
@@ -556,7 +517,7 @@ namespace SimpleLanguage.Project
                 return;
             }
 
-            // 用户在 .sp 或 jsonc data 中显式定义过同名成员时不注入（用户优先）。
+            // 用户在 .sp 或 jsonc global.data 中显式定义过同名成员时不注入（用户优先）。
             if (projectMc.GetMetaMemberVariableByName(InputArgsMemberName) != null)
             {
                 return;
@@ -1162,8 +1123,7 @@ namespace SimpleLanguage.Project
                     .Replace("{{EntryFile}}", Path.GetFileName(spFilePath))
                     .Replace("{{ConfigFile}}", Path.GetFileName(jsoncPath) ?? string.Empty)
                     .Replace("{{AiDescription}}", aiDescription)
-                    .Replace("{{RootDataKeys}}", BuildRootDataKeysSection())
-                    .Replace("{{LegacyGlobalDataKeys}}", BuildLegacyGlobalDataKeysSection());
+                    .Replace("{{GlobalDataKeys}}", BuildGlobalDataKeysSection());
 
                 // 压缩占位段为空时残留的连续空行
                 while (content.Contains("\n\n\n"))
@@ -1223,37 +1183,18 @@ namespace SimpleLanguage.Project
             return text.Substring(begin, end - begin).Trim('\n', ' ', '\t');
         }
 
-        /// <summary>构建当前 jsonc 根级 `data` 键清单段（无数据时返回空串）。</summary>
-        static string BuildRootDataKeysSection()
+        /// <summary>构建当前 jsonc `global.data` 键清单段（无数据时返回空串）。</summary>
+        static string BuildGlobalDataKeysSection()
         {
-            var rootData = ProjectManager.config?.JsoncProjectData;
-            if (rootData == null || rootData.Count == 0)
+            var globalData = ProjectManager.config?.Global?.Data;
+            if (globalData == null || globalData.Count == 0)
             {
                 return string.Empty;
             }
 
             var sb = new StringBuilder();
-            sb.Append("### Current root `data` keys\n\n");
-            foreach (var kv in rootData)
-            {
-                sb.Append("- `" + kv.Key + "` (`" + kv.Value.ValueKind + "`)\n");
-            }
-            sb.Append('\n');
-            return sb.ToString();
-        }
-
-        /// <summary>构建当前 legacy `global.data` 键清单段（无数据时返回空串）。</summary>
-        static string BuildLegacyGlobalDataKeysSection()
-        {
-            var legacyGlobalData = ProjectManager.config?.Global?.Data;
-            if (legacyGlobalData == null || legacyGlobalData.Count == 0)
-            {
-                return string.Empty;
-            }
-
-            var sb = new StringBuilder();
-            sb.Append("### Current `global.data` keys (legacy)\n\n");
-            foreach (var kv in legacyGlobalData)
+            sb.Append("### Current `global.data` keys\n\n");
+            foreach (var kv in globalData)
             {
                 sb.Append("- `" + kv.Key + "` (`" + kv.Value.ValueKind + "`)\n");
             }

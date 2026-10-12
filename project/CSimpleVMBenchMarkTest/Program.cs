@@ -43,6 +43,12 @@ internal static class Program
         if (optLevelArg != null)
             dotnetFrontArgs.Add(optLevelArg);
         dotnetFrontArgs.Add("--no-banner");
+#if DEBUG
+        // Debug：改走二进制导出（.module.slb 必产物），并附带导出 module.json 调试副本
+        dotnetFrontArgs.Add("--format");
+        dotnetFrontArgs.Add("binary");
+        dotnetFrontArgs.Add("--export-json");
+#endif
 
         int frontExit = start
             ? RunFrontInProcess(projectPath, optLevelArg)
@@ -260,6 +266,12 @@ internal static class Program
             if (optLevelArg != null)
                 frontArgs.Add(optLevelArg);
             frontArgs.Add("--no-banner");
+#if DEBUG
+            // Debug：改走二进制导出（.module.slb 必产物），并附带导出 module.json 调试副本
+            frontArgs.Add("--format");
+            frontArgs.Add("binary");
+            frontArgs.Add("--export-json");
+#endif
             Console.WriteLine("Front: " + string.Join(' ', frontArgs));
             var inputArgs = new CommandInputArgs(frontArgs.ToArray());
             bool ok = CommandExecutor.Execute(inputArgs);
@@ -279,7 +291,9 @@ internal static class Program
 
     static string ResolveModulePackagePath(string repoRoot, string projectPath)
     {
-        var exportDir = Environment.GetEnvironmentVariable(ProjectOutputEnvironment.ExportOutDirEnv);
+        /* 编译同进程完成后从 jsonc 派生的进程内状态取导出目录
+         *（SIMPLELANG_EXPORT_OUTDIR 仅保留为外部手动覆盖入口）。 */
+        var exportDir = ProjectOutputEnvironment.GetEffectiveExportOutDir();
         if (!string.IsNullOrWhiteSpace(exportDir))
         {
             var d = Path.GetFullPath(exportDir.Trim());

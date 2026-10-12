@@ -8,10 +8,10 @@ Project
         SystemPrintln("[PlatformVariantTest] running: variant selection passed")
         SystemPrintln("[PlatformVariantTest] osName: " + Environment.current.osName)
     }
-    CompileBefore()
+    _before_()
     {
     }
-    CompileAfter()
+    _after_()
     {
     }
 }

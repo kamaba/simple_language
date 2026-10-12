@@ -164,10 +164,6 @@ namespace SimpleLanguage.Project
         public CompileFilesSection CompileFiles { get; set; } = new CompileFilesSection();
         public CompileFilterSection CompileFilter { get; set; } = new CompileFilterSection();
         public GlobalSection Global { get; set; } = new GlobalSection();
-        /// <summary>
-        /// jsonc ???? <c>"data"</c>?????? <c>Project</c> ????????????????? <see cref="GlobalSection.Data"/>????
-        /// </summary>
-        public Dictionary<string, JsonElement> JsoncProjectData { get; set; } = new Dictionary<string, JsonElement>();
         public StructTreeNode StructTree { get; set; } = new StructTreeNode();
         public List<ReferenceSection> References { get; set; } = new List<ReferenceSection>();
         /// <summary>
@@ -414,12 +410,14 @@ namespace SimpleLanguage.Project
         {
             public List<string> Imports { get; set; } = new List<string>();
             public Dictionary<string, string> Replace { get; set; } = new Dictionary<string, string>();
-            // project jsonc: global.data = { key: primitive|object }����λ�ã������ "data" �ϲ�ע�� Project���������ȣ�
+            // project jsonc: global.data = { key: primitive|object }
+            // 数据注入面（根->global->data，唯一位置）：编译期注入为 Project 静态成员，
+            // 运行期 global.<name> 读取。根级 "data" 已废弃（LID 20041）。
             public Dictionary<string, JsonElement> Data { get; set; } = new Dictionary<string, JsonElement>();
 
             // project jsonc: global.macro = { key: primitive }
             // 编译期宏数据面，初始值来自 jsonc，
-            // 只允许在 Project.CompileBefore() 中通过 global.macro.xxx = 常量 修改。
+            // 只允许在 Project._before_() 钩子中通过 global.macro.xxx = 常量 修改。
             public Dictionary<string, JsonElement> Macro { get; set; } = new Dictionary<string, JsonElement>();
         }
 
@@ -511,6 +509,10 @@ namespace SimpleLanguage.Project
             public bool IncludeDebugInfo { get; set; } = true;
             /// <summary>P5 预留（当前恒 false 且读侧拒载 strictDigest 包）：严格摘要校验开关。</summary>
             public bool StrictDigest { get; set; } = false;
+            /// <summary>二进制导出时是否附带导出一份 module.json 调试副本（缺省 false）。
+            /// .module.slb 为必须产物恒导出；module.json 仅供调试阅读，由本开关决定是否额外落盘。
+            /// CLI --export-json / --no-export-json 可覆盖。仅磁盘导出生效（--in-memory 内存模式不落盘）。</summary>
+            public bool ExportJson { get; set; } = false;
         }
 
         public class DebugTextExportSection

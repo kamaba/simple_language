@@ -4,10 +4,10 @@ Project
     {
         SystemPrintln("unreachable: compile aborts in MetaCore (ValidatePlatformConfig)")
     }
-    CompileBefore()
+    _before_()
     {
     }
-    CompileAfter()
+    _after_()
     {
     }
 }

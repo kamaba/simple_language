@@ -4,10 +4,10 @@ Project
     {
         SystemPrintln("PlatformAotPosTest ok")
     }
-    CompileBefore()
+    _before_()
     {
     }
-    CompileAfter()
+    _after_()
     {
     }
 }

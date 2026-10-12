@@ -25,7 +25,7 @@
 | [project/project.md](./project/project.md) | 工程概念：`ProjectConfig`、编译文件列表、入口与全局变量（偏语言侧叙述） |
 | [project/project-module.md](./project/project-module.md) | 模块与类组织方式说明 |
 | [project/project-config-jsonc-guide.md](./project/project-config-jsonc-guide.md) | JSONC 字段详解与迁移注意点 |
-| [project/static-if.md](./project/static-if.md) | **global.macro 宏数据面**：jsonc `global.macro` / `CompileBefore()` 修改 / CLI `--macro` / `SL_MACRO_*` / 宿主 API 注入与优先级链；**static if 编译期条件已废弃**（LID 21467），迁移到 `@Exclude`（PreCompile）或 `compileFiles.ignore` |
+| [project/static-if.md](./project/static-if.md) | **global.macro 宏数据面**：jsonc `global.macro` / `_before_()` 钩子修改 / CLI `--macro` / `SL_MACRO_*` / 宿主 API 注入与优先级链；**static if 编译期条件已废弃**（LID 21467），迁移到 `@Exclude`（PreCompile）或 `compileFiles.ignore` |
 | [project/optimization.md](./project/optimization.md) | **编译优化等级（CLI `-O0..-O3`）**：各等级优化内容（null peephole / 常数融合 store / 小函数自动 inline——O1≤2 / O2≤4 / O3≤7 条）、排除集、与 jsonc `compile.optimize` 的关系 |
 | [project/environment-guide.md](./project/environment-guide.md) | **Environment 平台环境**：`Environment.*` API（current/probe/Override/env/custom/sys）、`Platform` 定义枚举全表、jsonc `platform` 段全量关键字（require 18 字段 / override / variants）、运行期覆盖四通道 |
 | [project/ffi.md](./project/ffi.md) | **FFI 外部函数接口（已落地）**：普通 FFI 调用、`FFI.Library` / `FFI.StaticLibrary`、`dllImports` 配置、`@DllImport` 与 `@DllStaticImport`(opcode 77)、sig 规则、内部原理 |

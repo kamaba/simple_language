@@ -254,14 +254,14 @@ if (p != null) { ... }
 | `_init_` | 所有类 | 构造函数，支持重载与 `base._init_()` 链式调用 |
 | `_main_` | Project 类 | 程序主入口 |
 | `_test_` | Project 类 | 测试入口 |
-| `_before_` | Project 类 | 编译前回调（静态） |
-| `_after_` | Project 类 | 编译后回调（静态） |
+| `_before_` | Project 类 | 编译前钩子 |
+| `_after_` | Project 类 | 编译后钩子（导出 IR 前） |
 
 ```s
 project MyApp
 {
-    static void _before_(metaType type) { /* 编译前执行 */ }
-    static void _after_(metaType type)  { /* 编译后执行 */ }
+    _before_() { #! 编译前钩子 !# }
+    _after_()  { #! 编译后钩子（导出 IR 前） !# }
 
     static void _main_()
     {
@@ -293,7 +293,8 @@ project MyApp
 | `_ne_` | 运算符重载 | `!=` |
 | `_and_` | 运算符重载 | `&&` |
 | `_or_` | 运算符重载 | `\|\|` |
-| `cast<T>()` | 类型转换 | 显式类型转换 |
+| `_enter_` | attribute的进入 | ` |
+| `_exit_` | attribute的退出 | ` |
 | `toString()` | Object 约定 | 字符串表示 |
 | `equals()` | Object 约定 | 逻辑相等 |
 | `hashCode` | Object 约定 | 哈希码 |

@@ -61,8 +61,6 @@
       "DEBUG": "true"
     }
   },
-  "data": {
-  },
   "references": [
     // Tuple / List / Array / string 等来自 Core
     { "path": "../Core", "name": "Core" }

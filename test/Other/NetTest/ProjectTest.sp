@@ -23,10 +23,10 @@ Project
         # 需此前各组协程均已结束，避免在途协程干扰守卫判定
         NetSuspendTest.fun()
     }
-    CompileBefore()
+    _before_()
     {
     }
-    CompileAfter()
+    _after_()
     {
     }
 }

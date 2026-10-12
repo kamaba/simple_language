@@ -45,10 +45,10 @@ Project
         SystemPrintln( "cycles=" + Memory.GcCycleCount().toString() )
         SystemPrintln( "===== SBAProbe v2 end =====" )
     }
-    CompileBefore()
+    _before_()
     {
     }
-    CompileAfter()
+    _after_()
     {
     }
 }

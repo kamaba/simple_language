@@ -89,10 +89,7 @@ namespace SimpleLanguage.Compile
                 m_ModuleName = text.Substring(0, colonIndex).Trim();
                 if( colonIndex + 1 < text.Length )
                 {
-
-                }
-                else
-                {
+                    // "Std:IO" → module=Std, namespace=IO；冒号在末尾（"Std:"）时保持空，走下方空检查报错
                     m_ImportNamespaceName = text.Substring(colonIndex + 1).Trim();
                 }
             }
@@ -172,6 +169,12 @@ namespace SimpleLanguage.Compile
             if (mb.isMetaModule)
             {
                 m_FileMeta.AddImportMetaNode(mb);
+                // import Std as S：模块别名注册到 FileMeta，供 S.X.Y 链首兜底解析
+                // （类型位置 TypeManager→GetMetaClassByRef→FileMeta、表达式位置 MetaCallNode→GetFirstNode 同源）
+                if (!string.IsNullOrWhiteSpace(m_AliasName))
+                {
+                    m_FileMeta.AddImportAliasMetaNode(m_AliasName, mb);
+                }
                 return;
             }
 

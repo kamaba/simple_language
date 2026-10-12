@@ -92,10 +92,10 @@ Project
         SystemPrintln( "unreachable on profile tiers" )
         SystemPrintln( "===== OOMProbe end =====" )
     }
-    CompileBefore()
+    _before_()
     {
     }
-    CompileAfter()
+    _after_()
     {
     }
 }

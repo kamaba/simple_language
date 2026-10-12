@@ -5,10 +5,10 @@ Project
         MysqlTest.fun()
         MysqlApiTest.fun()
     }
-    CompileBefore()
+    _before_()
     {
     }
-    CompileAfter()
+    _after_()
     {
     }
 }

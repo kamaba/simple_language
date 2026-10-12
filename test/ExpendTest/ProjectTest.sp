@@ -35,10 +35,10 @@ Project
         AttributeRuntimeTest.fun()
         MqttTest.fun()
     }
-    CompileBefore()
+    _before_()
     {
     }
-    CompileAfter()
+    _after_()
     {
     }
 }

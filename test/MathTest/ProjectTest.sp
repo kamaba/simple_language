@@ -8,10 +8,10 @@ Project
         FFIMathTest.fun()
         MatrixBigTest.fun()
     }
-    CompileBefore()
+    _before_()
     {
     }
-    CompileAfter()
+    _after_()
     {
     }
 }

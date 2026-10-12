@@ -27,10 +27,10 @@ Project
     {
         # 单跑某一个用例时在这里加：例如 TensorTest.fun()
     }
-    CompileBefore()
+    _before_()
     {
     }
-    CompileAfter()
+    _after_()
     {
     }
 }

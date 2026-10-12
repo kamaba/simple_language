@@ -55,14 +55,14 @@
     ],
     "replace": {
       "DEBUG": "true"
-    }
-  },
-  "data": {
-    "var1": 12,
-    "arrvar1": [1, 2, 3, 4, 5],
-    "vardata2": {
-      "a": 10,
-      "b": 20.1
+    },
+    "data": {
+      "var1": 12,
+      "arrvar1": [1, 2, 3, 4, 5],
+      "vardata2": {
+        "a": 10,
+        "b": 20.1
+      }
     }
   },
   // 插件声明（PLUGIN_SYSTEM_DESIGN.md §0.1/§4.2）：key=插件 id；lib 对象由

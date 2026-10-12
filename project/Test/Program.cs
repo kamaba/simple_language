@@ -179,7 +179,9 @@ internal static class Program
 
     static string ResolveModulePackagePath(string repoRoot, string projectPath)
     {
-        var exportDir = Environment.GetEnvironmentVariable(ProjectOutputEnvironment.ExportOutDirEnv);
+        /* 编译同进程完成后从 jsonc 派生的进程内状态取导出目录
+         *（SIMPLELANG_EXPORT_OUTDIR 仅保留为外部手动覆盖入口）。 */
+        var exportDir = ProjectOutputEnvironment.GetEffectiveExportOutDir();
         if (!string.IsNullOrWhiteSpace(exportDir))
         {
             var d = Path.GetFullPath(exportDir.Trim());

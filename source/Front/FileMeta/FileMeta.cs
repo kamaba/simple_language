@@ -32,6 +32,8 @@ namespace SimpleLanguage.Compile
         private Dictionary<string, MetaNamespace> m_ImportAliasNamespaceDict = new Dictionary<string, MetaNamespace>();
         // 模块根节点列表（import Std; 注册的是模块根，不是 MetaNamespace）
         private List<MetaNode> m_ImportMetaNodeList = new List<MetaNode>();
+        // import as 模块别名注册表：import Std as S → "S" 指向 Std 模块根 MetaNode（模块根不是 MetaNamespace，单独存）
+        private readonly Dictionary<string, MetaNode> m_ImportAliasNodeDict = new Dictionary<string, MetaNode>();
 
         private readonly List<FileMetaTypeAliasDecl> m_TypeAliasDeclList = new List<FileMetaTypeAliasDecl>();
         private readonly Dictionary<string, MetaType> m_FileResolvedTypeAliasDict = new Dictionary<string, MetaType>();
@@ -121,6 +123,19 @@ namespace SimpleLanguage.Compile
             }
 
             m_ImportAliasNamespaceDict[aliasName] = mn;
+        }
+        /// <summary>
+        /// 注册 import as 的模块别名（import Std as S）。
+        /// 消费点：GetMetaNodeByImportAlias（类型位置与表达式位置的链首兜底解析）。
+        /// </summary>
+        public void AddImportAliasMetaNode(string aliasName, MetaNode mn)
+        {
+            if (string.IsNullOrWhiteSpace(aliasName) || mn == null)
+            {
+                return;
+            }
+
+            m_ImportAliasNodeDict[aliasName] = mn;
         }
         public FileMetaClass GetFileMetaClassByName( string name )
         {
@@ -235,12 +250,23 @@ namespace SimpleLanguage.Compile
             {
                 return null;
             }
-            if (!m_ImportAliasNamespaceDict.TryGetValue(classList[0], out var aliasNamespace) || aliasNamespace?.metaNode == null)
+            MetaNode startNode = null;
+            if (m_ImportAliasNodeDict.TryGetValue(classList[0], out var aliasNode))
+            {
+                // 模块别名：import Std as S → S 指向模块根 MetaNode，续解 S.X.Y 路径
+                startNode = aliasNode;
+            }
+            else if (m_ImportAliasNamespaceDict.TryGetValue(classList[0], out var aliasNamespace))
+            {
+                // 命名空间别名：import NS.a as NSA → 指向目标命名空间节点
+                startNode = aliasNamespace?.metaNode;
+            }
+            if (startNode == null)
             {
                 return null;
             }
 
-            MetaNode mb = aliasNamespace.metaNode;
+            MetaNode mb = startNode;
             for (int i = 1; i < classList.Count; i++)
             {
                 mb = mb?.GetChildrenMetaNodeByName(classList[i]);

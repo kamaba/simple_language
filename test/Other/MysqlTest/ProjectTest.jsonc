@@ -36,19 +36,19 @@
     ],
     "replace": {
       "DEBUG": "true"
+    },
+    // 连接目标（run 时用 global.<name> 读取，见 ProjectTest.md）。
+    // ⚠️ 这里是真实环境的账号密码，仅限本机开发测试使用，请勿提交到公共仓库；
+    //    正式迁移请改为环境变量 / 本地未纳入版本管理的配置文件。
+    "data": {
+      "mysqlHost": "bj-cdb-mri5uaiu.sql.tencentcdb.com",
+      "mysqlPort": 22718,
+      "mysqlUser": "root",
+      "mysqlPassword": "Likecg00@123",
+      "mysqlDatabase": "ry_net",
+      "mysqlTestDb": "sl_mysql_test",
+      "mysqlCharset": "utf8mb4"
     }
-  },
-  // 连接目标（run 时用 global.<name> 读取，见 ProjectTest.md）。
-  // ⚠️ 这里是真实环境的账号密码，仅限本机开发测试使用，请勿提交到公共仓库；
-  //    正式迁移请改为环境变量 / 本地未纳入版本管理的配置文件。
-  "data": {
-    "mysqlHost": "bj-cdb-mri5uaiu.sql.tencentcdb.com",
-    "mysqlPort": 22718,
-    "mysqlUser": "root",
-    "mysqlPassword": "Likecg00@123",
-    "mysqlDatabase": "ry_net",
-    "mysqlTestDb": "sl_mysql_test",
-    "mysqlCharset": "utf8mb4"
   },
   "references": [
     { "path": "../../out/export/Core", "uuid":"123123123213", "name": "Core.module.json" },

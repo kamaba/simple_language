@@ -92,10 +92,10 @@ Project
         SystemPrintln( "cycles=" + Memory.GcCycleCount().toString() )
         SystemPrintln( "===== CoroGCProbe end =====" )
     }
-    CompileBefore()
+    _before_()
     {
     }
-    CompileAfter()
+    _after_()
     {
     }
 }

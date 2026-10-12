@@ -103,9 +103,6 @@ namespace SimpleLanguage.Core
             // 索引器: 参数类型任意(key可以是int/string/泛型等), _getItem_返回任意, _setItem_返回void
             AddRule(new BuiltinMemberFunctionRule("_getItem_", 1, EBuiltinParamCheckMode.Any, EBuiltinReturnCheckMode.Any));
             AddRule(new BuiltinMemberFunctionRule("_setItem_", 2, EBuiltinParamCheckMode.Any, EBuiltinReturnCheckMode.Void));
-
-            AddRule(new BuiltinMemberFunctionRule("_before_", 1, EBuiltinParamCheckMode.ObjectOrSelf, EBuiltinReturnCheckMode.Void));
-            AddRule(new BuiltinMemberFunctionRule("_after_", 1, EBuiltinParamCheckMode.ObjectOrSelf, EBuiltinReturnCheckMode.Void));
         }
 
         private static void AddRule(BuiltinMemberFunctionRule rule)

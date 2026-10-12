@@ -181,8 +181,8 @@ Project                      # 工程块：静态成员 + 函数
         ...
     }
 
-    CompileBefore() { }      # 编译钩子
-    CompileAfter()  { }      # 编译钩子
+    _before_() { }      # 编译前钩子
+    _after_()  { }      # 编译后钩子（导出 IR 前）
 }
 
 ProjectEnter                 # 工程级全局函数入口区

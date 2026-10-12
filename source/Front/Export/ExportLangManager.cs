@@ -52,11 +52,13 @@ namespace SimpleLanguage.ExportLanguage
         }
 
         // Explicit export entrypoint.
-        // Use env vars to avoid changing default compile flow:
-        // - SIMPLELANG_EXPORT_KIND=llvm|mlir|slir
-        // - SIMPLELANG_EXPORT_OUTDIR=... (optional)
-        // - SIMPLELANG_MLIR_LOWER=1 (optional; requires external toolchain)
-        // - SIMPLELANG_MLIR_NATIVE_OUT=... (optional)
+        // Output dir resolution (in order, see ResolveOutDir):
+        // - SIMPLELANG_EXPORT_OUTDIR env (external manual override, read-only)
+        // - jsonc-derived in-process state (ProjectOutputEnvironment, set by LoadProject)
+        // - legacy fallback {cwd}/out/export
+        // Optional envs: SIMPLELANG_EXPORT_KIND=llvm|mlir|slir,
+        // SIMPLELANG_MLIR_LOWER=1 (requires external toolchain),
+        // SIMPLELANG_MLIR_NATIVE_OUT=...
         public static void Export(ExportKind kink)
         {
             var outDir = ResolveOutDir();
@@ -90,7 +92,9 @@ namespace SimpleLanguage.ExportLanguage
             // 导出格式二选一（jsonc export.format / CLI --format 覆盖）：
             // json = SLIR JSON module.json（缺省，全仓现状）；binary = SLB .module.slb
             //（规范见 csimple_lang/md/design/SLB_DESIGN.md）。两者共用同一份
-            // SLModulePackage 中间数据（Build 一次、双通道投影），没有并存导出。
+            // SLModulePackage 中间数据（Build 一次、双通道投影）。binary 时 .module.slb
+            // 为必须产物恒导出；export.binary.exportJson / CLI --export-json 开启时
+            // 额外落盘一份 module.json 调试副本（复用已构建的 package，不重复 Build）。
             var exportFormat = ProjectManager.config?.Export?.Format;
             if (string.IsNullOrEmpty(exportFormat))
                 exportFormat = "json";
@@ -105,12 +109,14 @@ namespace SimpleLanguage.ExportLanguage
             {
                 var binaryPath = Path.Combine(outDir, filePrefix + ".module.slb");
                 var package = SLModulePackageWriter.Build(IRManager.instance, moduleName);
+                var exportJsonCopy = ProjectManager.config?.Export?.Binary?.ExportJson ?? false;
                 if (MemoryExportMode)
                 {
                     // In-memory binary export (SLB_DESIGN.md P2): keep the SLB bytes in
                     // memory (no .module.slb write); the host hands them straight to
                     // cli_run_module_in_memory_binary. LastMemoryExportDir doubles as
                     // the C-side base_dir, same as the json in-memory path.
+                    //（内存模式不落盘，exportJson 调试副本开关在此路径不生效）
                     LastMemoryPackageBytes = SLBWriter.WriteToBytes(
                         package,
                         ProjectManager.config?.Export?.Binary?.Compressed ?? true);
@@ -121,6 +127,13 @@ namespace SimpleLanguage.ExportLanguage
                 }
                 SLBWriter.Write(package, binaryPath,
                     ProjectManager.config?.Export?.Binary?.Compressed ?? true);
+                // json 调试副本（export.binary.exportJson / --export-json）：
+                // 二进制为必须产物，module.json 仅供调试阅读额外落盘一份。
+                if (exportJsonCopy)
+                {
+                    SLModulePackageWriter.WritePackage(package,
+                        Path.Combine(outDir, filePrefix + ".module.json"));
+                }
                 return;
             }
 
@@ -149,29 +162,35 @@ namespace SimpleLanguage.ExportLanguage
             //}
         }
 
+        /// <summary>Export 阶段最近一次解析出的导出目录（<see cref="ResolveOutDir"/> 的结果）。
+        /// 供 SLModulePackageWriter 等下游计算引用模块相对路径，替代旧的进程环境变量传递。</summary>
+        public static string? LastResolvedOutDir { get; private set; }
+
         private static string ResolveOutDir()
         {
-            // 1) explicit env override
-            var outDir = Environment.GetEnvironmentVariable("SIMPLELANG_EXPORT_OUTDIR");
+            // 1) external env override, else in-process state populated by ApplyFromConfig (LoadProject)
+            var outDir = ProjectOutputEnvironment.GetEffectiveExportOutDir();
             if (!string.IsNullOrWhiteSpace(outDir))
+            {
+                LastResolvedOutDir = outDir;
                 return outDir;
+            }
 
-            // 2) project config export.outputDir + export.moduleName (when env not preset)
+            // 2) project config export.outputDir + export.moduleName (when neither preset)
             var fromCfg = ProjectOutputEnvironment.ResolveExportDirectoryFromConfig(
                 ProjectManager.config,
                 !string.IsNullOrWhiteSpace(ProjectManager.projectPath) ? ProjectManager.projectPath : Environment.CurrentDirectory,
                 Path.GetFileNameWithoutExtension(ProjectManager.projectPath) ?? "module");
             if (!string.IsNullOrWhiteSpace(fromCfg))
             {
-                outDir = fromCfg;
-                Directory.CreateDirectory(outDir);
-                Environment.SetEnvironmentVariable("SIMPLELANG_EXPORT_OUTDIR", outDir);
-                return outDir;
+                Directory.CreateDirectory(fromCfg);
+                LastResolvedOutDir = fromCfg;
+                return fromCfg;
             }
 
             // 3) legacy fallback
             outDir = Path.Combine(Environment.CurrentDirectory, "out", "export");
-            Environment.SetEnvironmentVariable("SIMPLELANG_EXPORT_OUTDIR", outDir);
+            LastResolvedOutDir = outDir;
             return outDir;
         }
 

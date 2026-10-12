@@ -139,3 +139,71 @@ ProjectEnter
     }
 }
 ```
+
+—————————————————————————————————————————————————————————
+
+## import as（导入别名）三种形态
+
+`import ... as` 为导入目标建立本地别名，别名可用于**表达式前缀链**（`别名.X.Y`）与**类型位置前缀**（`别名.X obj`）。支持三种形态：
+
+| 形态 | 语法 | 别名指向 |
+|------|------|----------|
+| 命名空间别名 | `import NS.a as NSA` | 目标命名空间节点 |
+| 模块别名 | `import 模块名 as S` | 引用模块的**模块根** |
+| 字符串 import 别名 | `import "模块:命名空间" as IOx` | 引用模块内的指定命名空间 |
+
+### 1. 命名空间别名：`import NS.a as NSA`
+
+别名指向目标命名空间，后续路径从该命名空间继续续解，任意深度均可：
+
+```sl
+import AliasNS.Sub as SUB     # AliasNS.Sub 为本工程已声明的命名空间
+
+SUB.Alpha a = SUB.Alpha( 5 )           # 等价 AliasNS.Sub.Alpha( 5 )
+a.sid                                  # 等价 AliasNS.Sub.Alpha 的静态成员
+SUB.Alpha.twice( 21 )                  # 等价 AliasNS.Sub.Alpha.twice( 21 )
+```
+
+### 2. 模块别名：`import 模块名 as S`
+
+别名指向引用模块的**模块根**，后续路径按"模块根成员 → 命名空间成员"两段续解（表达式与类型位置均可用）：
+
+```sl
+import Std as S
+
+S.Console.println( "..." )              # Console 注册在 Std 模块根
+S.FileMode fm = S.FileMode.Create       # 类型位置 + enum 成员
+S.FileStream sfs = null                 # 类型位置
+S.IO.Directory.exists( "." )            # 四段链：模块别名 → IO 命名空间 → 类 → 静态方法
+```
+
+**关键规则**：续解的成员来自引用模块的 **.sl 实际声明**（SLIR 编译产物包内容），而非引用工程 jsonc `struct[]` 的骨架声明：
+
+- 无命名空间声明的类型（如 Console / FileMode / FileStream）注册在**模块根** → 写 `S.FileMode`
+- 带命名空间限定声明的类型（如 `enum IO.SearchOption`、`public class IO.Directory`）→ 写 `S.IO.SearchOption`
+
+### 3. 字符串 import 别名：`import "模块:命名空间" as 别名`
+
+直接把别名指向引用模块内的命名空间，省去模块名前缀：
+
+```sl
+import "Std:IO" as IOx
+
+IOx.Directory.exists( "." )                    # 等价 Std.IO.Directory.exists
+IOx.SearchOption.TopDirectoryOnly.toString()   # enum 成员
+typealias LibIOxSearch = IOx.SearchOption       # typealias 目标前缀（类型位置，见 typealias.md）
+```
+
+### 与 typealias 配合
+
+typealias 的目标类型可以以 import 别名作为路径前缀（三种别名形态均可），详见 [typealias.md](typealias.md)：
+
+```sl
+typealias LibSFileMode = S.FileMode
+typealias LibIOxSearch = IOx.SearchOption
+typealias LibAliasAlpha = SUB.Alpha
+```
+
+### 验证用例
+
+以上全部形态在探针工程 `test/Other/AliasProbe/`（AliasProbe.sp + AliasProbeLib.sl + AliasProbe.jsonc）中覆盖：Front 编译零 Error，C VM（csimple_lang）运行输出全部正确。

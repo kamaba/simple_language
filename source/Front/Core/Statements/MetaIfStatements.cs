@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      MetaIfStatements.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -30,6 +30,7 @@ namespace SimpleLanguage.Core
             public MetaBlockStatements thenMetaStatements => m_ThenMetaStatements;
             public IfElseState ifElseState => m_IfElseState;
             public FileMetaKeyOnlySyntax elseKeySyntax => m_ElseKeySyntax;
+            public FileMetaConditionExpressSyntax ifOrElseIfKeySyntax => m_IfOrElseIfKeySyntax;
             public MetaExpressNodeBase finalExpress => m_FinalExpress;
             public MetaAssignManager metaAssignManager => m_MetaAssignManager;
             public MetaVariable boolConditionVariable => m_BoolConditionVariable;

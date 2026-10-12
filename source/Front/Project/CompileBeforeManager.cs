@@ -10,10 +10,10 @@
 //    2. 外部注入（编译前由外部环境设置）：
 //       a. 环境变量 SL_MACRO_<name>=<value>；
 //       b. 宿主/CLI 显式注册（CLI --macro name=value → ProjectManager.Run → SetExternalMacro）；
-//    3. CompileBefore() 预扫描（唯一合法的源码内修改入口）。
+//    3. Project 类 _before_() 钩子预扫描（唯一合法的源码内修改入口）。
 //  生命周期：
 //    1. 编译开始（InjectProjectData 步骤）LoadFromConfig 重置为 jsonc 初始值并应用外部宏；
-//    2. CompileBefore() 预扫描通过 SetMacroValue 修改（源码内唯一合法修改入口）；
+//    2. _before_() 钩子预扫描通过 SetMacroValue 修改（源码内唯一合法修改入口）；
 //    3. 最终宏值注入为 Project 静态成员 macro（global.macro.<name>，运行期只读）。
 //****************************************************************************
 
@@ -68,7 +68,7 @@ namespace SimpleLanguage.Project
         /// <summary>
         /// 编译开始时调用：重置为 jsonc global.macro 段的初始值，
         /// 随后应用外部宏（环境变量 SL_MACRO_* 与 SetExternalMacro 注册的 CLI/宿主值）。
-        /// 优先级：jsonc &lt; 外部宏 &lt; CompileBefore()。
+        /// 优先级：jsonc &lt; 外部宏 &lt; _before_() 钩子。
         /// </summary>
         public void LoadFromConfig(ProjectConfig config)
         {
@@ -85,7 +85,7 @@ namespace SimpleLanguage.Project
 
         // ============ 外部宏注入（编译前由外部环境设置） ============
 
-        /// <summary>环境变量宏前缀：SL_MACRO_&lt;name&gt;=value（优先级高于 jsonc，低于 CLI --macro 与 CompileBefore()）。</summary>
+        /// <summary>环境变量宏前缀：SL_MACRO_&lt;name&gt;=value（优先级高于 jsonc，低于 CLI --macro 与 _before_() 钩子）。</summary>
         public const string EnvMacroPrefix = "SL_MACRO_";
 
         private static readonly Dictionary<string, string> s_ExternalMacros = new Dictionary<string, string>();
@@ -181,7 +181,7 @@ namespace SimpleLanguage.Project
             return m_MacroValues;
         }
         /// <summary>
-        /// 修改宏值。仅供 CompileBefore() 预扫描调用（PorjectClass 负责），
+        /// 修改宏值。仅供 Project 类 _before_() 钩子预扫描调用（PorjectClass 负责），
         /// 其它任何路径都不允许触达本方法——Meta 层对 global.macro 赋值直接报错。
         /// </summary>
         public bool SetMacroValue(string name, JsonElement value, Token token)
@@ -189,7 +189,7 @@ namespace SimpleLanguage.Project
             if (string.IsNullOrEmpty(name) || !m_MacroValues.ContainsKey(name))
             {
                 Log.AddMetaCoreLog(LID.ProjectMacroManagerMacroUndefined, token,
-                    "Error CompileBefore 宏未定义: global.macro." + (name ?? "?"));
+                    "Error _before_ 钩子宏未定义: global.macro." + (name ?? "?"));
                 return false;
             }
             // 值类别校验：只接受布尔/数值/字符串
@@ -203,7 +203,7 @@ namespace SimpleLanguage.Project
 
         /// <summary>
         /// 判断一个调用链是否为 global.macro.X 形式（X 后允许继续往下挂，由调用方决定语义）。
-        /// 供 CompileBefore 预扫描与 Meta 层修改限制检查共用。
+        /// 供 _before_() 钩子预扫描与 Meta 层修改限制检查共用。
         /// </summary>
         public static bool TryGetMacroRefName(FileMetaCallLink link, out string macroName)
         {
@@ -293,7 +293,7 @@ namespace SimpleLanguage.Project
                         catch
                         {
                             Log.AddMetaCoreLog(LID.ProjectMacroManagerNotSupportExpress, token,
-                                "Error CompileBefore 宏赋值中的数字常量无法解析: " + token.ToLexemeAllString());
+                                "Error _before_ 钩子宏赋值中的数字常量无法解析: " + token.ToLexemeAllString());
                             return false;
                         }
                     }
@@ -306,13 +306,13 @@ namespace SimpleLanguage.Project
                             return true;
                         }
                         Log.AddMetaCoreLog(LID.ProjectMacroManagerNotSupportExpress, token,
-                            "Error CompileBefore 宏赋值中的布尔常量无法解析: " + token.ToLexemeAllString());
+                            "Error _before_ 钩子宏赋值中的布尔常量无法解析: " + token.ToLexemeAllString());
                         return false;
                     }
                 default:
                     {
                         Log.AddMetaCoreLog(LID.ProjectMacroManagerNotSupportExpress, token,
-                            "Error CompileBefore 宏赋值只支持字符串/数字/布尔常量: " + token.ToLexemeAllString());
+                            "Error _before_ 钩子宏赋值只支持字符串/数字/布尔常量: " + token.ToLexemeAllString());
                         return false;
                     }
             }
@@ -331,7 +331,7 @@ namespace SimpleLanguage.Project
                     if (nodeList[i].isCallFunction || nodeList[i].isArray || nodeList[i].isTemplate)
                     {
                         Log.AddMetaCoreLog(LID.ProjectMacroManagerNotSupportExpress, call.token,
-                            "Error CompileBefore 宏引用不允许函数调用/下标/模板: " + call.ToFormatString());
+                            "Error _before_ 钩子宏引用不允许函数调用/下标/模板: " + call.ToFormatString());
                         return false;
                     }
                 }
@@ -341,14 +341,14 @@ namespace SimpleLanguage.Project
                 || nameList[0] != "global" || nameList[1] != "macro")
             {
                 Log.AddMetaCoreLog(LID.ProjectMacroManagerNotSupportExpress, call.token,
-                "Error CompileBefore 中只允许引用 global.macro.宏名: " + call.ToFormatString());
+                "Error _before_ 钩子中只允许引用 global.macro.宏名: " + call.ToFormatString());
             return false;
         }
         string macroName = nameList[2];
         if (!TryGetMacroValue(macroName, out var value))
         {
             Log.AddMetaCoreLog(LID.ProjectMacroManagerMacroUndefined, call.token,
-                "Error CompileBefore 引用了未定义的宏: global.macro." + macroName);
+                "Error _before_ 钩子引用了未定义的宏: global.macro." + macroName);
             return false;
         }
             return TryJsonElementToOperand(value, call.token, out operand);
@@ -384,10 +384,10 @@ namespace SimpleLanguage.Project
             return false;
         }
 
-        // ============ CompileBefore 赋值右值求值 ============
+        // ============ _before_ 钩子赋值右值求值 ============
 
         /// <summary>
-        /// CompileBefore() 中 global.macro.X = 右值 的右值求值。
+        /// Project 类 _before_() 钩子中 global.macro.X = 右值 的右值求值。
         /// 只允许常量（布尔/数值/字符串）或另一个宏引用 global.macro.Y。
         /// </summary>
         public bool TryEvaluateMacroConstExpress(FileMetaBaseTerm term, out JsonElement value)
@@ -397,7 +397,7 @@ namespace SimpleLanguage.Project
             if (root == null)
             {
                 Log.AddMetaCoreLog(LID.ProjectMacroManagerMacroNotConst, term?.token,
-                    "Error CompileBefore 中给 global.macro 赋的值必须是常量或宏引用: " + (term?.ToFormatString() ?? "null"));
+                    "Error _before_ 钩子中给 global.macro 赋的值必须是常量或宏引用: " + (term?.ToFormatString() ?? "null"));
                 return false;
             }
             if (root is FileMetaConstValueTerm cvt)
@@ -425,7 +425,7 @@ namespace SimpleLanguage.Project
                 }
             }
             Log.AddMetaCoreLog(LID.ProjectMacroManagerMacroNotConst, root.token,
-                "Error CompileBefore 中给 global.macro 赋的值必须是常量或宏引用: " + root.ToFormatString());
+                "Error _before_ 钩子中给 global.macro 赋的值必须是常量或宏引用: " + root.ToFormatString());
             return false;
         }
     }

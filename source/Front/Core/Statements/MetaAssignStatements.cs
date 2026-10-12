@@ -153,13 +153,13 @@ namespace SimpleLanguage.Core
                 {
                     Log.AddMetaCoreLog(LID.MetaCoreAssignStatementStatic, m_Token, "Error 不允许在语句中，出现static字段! " + m_FileMetaOpAssignSyntax?.variableRef?.ToTokenString());
                 }
-                // global.macro 编译期宏：只允许在 .sp 的 Project.CompileBefore(){} 中修改
+                // global.macro 编译期宏：只允许在 .sp 的 Project._before_(){} 钩子中修改
                 // (由 PreScanCompileBeforeMacroAssign 预扫描求值消费并移除)，
                 // 其余任何位置出现的 macro 赋值都不允许——static 不进 runtime
                 if (fmcl != null && CompileBeforeManager.TryGetMacroRefName(fmcl, out _))
                 {
                     Log.AddMetaCoreLog(LID.ProjectMacroManagerMacroOnlyModifyInCompileBefore, m_Token,
-                        "Error 不允许在 CompileBefore() 之外对 global.macro 进行赋值! " + fmcl.ToTokenString());
+                        "Error 不允许在 _before_() 钩子之外对 global.macro 进行赋值! " + fmcl.ToTokenString());
                     return;
                 }
                 rightExpress = m_FileMetaOpAssignSyntax.express;

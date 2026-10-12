@@ -12,10 +12,10 @@ Project
     {
         ClassModifierProbe.ClassModifierProbeCase.start()
     }
-    CompileBefore()
+    _before_()
     {
     }
-    CompileAfter()
+    _after_()
     {
     }
 }

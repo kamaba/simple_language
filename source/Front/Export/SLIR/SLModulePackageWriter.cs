@@ -12,6 +12,7 @@ using SimpleLanguage.Core;
 using SimpleLanguage.IR;
 using SimpleLanguage.Export.MLIR;
 using SimpleLanguage.Export.SLIR.Types;
+using SimpleLanguage.ExportLanguage;
 using SimpleLanguage.Logging;
 using SimpleLanguage.Project;
 
@@ -100,6 +101,16 @@ namespace SimpleLanguage.Export.SLIR
 
             var pkg = Build(ir, moduleName);
 
+            return SerializePackage(pkg);
+        }
+
+        /// <summary>Serializes an already-built SLModulePackage to the package JSON text
+        /// (byte-identical to BuildPackageJson), used by the binary-export json co-write path
+        ///（export.binary.exportJson / --export-json，复用同一份 package 不重复 Build）。</summary>
+        internal static string SerializePackage(SLModulePackage pkg)
+        {
+            if (pkg == null) throw new ArgumentNullException(nameof(pkg));
+
             var options = new JsonSerializerOptions
             {
                 WriteIndented = true,
@@ -110,6 +121,19 @@ namespace SimpleLanguage.Export.SLIR
             options.Converters.Add(new InstructionPayloadByteArrayJsonConverter());
 
             return JsonSerializer.Serialize(pkg, options);
+        }
+
+        /// <summary>Writes an already-built SLModulePackage to outputPath without re-Build
+        /// (binary export co-writes the debug module.json this way, see ExportLangManager).</summary>
+        internal static void WritePackage(SLModulePackage pkg, string outputPath)
+        {
+            if (pkg == null) throw new ArgumentNullException(nameof(pkg));
+            if (string.IsNullOrWhiteSpace(outputPath)) throw new ArgumentNullException(nameof(outputPath));
+
+            Directory.CreateDirectory(Path.GetDirectoryName(outputPath) ?? ".");
+            File.WriteAllText(outputPath, SerializePackage(pkg));
+
+            Log.AddIRLog(LID.ExportSLModulePackageExportModuleSuccess, "export module success: " + outputPath);
         }
 
         internal static SLModulePackage Read(string inputPath)
@@ -389,6 +413,22 @@ namespace SimpleLanguage.Export.SLIR
                 var full = NormalizeTypeName(c.irName ?? string.Empty);
                 var nsName = GetNamespace(full);
                 var typeName = GetShortName(full);
+                // Export attribute-subclass contract (ATTRIBUTE_DESIGN §5): every exported
+                // class extending Attribute contributes its statically-interpreted
+                // stage/targets contract; referencing projects resolve cross-module
+                // attribute usage (@DllImport etc.) from this metadata instead of a
+                // Front-side hardcoded table (s_BuiltInContracts retired).
+                // JSON-only: SLB binary does not encode attributeContracts; CVM never reads it.
+                if (IsAttributeSubclass(c.OwnerMetaClass)
+                    && MetaAttribute.TryResolveContractFromMetaClass(c.OwnerMetaClass, out int attrContractStage, out int attrContractTargets))
+                {
+                    pkg.attributeContracts.Add(new SLAttributeContractPackage
+                    {
+                        name = typeName,
+                        stage = attrContractStage,
+                        targets = attrContractTargets,
+                    });
+                }
                 if (!nsMap.TryGetValue(nsName, out var nsPkg))
                 {
                     nsPkg = new SLNamespacePackage { fullName = nsName };
@@ -1074,8 +1114,12 @@ namespace SimpleLanguage.Export.SLIR
                 // 从项目配置的 references 填充引用关系（含 uuid、name、path、版本号）
                 if (config.References != null)
                 {
-                    // 导出文件所在目录（用于计算引用模块的相对路径）
-                    var exportDir = Environment.GetEnvironmentVariable(ProjectOutputEnvironment.ExportOutDirEnv) ?? "";
+                    // 导出文件所在目录（用于计算引用模块的相对路径）：
+                    // 优先 Export 阶段实际解析出的目录（ResolveOutDir 结果，含 legacy
+                    // 回退），其次外部 env 覆盖 / jsonc 派生的进程内状态。
+                    var exportDir = ExportLangManager.LastResolvedOutDir
+                        ?? ProjectOutputEnvironment.GetEffectiveExportOutDir()
+                        ?? "";
                     var projectDir = ProjectManager.projectPath ?? "";
                     foreach (var refSection in config.References)
                     {
@@ -1815,6 +1859,23 @@ namespace SimpleLanguage.Export.SLIR
                 endChar = src.endChar,
                 info = src.info ?? string.Empty,
             };
+        }
+
+        /// <summary>
+        /// 判定 MetaClass 是否 Attribute 子类：沿 extends 链（guard 16 层）查找短名为
+        /// "Attribute" 的祖先（Core.Attribute，或本模块自定义的同名基类）。
+        /// data/enum 的 OwnerMetaClass 为 null，天然返回 false。
+        /// </summary>
+        private static bool IsAttributeSubclass(MetaClass? mc)
+        {
+            var cur = mc;
+            int guard = 0;
+            while (cur != null && guard++ < 16)
+            {
+                if (cur.name == "Attribute") return true;
+                cur = cur.extendClass;
+            }
+            return false;
         }
 
         /// <summary>

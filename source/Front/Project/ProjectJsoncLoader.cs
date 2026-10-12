@@ -103,12 +103,11 @@ namespace SimpleLanguage.Project
 
             }
 
-            if (TryGetObj(root, "data", out var rootProjectData))
+            // 根级 "data" 已废弃（2026-10-12）：数据注入面统一为 根->global->data
+            // （"global"."data"）。根级 data 不再被读取，检测到即告警提示迁移。
+            if (TryGetObj(root, "data", out _))
             {
-                foreach (var kv in rootProjectData.EnumerateObject())
-                {
-                    cfg.JsoncProjectData[kv.Name] = kv.Value.Clone();
-                }
+                Log.AddProjectLog(LID.ProjectJsoncRootDataDeprecated, "");
             }
 
             if (TryGetObj(root, "global", out var global))
@@ -206,6 +205,8 @@ namespace SimpleLanguage.Project
                     cfg.Export.Binary.Compressed = GetBool(binaryObj, "compressed", cfg.Export.Binary.Compressed);
                     cfg.Export.Binary.IncludeDebugInfo = GetBool(binaryObj, "includeDebugInfo", cfg.Export.Binary.IncludeDebugInfo);
                     cfg.Export.Binary.StrictDigest = GetBool(binaryObj, "strictDigest", cfg.Export.Binary.StrictDigest);
+                    // exportJson：二进制导出时附带导出 module.json 调试副本（CLI --export-json 可覆盖）
+                    cfg.Export.Binary.ExportJson = GetBool(binaryObj, "exportJson", cfg.Export.Binary.ExportJson);
                 }
 
                 cfg.Export.VersionMain = GetInt(exportObj, "versionMain", cfg.Export.VersionMain);

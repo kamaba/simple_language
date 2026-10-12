@@ -10,10 +10,10 @@ Project
     {
        #ETC1.ExtendsClass.fun()
     }
-    CompileBefore()
+    _before_()
     {        
     }
-    CompileAfter()
+    _after_()
     {        
     }
 }

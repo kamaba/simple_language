@@ -772,6 +772,14 @@ namespace SimpleLanguage.Core
                     // 模块别名仅在多元素路径时有意义（如 Core.IIterable），单元素时跳过
                     if (aliasTarget.eMetaTypeType != EMetaTypeType.MetaModule && fmcd.stringList.Count == 1)
                     {
+                        // 使用点携带模板实参（如 typealias IntList = List<int> 后写 IntList<string>）：
+                        // 别名目标已在声明处实例化，追加实参无语义——显式报错而非静默忽略
+                        if (fmcd.inputTemplateNodeList != null && fmcd.inputTemplateNodeList.Count > 0)
+                        {
+                            Log.AddMetaCoreLog(LID.MetaCoreTypeAliasTemplateArgsNotAllowed, fmcd.classNameToken,
+                                $"typealias 别名[{fmcd.stringList[0]}]使用点携带模板实参", fmcd.stringList[0]);
+                            return null;
+                        }
                         var retAlias = new MetaType(aliasTarget);
                         if (fmcd.isNullable)
                             retAlias.SetNullable(true);
@@ -1014,6 +1022,14 @@ namespace SimpleLanguage.Core
                     // 模块别名仅在多元素路径时有意义（如 Core.IIterable），单元素时跳过
                     if (aliasTarget.eMetaTypeType != EMetaTypeType.MetaModule && fmcd.stringList.Count == 1)
                     {
+                        // 使用点携带模板实参（如 typealias IntList = List<int> 后写 IntList<string>）：
+                        // 别名目标已在声明处实例化，追加实参无语义——显式报错而非静默忽略
+                        if (fmcd.inputTemplateNodeList != null && fmcd.inputTemplateNodeList.Count > 0)
+                        {
+                            Log.AddMetaCoreLog(LID.MetaCoreTypeAliasTemplateArgsNotAllowed, fmcd.classNameToken,
+                                $"typealias 别名[{fmcd.stringList[0]}]使用点携带模板实参", fmcd.stringList[0]);
+                            return null;
+                        }
                         return ApplyFileMetaClassDefineDecorations(aliasTarget);
                     }
 

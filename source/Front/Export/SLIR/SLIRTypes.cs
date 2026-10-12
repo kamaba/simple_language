@@ -292,6 +292,24 @@ namespace SimpleLanguage.Export.SLIR.Types
         public int targets { get; set; }
     }
 
+    /// <summary>
+    /// Attribute 子类契约条目（SLModulePackage.attributeContracts）：
+    /// 模块内 extends Attribute 的导出类，其 _init_ 静态解释出的四时点 × 注册点契约。
+    /// 导出端写出、引用装载端读入 AttributeManager 契约注册表，供使用侧跨模块解析
+    /// stage/targets（替代已退役的 Front 内建硬编码契约表）。
+    /// 仅存在于 JSON 通道：SLB 二进制不编码本表，CVM 不读取。
+    /// </summary>
+    public sealed class SLAttributeContractPackage
+    {
+        /// <summary>类短名（使用侧 @X 按短名解析，如 "DllImport"）</summary>
+        public string name { get; set; } = string.Empty;
+        /// <summary>生效时点 EAttributeStage：0=PreCompile / 1=Compiling / 2=Preload / 3=Runtime
+        /// （与 MetaAttribute.Stage* 常量、Lib/Core/Attribute.sl 的 EAttributeStage 逐项对齐）</summary>
+        public int stage { get; set; }
+        /// <summary>合法注册点位掩码 EAttributeTarget：Class=1|Data=2|Enum=4|Field=8|Method=16|All=31</summary>
+        public int targets { get; set; }
+    }
+
     public sealed class SLFieldPackage
     {
         public string name { get; set; } = string.Empty;
@@ -603,6 +621,13 @@ namespace SimpleLanguage.Export.SLIR.Types
         /// (copied verbatim from the module's .jsonc), so referencing projects can
         /// register them via SystemMethodCallDeclarationRegistry.</summary>
         public List<SLSystemCallPackage> systemCalls { get; set; } = new();
+        /// <summary>
+        /// Attribute 子类契约表：本模块 extends Attribute 的导出类，stage/targets 由
+        /// _init_ 静态解释写出。引用方装载本模块时登记进 AttributeManager 契约注册表，
+        /// 使用侧 @X 跨模块解析由此取值——Front 侧不再维护内建硬编码契约表。
+        /// 仅 JSON 通道携带：SLB 二进制不编码本表，CVM 不读取。
+        /// </summary>
+        public List<SLAttributeContractPackage> attributeContracts { get; set; } = new();
         /// <summary>
         /// 原生 DLL 文件名（如 "MathNativeImpl.dll"）。VM 加载模块时
         /// 自动在模块文件同目录下查找并加载此 DLL（实现 ISLExternalFunctionModule）。

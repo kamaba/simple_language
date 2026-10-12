@@ -94,10 +94,10 @@ dotnet run --project project\CSimpleVMTest\CSimpleVMTest.csproj -- 1
 
 ### Debug 与 Release 的行为差异（`CSimpleVM*` 宿主）
 
-| 配置 | C VM 运行方式 | 适合场景 |
-|------|---------------|----------|
-| Debug | **P/Invoke** 进程内加载 `csimple_lang\build\Debug\bin\csimple_lang_dll.dll` | C# 与 C 代码可在同一进程断点调试 |
-| Release | 启动独立进程 `csimple_lang.exe run <module.json>`（优先 `build\Debug\bin`，回退 `build\Release\bin`） | 性能 / 接近真实部署 |
+| 配置 | C VM 运行方式 | Front 导出参数 | 适合场景 |
+|------|---------------|----------------|----------|
+| Debug | **P/Invoke** 进程内加载 `csimple_lang\build\Debug\bin\csimple_lang_dll.dll` | `--format binary --export-json`（`#if DEBUG` 追加，2026-10-12 起）：走 SLB 二进制导出（`.module.slb` 必产物）并附带导出 `module.json` 调试副本；VM 运行链路不变（仍装载 module.json） | C# 与 C 代码可在同一进程断点调试；json 副本便于人工对照排查 |
+| Release | 启动独立进程 `csimple_lang.exe run <module.json>`（优先 `build\Debug\bin`，回退 `build\Release\bin`） | 无追加（缺省 json 导出） | 性能 / 接近真实部署 |
 
 ### 常用参数
 

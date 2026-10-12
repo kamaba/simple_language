@@ -211,11 +211,12 @@ namespace SimpleLanguage.Project
             });
             pm.AddStep(CompileProcess.ECompilePhase.MetaCore, "InjectProjectData", () =>
             {
-                // Inject jsonc data (root "data" + legacy global.data) into Project meta members before statements parse.
+                // Inject jsonc global.data (根->global->data) into Project meta members before statements parse.
+                // 根级 "data" 已废弃：loader 期告警（LID 20041），不参与注入。
                 ProjectClass.InjectProjectGlobalDataFromConfig();
                 // global.macro 宏：载入 jsonc 初始值后注入 Project 静态成员 macro（运行期可读）。
                 ProjectClass.InjectProjectMacroMember();
-                // 系统集成成员：注入 Project 静态 Array<Object> _inputArgs（jsonc data 同名项优先）。
+                // 系统集成成员：注入 Project 静态 Array<Object> _inputArgs（global.data 同名项优先）。
                 ProjectClass.InjectInputArgsMember();
                 // dllImports: Project 元类注入 static 成员 dllImport（global.dllImport.<alias> 链式访问）。
                 ProjectClass.InjectDllImportMember();

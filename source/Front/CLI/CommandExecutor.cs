@@ -86,6 +86,8 @@ Options:
   -e ir, --export ir      Export IR during compile
   --in-memory             Keep the exported package JSON in memory (no module.json write)
   --format <json|binary>  Export format override (default json; binary = .module.slb)
+  --export-json           With --format binary: also write <Module>.module.json (debug copy)
+  --no-export-json        Skip the json co-export (overrides jsonc export.binary.exportJson)
   -t, --test              Run in test mode
   --release              Build in release mode
   --debug                Build in debug mode (default)
@@ -128,7 +130,7 @@ Examples:
                 // 导出阶段：前置阶段(RefModule/File/MetaCore/IR)全部成功才会执行，否则被跳过
                 // --in-memory: 导出阶段改为内存构建 package JSON（不写 module.json 文件）
                 ExportLangManager.MemoryExportMode = inputArgs.inMemoryExport;
-                ApplyFormatOverride(inputArgs);
+                ApplyExportOverrides(inputArgs);
                 ProcessManager.instance.RunPhase(ECompilePhase.Export);
             }
 
@@ -152,7 +154,7 @@ Examples:
                 // 导出阶段：前置阶段(RefModule/File/MetaCore/IR)全部成功才会执行，否则被跳过
                 // --in-memory: 导出阶段改为内存构建 package JSON（不写 module.json 文件）
                 ExportLangManager.MemoryExportMode = inputArgs.inMemoryExport;
-                ApplyFormatOverride(inputArgs);
+                ApplyExportOverrides(inputArgs);
                 ProcessManager.instance.RunPhase(ECompilePhase.Export);
             }
 
@@ -174,21 +176,27 @@ Examples:
             // 导出阶段：前置阶段(RefModule/File/MetaCore/IR)全部成功才会执行，否则被跳过
             // --in-memory: 导出阶段改为内存构建 package JSON（不写 module.json 文件）
             ExportLangManager.MemoryExportMode = inputArgs.inMemoryExport;
-            ApplyFormatOverride(inputArgs);
+            ApplyExportOverrides(inputArgs);
             ProcessManager.instance.RunPhase(ECompilePhase.Export);
             Console.WriteLine("Export completed.");
             return true;
         }
 
         /// <summary>
-        /// --format &lt;json|binary&gt; 覆盖 jsonc export.format（须在 ProjectManager.Run 加载
-        /// jsonc 之后、导出阶段执行之前调用；非法值由 ExportLangManager 分派时校验报错）。
+        /// CLI 导出覆盖（须在 ProjectManager.Run 加载 jsonc 之后、导出阶段执行之前调用）：
+        /// --format &lt;json|binary&gt; 覆盖 jsonc export.format（非法值由 ExportLangManager
+        /// 分派时校验报错）；--export-json / --no-export-json 覆盖 jsonc
+        /// export.binary.exportJson（二进制导出附带 module.json 调试副本开关）。
         /// </summary>
-        static void ApplyFormatOverride(CommandInputArgs inputArgs)
+        static void ApplyExportOverrides(CommandInputArgs inputArgs)
         {
             if (!string.IsNullOrEmpty(inputArgs.exportFormat) && ProjectManager.config?.Export != null)
             {
                 ProjectManager.config.Export.Format = inputArgs.exportFormat;
+            }
+            if (inputArgs.exportJson.HasValue && ProjectManager.config?.Export?.Binary != null)
+            {
+                ProjectManager.config.Export.Binary.ExportJson = inputArgs.exportJson.Value;
             }
         }
 
@@ -206,8 +214,10 @@ Examples:
             }
 
             // Determine export directory
+            /* 导出目录优先取外部手动设置的 SIMPLELANG_EXPORT_OUTDIR（只读覆盖），
+             * 同进程先前编译过则取 jsonc 派生的进程内状态，否则回退仓库 out/export。 */
             string exportDir = null;
-            var envExportDir = Environment.GetEnvironmentVariable(ProjectOutputEnvironment.ExportOutDirEnv);
+            var envExportDir = ProjectOutputEnvironment.GetEffectiveExportOutDir();
             if (!string.IsNullOrWhiteSpace(envExportDir))
             {
                 exportDir = envExportDir;
@@ -284,7 +294,7 @@ Examples:
             if (!File.Exists(spPath))
             {
                 File.WriteAllText(spPath,
-                    "Project\n{\n    _main_()\n    {\n    }\n\n    _test_()\n    {\n    }\n\n    _compile_before_()\n    {\n    }\n\n    _compile_after_()\n    {\n    }\n}\n",
+                    "Project\n{\n    _main_()\n    {\n    }\n\n    _test_()\n    {\n    }\n\n    _before_()\n    {\n    }\n\n    _after_()\n    {\n    }\n}\n",
                     new UTF8Encoding(true));
             }
 

@@ -4,10 +4,10 @@ Project
     {
         SystemPrintln("unreachable: CVM rejects module before execution (no variant matches)")
     }
-    CompileBefore()
+    _before_()
     {
     }
-    CompileAfter()
+    _after_()
     {
     }
 }

@@ -8,10 +8,10 @@ Project
     {
         MiniSmoke.runTest()
     }
-    CompileBefore()
+    _before_()
     {
     }
-    CompileAfter()
+    _after_()
     {
     }
 }

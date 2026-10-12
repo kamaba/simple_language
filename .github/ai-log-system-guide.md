@@ -22,9 +22,9 @@
   - 错误类型分层：Project / Process / ParseIR / Runtime / Other
 
 ### 2.1) 固定文本日志路径（排查时从此读取）
-- 模块输出树：`{export.outputDir}/{export.moduleName}/`，其下 **`Logs/Front.txt`**、**`Logs/VM.txt`**、**`Logs/Result.txt`**，以及 **`DebugCode/`**（Front 阶段 dump）、**`*.module.json`**（VM 包）。环境变量由 `ProjectOutputEnvironment.ApplyFromConfig` 设置（见 `ProjectOutputEnvironment`）。
-- Front：`SIMPLELANG_LOGS_DIR/Front.txt`；未加载配置时回退 `Log.FrontLogDefaultPath`。每次进入 `ProjectCompile.FileListStructParse` 会清空并重写本会话。
-- VM：`SIMPLELANG_LOGS_DIR/VM.txt`（与 Front 同 `Logs` 目录）；未加载配置时回退 `Log.VmLogDefaultPath`；进程启动时在 `Program.cs` 清空并重写本会话。
+- 模块输出树：`{export.outputDir}/{export.moduleName}/`，其下 **`Logs/Front.txt`**、**`Logs/VM.txt`**、**`Logs/Result.txt`**，以及 **`DebugCode/`**（Front 阶段 dump）、**`*.module.json`**（VM 包）。目录由 `ProjectOutputEnvironment.ApplyFromConfig` 派生为**进程内状态**（Front 不再写环境变量；`SIMPLELANG_*` 仅作外部只读覆盖）。
+- Front：`Logs/Front.txt`（目录由 jsonc 派生的进程内状态定向，读取入口 `ProjectOutputEnvironment.GetEffectiveLogsDir()`；`SIMPLELANG_LOGS_DIR` 仅作外部只读覆盖）；未加载配置时回退 `Log.FrontLogDefaultPath`。每次进入 `ProjectCompile.FileListStructParse` 会清空并重写本会话。
+- VM（当前 C VM `csimple_lang`）：结构化日志写 `csimple_lang/build/logs/VM.txt`，print 输出走 stdout；模块 `Logs/` 下的 `VM.txt` / `Result.txt` 为旧 C# in-process VM 产物（勿依赖，详见 `md/ai/故障排查流程.md` 第 3 节现状说明）。
 - AI 或工具复核编译/运行问题时，应优先 `Read` 上述文件，而不是在 `bin/Debug/...` 下按时间戳查找旧日志。
 - 从 **`Front.txt`** 的 **Error** 反查源码与修复流程的完整步骤见仓库内 `md/ai/故障排查流程.md` 第 **1.0** 小节。
 

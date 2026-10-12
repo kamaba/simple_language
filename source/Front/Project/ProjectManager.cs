@@ -74,7 +74,7 @@ namespace SimpleLanguage.Project
                 // 项目向导 Markdown 覆盖：--guide / --no-guide（null = 走 jsonc export.guide）
                 guideOverride = cinputArgs.exportGuide;
                 // 外部宏：CLI --macro name=value 在编译前注入 global.macro
-                // 优先级高于 jsonc global.macro 初值，低于 CompileBefore()（编译期仍可再修改）
+                // 优先级高于 jsonc global.macro 初值，低于 _before_() 钩子（编译期仍可再修改）
                 CompileBeforeManager.ClearExternalMacros();
                 if (cinputArgs.macroDefines != null)
                 {
