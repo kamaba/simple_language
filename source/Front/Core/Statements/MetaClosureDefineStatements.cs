@@ -139,7 +139,7 @@ namespace SimpleLanguage.Core
             {
                 if ( host is MetaClosureBlockStatements )
                 {
-                    Log.AddMetaCoreLog( LID.MetaCoreClosureDefineStatementNotSupportVariableDefine, "Error 闭包嵌套定义暂不支持!! (变量:" + name + ")" );
+                    Log.AddMetaCoreLog( LID.MetaCoreClosureDefineStatementNotSupportVariableDefine, m_OwnerClosureDefineStatements?.token, "Error 闭包嵌套定义暂不支持!! (变量:" + name + ")" );
                     return null;
                 }
                 var mv = host.GetMetaVariableByName( name, false );

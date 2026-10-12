@@ -834,7 +834,7 @@ namespace SimpleLanguage.Core
                         }
                         if (m_ConstructInitFunction && defineMetaType.metaClass != CoreMetaClassManager.voidMetaClass )
                         {
-                            Log.AddMetaCoreLog(LID.MetaCoreMemberFunctionIssue, "Error 当前类:" + m_AllName + " 是构建Init类，不允许有返回类型 ");
+                            Log.AddMetaCoreLog(LID.MetaCoreMemberFunctionIssue, m_FileMetaMemberFunction.token, "Error 当前类:" + m_AllName + " 是构建Init类，不允许有返回类型 ");
                         }
                         else
                         {
@@ -967,7 +967,7 @@ namespace SimpleLanguage.Core
                         : m_OwnerMetaClass is MetaData d ? d.allName
                         : m_OwnerMetaClass is MetaEnum e ? e.allName
                         : m_OwnerMetaClass?.name;
-                    Log.AddMetaCoreLog(LID.MetaCoreMemberFunctionFunctionDefine, $"Error 类[{ownerLabel}] 该函数[{this.functionAllName}] 没有定义函数内容！！");
+                    Log.AddMetaCoreLog(LID.MetaCoreMemberFunctionFunctionDefine, this.token, $"Error 类[{ownerLabel}] 该函数[{this.functionAllName}] 没有定义函数内容！！");
                 }
             }
 
@@ -1187,7 +1187,7 @@ namespace SimpleLanguage.Core
                         }
                         else
                         {
-                            Log.AddMetaCoreLog(LID.MetaCoreMemberFunctionFileMetaConditionExpressSyntax, "Error FileMetaConditionExpressSyntax: 暂不支持该类型的解析!!");
+                            Log.AddMetaCoreLog(LID.MetaCoreMemberFunctionFileMetaConditionExpressSyntax, fmkes.token, "Error FileMetaConditionExpressSyntax: 暂不支持该类型的解析!!");
                         }
                     }
                     break;
@@ -1245,7 +1245,7 @@ namespace SimpleLanguage.Core
                             {
                                 if (currentBlockStatements.GetIsMetaVariable(name1))
                                 {
-                                    Log.AddMetaCoreLog(LID.MetaCoreMemberFunctionVarDataDynamic, "Error 如果使用了var/data/dynamic/int 等前缀，有重复定义的行为" + fmos.variableRef.ToTokenString());
+                                    Log.AddMetaCoreLog(LID.MetaCoreMemberFunctionVarDataDynamic, fmos.token, "Error 如果使用了var/data/dynamic/int 等前缀，有重复定义的行为" + fmos.variableRef.ToTokenString());
                                     isDefineVarStatements = false;
                                 }
                                 else
@@ -1330,7 +1330,7 @@ namespace SimpleLanguage.Core
                                     }
                                     else
                                     {
-                                        Log.AddMetaCoreLog(LID.MetaCoreMemberFunctionVariableDefineCall, "Error 定义变量名称与类定义名称一样 如果调用成员变量，需要在前边使用this.!!" + fmvs.token?.ToLexemeAllString());
+                                        Log.AddMetaCoreLog(LID.MetaCoreMemberFunctionVariableDefineCall, fmvs.token, "Error 定义变量名称与类定义名称一样 如果调用成员变量，需要在前边使用this.!!" + fmvs.token?.ToLexemeAllString());
                                         return null;
                                     }
                                 }
@@ -1375,7 +1375,7 @@ namespace SimpleLanguage.Core
                         }
                         else
                         {
-                            Log.AddMetaCoreLog(LID.MetaCoreMemberFunctionMetaStatementsKeyReturnSyntax, "Error 生成MetaStatements出错KeyReturnSyntax类型错误!!");
+                            Log.AddMetaCoreLog(LID.MetaCoreMemberFunctionMetaStatementsKeyReturnSyntax, fmrs.token, "Error 生成MetaStatements出错KeyReturnSyntax类型错误!!");
                         }
                     }
                     break;
@@ -1401,7 +1401,7 @@ namespace SimpleLanguage.Core
                     }
                     break;
                 default:
-                    Log.AddMetaCoreLog(LID.MetaCoreMemberFunctionWaningMetaMemberFunction, "Waning 还有没有解析的语句!! MetaMemberFunction 314");
+                    Log.AddMetaCoreLog(LID.MetaCoreMemberFunctionWaningMetaMemberFunction, childFms?.token, "Waning 还有没有解析的语句!! MetaMemberFunction 314");
                     break;
             }
             return null;

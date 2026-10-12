@@ -77,7 +77,7 @@ namespace SimpleLanguage.IR
                         IRLoadVariable irVarInline = new IRLoadVariable(irmt, _irMethod, inlineFallback.index, IRMetaVariableFrom.LocalStatement);
                         return irVarInline;
                     }
-                    Log.AddIRLog(LID.IRMethodNotFoundVariable, "in argument", _irMethod.id, mv.name);
+                    Log.AddIRLog(LID.IRMethodNotFoundVariable, mv.token, "in argument", _irMethod.id, mv.name);
                 }
                 IRLoadVariable irVar = new IRLoadVariable(irmt, _irMethod, irmv.index, IRMetaVariableFrom.Argument);
                 return irVar;
@@ -138,7 +138,7 @@ namespace SimpleLanguage.IR
                     //
                     if (index == -1)
                     {
-                        Log.AddIRLog(LID.IRMethodNotFoundVariable, "in const member index = -1", _irMethod.id, mv.name);
+                        Log.AddIRLog(LID.IRMethodNotFoundVariable, mv.token, "in const member index = -1", _irMethod.id, mv.name);
                         return null;
                     }
                     irmt = new IRMetaType(irmc);
@@ -149,7 +149,7 @@ namespace SimpleLanguage.IR
                 {
                     if (index == -1)
                     {
-                        Log.AddIRLog(LID.IRMethodNotFoundVariable, "in member index = -1", _irMethod.id, mv.name);
+                        Log.AddIRLog(LID.IRMethodNotFoundVariable, mv.token, "in member index = -1", _irMethod.id, mv.name);
                         return null;
                     }
                     IRLoadVariable irVar = new IRLoadVariable(irmt, _irMethod, index, IRMetaVariableFrom.Member);
@@ -210,7 +210,7 @@ namespace SimpleLanguage.IR
                     //
                     if (index == -1)
                     {
-                        Log.AddIRLog(LID.IRMethodNotFoundVariable, "in const member index = -1", _irMethod.id, mv.name);
+                        Log.AddIRLog(LID.IRMethodNotFoundVariable, mv.token, "in const member index = -1", _irMethod.id, mv.name);
                         return null;
                     }
                     irmt = new IRMetaType(irmc);
@@ -221,7 +221,7 @@ namespace SimpleLanguage.IR
                 {
                     if (index == -1)
                     {
-                        Log.AddIRLog(LID.IRMethodNotFoundVariable, "in member index = -1", _irMethod.id, mv.name);
+                        Log.AddIRLog(LID.IRMethodNotFoundVariable, mv.token, "in member index = -1", _irMethod.id, mv.name);
                         return null;
                     }
                     IRLoadVariable irVar = new IRLoadVariable(irmt, _irMethod, index, IRMetaVariableFrom.Member);
@@ -263,7 +263,7 @@ namespace SimpleLanguage.IR
                         {
                             if( index < 0 )
                             {
-                                Log.AddIRLog(LID.IRMethodNotFoundVariable, "in array value index = -1", _irMethod.id, mv.name);
+                                Log.AddIRLog(LID.IRMethodNotFoundVariable, mv.token, "in array value index = -1", _irMethod.id, mv.name);
                             }
                         }
                         irdata.opValue = index;
@@ -297,14 +297,14 @@ namespace SimpleLanguage.IR
                         }
                         else
                         {
-                            Log.AddIRLog(LID.IRMethodNotFoundVariable, "in array value else branch", _irMethod.id, mv.name);
+                            Log.AddIRLog(LID.IRMethodNotFoundVariable, mv.token, "in array value else branch", _irMethod.id, mv.name);
                         }
                     }
                     return irVar;
                 }
                 else
                 {
-                    Log.AddIRLog(LID.IRMethodNotFoundVariable, "in array value else branch", _irMethod.id, mv.name);
+                    Log.AddIRLog(LID.IRMethodNotFoundVariable, mv.token, "in array value else branch", _irMethod.id, mv.name);
                 }
             }
             else if( mv.variableFrom == MetaVariable.EVariableFrom.None )
@@ -317,7 +317,7 @@ namespace SimpleLanguage.IR
                     irmv = _irMethod.GetIRLocalVariableById(mv.GetHashCode());
                 if(irmv == null )
                 {
-                    Log.AddIRLog(LID.IRMethodNotFoundVariable, "in array other from", _irMethod.id, mv.name);
+                    Log.AddIRLog(LID.IRMethodNotFoundVariable, mv.token, "in array other from", _irMethod.id, mv.name);
                     return null;
                 }
                 IRLoadVariable irVar = new IRLoadVariable(irmt, _irMethod, irmv.index, IRMetaVariableFrom.LocalStatement);
@@ -328,7 +328,7 @@ namespace SimpleLanguage.IR
                 irmv = _irMethod.GetIRLocalVariableById(mv.GetHashCode());
                 if(irmv == null )
                 {
-                    Log.AddIRLog(LID.IRMethodNotFoundVariable, "in array other from", _irMethod.id, mv.name);
+                    Log.AddIRLog(LID.IRMethodNotFoundVariable, mv.token, "in array other from", _irMethod.id, mv.name);
                     return null;
                 }
                 IRLoadVariable irVar = new IRLoadVariable(irmt, _irMethod, irmv.index, IRMetaVariableFrom.LocalStatement);
@@ -659,7 +659,7 @@ namespace SimpleLanguage.IR
                 AddIRData(m_Data);
                 if( id == -1 )
                 {
-                    Log.AddIRLog(LID.IRVariableSVM, $"SVM Error 没有找到加载变量的来源类型！");
+                    Log.AddIRLog(LID.IRVariableSVM, _irMethod?.bindMetaFunction?.token, $"SVM Error 没有找到加载变量的来源类型！");
                 }
             }
             else if (irmvf == IRMetaVariableFrom.Member)
@@ -691,7 +691,7 @@ namespace SimpleLanguage.IR
             }
             else
             {
-                Log.AddIRLog(LID.IRVariableSVM2, $"SVM Error 没有找到加载变量的来源类型！");
+                Log.AddIRLog(LID.IRVariableSVM2, _irMethod?.bindMetaFunction?.token, $"SVM Error 没有找到加载变量的来源类型！");
             }
         }
 

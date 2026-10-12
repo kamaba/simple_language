@@ -44,14 +44,14 @@ namespace SimpleLanguage.Compile
                 var token = tokenList[i];
                 if (token.lexeme == null)
                 {
-                    Log.AddFileMetaLog(LID.FileMetaUtilImportTokenLexeme, "检查到Import语句中，token内容lexeme为空!!");
+                    Log.AddFileMetaLog(LID.FileMetaUtilImportTokenLexeme, token, "检查到Import语句中，token内容lexeme为空!!");
                     return null;
                 }
                 if (token.type != ETokenType.Period)
                 {
                     if (!IdentifierCheck(token.lexeme.ToString()))
                     {
-                        Log.AddFileMetaLog(LID.FileMetaUtilImport, "检查到Import语句中，导入名称不合规!!");
+                        Log.AddFileMetaLog(LID.FileMetaUtilImport, token, "检查到Import语句中，导入名称不合规!!");
                         return null;
                     }
                     stringList.Add(token.lexeme.ToString());

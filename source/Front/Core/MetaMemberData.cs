@@ -852,7 +852,7 @@ namespace SimpleLanguage.Core
                 default:
                     {
                         sb.Append("有没有支持的类型: " + m_MemberDataType.ToString());
-                        Log.AddMetaCoreLog(LID.MetaCoreMemberDataIssue2, "[" + sb.ToString() +"]" + "暂不支持其它类型1");
+                        Log.AddMetaCoreLog(LID.MetaCoreMemberDataIssue2, m_Token, "[" + sb.ToString() +"]" + "暂不支持其它类型1");
                     }
                     break;
             }
@@ -891,7 +891,7 @@ namespace SimpleLanguage.Core
                     break;
                 default:
                     {
-                        Log.AddMetaCoreLog(LID.MetaCoreMemberDataMetaMemberDataToString, "MetaMemberData.ToString() 暂不支持其它类型 123");
+                        Log.AddMetaCoreLog(LID.MetaCoreMemberDataMetaMemberDataToString, m_Token, "MetaMemberData.ToString() 暂不支持其它类型 123");
                     }
                     break;
             }

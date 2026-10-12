@@ -173,7 +173,7 @@ namespace SimpleLanguage.Compile
                             Log.AddFileMetaLog(LID.FileMetaClassIssue, cnode.token, "Error 字符两次赋值 107");
                             for (int i = 0; i < classNameTokenList.Count; i++)
                             {
-                                Log.AddFileMetaLog(LID.FileMetaClassIssue2, classNameTokenList[i].lexeme.ToString());
+                                Log.AddFileMetaLog(LID.FileMetaClassIssue2, classNameTokenList[i], classNameTokenList[i].lexeme.ToString());
                             }
                         }
                         classNameTokenList = cnode.GetLinkTokenList();
@@ -662,7 +662,7 @@ namespace SimpleLanguage.Compile
                 }
                 else
                 {
-                    Log.AddFileMetaLog(LID.FileMetaClassNotSupport3, "Error 不支持其它格式 在类后续的模板限定中!");
+                    Log.AddFileMetaLog(LID.FileMetaClassNotSupport3, cnode2.token, "Error 不支持其它格式 在类后续的模板限定中!");
                 }
                 cAddCount++;
             }

@@ -126,7 +126,7 @@ namespace SimpleLanguage.Core
 
             if (string.IsNullOrEmpty(m_Name))
             {
-                Log.AddMetaCoreLog(LID.MetaCoreMemberVariableNotFoundVariableDefine, "没有找到定义变量名称!");
+                Log.AddMetaCoreLog(LID.MetaCoreMemberVariableNotFoundVariableDefine, fmmv.token, "没有找到定义变量名称!");
                 m_Name = "Error_" + GetHashCode().ToString();
             }
             if (m_FileMetaMemeberVariable.permissionToken?.type != null)

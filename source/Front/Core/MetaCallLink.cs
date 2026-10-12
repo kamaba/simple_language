@@ -153,7 +153,7 @@ namespace SimpleLanguage.Core
             var m_FinalMetaCallNode = m_CallNodeList[m_CallNodeList.Count - 1];
             if (m_FinalMetaCallNode == null)
             {
-                Log.AddMetaCoreLog(LID.MetaCoreCallLinkIssue, "Error 鏉╃偞甯存稉鍙夌梾閺堝澹橀崚鏉挎値闁倻娈戦懞鍌滃仯  360!!!");
+                Log.AddMetaCoreLog(LID.MetaCoreCallLinkIssue, m_Token, "Error 鏉╃偞甯存稉鍙夌梾閺堝澹橀崚鏉挎値闁倻娈戦懞鍌滃仯  360!!!");
             }
             m_FinalMetaCallNode.SetDefineMetaVariable(mv);
         }
@@ -202,7 +202,7 @@ namespace SimpleLanguage.Core
                             if (m_CallNodeList[i].callNodeType != ECallNodeType.NewClass)
                             {
                                 flag = false;
-                            Log.AddMetaCoreLog(LID.MetaCoreCallLinkStatementWClassName, "Parse Statement Error 閸︺劋濞囬悽鈭焑wClassName閻ㄥ嫭鏌熷蹇ョ礉閸氬氦绔熸稉宥呭帒鐠佸憡婀侀崗璺虹暊閻ㄥ嫯鐨熼悽?");
+                            Log.AddMetaCoreLog(LID.MetaCoreCallLinkStatementWClassName, m_Token, "Parse Statement Error 閸︺劋濞囬悽鈭焑wClassName閻ㄥ嫭鏌熷蹇ョ礉閸氬氦绔熸稉宥呭帒鐠佸憡婀侀崗璺虹暊閻ㄥ嫯鐨熼悽?");
                             }
                         }
                     }

@@ -196,7 +196,7 @@ namespace SimpleLanguage.IR
             }
             else
             {
-                Log.AddIRLog(LID.IRVisitNodeNotHandleType, "visit variable is Static");
+                Log.AddIRLog(LID.IRVisitNodeNotHandleType, ms.token, "visit variable is Static");
             }
 
             //如果不是 a.setValue(xxx)这种方式，那么就执行右边的表达式

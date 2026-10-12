@@ -473,7 +473,7 @@ namespace SimpleLanguage.Compile
                 FileMetaParamterDefine cdp = new FileMetaParamterDefine(m_FileMeta, nodelist);
                 if (nameSet.Contains(cdp.name))
                 {
-                    Log.AddFileMetaLog(LID.FileMetaMemberFunctionParam, "Error 参数名称有重名!!!");
+                    Log.AddFileMetaLog(LID.FileMetaMemberFunctionParam, cdp.token, "Error 参数名称有重名!!!");
                 }
                 AddMetaParamter(cdp);
             }
@@ -495,7 +495,7 @@ namespace SimpleLanguage.Compile
                     FileMetaTemplateDefine cdp = new FileMetaTemplateDefine(m_FileMeta, cnode);
                     if (m_MetaTemplatesList.Find( a=> a.name == cdp.name ) != null )
                     {
-                        Log.AddFileMetaLog(LID.FileMetaMemberFunctionParam2, "Error 参数名称有重名!!!");
+                        Log.AddFileMetaLog(LID.FileMetaMemberFunctionParam2, cdp.token, "Error 参数名称有重名!!!");
                         continue;
                     }
                     AddMetaTemplate(cdp);

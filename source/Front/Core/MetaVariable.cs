@@ -523,7 +523,7 @@ namespace SimpleLanguage.Core
                     // 变量下标访问非数组类型时必须能解析 _getItem_，否则会在 IR 阶段
                     // 静默产生空调用（MetaMethodCall 的函数为 null）并引发空引用异常，
                     // 这里必须在 MetaCore 阶段显式报错。
-                    Log.AddMetaCoreLog(LID.MetaCoreVisitTypeShouldIsArray,
+                    Log.AddMetaCoreLog(LID.MetaCoreVisitTypeShouldIsArray, mvv.token,
                         "[Error] variable subscript '" + _name + "' on receiver '" + lmv.name + "' cannot resolve _getItem_ for type '" + lmv.GetFinalTemplateMetaClass()?.name + "'.");
                     return;
                 }
@@ -594,7 +594,7 @@ namespace SimpleLanguage.Core
 
                     if (getMt == null)
                     {
-                        Log.AddMetaCoreLog(LID.MetaCoreVariableParseDefineMetaTypeNotArray, "ParseDefineMetaType not array and no _getItem_ support");
+                        Log.AddMetaCoreLog(LID.MetaCoreVariableParseDefineMetaTypeNotArray, m_Token, "ParseDefineMetaType not array and no _getItem_ support");
                     }
                 }
             }

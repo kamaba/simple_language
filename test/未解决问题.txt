@@ -7,7 +7,6 @@ TankGame.sl 引入Math类。把一些 二维的都使用Int32_2 Int32_3
 3. 接入python
 4. 接一个asm 
 
-改二进制的大工程
 
 _before_
 _after_
@@ -21,8 +20,6 @@ project.jsonc的配置整理。
 把global.data 确定了 下边的关联元素确定下，还有调用方式
 
 创建表达式的过程，是不是可以优化下，怎么感觉好多地方有调 用二次的情况，你审核下代码，给个优化方案，我看下
-
-把Log里边 如果可以 放到Token尽量的放下token
 
 Environment.SetEnvironmentVariable 尽量不要使用这种的，而是使用配置 文件 就可以 了。
 

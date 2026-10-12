@@ -137,7 +137,7 @@ namespace SimpleLanguage.Core
             this.m_Name = mc.name;
             if (this.m_MetaTemplateClassDict.ContainsKey(mc.metaTemplateList.Count ) )
             {
-                Log.AddMetaCoreLog(LID.MetaCoreMetaNodeIssue, $"已有该模板数量的类{mc.name} :{mc.metaTemplateList.Count}");
+                Log.AddMetaCoreLog(LID.MetaCoreMetaNodeIssue, mc.token, $"已有该模板数量的类{mc.name} :{mc.metaTemplateList.Count}");
                 return;
             }
             this.m_MetaTemplateClassDict.Add(mc.metaTemplateList.Count, mc);
@@ -209,7 +209,7 @@ namespace SimpleLanguage.Core
                 {
                     if( node.m_MetaTemplateClassDict.ContainsKey( mc.metaTemplateList.Count ) )
                     {
-                        Log.AddMetaCoreLog(LID.MetaCoreMetaNodeAddMetaclassMetanode, "添加add metaclass metanode节点有问题! 有重复:" + mc.allName);
+                        Log.AddMetaCoreLog(LID.MetaCoreMetaNodeAddMetaclassMetanode, mc.token, "添加add metaclass metanode节点有问题! 有重复:" + mc.allName);
                         return null;
                     }
                     else

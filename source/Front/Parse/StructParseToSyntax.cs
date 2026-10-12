@@ -78,7 +78,7 @@ namespace SimpleLanguage.Compile
                     || tokenType == ETokenType.Break
                     || tokenType == ETokenType.Continue )
                 {
-                    Log.AddNodeLog( LID.NodeStructParseElse, "Error 不允许在Else后增加任何代码" + node.token?.ToLexemeAllString() );
+                    Log.AddNodeLog( LID.NodeStructParseElse, node.token, "Error 不允许在Else后增加任何代码" + node.token?.ToLexemeAllString() );
                 }
                 else if( tokenType == ETokenType.Sharp )
                 {
@@ -338,7 +338,7 @@ namespace SimpleLanguage.Compile
 
                         if (ProjectManager.isUseForceSemiColonInLineEnd)
                         {
-                            Log.AddNodeLog(LID.NodeStructParseStatementExtend, "warning 使用的是强制封号结束语句方式，注意这个节点会继承往下查找语句"
+                            Log.AddNodeLog(LID.NodeStructParseStatementExtend, curToken, "warning 使用的是强制封号结束语句方式，注意这个节点会继承往下查找语句"
                                  + curToken?.ToLexemeAllString());
                         }
 
@@ -816,7 +816,7 @@ namespace SimpleLanguage.Compile
                     {
                         if (staticToken != null)
                         {
-                            Log.AddNodeLog(LID.NodeStructParseStatic, "Error 多个Static!!");
+                            Log.AddNodeLog(LID.NodeStructParseStatic, token, "Error 多个Static!!");
                         }
                         staticToken = token;
                     }
@@ -824,7 +824,7 @@ namespace SimpleLanguage.Compile
                     {
                         if (constToken != null)
                         {
-                            Log.AddNodeLog(LID.NodeStructParseConst, "Error 多个Const!!");
+                            Log.AddNodeLog(LID.NodeStructParseConst, token, "Error 多个Const!!");
                         }
                         constToken = token;
                     }
@@ -837,7 +837,7 @@ namespace SimpleLanguage.Compile
                     {
                         if (varToken != null || dynamicToken != null || dataToken != null)
                         {
-                            Log.AddNodeLog(LID.NodeStructParseDynamic, "Error 多个Dynamic!!");
+                            Log.AddNodeLog(LID.NodeStructParseDynamic, token, "Error 多个Dynamic!!");
                         }
                         dynamicToken = token;
                         defineNodeList.Add(cnode);
@@ -846,7 +846,7 @@ namespace SimpleLanguage.Compile
                     {
                         if (varToken != null || dynamicToken != null || dataToken != null )
                         {
-                            Log.AddNodeLog(LID.NodeStructParseVar, "Error 多个Var!!");
+                            Log.AddNodeLog(LID.NodeStructParseVar, token, "Error 多个Var!!");
                         }
                         varToken = token;
                         defineNodeList.Add(cnode);
@@ -855,7 +855,7 @@ namespace SimpleLanguage.Compile
                     {
                         if (varToken != null || dynamicToken != null || dataToken != null)
                         {
-                            Log.AddNodeLog(LID.NodeStructParseData, "Error 多个Data!!");
+                            Log.AddNodeLog(LID.NodeStructParseData, token, "Error 多个Data!!");
                         }
                         dataToken = token;
                         defineNodeList.Add(cnode);
@@ -880,7 +880,7 @@ namespace SimpleLanguage.Compile
                                 "Error 变量定义的名称不允许使用关键字!! " + token?.ToLexemeAllString());
                             return null;
                         }
-                        Log.AddNodeLog(LID.NodeStructParseIssue, "Error 解析发现没有该节点!!" + token?.ToLexemeAllString());
+                        Log.AddNodeLog(LID.NodeStructParseIssue, token, "Error 解析发现没有该节点!!" + token?.ToLexemeAllString());
                         //new Exception("Error 解析发现没有该节点");
                     }
                 }
@@ -1133,7 +1133,7 @@ namespace SimpleLanguage.Compile
                     && afterNodeList[0].token?.type != ETokenType.Try
                     && afterNodeList[0].token?.type != ETokenType.Checked )
                 {
-                    Log.AddNodeLog(LID.NodeStructParseIfSwitch, "Error 暂不支持 a = if/switch{}语法");
+                    Log.AddNodeLog(LID.NodeStructParseIfSwitch, afterNodeList[0].token, "Error 暂不支持 a = if/switch{}语法");
                     //var fme22 = HandleCreateFileMetaSyntaxByPNode(afterNodeList);
                     //if ((afterNodeList[0].token.type == ETokenType.If
                     //    || afterNodeList[0].token.type == ETokenType.Switch)
@@ -1189,7 +1189,7 @@ namespace SimpleLanguage.Compile
             {
                 if (varRef == null)
                 {
-                    Log.AddNodeLog(LID.NodeStructParseIsNullNotAllowVariable, "Error 当为定义变量时，名称不能为空!!");
+                    Log.AddNodeLog(LID.NodeStructParseIsNullNotAllowVariable, opAssignNode.token, "Error 当为定义变量时，名称不能为空!!");
                     return null;
                 }
                 FileMetaOpAssignSyntax fms = new FileMetaOpAssignSyntax(varRef, opAssignNode.token, dynamicToken, dataToken, varToken, functionToken, fme);
@@ -2504,14 +2504,14 @@ namespace SimpleLanguage.Compile
                     var labelContent = akss.keyContent.Count > 0 ? akss.keyContent : akss.commonContent;
                     if (labelContent.Count != 1)
                     {
-                        Log.AddNodeLog(LID.NodeStructParseGotoLabelId, "Error 解析Goto Label语法，只支持 goto id;的语法!!");
+                        Log.AddNodeLog(LID.NodeStructParseGotoLabelId, akss.keyNode.token, "Error 解析Goto Label语法，只支持 goto id;的语法!!");
                     }
                     else
                     {
                         labelToken = labelContent[0].token;
                         if (labelToken.type != ETokenType.Identifier)
                         {
-                            Log.AddNodeLog(LID.NodeStructParseGotoLabel, "Error 解析GotoLabel中 后边必须使用普通字符");
+                            Log.AddNodeLog(LID.NodeStructParseGotoLabel, labelToken, "Error 解析GotoLabel中 后边必须使用普通字符");
                         }
                     }
 
@@ -2658,7 +2658,7 @@ namespace SimpleLanguage.Compile
             var parlist = sns.keyContent;
             if (parlist.Count == 0)
             {
-                Log.AddNodeLog(LID.NodeStructParseStatement, "Error For语句中，条件区域没有相关的值!!");
+                Log.AddNodeLog(LID.NodeStructParseStatement, cnode.token, "Error For语句中，条件区域没有相关的值!!");
             }
             List<Node> defineVariableSyntaxNodeList = new List<Node>();
             List<Node> conditionExpressNodeList = new List<Node>();
@@ -2714,7 +2714,7 @@ namespace SimpleLanguage.Compile
             }
             if (defineVariableSyntax == null)
             {
-                Log.AddNodeLog(LID.NodeStructParseTypeDefineStatement, "Error 解析for 第一部分错误，解析语句出错，不是定义类型语句!!");
+                Log.AddNodeLog(LID.NodeStructParseTypeDefineStatement, cnode.token, "Error 解析for 第一部分错误，解析语句出错，不是定义类型语句!!");
                 return fms;
             }
             defineVariableSyntax.isAppendSemiColon = false;
@@ -2726,7 +2726,7 @@ namespace SimpleLanguage.Compile
                     var cfe = FileMetatUtil.CreateFileMetaExpress(fm, conditionExpressNodeList, FileMetaTermExpress.EExpressType.Common);
                     if (cfe == null)
                     {
-                        Log.AddNodeLog(LID.NodeStructParseIssue3, "Error 解析for 第二部分错误!!");
+                        Log.AddNodeLog(LID.NodeStructParseIssue3, inToken, "Error 解析for 第二部分错误!!");
                     }
                     else
                     {
@@ -2757,7 +2757,7 @@ namespace SimpleLanguage.Compile
                     }
                     else
                     {
-                        Log.AddNodeLog(LID.NodeStructParseIssue5, "Error 解析for 第三部分错误!!");
+                        Log.AddNodeLog(LID.NodeStructParseIssue5, stepExecuteSyntaxNodeList[0]?.token, "Error 解析for 第三部分错误!!");
                     }
                 }
             }
@@ -2878,7 +2878,7 @@ namespace SimpleLanguage.Compile
             }
             if( fmcl == null && sourceExpress == null )
             {
-                Log.AddNodeLog(LID.NodeStructParseFileMetaCallLink, "Error 创建 FileMetaCallLink 失败");
+                Log.AddNodeLog(LID.NodeStructParseFileMetaCallLink, cnode.token, "Error 创建 FileMetaCallLink 失败");
             }
             var fms = new FileMetaKeySwitchSyntax(fm, cnode.token, sns.blockNode.token, sns.blockNode.endToken, fmcl);
             if (sourceExpress != null)
@@ -2904,7 +2904,7 @@ namespace SimpleLanguage.Compile
                 }
                 else
                 {
-                    Log.AddNodeLog( LID.NodeStructParseSwitchCaseDefault, "Error switch中不能出现除case/default子外的语句!!");
+                    Log.AddNodeLog( LID.NodeStructParseSwitchCaseDefault, caseMS.keyNode.token, "Error switch中不能出现除case/default子外的语句!!");
                 }
             }
 
@@ -2919,7 +2919,7 @@ namespace SimpleLanguage.Compile
             var parlist = caseMS.keyContent;
             if (parlist == null || parlist.Count == 0)
             {
-                Log.AddNodeLog(LID.NodeStructParseCase, "Error Case语句不允许没有检查值!!");
+                Log.AddNodeLog(LID.NodeStructParseCase, caseMS.keyNode?.token, "Error Case语句不允许没有检查值!!");
                 return;
             }
 
@@ -2951,7 +2951,7 @@ namespace SimpleLanguage.Compile
                 }
                 else
                 {
-                    Log.AddNodeLog(LID.NodeStructParseCaseClassName, "Error case is 类型匹配的格式为: case is ClassName [变量名]!!");
+                    Log.AddNodeLog(LID.NodeStructParseCaseClassName, childList[0].token, "Error case is 类型匹配的格式为: case is ClassName [变量名]!!");
                 }
                 return;
             }
@@ -2966,7 +2966,7 @@ namespace SimpleLanguage.Compile
                     var type = curNode.token.type;
                     if (type != ETokenType.Number && type != ETokenType.String && type != ETokenType.BoolValue)
                     {
-                        Log.AddNodeLog(LID.NodeStructParseNumberStringBool, "Error 多值分割(|/)只允许number,string,bool");
+                        Log.AddNodeLog(LID.NodeStructParseNumberStringBool, curNode.token, "Error 多值分割(|/)只允许number,string,bool");
                         isSame = false;
                         break;
                     }
@@ -2978,7 +2978,7 @@ namespace SimpleLanguage.Compile
                 }
                 if (!isSame)
                 {
-                    Log.AddNodeLog(LID.NodeStructParseType, "Error 使用|或逗号切割开后，类型不相同!!");
+                    Log.AddNodeLog(LID.NodeStructParseType, caseMS.keyNode?.token, "Error 使用|或逗号切割开后，类型不相同!!");
                 }
 
                 for (int i = 0; i < childList.Count; i++)

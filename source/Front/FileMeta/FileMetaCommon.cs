@@ -119,7 +119,7 @@ namespace SimpleLanguage.Compile
                     }
                     else
                     {
-                        Log.AddFileMetaLog(LID.FileMetaCommonX, "Error 命名空间有误，必须为X.xx.X 类似的格式!");
+                        Log.AddFileMetaLog(LID.FileMetaCommonX, token[i], "Error 命名空间有误，必须为X.xx.X 类似的格式!");
                         return null;
                     }
                 }
@@ -127,7 +127,7 @@ namespace SimpleLanguage.Compile
                 {
                     if( token[i].type != ETokenType.Period )
                     {
-                        Log.AddFileMetaLog(LID.FileMetaCommonX2, "Error 命名空间有误，必须为X.xx.X 类似的格式!");
+                        Log.AddFileMetaLog(LID.FileMetaCommonX2, token[i], "Error 命名空间有误，必须为X.xx.X 类似的格式!");
                         return null;
                     }
                     isIdentifier = true;

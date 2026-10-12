@@ -175,7 +175,7 @@ namespace SimpleLanguage.Compile
                 return;
             }
 
-            Log.AddFileMetaLog(LID.FileMetaGlobalSyntaxImport3, "解析Import语句发生错误，没有找到对应的命名空间路径: " + (m_ImportNamespaceName ?? string.Empty));
+            Log.AddFileMetaLog(LID.FileMetaGlobalSyntaxImport3, m_NamespaceStatement.tokenList[0], "解析Import语句发生错误，没有找到对应的命名空间路径: " + (m_ImportNamespaceName ?? string.Empty));
         }
 
         private MetaNode ResolveImportMetaNode()

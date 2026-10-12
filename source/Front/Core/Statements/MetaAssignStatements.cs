@@ -46,7 +46,7 @@ namespace SimpleLanguage.Core
                         }
                         else
                         {
-                            Log.AddMetaCoreLog( LID.MetaCoreAssignStatementReturnStatement, "Error 返回的判断语句: " + mcen.ToString() + "   并非是boolean类型!");
+                            Log.AddMetaCoreLog( LID.MetaCoreAssignStatementReturnStatement, mcen.token, "Error 返回的判断语句: " + mcen.ToString() + "   并非是boolean类型!");
                         }
                     }
                     break;
@@ -81,7 +81,7 @@ namespace SimpleLanguage.Core
                     break;
                 default:
                     {
-                        Log.AddMetaCoreLog(LID.MetaCoreAssignStatementIssue2, "Error -------------------------------------------2");
+                        Log.AddMetaCoreLog(LID.MetaCoreAssignStatementIssue2, m_ExpressNode?.token, "Error -------------------------------------------2");
                     }
                     break;
             }

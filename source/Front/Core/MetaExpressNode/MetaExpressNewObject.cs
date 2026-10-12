@@ -1685,7 +1685,7 @@ namespace SimpleLanguage.Core
                 {
                     if (fmst2.symBolType != ETokenType.Comma)
                     {
-                        Log.AddMetaCoreLog(LID.MetaCoreExpressNewObjectIssue5, "??????,????,");
+                        Log.AddMetaCoreLog(LID.MetaCoreExpressNewObjectIssue5, fmst2.token, "??????,????,");
                     }
                 }
                 else if (fmbt is FileMetaTermExpress termexpress)
@@ -1776,7 +1776,7 @@ namespace SimpleLanguage.Core
                 {
                     if (fmst2.symBolType != ETokenType.Comma)
                     {
-                        Log.AddMetaCoreLog(LID.MetaCoreExpressNewObjectListTBrace, "List<T> brace-assign: expected comma between elements");
+                        Log.AddMetaCoreLog(LID.MetaCoreExpressNewObjectListTBrace, fmst2.token, "List<T> brace-assign: expected comma between elements");
                     }
                 }
                 else
@@ -1833,7 +1833,7 @@ namespace SimpleLanguage.Core
                 {
                     if (fmstOb2.symBolType != ETokenType.Comma)
                     {
-                        Log.AddMetaCoreLog(LID.MetaCoreExpressNewObjectIssue6, "??????,????,");
+                        Log.AddMetaCoreLog(LID.MetaCoreExpressNewObjectIssue6, fmstOb2.token, "??????,????,");
                     }
                 }
                 else if (fmbt is FileMetaTermExpress termexpressOb)
@@ -1854,7 +1854,7 @@ namespace SimpleLanguage.Core
                 else
                 {
                     System.Diagnostics.Debug.Assert(false);
-                    Log.AddMetaCoreLog(LID.MetaCoreExpressNewObjectArrayObject, "Error Array<Object> ???????????!");
+                    Log.AddMetaCoreLog(LID.MetaCoreExpressNewObjectArrayObject, fmbt.token, "Error Array<Object> ???????????!");
                 }
             }
             else if (mt.IsMap())   // ??????? ??   a:10, b:20  20:"aa" ?????

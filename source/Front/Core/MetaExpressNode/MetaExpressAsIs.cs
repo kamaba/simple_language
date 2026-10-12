@@ -58,7 +58,7 @@ namespace SimpleLanguage.Core
 
             if (m_FileMetaKeyAsIsSyntax.variableCallLink == null)
             {
-                Log.AddMetaCoreLog(LID.MetaCoreExpressAsIsIssue, "????????");
+                Log.AddMetaCoreLog(LID.MetaCoreExpressAsIsIssue, m_FileMetaKeyAsIsSyntax.asOrIsToken, "????????");
                 return;
             }
             m_CurrentVariableLink = new MetaCallLink(m_FileMetaKeyAsIsSyntax.variableCallLink, m_OwnerMetaBase, m_OwnerMetaBlockStatements, null, null);
@@ -66,7 +66,7 @@ namespace SimpleLanguage.Core
             if ( m_FileMetaKeyAsIsSyntax.defineType == null )
             {
                 Debug.Assert(false, "?????????");
-                Log.AddMetaCoreLog(LID.MetaCoreExpressAsIsIssue2, "????????");
+                Log.AddMetaCoreLog(LID.MetaCoreExpressAsIsIssue2, m_FileMetaKeyAsIsSyntax.asOrIsToken, "????????");
                 return;
             }
             m_ConvertTargetMetaType = null;

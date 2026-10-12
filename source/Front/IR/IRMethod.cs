@@ -391,7 +391,7 @@ namespace SimpleLanguage.IR
             MetaBlockStatements mbs = mmf.metaBlockStatements;
             if (mbs == null)
             {
-                Log.AddIRLog(LID.MetaCoreAssertShowMessage, "error ");
+                Log.AddIRLog(LID.MetaCoreAssertShowMessage, mmf.token, "error ");
                 return;
             }
 

@@ -431,7 +431,7 @@ namespace SimpleLanguage.Compile
                 if (currentNodeInfo != null &&
                     currentNodeInfo.parseType == EParseNodeType.Function)
                 {
-                    Log.AddFileMetaLog(LID.FileMetaStructFrameAttributeNamespaceClass, "Error @Attribute 只允许写在 namespace{} / class{} 内");
+                    Log.AddFileMetaLog(LID.FileMetaStructFrameAttributeNamespaceClass, n.token, "Error @Attribute 只允许写在 namespace{} / class{} 内");
                     // do not consume; let outer parser handle as error or normal token
                     break;
                 }
@@ -440,7 +440,7 @@ namespace SimpleLanguage.Compile
                 var attrName = atToken.extend != null ? atToken.extend.ToString() : null;
                 if (string.IsNullOrEmpty(attrName))
                 {
-                    Log.AddFileMetaLog(LID.FileMetaStructFrameAttribute, "Error @Attribute 名称为空");
+                    Log.AddFileMetaLog(LID.FileMetaStructFrameAttribute, atToken, "Error @Attribute 名称为空");
                     // invalid attribute; do not consume to avoid breaking outer logic
                     break;
                 }
@@ -552,7 +552,7 @@ namespace SimpleLanguage.Compile
             Node localNode = pnode.GetParseNode(); // consume 'local'
             if (localNode == null || localNode.token?.type != ETokenType.Local)
             {
-                Log.AddNodeLog(LID.NodeLocalParseFailed, "Error local 解析失败");
+                Log.AddNodeLog(LID.NodeLocalParseFailed, localNode?.token, "Error local 解析失败");
                 return;
             }
 
@@ -624,7 +624,7 @@ namespace SimpleLanguage.Compile
 
             if (i >= ch.Count)
             {
-                Log.AddNodeLog(LID.NodeStructFrameTypealias, "Error typealias 后缺少别名与类型");
+                Log.AddNodeLog(LID.NodeStructFrameTypealias, n0.token, "Error typealias 后缺少别名与类型");
                 return startIndex + 1;
             }
 
@@ -638,7 +638,7 @@ namespace SimpleLanguage.Compile
 
             if (string.IsNullOrEmpty(aliasName))
             {
-                Log.AddNodeLog(LID.NodeStructFrameTypealias2, "Error typealias 后应为单个标识符别名");
+                Log.AddNodeLog(LID.NodeStructFrameTypealias2, nameNode.token, "Error typealias 后应为单个标识符别名");
                 return i + 1;
             }
             i++;
@@ -646,7 +646,7 @@ namespace SimpleLanguage.Compile
             while (i < ch.Count && ch[i].nodeType == ENodeType.LineEnd) i++;
             if (i >= ch.Count || ch[i].nodeType != ENodeType.Assign)
             {
-                Log.AddNodeLog(LID.NodeStructFrameTypealias3, "Error typealias 缺少 = 与目标类型");
+                Log.AddNodeLog(LID.NodeStructFrameTypealias3, n0.token, "Error typealias 缺少 = 与目标类型");
                 return i;
             }
             i++;
@@ -726,7 +726,7 @@ namespace SimpleLanguage.Compile
             }
             if (typeRoot == null)
             {
-                Log.AddNodeLog(LID.NodeStructFrameTypealias4, "Error typealias 目标类型无法解析");
+                Log.AddNodeLog(LID.NodeStructFrameTypealias4, n0.token, "Error typealias 目标类型无法解析");
                 return i;
             }
 
@@ -920,7 +920,7 @@ namespace SimpleLanguage.Compile
                 {
                     if (namespaceNode != null)
                     {
-                        Log.AddNodeLog(LID.NodeStructFrameNamespace, "Error 在解析namespace 中，后边跟着参数多于正常语法!!");
+                        Log.AddNodeLog(LID.NodeStructFrameNamespace, nextNode.token, "Error 在解析namespace 中，后边跟着参数多于正常语法!!");
                     }
                     namespaceNode = nextNode;
 
@@ -954,7 +954,7 @@ namespace SimpleLanguage.Compile
                 {
                     if (ProjectManager.isUseForceSemiColonInLineEnd)
                     {
-                        Log.AddNodeLog(LID.NodeStructFrameNamespace2, "Error 在解析namespace 中，需要强制;号结束");
+                        Log.AddNodeLog(LID.NodeStructFrameNamespace2, currentNode.token, "Error 在解析namespace 中，需要强制;号结束");
                         break;
                     }
                     else
@@ -1158,7 +1158,7 @@ namespace SimpleLanguage.Compile
                         || currentNodeInfo?.codeClass == null
                         || !string.Equals(currentNodeInfo.codeClass.name, "Project", StringComparison.Ordinal))
                     {
-                        Log.AddNodeLog(LID.NodeStructFrameTypealiasSpProject, "Error 类体内的 typealias 仅允许出现在 .sp 工程的 Project 类中");
+                        Log.AddNodeLog(LID.NodeStructFrameTypealiasSpProject, peekNode.token, "Error 类体内的 typealias 仅允许出现在 .sp 工程的 Project 类中");
                         index++;
                         continue;
                     }
@@ -1453,7 +1453,7 @@ namespace SimpleLanguage.Compile
                         }
                         else
                         {
-                            Log.AddNodeLog(LID.NodeStructFrameConst, "Error 在+-符前边不允许有其它非const类型存在!");
+                            Log.AddNodeLog(LID.NodeStructFrameConst, nextNode.token, "Error 在+-符前边不允许有其它非const类型存在!");
                             continue;
                         }
                     }
@@ -1524,7 +1524,7 @@ namespace SimpleLanguage.Compile
                 }
                 else
                 {
-                    Log.AddNodeLog(LID.NodeStructFrameData, "Error Data数据中 []中，不支持该类型的数据" + curNode?.token?.ToLexemeAllString());
+                    Log.AddNodeLog(LID.NodeStructFrameData, curNode?.token, "Error Data数据中 []中，不支持该类型的数据" + curNode?.token?.ToLexemeAllString());
                     continue;
                 }
             }
@@ -1700,12 +1700,12 @@ namespace SimpleLanguage.Compile
                 {
                     if (assignNode != null)
                     {
-                        Log.AddNodeLog(LID.NodeStructFrameDataConst, "Error data 成员的 const 关键字只能出现在赋值号前");
+                        Log.AddNodeLog(LID.NodeStructFrameDataConst, curNode.token, "Error data 成员的 const 关键字只能出现在赋值号前");
                         continue;
                     }
                     if (frontList.Count > 0)
                     {
-                        Log.AddNodeLog(LID.NodeStructFrameDataConst2, "Error data 成员定义中 const 必须位于名称之前");
+                        Log.AddNodeLog(LID.NodeStructFrameDataConst2, curNode.token, "Error data 成员定义中 const 必须位于名称之前");
                         continue;
                     }
                     frontList.Add(curNode);
@@ -1759,12 +1759,12 @@ namespace SimpleLanguage.Compile
                             }
                             else
                             {
-                                Log.AddNodeLog(LID.NodeStructFrameX, "Error 如果是 x=-??的形式，在符号后边");
+                                Log.AddNodeLog(LID.NodeStructFrameX, curNode.token, "Error 如果是 x=-??的形式，在符号后边");
                             }
                         }
                         else
                         {
-                            Log.AddNodeLog(LID.NodeStructFrameX2, "Error 如果是 x=-??的形式，在符号后边");
+                            Log.AddNodeLog(LID.NodeStructFrameX2, curNode.token, "Error 如果是 x=-??的形式，在符号后边");
                         }
                     }
                     else if (nextNode.nodeType == ENodeType.Brace)
@@ -1798,12 +1798,12 @@ namespace SimpleLanguage.Compile
                         }
                         else
                         {
-                            Log.AddNodeLog(LID.NodeStructFrameData2, "Error 在定义Data数据的时候，如果有折行，只允许 =\n{} =\n[] 两种形式! ");
+                            Log.AddNodeLog(LID.NodeStructFrameData2, curNode.token, "Error 在定义Data数据的时候，如果有折行，只允许 =\n{} =\n[] 两种形式! ");
                         }
                     }
                     else
                     {
-                        Log.AddNodeLog(LID.NodeStructFrameData3, "Error 在定义Data数据的时候，不允许=号后边有其它形式的存在");
+                        Log.AddNodeLog(LID.NodeStructFrameData3, curNode.token, "Error 在定义Data数据的时候，不允许=号后边有其它形式的存在");
                     }
 
                     if (parseType > 0)
@@ -1851,12 +1851,12 @@ namespace SimpleLanguage.Compile
                     }
                     else if (assignNode != null || frontList.Count > 0)
                     {
-                        Log.AddNodeLog(LID.NodeStructFrameData4, "匿名或嵌套的 data {{}} 内请使用英文逗号 ',' 分隔成员，不要使用 ';'");
+                        Log.AddNodeLog(LID.NodeStructFrameData4, curNode.token, "匿名或嵌套的 data {{}} 内请使用英文逗号 ',' 分隔成员，不要使用 ';'");
                     }
                 }
                 else
                 {
-                    Log.AddNodeLog(LID.NodeStructFrameData5, "Error 报错，不允许 解析Data有其它的类型出现!" + curNode.token.ToLexemeAllString());
+                    Log.AddNodeLog(LID.NodeStructFrameData5, curNode.token, "Error 报错，不允许 解析Data有其它的类型出现!" + curNode.token.ToLexemeAllString());
                 }
 
                 if (isParseEnd)
@@ -1978,7 +1978,7 @@ namespace SimpleLanguage.Compile
                         }
                         else
                         {
-                            Log.AddNodeLog(LID.NodeStructFrameEnumMemberIdentifier, "在解析enum member 中 成员变量 如果是identifier格式，则后边不允许跟当前格式");
+                            Log.AddNodeLog(LID.NodeStructFrameEnumMemberIdentifier, nextNode.token, "在解析enum member 中 成员变量 如果是identifier格式，则后边不允许跟当前格式");
                         }
                     }
                     else

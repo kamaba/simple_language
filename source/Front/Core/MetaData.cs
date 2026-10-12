@@ -217,7 +217,7 @@ namespace SimpleLanguage.Core
             m_FileMetaClass = fmc;
             if (fmc.memberVariableList.Count > 0 || fmc.memberFunctionList.Count > 0)
             {
-                Log.AddMetaCoreLog(LID.MetaCoreDataNotAllowHasFunction, "Error Data中不允许有Variable 和 Function!!");
+                Log.AddMetaCoreLog(LID.MetaCoreDataNotAllowHasFunction, fmc.token, "Error Data中不允许有Variable 和 Function!!");
             }
 
             bool isHave = false;
@@ -262,7 +262,7 @@ namespace SimpleLanguage.Core
                 var c = v.Value;
                 if (this.m_MetaMemberDataDict.ContainsKey(c.name))
                 {
-                    var ld = Log.AddMetaCoreLog(LID.MetaCoreDataExtend, $"Error 继承的类123:{m_AllName} 在继承的父类{m_ExtendClass?.allName} 中已包含:{c.name} ");
+                    var ld = Log.AddMetaCoreLog(LID.MetaCoreDataExtend, c.token, $"Error 继承的类123:{m_AllName} 在继承的父类{m_ExtendClass?.allName} 中已包含:{c.name} ");
                     //ld.valDict.Add(EMetaType.MetaClass, this);
                     //ld.valDict.Add(EMetaType.MetaExtendsClass, m_ExtendClass);
                     //ld.valDict.Add(EMetaType.MetaMemberVariable, c);

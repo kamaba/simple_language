@@ -217,7 +217,7 @@ namespace SimpleLanguage.Compile
             }
             else
             {
-                Log.AddTokenLog(LID.TokenParseNodeIssue2, "现在$符必须使用.$方式!!");
+                Log.AddTokenLog(LID.TokenParseNodeIssue2, "现在$符必须使用.$方式!!", token);
             }
             m_TokenIndex++;
             return null;
@@ -839,7 +839,7 @@ namespace SimpleLanguage.Compile
                     break;
                 default:
                     {
-                        Log.AddFileMetaLog(LID.FileMetaParseNodePathLineSource, string.Format("Path:{0} Line:{1} Source: {2}", token.path, token.sourceBeginLine,
+                        Log.AddFileMetaLog(LID.FileMetaParseNodePathLineSource, token, string.Format("Path:{0} Line:{1} Source: {2}", token.path, token.sourceBeginLine,
                             token.sourceBeginChar));
                         throw new Exception("不支持的语法 ");
                     }

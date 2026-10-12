@@ -813,7 +813,7 @@ namespace SimpleLanguage.Core
                 var mt = curMc.GetMetaTemplateByName(fmcd.stringList[0]);
                 if (mt == null)
                 {
-                    Log.AddMetaCoreLog(LID.MetaCoreTypeNotFound, $"没有找到模板类中，对应的模板，名称为{fmcd.stringList[0]}请仔细检查模板的命名与使用模板命名是否对应");//, fmcd.classNameToken );
+                    Log.AddMetaCoreLog(LID.MetaCoreTypeNotFound, fmcd.classNameToken, $"没有找到模板类中，对应的模板，名称为{fmcd.stringList[0]}请仔细检查模板的命名与使用模板命名是否对应");//, fmcd.classNameToken );
                 }
                 else
                 {
@@ -1818,7 +1818,7 @@ namespace SimpleLanguage.Core
                 {
                     return true;
                 }
-                Log.AddMetaCoreLog(LID.MetaCoreTypeParam, "模板参数[" + declaredMt.metaTemplate.name + "]的约束与实参类型不匹配");
+                Log.AddMetaCoreLog(LID.MetaCoreTypeParam, token, "模板参数[" + declaredMt.metaTemplate.name + "]的约束与实参类型不匹配");
                 return false;
             }
 

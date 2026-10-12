@@ -362,7 +362,7 @@ namespace SimpleLanguage.Core
                 {
                     if(findmc.isMetaNamespace || findmc.isMetaData || findmc.isMetaEnum )
                     {
-                        Log.AddMetaCoreLog(LID.MetaCoreClassManagerNotAllowNamespaceData, "Namespace/data/enum node already exists, duplicate class node is not allowed.");
+                        Log.AddMetaCoreLog(LID.MetaCoreClassManagerNotAllowNamespaceData, fmc.token, "Namespace/data/enum node already exists, duplicate class node is not allowed.");
                         return null;
                     }
 
@@ -422,7 +422,7 @@ namespace SimpleLanguage.Core
 
                     if (finalTopMetaNode == null )
                     {
-                        Log.AddMetaCoreLog(LID.MetaCoreClassManagerIssue, "???????????????????????????????????????!!");
+                        Log.AddMetaCoreLog(LID.MetaCoreClassManagerIssue, fmc.token, "???????????????????????????????????????!!");
                         return null;
                     }
                 }
@@ -525,7 +525,7 @@ namespace SimpleLanguage.Core
                         }
                         if (!fmc.isPartial)
                         {
-                            Log.AddMetaCoreLog(LID.MetaCoreClassManagerClass, "Class " + fmc.name + " at " + fmc.token.ToAllString() + " does not support parallel file definitions.");
+                            Log.AddMetaCoreLog(LID.MetaCoreClassManagerClass, fmc.token, "Class " + fmc.name + " at " + fmc.token.ToAllString() + " does not support parallel file definitions.");
                             return null;
                         }
                         bool isPartial = true;
@@ -534,7 +534,7 @@ namespace SimpleLanguage.Core
                             if (v.Value.isPartial == false)
                             {
                                 isPartial = false;
-                                Log.AddMetaCoreLog(LID.MetaCoreClassManagerClass2, "Class " + findamc.name + " at " + v.Value.token.ToAllString() + " does not support parallel file definitions.");
+                                Log.AddMetaCoreLog(LID.MetaCoreClassManagerClass2, v.Value.token, "Class " + findamc.name + " at " + v.Value.token.ToAllString() + " does not support parallel file definitions.");
                                 break;
                             }
                         }
@@ -676,7 +676,7 @@ namespace SimpleLanguage.Core
             {
                 if( v.Value == mc )
                 {
-                    Log.AddMetaCoreLog(LID.MetaCoreClassManagerIssue4, $"???????????:{mc.allName} ????????????????????!");
+                    Log.AddMetaCoreLog(LID.MetaCoreClassManagerIssue4, mc.token, $"???????????:{mc.allName} ????????????????????!");
                     return;
                 }
             }
@@ -945,7 +945,7 @@ namespace SimpleLanguage.Core
                 {
                     if (mb.isMetaNamespace )
                     {
-                        Log.AddMetaCoreLog(LID.MetaCoreClassManagerIssue5, "????????????????????????????????????????????????????????????!!");
+                        Log.AddMetaCoreLog(LID.MetaCoreClassManagerIssue5, fmcd.classNameToken, "????????????????????????????????????????????????????????????!!");
                         return null;
                     }
                     else if (mb.IsMetaClass() || mb.isMetaData || mb.isMetaEnum)

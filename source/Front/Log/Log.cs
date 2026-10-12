@@ -183,7 +183,7 @@ namespace SimpleLanguage.Logging
 
         public static LogData AddProjectLog(LID lid, string msg, Token token, string extendMessage = null)
         {
-            return WriteCoreByToken(lid, EErrorType.Project, token, null, ""); ;
+            return WriteCoreByToken(lid, EErrorType.Project, token, null, CombineExtendMessage(msg, extendMessage));
         }
         //--------------------------------Process----------------------------------------------
         public static LogData AddProcessLog(LID lid, string msg, params object[] par)
@@ -192,7 +192,7 @@ namespace SimpleLanguage.Logging
         }
         public static LogData AddProcessLog(LID lid, string msg, Token token, string extendMessage = null)
         {
-            return WriteCoreByToken(lid, EErrorType.Process, token, null, ""); ;
+            return WriteCoreByToken(lid, EErrorType.Process, token, null, CombineExtendMessage(msg, extendMessage));
         }
         //--------------------------------Token----------------------------------------------
         public static LogData AddTokenByString( LID lid, string path, int sLine, int sChar, int eLine, int eChar, string msg)
@@ -207,7 +207,7 @@ namespace SimpleLanguage.Logging
         }
         public static LogData AddTokenLog(LID lid, string msg, Token token, string extendMessage = null)
         {
-            return WriteCoreByToken(lid, EErrorType.ParseToken, token, null, ""); 
+            return WriteCoreByToken(lid, EErrorType.ParseToken, token, null, CombineExtendMessage(msg, extendMessage));
         }
 
         //--------------------------------Node----------------------------------------------
@@ -262,6 +262,20 @@ namespace SimpleLanguage.Logging
         {
             //return WriteCore(lid, LogData.EErrorType.ParseMeta, null, null, msg, args);
             return WriteCoreByToken(lid, EErrorType.GenIR, token, objs, msg);
+        }
+
+        /// <summary>合并 msg 与 extendMessage 为扩展消息（与 params 重载中 msg→extendMessage 的语义对齐）。</summary>
+        static string CombineExtendMessage(string msg, string extendMessage)
+        {
+            if (string.IsNullOrEmpty(msg))
+            {
+                return extendMessage;
+            }
+            if (string.IsNullOrEmpty(extendMessage))
+            {
+                return msg;
+            }
+            return msg + " " + extendMessage;
         }
 
         private static LogData WriteCoreByToken(

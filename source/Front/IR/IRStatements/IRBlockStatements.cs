@@ -209,14 +209,14 @@ namespace SimpleLanguage.IR
                         break;
                     case MetaAtSignLabelStatements mops:
                         {
-                            Log.AddIRLog(LID.IRMethodNotFoundVariable, null, "------------------没有解析IR的语句类型------------");
+                            Log.AddIRLog(LID.IRMethodNotFoundVariable, mops.token, null, "------------------没有解析IR的语句类型------------");
                             //MetaIRCSharpCallStatements mcsharpcsinst = new MetaCSharpCallStatements(mcsharpcs, )
                         }
                         break;
                     default:
                         {
                             /* 插桩：打出具体语句类型名（可观测性；正常语句类型应全部有显式 case） */
-                            Log.AddIRLog(LID.IRMethodNotFoundVariable, null,
+                            Log.AddIRLog(LID.IRMethodNotFoundVariable, nextmbs?.token, null,
                                 "------------------没有解析IR的语句类型------------ type=" +
                                 ((nextmbs != null) ? nextmbs.GetType().Name : "<null>"));
                         }

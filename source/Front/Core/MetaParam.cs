@@ -116,6 +116,8 @@ namespace SimpleLanguage.Core
         public string name => m_Name;
         public MetaVariable metaVariable => m_MetaVariable;
         public MetaExpressNodeBase expressNode => m_MetaExpressNode;
+        /// <summary>形参声明 Token（来自 FileMetaParamterDefine.token，ref module 导入路径为空）。</summary>
+        public Token token => m_Token;
         //public bool isFunctionTemplate => m_IsFunctionTemplate;
         public bool isMust { get { return m_MetaExpressNode == null && !m_HasExpressImported; } }
         public bool isExtendParams => m_FileMetaParamter?.paramsToken != null || m_ExtendParamsForced;
@@ -526,7 +528,7 @@ namespace SimpleLanguage.Core
                 // 只保留 isHasExpress 标志，因此必须用标志判断而不能用 expressNode。
                 if (!metaMemberParam.isHasExpress)
                 {
-                    Log.AddMetaCoreLog(LID.MetaCoreParamAddMetaDefineParam, "Error AddMetaDefineParam 参数前边已定义默认值，后边必须跟进默认值表达式!!");
+                    Log.AddMetaCoreLog(LID.MetaCoreParamAddMetaDefineParam, metaMemberParam.token, "Error AddMetaDefineParam 参数前边已定义默认值，后边必须跟进默认值表达式!!");
                 }
             }
             else if (metaMemberParam.isMust)

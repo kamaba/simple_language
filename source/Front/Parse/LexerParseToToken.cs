@@ -1424,7 +1424,7 @@ namespace SimpleLanguage.Compile
                 m_TempChar = ReadChar();
                 if (m_TempChar == END_CHAR)
                 {
-                    Log.AddTokenLog(LID.TokenLexerEndCharReached2, "end char reached before closing quote in string literal");
+                    Log.AddTokenLog(LID.TokenLexerEndCharReached2, "end char reached before closing quote in string literal", m_CurrentToken);
                     break;
                 }
 
@@ -1600,7 +1600,7 @@ namespace SimpleLanguage.Compile
                 m_TempChar = ReadChar();
                 if( m_TempChar == END_CHAR)
                 {
-                    Log.AddTokenLog( LID.TokenLexerEndCharReached3, "end char reached before closing quote in string literal");
+                    Log.AddTokenLog( LID.TokenLexerEndCharReached3, "end char reached before closing quote in string literal", m_CurrentToken);
                     break;
                 }
                 if (m_TempChar == '\\')
@@ -1635,7 +1635,7 @@ namespace SimpleLanguage.Compile
                                 break;
                             }
                         default:
-                            Log.AddTokenLog(LID.TokenLexerOtherCharNeed, "other char need handle" + m_CurChar);
+                            Log.AddTokenLog(LID.TokenLexerOtherCharNeed, "other char need handle" + m_CurChar, m_CurrentToken);
                             break;
                     }
                 }
