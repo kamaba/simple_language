@@ -1608,9 +1608,10 @@ namespace SimpleLanguage.Project
             // 否则 IR 阶段通过 virtualFunctionName 查找方法时会失败
             mmf.ParseDefineMetaType();
 
-            /* 回填白名单 attribute（DllStaticImport）：使引用方编译时 IRCall 能在静态
-             * 调用点读到该属性，发射 opcode 77 FFI 直调（跨模块快路径，不回填则退化为
-             * CallStatic 走纯 SL fallback 函数体）。只回填白名单，避免 Nickname/AOT/GPU
+            /* 回填白名单 attribute（DllStaticImport）：使引用方编译时
+             * AttributeManager.CompileHandler 仍能校验/打日志（P10 起
+             * 调用点改写移至 cvm 装配期 attribute 注册表，Front 不再消费
+             * 此回填做 IR 发射）。只回填白名单，避免 Nickname/AOT/GPU
              * 等属性在引用方重放编译期副作用。 */
             if (irm.refAttributeList != null)
             {

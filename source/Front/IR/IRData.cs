@@ -119,15 +119,6 @@ namespace SimpleLanguage.IR
                 return;
             }
 
-            // static FFI fast-call payload: binary SLFFIStaticCallPackage
-            // (lib/symbol/sig + fallback methodId); the CVM assembly build
-            // rewrites it into a 4-byte binding index once resolved.
-            if (opValue is SLFFIStaticCallPackage ffipkg)
-            {
-                Payload = EncodeBinaryFFIStatic(ffipkg);
-                return;
-            }
-
             // atsign label fast-call payload: binary SLAtSignLabelCallPackage
             // (entryIndex/paramCount/tryCatch/methodName/isVoid); the CVM
             // assembly build locates the module atSignLabel[] entry by
@@ -311,7 +302,11 @@ namespace SimpleLanguage.IR
         //   SystemMethod call payload (CallSystemMethod):
         //     [0x01][id:i32][paramCount:i32][systemMethodKind:i32][name:str]
         //
-        //   FFI static call payload (CallFFIStatic, pre-rewrite):
+        //   FFI static call payload (CallFFIStatic, legacy pre-P10 format):
+        //     Front 已停产（P10 起调用点由 cvm 装配期 attribute 注册表从
+        //     CallStatic 改写而来，payload 恒为 4 字节绑定索引）；cvm 解码器
+        //     (runtime_payload_binary.c vm_payload_parse_ffi) 保留双格式解析
+        //     以兼容存量 module.json：
         //     [0x01][methodId:i32][paramCount:i32][tryCatch:u8]
         //     [lib:str][symbol:str][sig:str][methodName:str]
         //
@@ -422,20 +417,6 @@ namespace SimpleLanguage.IR
             BinWriteI32(buf, pkg.paramCount);
             BinWriteI32(buf, pkg.systemMethodKind);
             BinWriteStr(buf, pkg.name);
-            return buf.ToArray();
-        }
-
-        private static byte[] EncodeBinaryFFIStatic(SLFFIStaticCallPackage pkg)
-        {
-            var buf = new List<byte>(96);
-            buf.Add(BinFormatV1);
-            BinWriteI32(buf, pkg.methodId);
-            BinWriteI32(buf, pkg.paramCount);
-            buf.Add(pkg.tryCatch ? (byte)1 : (byte)0);
-            BinWriteStr(buf, pkg.lib);
-            BinWriteStr(buf, pkg.symbol);
-            BinWriteStr(buf, pkg.sig);
-            BinWriteStr(buf, pkg.methodName);
             return buf.ToArray();
         }
 

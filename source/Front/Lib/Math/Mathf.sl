@@ -2,10 +2,10 @@
 #
 # 底层能力：由 math_lib.dll（C ABI，见 source\Front\Lib\Math\cvm_math_lib\math_lib.c）
 # 经 FFI @DllStaticImport 二参形式（静态注册名, 符号名）静态绑定：cvm 加载期按
-# Math.jsonc dllImports 的 "static" 字段预载注册，静态调用点由编译期发射
-# opcode 118 直调绑定表（sig 从函数签名自动推导），无 wrapper 委托转发开销；
-# 绑定失败（库未注册 / 符号缺失 / sig 非法）时回退执行函数本体（fallback 委托
-# Mathd 双精度实现后回转 Float32，链路同 Mathh 的中转模式）。
+# Math.jsonc dllImports 的 "static" 字段预载注册，静态调用点由 cvm 装配期 attribute
+# 注册表改写为 CallFFIStatic(77) 直调绑定表（sig 从函数签名自动推导），无 wrapper
+# 委托转发开销；绑定失败（库未注册 / 符号缺失 / sig 非法）时回退执行函数本体
+# （fallback 委托 Mathd 双精度实现后回转 Float32，链路同 Mathh 的中转模式）。
 # 纯算术能力（abs / min / max / clamp / sign ...）在 SL 层实现。
 #
 # 精度分组约定：

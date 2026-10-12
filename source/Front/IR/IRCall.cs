@@ -393,53 +393,12 @@ namespace SimpleLanguage.IR
             var irmethodcall = new IRMethodCall(irmt, functionMtList, m_IRRuntimeMethod, paramCount, tryCatch);
             if(callType == 0 )
             {
-                // @DllStaticImport 静态绑定 FFI 快速调用：目标函数声明带
-                // DllStaticImport attribute 且本次为静态调用时，发射
-                // CallFFIStatic(77)。payload 为 SLFFIStaticCallPackage（JSON），
-                // cvm assembly build 期解析静态库绑定（lib+symbol+sig ->
-                // FunctionHandle）并把 payload 改写为 4 字节绑定表索引，
-                // 运行期直接整合栈上参数调用 FFI；绑定失败时运行期按
-                // methodId 回退到原 SL 函数体（旧慢链路）。
-                MetaAttribute staticAttr = null;
-                if( mmf != null && mmf.attributeList != null )
-                {
-                    foreach( var attr in mmf.attributeList )
-                    {
-                        if( attr != null && attr.name == "DllStaticImport" )
-                        {
-                            staticAttr = attr;
-                            break;
-                        }
-                    }
-                }
-                if( staticAttr != null )
-                {
-                    var sargs = staticAttr.GetSplitStringArgs();
-                    string staticSig = sargs.Count >= 3 ? sargs[2]
-                        : Core.MetaDefineVarStatements.BuildFFIFunctionSigFromMetaFunction( mmf );
-                    if( sargs.Count >= 2 && !string.IsNullOrEmpty( staticSig ) )
-                    {
-                        var ffipkg = new SLFFIStaticCallPackage
-                        {
-                            lib = sargs[0],
-                            symbol = sargs[1],
-                            sig = staticSig,
-                            methodId = ClassManager.GetMethodId(m_IRRuntimeMethod.id ?? string.Empty),
-                            methodName = m_IRRuntimeMethod.onlyFunctionName ?? string.Empty,
-                            paramCount = paramCount,
-                            tryCatch = tryCatch,
-                        };
-                        IRData datacallffi = new IRData();
-                        datacallffi.opCode = EIROpCode.CallFFIStatic;
-                        datacallffi.SetOpValue(ffipkg);
-                        datacallffi.index = paramCount;
-                        ApplyCallInstructionDebug(datacallffi, mf, mfc);
-                        AddIRData(datacallffi);
-                        return;
-                    }
-                    Log.AddIRLog(LID.IRCallIssue, mfc.token,
-                        $"DllStaticImport: 函数[{mmf.functionAllName}] 需要 (静态库名, 符号名 [, sig]) 实参且 sig 可推导, 回退 CallStatic!!");
-                }
+                // @DllStaticImport 不在 Front 编译期改写调用点（ATTRIBUTE_DESIGN P10）：
+                // 调用点恒发 CallStatic(73)，attribute 数据（lib/symbol/sig，sig 由
+                // 导出端 Preload 补全）随方法 attributeList 导出；cvm 装配期
+                // vm_runtime_attribute 注册表按名+stage 发现并绑定，把命中调用点
+                // 改写为 CallFFIStatic(77) + 绑定索引（与 DllImport 同款机制），
+                // 绑定失败运行期回退本 SL 函数体（旧慢链路）。
                 IRData datacall = new IRData();
                 datacall.opCode = EIROpCode.CallStatic;
                 datacall.SetOpValue(irmethodcall);

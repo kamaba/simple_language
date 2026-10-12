@@ -13,11 +13,11 @@
   },
   // FFI 导入表（jsonc "dllImports" 段）。"static" 非空（静态注册名）时 cvm 加载
   // SL 模块即预载该库并注册进 FFI.StaticLibrary，@DllStaticImport("sl_mysql_lib",
-  // "slm_query") 静态调用点由编译期发射 opcode 118 直调绑定表（无 wrapper 委托
-  // 转发开销，sig 从函数签名自动推导：string->utf8 / Int64->i64 / Int32->i32 /
-  // bool->bool / void->void）。绑定失败（库未注册 / 符号缺失）时回退 SL 函数体兜底。
-  // "alias" 仍供 @DllImport 三参形式按别名解析 path（原样透传，运行时相对进程
-  // CWD 解析）。
+  // "slm_query") 静态调用点由 cvm 装配期 attribute 注册表改写为 CallFFIStatic(77)
+  // 直调绑定表（无 wrapper 委托转发开销，sig 从函数签名自动推导：string->utf8 /
+  // Int64->i64 / Int32->i32 / bool->bool / void->void）。绑定失败（库未注册 /
+  // 符号缺失）时回退 SL 函数体兜底。"alias" 仍供 @DllImport 三参形式按别名解析
+  // path（原样透传，运行时相对进程 CWD 解析）。
   "dllImports":
   [
     { "path": "../../out/export/SLMysql/sl_mysql_lib.dll", "name": "sl_mysql_lib", "alias": "sl_mysql_lib", "static": "sl_mysql_lib" }

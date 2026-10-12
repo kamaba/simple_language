@@ -29,7 +29,7 @@
 # 具体原因通过 conn.errorCode() / conn.errorMessage() 取得。
 #
 # 底层链路：
-#   SLMysql.sl ──@DllStaticImport(opcode 118)──> sl_mysql_lib.dll
+#   SLMysql.sl ──@DllStaticImport(CallFFIStatic 77)──> sl_mysql_lib.dll
 #              ──静态链接──────────────────────> MySQL Connector/C
 #                                                (mysqlclient.lib)
 # sl_mysql_lib.dll 把 MYSQL / MYSQL_RES 收敛为 Int64 句柄，把数据收敛为
