@@ -155,6 +155,49 @@ namespace SimpleLanguage.Core
         {
             m_FileMetaMemeberVariable = fmmv;
         }
+        /// <summary>
+        /// 成员变量定义期名称冲突自检（取代原 ProjectClass.CheckProjectMemberNameConflict
+        /// 后置检查——冲突检查是成员变量定义自身的职责，不在工程收尾阶段补查）。
+        /// 成员名需要避开两类名称：
+        ///   1. 语言关键字（含基本类型关键字 int/string/object...，与局部变量/参数名的
+        ///      关键字检查同源，见 StructParseToSyntax / FileMetaMemberFunction）；
+        ///   2. 定义文件 import 下可索引到的类名/命名空间名称——裸名解析时 import 平面
+        ///      先于类成员命中（MetaCallNode.GetFirstNode），重名成员会被遮蔽产生歧义。
+        /// 返回 true 表示冲突（已记录 Error），调用方应跳过该成员的注册。
+        /// </summary>
+        public bool CheckDefineNameConflict()
+        {
+            if (string.IsNullOrEmpty(m_Name))
+            {
+                return false;
+            }
+            // dllImports 合成持有类（___DllImportGlobal___）成员免检：
+            // 成员名 = jsonc dllImports 别名（如 alias "Std" 与被引用模块名相同是合法配置，
+            // 参见 ProjectReferenceModuleLoader 的引用模块别名合并），且仅经
+            // global.dllImport.<alias> 限定访问，不参与裸名解析平面，无遮蔽歧义。
+            if (this.ownerMetaClass != null
+                && this.ownerMetaClass.name == ProjectClass.DllImportHolderClassName)
+            {
+                return false;
+            }
+            // 关键字：成员名 token 必须是普通 Identifier（Key/Type 等关键字 token 不允许作成员名）
+            if (m_Token != null && m_Token.type != ETokenType.Identifier)
+            {
+                Log.AddMetaCoreLog(LID.NodeStructParseNameIsKeyword, m_Token,
+                    "Error 类成员变量定义的名称不允许使用关键字!! " + m_Token.ToLexemeAllString());
+                return true;
+            }
+            // 定义文件 import 下可索引到的类名/命名空间名称
+            var conflictMN = m_FileMetaMemeberVariable?.fileMeta?.FindImportIndexableMetaNode(m_Name);
+            if (conflictMN != null)
+            {
+                Log.AddMetaCoreLog(LID.MetaCoreMemberNameImportConflict, m_Token,
+                    "类成员名[{0}]与import下可索引的名称冲突: 与 {1} 重名，成员变量名需避开import引入的类/命名空间名称!!",
+                    m_Name, conflictMN.allName);
+                return true;
+            }
+            return false;
+        }
         public void SetVariableFrom(EVariableFrom vfrom)
         {
             m_VariableFrom = vfrom;

@@ -450,7 +450,7 @@ namespace SimpleLanguage.Core
                 this.m_Name = decl.name;
                 this.m_IsStatic = true;
                 isSystemVariadic = decl.isVariadic;
-                m_Index = (int)decl.Index();
+                m_Index = (int)decl.GetIndex();
                 m_MetaMemberParamCollection.Clear();
                 for (int i = 0; i < decl.paramMetaTypeList.Count; i++)
                 {

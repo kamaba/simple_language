@@ -1465,3 +1465,4 @@ id,logType,enableAssert,pass,paramCount,domesticTips,zhMessage,,zhFixedTips,enMe
 23014,Error,TRUE,FALSE,,,Error Enum方式不支持abstract的使用!!:,,abstract 是待继承实现语义，enum 无继承,,
 23015,Error,TRUE,FALSE,,,Error Data方式不支持abstract的使用!!:,,abstract 是待继承实现语义，data 无继承,,
 23016,Error,TRUE,FALSE,1,,Error typealias 别名[{0}]的目标类型已实例化，使用点不支持追加模板实参!!:,,typealias 目标是模板类时应在声明处写全实参（如 typealias IntList = List<int>），使用点 AliasName<...> 不允许再携带实参,,
+23017,Error,FALSE,FALSE,2,,类成员名[{0}]与import下可索引的名称冲突: 与 {1} 重名，成员变量名需避开import引入的类/命名空间名称!!,,裸名解析时 import 平面先于类成员命中，重名成员会被遮蔽；请为成员变量改名以避开 import 可索引名称。,,

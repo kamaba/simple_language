@@ -277,6 +277,67 @@ namespace SimpleLanguage.Compile
             }
             return mb;
         }
+        /// <summary>
+        /// 在文件 import 平面下查找与名称同名的可索引节点（查找平面与裸名解析
+        /// GetMetaNodeFileMetaClass 保持一致）：
+        ///   1. import as 别名（模块/命名空间别名）→ 指向的目标节点；
+        ///   2. import 的模块根/命名空间自身的名称 → 其自身节点；
+        ///   3. 其下直接子节点（类/data/enum/命名空间）——含被 import 命名空间的
+        ///      祖先链（裸名解析沿祖先链上溯，如 import Std:IO; 时 Std 根下的
+        ///      顶层名称同样可索引到）。
+        /// 未命中返回 null。供成员变量定义期名称冲突自检
+        /// （MetaMemberVariable.CheckDefineNameConflict）使用。
+        /// </summary>
+        public MetaNode FindImportIndexableMetaNode(string name)
+        {
+            if (string.IsNullOrEmpty(name))
+            {
+                return null;
+            }
+            // import as 别名
+            if (m_ImportAliasNodeDict.TryGetValue(name, out var aliasNode))
+            {
+                return aliasNode;
+            }
+            if (m_ImportAliasNamespaceDict.TryGetValue(name, out var aliasNamespace))
+            {
+                return aliasNamespace?.metaNode;
+            }
+            // import 的模块根（import Std;）：自身名称 + 直接子名
+            for (int i = 0; i < m_ImportMetaNodeList.Count; i++)
+            {
+                var moduleRoot = m_ImportMetaNodeList[i];
+                if (moduleRoot.name == name)
+                {
+                    return moduleRoot;
+                }
+                var findMN = moduleRoot.GetChildrenMetaNodeByName(name);
+                if (findMN != null)
+                {
+                    return findMN;
+                }
+            }
+            // import 的命名空间（import Std:IO;）：自身名称 + 自身/祖先链下的直接子名
+            for (int i = 0; i < m_ImportMetaNamespaceList.Count; i++)
+            {
+                var mns = m_ImportMetaNamespaceList[i];
+                if (mns.name == name)
+                {
+                    return mns.metaNode;
+                }
+                var searchMN = mns.metaNode;
+                while (searchMN != null)
+                {
+                    var findMN = searchMN.GetChildrenMetaNodeByName(name);
+                    if (findMN != null)
+                    {
+                        return findMN;
+                    }
+                    searchMN = searchMN.parentNode;
+                }
+            }
+            return null;
+        }
         public void CreateNamespace()
         {
             MetaNode parentNode = ModuleManager.instance.selfModule.metaNode;

@@ -1078,6 +1078,8 @@ namespace SimpleLanguage.Logging
         FileMetaClassDataAbstract = 23015,
         // ---- typealias 使用点校验（别名目标已实例化，使用点不可再追加模板实参）----
         MetaCoreTypeAliasTemplateArgsNotAllowed = 23016,
+        // ---- 成员变量定义期名称冲突自检（MetaMemberVariable.CheckDefineNameConflict）----
+        MetaCoreMemberNameImportConflict = 23017,
 
     }
 }

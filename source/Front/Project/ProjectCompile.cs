@@ -177,9 +177,6 @@ namespace SimpleLanguage.Project
                 {
                     fileParseList[i].CombineFileMeta();
                 }
-                // 所有文件的类型全部进入模块根后，统一校验 Project 成员
-                // 与 Module 下名称不冲突（覆盖跨文件定义顺序）。
-                ProjectClass.CheckProjectMemberNameConflict();
                 return true;
             });
             pm.AddStep(CompileProcess.ECompilePhase.MetaCore, "ParseMetaClassLink", () =>

@@ -231,6 +231,18 @@ d = f"""x=${ a + 1 }""";    # 三引号 f 形式仅支持 ${expr}
 2. `error` / `errmsg` 是 Result 机制保留名（见 [result.md](./result.md) §7），同样禁止作类成员声明名；
 3. 局部变量与参数不受限制（糖只劫持链首裸调用，不影响成员访问 `obj.map(...)` 与变量引用）。
 
+### 3.9 成员变量定义期名称冲突自检（LID 23017）
+
+成员变量在定义期自带名称冲突检查（`MetaMemberVariable.CheckDefineNameConflict`，MetaCore 层，跳过该成员注册），成员名需要避开两类名称：
+
+1. **语言关键字**（含基本类型关键字 `int` / `string` / `object` 等）：成员名 token 必须是普通标识符，与局部变量/参数名的关键字检查同源（LID 20287）；
+2. **定义文件 `import` 下可索引到的类名 / 命名空间名称**（LID 23017）：裸名解析时 import 平面先于类成员命中（`MetaCallNode.GetFirstNode`），重名成员会被遮蔽产生歧义。查找平面与裸名解析一致，包括 `import as` 别名、import 的模块根/命名空间自身名称及其下直接子名（如 `import Std;` 后成员名不可用 `Std`，`import Std:IO;` 后不可用 `IO` 及 Std 根下的顶层名称）。
+
+豁免与边界：
+
+- `dllImports` 合成持有类 `___DllImportGlobal___` 的成员（成员名 = jsonc 别名，如 alias `"Std"` 与模块名相同是合法配置）免检——仅经 `global.dllImport.<alias>` 限定访问，不参与裸名解析；
+- 旧的 `CheckProjectMemberNameConflict` 后置检查（Project 成员 vs Module 根名称）已移除；jsonc 注入成员（`global.data` / `global.macro` / `dllImports`）的模块根防护保留在注入期（`MetaClass.IsNameConflictWithModuleRoot`）。
+
 ---
 
 ## 4) 引用 Core 后直接可用的类型

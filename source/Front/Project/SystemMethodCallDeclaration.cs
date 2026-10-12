@@ -56,11 +56,6 @@ namespace SimpleLanguage.Core
             return CommonFunction.StringToIntHash(name);
         }
 
-        public int Index()
-        {
-            return GetIndex();
-        }
-
         public SystemMethodCallDeclaration( string name, MetaType ret, bool variadic, MetaType[] paramTypes, string cvmFunction = null, string className = null)
         {
             this.name = name;

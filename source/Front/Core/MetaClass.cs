@@ -1067,10 +1067,12 @@ namespace SimpleLanguage.Core
         }
         /// <summary>
         /// 检查名称是否与当前 Module 根下的名称（data/class/enum/namespace）冲突。
-        /// Project 成员（.sp 定义与 jsonc 注入）不允许与 Module 下的名称相同：
-        /// 引用方使用 ModuleName.name 限定访问时，模块根下的类型与 Project 成员
+        /// 仅用于 jsonc 注入成员（global.data / global.macro / dllImports）的注入期防护：
+        /// 引用方使用 ModuleName.name 限定访问时，模块根下的类型与注入成员
         /// 共用同一个查找平面，重名会在解析时产生歧义（如 Std.Pi 无法区分是
-        /// Std 模块下的类型还是 Project 定义的静态成员）。
+        /// Std 模块下的类型还是注入的静态成员）。
+        /// 源码定义成员（含 .sp Project 成员）的名称冲突由成员自身的定义期自检负责
+        /// （MetaMemberVariable.CheckDefineNameConflict：关键字 + import 下可索引名称）。
         /// </summary>
         public static bool IsNameConflictWithModuleRoot( string name, string memberKind )
         {
@@ -1154,11 +1156,13 @@ namespace SimpleLanguage.Core
                 }
                 else
                     isHave = false;
-                if (isProjectSpecialClass && IsNameConflictWithModuleRoot(v2.name, "成员变量"))
+                MetaMemberVariable mmv = new MetaMemberVariable(this, v2);
+                // 定义期名称冲突自检（成员变量自己的检查逻辑，见 MetaMemberVariable.CheckDefineNameConflict）：
+                // 名称需避开关键字与定义文件 import 下可索引到的类名/命名空间名。
+                if (mmv.CheckDefineNameConflict())
                 {
                     continue;
                 }
-                MetaMemberVariable mmv = new MetaMemberVariable(this, v2);
                 if (isProjectSpecialClass)
                 {
                     if (v2.staticToken != null || v2.constToken != null)
@@ -1196,11 +1200,6 @@ namespace SimpleLanguage.Core
                 if( mn != null )
                 {
                     Log.AddMetaCoreLog(LID.MetaCoreClassMetaClassMemberVarAndFunc3, v2.token, "Error MetaClass MemberVarAndFunc已有定义类: " + m_AllName + "中 已有: " + v2.token?.ToLexemeAllString() + "的元素!!");
-                    continue;
-                }
-
-                if (isProjectSpecialClass && IsNameConflictWithModuleRoot(v2.name, "成员函数"))
-                {
                     continue;
                 }
 
