@@ -1,0 +1,17 @@
+Project
+{
+    _main_()
+    {
+        WasmDemo.runMain()
+    }
+    _test_()
+    {
+        WasmDemo.runMain()
+    }
+    _before_()
+    {
+    }
+    _after_()
+    {
+    }
+}

@@ -61,11 +61,16 @@ sl_aot_skeleton_new_inner这个函数的话，原来的llvm生成的数据，是
 优化：
 1. 去掉int32/int64/...的一些初始化方法
 2. 去掉无用的init
-8. import 导入错误的显示
-10. 全局的typealias里边需要读取后，继承
+8. import 导入错误的显示 检查如果没有导出正确，需要有错误提示
+10. 全局的typealias里边需要读取后，继承 需要思考。
 优化cvm里边的加法的过程
+检查使用第三方库，是否有协议的法律问题
 
 增加Jit的支持，起码实现x86的平台
 增加对WebAssembly的支持，然后让网页上跑起来示例
+
+发布一个release版本然后跑起来。把slb集成进去
+
+制作vscode插件
 
 MLIR把结构体，也就是我设计 的class/data/enum 要转化成对应的 llvm.struct   在变的过程，最好还能在这个结构里边带上一些其它的信息，比较类的id, 名称, 如果模板类，需要把模板的成员也变成一个指针（Int64)放在里边 最好还有一个字段去描述这个指针的，这样，不可以使用llvm.struct 去对应我的class/data/enum 了 
