@@ -77,6 +77,19 @@ MyClass {
     _init_(Float32[] arr) { ... }
     ```
 
+    #### 1.3.1 空体无参构造调用的编译期省略（2026-10-13 实装）
+
+    构造函数体为空（形如 `_init_() { }`，含跨模块 SLIR 包内指令体为空/仅 Nop 的方法）且调用点**无实参**时，
+    Front 编译器不再发射构造调用指令（`Dup`+实参+`CallVirt _init_`），`NewObject`/`NewTemplateObject`
+    压入的新对象直接留在栈上，VM 侧完全不执行这次空调用。
+
+    - 判据单点：`MetaMemberFunction.isEmptyCtorBody`（本地空链方法体 / 跨模块 `isEmptyBodyFromRefModule`）
+    - 三处发射点统一接省略守卫：`IRExpress.IRNewExpress`（数组路径 + 普通类/泛型类路径）、
+      `IRMetaCallLink.ParseNewInCallLink`（链中 New，如 `HashSet<int>().add(...)` 的 receiver 构造）
+    - **带实参的空体构造不省略**：实参表达式可能含副作用，求值语义必须保留
+    - 安全性依据：SL 的 `new` 只调用解析出的单个构造函数（无隐式基类构造链），空体构造函数中
+      没有任何用户代码接触 `this`，省略调用语义不变；该判据同时供 ARC v1 非逃逸 new 局部认领复用
+
     ### 1.4 静态成员
     - 用 static 修饰，属于类本身
 

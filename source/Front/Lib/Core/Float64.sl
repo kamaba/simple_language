@@ -1,4 +1,4 @@
-import CSharp.System;
+# 历史遗留的 import CSharp.System; 所指命名空间并不存在（曾静默失败），随 import 错误严格化已移除。
 
 public class Float64 extends Num
 {

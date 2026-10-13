@@ -291,6 +291,8 @@
 
 引用插件（plugin.jsonc）时，其 `refModule` 段声明的模块与 systemCalls 会在 RefModule 阶段自动加载，无需在本工程重复声明。
 
+⚠ 引用模块未在本段声明、或声明了但尚未完成编译导出（其 `export.outputDir` 下无 `*.module.json`）时，源码中对该模块的 `import` 会报 **Error**（「没有找到 import 模块」）并**阻断编译、不导出 module.json**（2026-10-13 起，详见 `md/syntax/namespace.md`「import 导入失败的处理」）——请先编译被引用模块再编译本工程。
+
 ### 4.10 `dllImports[]`（兼容旧 `lib[]`）—— FFI 导入表
 
 顶层 `dllImports` 与旧顶层 `lib` 数组同构兼容（同一解析函数）。Front 侧合成持有类 `___DllImportGlobal___` + `global.dllImport.<alias>` 成员 + `global.<name>` 静态函数变量（经 `FFI.StaticLibrary.bindFunction` 程序化构造），并随 module.json `dllImports` 导出供引用方复用。

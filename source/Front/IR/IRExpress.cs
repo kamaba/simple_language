@@ -474,6 +474,22 @@ namespace SimpleLanguage.IR
             //IRNew irNew = new IRNew(irMethod, newObjIRMC);
             //AddIRRangeData(irNew.IRDataList);
         }
+
+        /// <summary>
+        /// 空体无参构造调用省略判定("无用 init"优化): ctor 方法体可证明为空
+        /// (形如 _init_() {}) 且无实参时, 构造调用(Dup+实参+CallVirt)为纯开销,
+        /// Front 侧直接不发射——SL 的 new 只调用解析出的单个 ctor(无隐式基类
+        /// ctor 链), 空体 ctor 无任何用户代码接触 this, 省略后 NewObject 压入的
+        /// 新对象原样留在栈上, 语义不变。带实参的空体 ctor 不省略: 实参表达式
+        /// 可能含副作用, 求值语义必须保留。空体判据见
+        /// MetaMemberFunction.isEmptyCtorBody(本地空链体 / 跨模块 SLIR 包空指令体)。
+        /// </summary>
+        private static bool SkipEmptyCtorCall(MetaNewObjectExpressNode mnoen)
+        {
+            return mnoen.metaMemberFunction.isEmptyCtorBody
+                && mnoen.metaInputParamList.Count == 0;
+        }
+
         public IRNewExpress(IRMethod irMethod, MetaNewObjectExpressNode mnoen ) : base(irMethod)
         {
             IRMetaClass owirmc = IRManager.GetIRMetaClassByMetaOwner(mnoen.ownerMetaBase);
@@ -496,7 +512,8 @@ namespace SimpleLanguage.IR
                 IRNew irNew = new IRNew(irMethod, irMetaType, 0 );
                 AddIRRangeData(irNew.IRDataList);
 
-                if (mnoen.metaMemberFunction != null)
+                // 空体无参 ctor: 省略 Dup+CallVirt, 新对象直接留在栈上
+                if (mnoen.metaMemberFunction != null && !SkipEmptyCtorCall(mnoen))
                 {
                     IRDup irdup = new IRDup(irMethod);
                     m_IRDataList.AddRange(irdup.IRDataList);
@@ -627,7 +644,8 @@ namespace SimpleLanguage.IR
                 //    //    }
                 //    //}
                 //}
-                if (mnoen.metaMemberFunction != null)
+                // 空体无参 ctor: 省略 Dup+CallVirt, 新对象直接留在栈上
+                if (mnoen.metaMemberFunction != null && !SkipEmptyCtorCall(mnoen))
                 {
                     IRDup irdup = new IRDup(irMethod);
                     m_IRDataList.AddRange(irdup.IRDataList);

@@ -61,7 +61,7 @@ namespace SimpleLanguage.IR
             // 被闭包捕获的局部(其 StoreLocal 会被改写为共享数组槽, 引用逃逸到堆上
             // 的闭包上下文数组)不认领。
             if (mnoen != null
-                && (mnoen.metaMemberFunction == null || IsEmptyCtorBody(mnoen.metaMemberFunction))
+                && (mnoen.metaMemberFunction == null || mnoen.metaMemberFunction.isEmptyCtorBody)
                 && ms.defineVarMetaVariable.variableFrom == MetaVariable.EVariableFrom.LocalStatement
                 && !IsClosureCapturedLocal(ms.defineVarMetaVariable))
             {
@@ -79,31 +79,6 @@ namespace SimpleLanguage.IR
             //    irStoreVar.data.SetDebugInfoByToken(m_FileMetaOpAssignSyntax.assignToken);
             //}
             m_IRStatements.Add(irStoreVar);
-        }
-
-        /// <summary>
-        /// ARC v1 判据: ctor 方法体是否可证明为空(无任何用户代码接触 this)。
-        /// SL 的 new 只调用解析出的单个 ctor(无隐式基类 ctor 链)，空体 ctor
-        /// 不可能让 this 逃逸，认领安全 (ARC_MEMORY_DESIGN §16-C)。
-        /// - 跨模块方法: Front 侧无方法体，空体证据 = BuildMetaMemberFunctionFromIR
-        ///   依据导出包 instructionList(为空或仅 Nop/Label)回填的
-        ///   isEmptyBodyFromRefModule；非空体一律 false 交 GC。
-        ///   (跨模块方法不回填 isConstructInitFunction，按名字识别 _init_)
-        /// - 本地方法: metaBlockStatements 非空且语句链为空(形如 _init_() {});
-        ///   metaBlockStatements == null(无体/未解析)保守不认领。
-        /// </summary>
-        private bool IsEmptyCtorBody(MetaMemberFunction mmf)
-        {
-            if (mmf.refFromType == RefFromType.RefModule)
-            {
-                return mmf.name == "_init_" && mmf.isEmptyBodyFromRefModule;
-            }
-            if (!mmf.isConstructInitFunction)
-            {
-                return false;
-            }
-            var mbs = mmf.metaBlockStatements;
-            return mbs != null && mbs.nextMetaStatements == null;
         }
 
         /// <summary>

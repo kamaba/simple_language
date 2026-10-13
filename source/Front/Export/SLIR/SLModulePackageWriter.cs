@@ -356,8 +356,9 @@ namespace SimpleLanguage.Export.SLIR
             }
         }
 
-        /// <summary>根据模块名生成稳定的 UUID（SHA256 前 16 字节的十六进制表示）。</summary>
-        private static string GenerateModuleUUID(string moduleName)
+        /// <summary>根据模块名生成稳定的 UUID（SHA256 前 16 字节的十六进制表示）。
+        /// 确定性：同模块名恒得同 uuid——导出侧（pkg.uuid）与 references 兜底共用。</summary>
+        internal static string GenerateModuleUUID(string moduleName)
         {
             var bytes = System.Security.Cryptography.SHA256.HashData(Encoding.UTF8.GetBytes(moduleName));
             var sb = new StringBuilder(32);
@@ -1129,10 +1130,22 @@ namespace SimpleLanguage.Export.SLIR
                             name = refSection.Name,
                             uuid = refSection.UUID,
                         };
-                        // 尝试从已加载的引用模块包中读取版本号和缺失的 uuid/name
+                        // 尝试从已加载的引用模块包中读取版本号并强制回填真实 uuid/name
                         TryFillReferenceFromLoadedPackage(refSection, refPkg);
-                        // 计算引用模块的相对路径（相对于导出文件所在目录）
-                        refPkg.path = ResolveReferencePath(refSection.Path, projectDir, exportDir);
+                        // uuid 必须写入（SLB_DESIGN §4.6 引用完整性）：包未加载时按
+                        // 模块名确定性兜底（与 pkg.uuid 同算法，装载校验两端一致）
+                        if (string.IsNullOrWhiteSpace(refPkg.uuid))
+                        {
+                            var refName = !string.IsNullOrWhiteSpace(refPkg.name)
+                                ? refPkg.name
+                                : InferReferenceModuleName(refSection.Path);
+                            refPkg.uuid = GenerateModuleUUID(refName);
+                        }
+                        // 计算引用模块的相对路径（相对于导出文件所在目录）；
+                        // 归一为 ".module" 基础后缀，实际 .slb/.json 由 VM 按当前
+                        // 读取偏好决定（SLB_DESIGN §7.4）
+                        refPkg.path = NormalizeModuleReferencePath(
+                            ResolveReferencePath(refSection.Path, projectDir, exportDir));
                         pkg.moduleReferences.Add(refPkg);
                     }
                 }
@@ -1283,8 +1296,10 @@ namespace SimpleLanguage.Export.SLIR
         }
 
         /// <summary>
-        /// 从已加载的引用模块包中补全引用信息（版本号、缺失的 uuid/name）。
+        /// 从已加载的引用模块包中补全引用信息（版本号、uuid/name）。
         /// 引用模块在 ProjectReferenceModuleLoader.LoadReferences 时已加载并缓存。
+        /// uuid 一律取实际包的值（覆盖 jsonc 手写声明）——references 必须写入
+        /// 被引用模块的真实 uuid，装载期校验以此为准。
         /// </summary>
         private static void TryFillReferenceFromLoadedPackage(
             ProjectConfig.ReferenceSection refSection,
@@ -1295,6 +1310,16 @@ namespace SimpleLanguage.Export.SLIR
             if (!string.IsNullOrWhiteSpace(refPkg.name))
             {
                 loadedPkg = ProjectReferenceModuleLoader.GetLoadedPackage(refPkg.name);
+                /* 剥掉 ".module.json" 等后缀重查（plugin refModule 注入的 Name
+                 * 带全文件名，包缓存 key 是纯模块名） */
+                if (loadedPkg == null)
+                {
+                    var bareName = InferReferenceModuleName(refPkg.name);
+                    if (!string.Equals(bareName, refPkg.name, StringComparison.Ordinal))
+                    {
+                        loadedPkg = ProjectReferenceModuleLoader.GetLoadedPackage(bareName);
+                    }
+                }
             }
             /* 如果按 name 没找到，遍历所有已加载的包，用 uuid 匹配。 */
             if (loadedPkg == null && !string.IsNullOrWhiteSpace(refPkg.uuid))
@@ -1306,11 +1331,54 @@ namespace SimpleLanguage.Export.SLIR
             {
                 if (string.IsNullOrWhiteSpace(refPkg.name))
                     refPkg.name = loadedPkg.moduleName;
-                if (string.IsNullOrWhiteSpace(refPkg.uuid))
+                if (!string.IsNullOrWhiteSpace(loadedPkg.uuid))
                     refPkg.uuid = loadedPkg.uuid;
                 refPkg.versionMain = loadedPkg.versionMain;
                 refPkg.versionSub = loadedPkg.versionSub;
                 refPkg.versionPatch = loadedPkg.versionPatch;
+            }
+        }
+
+        /// <summary>
+        /// 引用 path 归一为 ".module" 基础后缀：剥掉 ".module.json" / ".module.slb"
+        /// 尾部格式后缀（SLB_DESIGN §7.4——实际打开 slb 还是 json 由 VM 的读取
+        /// 偏好决定，导出侧只写基础名）。其余路径原样返回。
+        /// </summary>
+        private static string NormalizeModuleReferencePath(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path)) return path ?? string.Empty;
+            if (path.EndsWith(".module.json", StringComparison.OrdinalIgnoreCase))
+                return path.Substring(0, path.Length - ".module.json".Length) + ".module";
+            if (path.EndsWith(".module.slb", StringComparison.OrdinalIgnoreCase))
+                return path.Substring(0, path.Length - ".module.slb".Length) + ".module";
+            return path;
+        }
+
+        /// <summary>
+        /// 从 references[].path 推断被引用模块名（uuid 兜底生成用）：
+        /// 取最后一段的文件名并剥掉 .module/.json 等后缀，如
+        /// "../../out/export/Core" / "../Std/Std.module.json" → "Core"/"Std"。
+        /// </summary>
+        private static string InferReferenceModuleName(string refPath)
+        {
+            if (string.IsNullOrWhiteSpace(refPath)) return "module";
+            try
+            {
+                var name = Path.GetFileName(refPath.TrimEnd('/', '\\'));
+                if (string.IsNullOrWhiteSpace(name)) return "module";
+                if (name.EndsWith(".module.json", StringComparison.OrdinalIgnoreCase))
+                    name = name.Substring(0, name.Length - ".module.json".Length);
+                else if (name.EndsWith(".module.slb", StringComparison.OrdinalIgnoreCase))
+                    name = name.Substring(0, name.Length - ".module.slb".Length);
+                else if (name.EndsWith(".module", StringComparison.OrdinalIgnoreCase))
+                    name = name.Substring(0, name.Length - ".module".Length);
+                else if (name.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+                    name = name.Substring(0, name.Length - ".json".Length);
+                return string.IsNullOrWhiteSpace(name) ? "module" : name;
+            }
+            catch
+            {
+                return "module";
             }
         }
 
@@ -1328,10 +1396,15 @@ namespace SimpleLanguage.Export.SLIR
                 var refAbsPath = Path.IsPathRooted(refPath)
                     ? refPath
                     : Path.GetFullPath(Path.Combine(projectDir, refPath));
-                /* 如果是目录，尝试找到其中的 .module.json */
+                /* 如果是目录，尝试找到其中的模块产物（slb 主产物优先，json 调试副本
+                 * 兜底；归一后缀由调用方 NormalizeModuleReferencePath 统一处理） */
                 if (Directory.Exists(refAbsPath))
                 {
-                    var files = Directory.GetFiles(refAbsPath, "*.module.json");
+                    var files = Directory.GetFiles(refAbsPath, "*.module.slb");
+                    if (files.Length == 0)
+                    {
+                        files = Directory.GetFiles(refAbsPath, "*.module.json");
+                    }
                     if (files.Length > 0)
                     {
                         refAbsPath = files[0];

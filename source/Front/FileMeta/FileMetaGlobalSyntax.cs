@@ -58,7 +58,10 @@ namespace SimpleLanguage.Compile
 
             if (namespaceNameNode?.token?.type == ETokenType.String)
             {
-                ParseStringImportTarget(namespaceNameNode.token);
+                if (!ParseStringImportTarget(namespaceNameNode.token))
+                {
+                    return false;
+                }
             }
             else
             {
@@ -75,10 +78,15 @@ namespace SimpleLanguage.Compile
             }
 
             m_NamespaceStatement = NamespaceStatementBlock.CreateStateBlock(m_ImportNameListToken);
+            if (m_NamespaceStatement == null)
+            {
+                // CreateStateBlock 内部已打出命名空间格式错误日志（FileMetaCommonX/X2），此处不再重复
+                return false;
+            }
             return true;
         }
 
-        private void ParseStringImportTarget(Token targetToken)
+        private bool ParseStringImportTarget(Token targetToken)
         {
             var text = targetToken?.lexeme?.ToString() ?? string.Empty;
             text = text.Trim();
@@ -102,10 +110,11 @@ namespace SimpleLanguage.Compile
             if (string.IsNullOrWhiteSpace(m_ImportNamespaceName))
             {
                 Log.AddFileMetaLog(LID.FileMetaGlobalSyntaxImport2, targetToken, "Error import 字符串中没有命名空间名称");
-                return;
+                return false;
             }
 
             m_ImportNameListToken = BuildNamespaceTokens(targetToken, m_ImportNamespaceName);
+            return true;
         }
 
         private static List<Token> BuildNamespaceTokens(Token sourceToken, string namespaceName)
@@ -147,7 +156,11 @@ namespace SimpleLanguage.Compile
 
         public void Parse()
         {
-            ParseImportSyntax();
+            if (!ParseImportSyntax())
+            {
+                // import 语句形态非法，错误已在 ParseImportSyntax 内打出（Error 且 pass=FALSE，计入 errorCount 阻断编译）
+                return;
+            }
 
             MetaNode mb = ResolveImportMetaNode();
             if (mb == null)
@@ -185,6 +198,9 @@ namespace SimpleLanguage.Compile
         {
             if (m_NamespaceStatement == null || m_NamespaceStatement.tokenList.Count == 0)
             {
+                // 此前无任何日志的静默失败路径（如 import 目标为空），补首发错误提示
+                Log.AddFileMetaLog(LID.FileMetaGlobalSyntaxImport5, m_Token,
+                    "import 语句没有可解析的命名空间目标: " + (m_ImportNamespaceName ?? string.Empty));
                 return null;
             }
 
@@ -223,7 +239,13 @@ namespace SimpleLanguage.Compile
                 var findmb = mb.GetChildrenMetaNodeByName(name);
                 if (findmb == null)
                 {
-                    Log.AddFileMetaLog(LID.FileMetaGlobalSyntaxNotFound, m_NamespaceStatement.tokenList[i], $"文件:{m_NamespaceStatement.tokenList[i].path} 没有找到:{mb.allName} 下的:{name}");
+                    // 首段不是已加载模块时回退到自身模块搜索，误报为"自身模块下不存在"；
+                    // 补充提示首段可能是未引用/未导出的模块名，避免误导
+                    string hint = (i == 0 && string.IsNullOrWhiteSpace(m_ModuleName))
+                        ? $"（若 '{name}' 是模块名，请确认它已在工程 .jsonc 的 references 中声明并完成编译导出）"
+                        : string.Empty;
+                    Log.AddFileMetaLog(LID.FileMetaGlobalSyntaxNotFound, m_NamespaceStatement.tokenList[i],
+                        $"文件:{m_NamespaceStatement.tokenList[i].path} 没有找到:{mb.allName} 下的:{name}{hint}");
                     return null;
                 }
                 mb = findmb;

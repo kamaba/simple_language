@@ -468,6 +468,13 @@ namespace SimpleLanguage.Core.IR
                 return;
             }
 
+            // 空体无参 ctor("无用 init"优化, 同 IRNewExpress.SkipEmptyCtorCall):
+            // 省略 Dup+实参+CallVirt, 新对象已在栈上直接作为链中后续 receiver
+            if (mmf.isEmptyCtorBody && cnode.methodCall.metaInputParamList.Count == 0)
+            {
+                return;
+            }
+
             // Dup 复制引用：CallVirt 构造消费一份，栈上保留一份作为链中后续 receiver
             irList.Add(new IRDup(_irMethod));
 

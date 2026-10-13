@@ -240,6 +240,36 @@ namespace SimpleLanguage.Core
         /// instructionList 结构回填：为空或仅 Nop/Label）。空体 ctor 不可能让 this 逃逸，
         /// 是 ARC 认领的安全证据 (ARC_MEMORY_DESIGN §16-C)。本地编译方法恒为 false。</summary>
         public bool isEmptyBodyFromRefModule => m_IsEmptyBodyFromRefModule;
+
+        /// <summary>
+        /// ctor 方法体是否可证明为空(形如 _init_() {})——"无用 init"判据, 双消费方:
+        /// ① ARC v1 认领非逃逸 new 局部 (ARC_MEMORY_DESIGN §16-C)；
+        /// ② IR 层省略空体构造调用发射(省 Dup+CallVirt 纯开销, 仅限无实参场景)。
+        /// SL 的 new 只调用解析出的单个 ctor(无隐式基类 ctor 链)，空体 ctor 不可能
+        /// 让 this 逃逸、无任何副作用，省略调用安全。
+        /// - 跨模块方法: Front 侧无方法体，空体证据 = BuildMetaMemberFunctionFromIR
+        ///   依据导出包 instructionList(为空或仅 Nop/Label)回填的
+        ///   isEmptyBodyFromRefModule；非空体一律 false。
+        ///   (跨模块方法不回填 isConstructInitFunction，按名字识别 _init_)
+        /// - 本地方法: metaBlockStatements 非空且语句链为空(形如 _init_() {})；
+        ///   metaBlockStatements == null(无体/未解析)保守视为非空。
+        /// </summary>
+        public bool isEmptyCtorBody
+        {
+            get
+            {
+                if (refFromType == RefFromType.RefModule)
+                {
+                    return name == "_init_" && isEmptyBodyFromRefModule;
+                }
+                if (!isConstructInitFunction)
+                {
+                    return false;
+                }
+                var mbs = metaBlockStatements;
+                return mbs != null && mbs.nextMetaStatements == null;
+            }
+        }
         public bool isGet => m_IsGet;
         public bool isSet => m_IsSet;
         public bool isFinal => m_IsFinal;
