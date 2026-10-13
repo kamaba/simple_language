@@ -693,7 +693,7 @@ id,logType,enableAssert,pass,paramCount,domesticTips,zhMessage,,zhFixedTips,enMe
 20220,Info,FALSE,TRUE,0,,在namespace不允许有attribute,,,,
 20221,Info,FALSE,TRUE,0,,Error 对于 namespace A.B{}的格式 多了一个参数!1,,,,
 20222,Info,FALSE,TRUE,0,,Error 没有发现是Class还是Namespace的关键字!,,,,
-20223,Info,FALSE,TRUE,0,,Error 类体内的 typealias 仅允许出现在 .sp 工程的 Project 类中,,,,
+20223,Info,FALSE,TRUE,0,,Error 类体内不允许 typealias，只能写在类外的文件顶级,,,,
 20224,Info,FALSE,TRUE,0,,Error StructParseFrame.ParseClassNode 解析的类后边不用使用;号结尾!!,,,,
 20225,Info,FALSE,TRUE,0,,Error ParseClassNode 不允许2在解释Class的时候，有错误 的语法--------------------,,,,
 20226,Info,FALSE,TRUE,0,,Error class 内部不允许使用 interface 修饰函数,,,,

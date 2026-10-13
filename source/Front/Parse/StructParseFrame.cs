@@ -318,7 +318,10 @@ namespace SimpleLanguage.Compile
                                     pnode.parseIndex++;
                                     break;
                                 }
-                                int ni = ConsumeTypeAliasAt(m_RootNode, pnode.parseIndex, false);
+                                // .sp 工程入口文件的顶级 typealias 属于 Project 声明区 → 注册为工程级（全工程可见）；其余文件保持文件级
+                                bool isSpProjectFile = m_FileMeta.path != null
+                                    && m_FileMeta.path.EndsWith(".sp", StringComparison.OrdinalIgnoreCase);
+                                int ni = ConsumeTypeAliasAt(m_RootNode, pnode.parseIndex, isSpProjectFile);
                                 if (ni > pnode.parseIndex)
                                     pnode.parseIndex = ni;
                                 else
@@ -377,6 +380,8 @@ namespace SimpleLanguage.Compile
                 }
                 else if (node.nodeType == ENodeType.IdentifierLink)
                 {
+                    // 无关键字顶级类（如 .sp 的 Project{}）也是类 → 其后不再允许 typealias/local 等顶级声明区语法
+                    hasNamespaceOrClass = true;
                     ParseNamespaceOrTopClass(pnode);
                 }
                 else
@@ -1010,6 +1015,20 @@ namespace SimpleLanguage.Compile
                 //}
                 if (curNode.nodeType == ENodeType.Key)
                 {
+                    if (curNode.token.type == ETokenType.TypeAlias)
+                    {
+                        // typealias 属于顶级声明区语法：走到类/namespace 头解析流中必为位置错误（首个 class/namespace 之后）。
+                        // 报 20204 并跳过整条语句，不注册别名，交由后续节点继续正常解析。
+                        Log.AddNodeLog(LID.NodeStructFrameTypealiasImportLocal, curNode.token, "Error typealias 只能写在 import/local 后、namespace/class/data/enum 前");
+                        while (index < pnode.childList.Count)
+                        {
+                            var skipNode = pnode.childList[index];
+                            index++;
+                            if (skipNode.nodeType == ENodeType.LineEnd || skipNode.nodeType == ENodeType.SemiColon)
+                                break;
+                        }
+                        continue;
+                    }
                     if (curNode.token.type == ETokenType.Namespace)
                     {
                         isClass = 2;
@@ -1154,19 +1173,9 @@ namespace SimpleLanguage.Compile
                 var peekNode = pnode.childList[index];
                 if (peekNode.nodeType == ENodeType.Key && peekNode.token?.type == ETokenType.TypeAlias)
                 {
-                    if (m_FileMeta.path == null || !m_FileMeta.path.EndsWith(".sp", StringComparison.OrdinalIgnoreCase)
-                        || currentNodeInfo?.codeClass == null
-                        || !string.Equals(currentNodeInfo.codeClass.name, "Project", StringComparison.Ordinal))
-                    {
-                        Log.AddNodeLog(LID.NodeStructFrameTypealiasSpProject, peekNode.token, "Error 类体内的 typealias 仅允许出现在 .sp 工程的 Project 类中");
-                        index++;
-                        continue;
-                    }
-                    int ni = ConsumeTypeAliasAt(pnode, index, true);
-                    if (ni > index)
-                        index = ni;
-                    else
-                        index++;
+                    // typealias 只允许写在类外的文件顶级（.sp 顶级 = 工程级），类体内一律不允许
+                    Log.AddNodeLog(LID.NodeStructFrameTypealiasSpProject, peekNode.token, "Error 类体内不允许 typealias，只能写在类外的文件顶级");
+                    index++;
                     continue;
                 }
 

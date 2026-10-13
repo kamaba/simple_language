@@ -125,7 +125,7 @@ AliasProbeTests
         Console.println( "LibFuncTA(3,4) = " + f( 3, 4 ).toString() )
     }
 
-    # ---- 工程级(.sp Project 体内) typealias 跨文件可见性 ----
+    # ---- 工程级(.sp 顶级) typealias 跨文件可见性 ----
     static typeAliasProjectScopeTest()
     {
         Console.println( "----- typealias project scope (cross file) -----" )
@@ -134,5 +134,11 @@ AliasProbeTests
         Console.println( "SpIntList[0] = " + pl[0].toString() )
         SpAliasAlpha pa = SpAliasAlpha( 9 )
         Console.println( "SpAliasAlpha(9).x = " + pa.x.toString() )
+        # .sp 顶级（Project 声明区）typealias 跨文件可见性
+        SpTopKV tkv = SpTopKV()
+        tkv.add( "k", "v" )
+        Console.println( "SpTopKV[k] = " + tkv._getItem_( "k" ) )
+        SpTopAlpha tpa = SpTopAlpha( 10 )
+        Console.println( "SpTopAlpha(10).x = " + tpa.x.toString() )
     }
 }

@@ -63,18 +63,22 @@ public class MyLib
 
 文件级别名仅在本文件内可见（解析优先级最高）。
 
-### 2. 工程级（仅 `.sp` 的 `Project` 类体内）
+### 2. 工程级（仅 `.sp` 顶级 · Project 声明区）
 
-写在 `.sp` 工程文件的 **`Project` 类体** 中（注意：是类体直接成员，不是 `Global(){} `函数体内），对工程内所有源文件可见：
+写在 `.sp` 工程文件的**顶级**（`import` 之后、首个 `Project{}` 类之前），属于 Project 声明区，对工程内所有源文件可见：
 
 ```sl
 file:My.sp
-typealias SpIntList = List<int>      # ← .sp 顶级（属于 Project 声明区）
+typealias SpIntList = List<int>      # ← .sp 顶级 = 工程级
 typealias SpAliasAlpha = AliasNS.Sub.Alpha
+typealias SpKV = Map<string,string>
 
 Project
 {
-    typealias SpKV = Map<string,string>   # ← Project 类体内
+    _main_()
+    {
+        ...
+    }
 }
 ```
 
@@ -82,9 +86,9 @@ Project
 
 ### 禁止的位置
 
+- 任何**类体内**——包括 `.sp` 的 `Project` 类体（报错 LID 20223）
 - 类的方法体 / `Global()` 等函数体内部
-- `.sl` 文件的 `namespace` / `class` / `data` / `enum` 之后（文件级声明区结束）
-- 非 `.sp` 工程文件的类体内（报错：仅允许出现在 .sp 工程的 Project 类中）
+- 首个 `namespace` / `class`（含无关键字类 `Project{}`）/ `data` / `enum` 之后——文件级声明区结束（报错 LID 20204）
 
 ---
 
@@ -93,7 +97,7 @@ Project
 编译器解析类型名时按以下顺序查找 `typealias` 别名（命中即停止）：
 
 ```
-当前文件局部别名 → 工程级别名(.sp Project) → 内置全局别名
+当前文件局部别名 → 工程级别名(.sp 顶级) → 内置全局别名
 ```
 
 - 别名是**编译期符号替换**：`AliasName` 等价于直接书写目标类型，不产生新的 `MetaClass` / `RuntimeClass`。
@@ -188,7 +192,7 @@ LibBoxInt<string> b = null    # ✗ 报错（LID 23016）
 | LID | 错误码 | 场景与文案 |
 |-----|--------|-----------|
 | NodeStructFrameTypealiasImportLocal | 20204 | 文件级位置错误：`typealias 只能写在 import/local 后、namespace/class/data/enum 前` |
-| NodeStructFrameTypealiasSpProject | 20223 | 类体内位置错误：`类体内的 typealias 仅允许出现在 .sp 工程的 Project 类中` |
+| NodeStructFrameTypealiasSpProject | 20223 | 类体内位置错误：`类体内不允许 typealias，只能写在类外的文件顶级` |
 | NodeStructFrameTypealias | 20209 | `typealias 后缺少别名与类型` |
 | NodeStructFrameTypealias2 | 20210 | `typealias 后应为单个标识符别名` |
 | NodeStructFrameTypealias3 | 20211 | `typealias 缺少 = 与目标类型` |

@@ -8,11 +8,7 @@ TankGame.sl 引入Math类。把一些 二维的都使用Int32_2 Int32_3
 写更多的使用用例，测试cvm的功能点。
 jsonc整体，增加 AOT, Mix, PureCVM,
 
-现在需要allinone的工程，发布两种包，一种是 debug/release debug包含 module.json/slb 文件  release 只包括必须的slb文件  还有必须的一些.exe 或者是.dll 一类的 
-这个就是正式发布的包了  然后以后尽量使用 这个工程进行跑  这个的制作过程，都写到这个工程里边的代码里边，只要一跑工程，就先编译相关的文件，然后放到对应的目录
-
-
-要优化cvm 现在要把irCode统计出来，先确定每个指令使用的数量评估，评估后，然后列出，需要优化的概率，然后再进行优化。
+frontend然后再进行优化。
 
 官方第三方库:
 libcurl
@@ -55,12 +51,10 @@ bool 运算
 sl_aot_skeleton_new_inner这个函数的话，原来的llvm生成的数据，是不是可以在转换的类中 member_data可以复用，然后 这个VMObject不进行gc拖管更合理。
 
 优化：
-10. 全局的typealias里边需要读取后，继承 需要思考。
 优化cvm里边的加法的过程
 检查使用第三方库，是否有协议的法律问题
 
 增加Jit的支持，起码实现x86的平台
-增加对WebAssembly的支持，然后让网页上跑起来示例
 
 发布一个release版本然后跑起来。把slb集成进去
 
