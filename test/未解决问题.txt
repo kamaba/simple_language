@@ -8,6 +8,8 @@ TankGame.sl 引入Math类。把一些 二维的都使用Int32_2 Int32_3
 写更多的使用用例，测试cvm的功能点。
 jsonc整体，增加 AOT, Mix, PureCVM,
 
+如果开了o2+ 需要把静态字段，还有全局进行优化 现在的SOpCode_LoadGlobal,OpCode_StoreGlobal 这两还没有用起来，这两我的想法是，把const的字段，还有全局global的字段，都存到这里边去，  是全局的global,所以 s_global_entries 要变成一个动态的    然后使用 const的静态字段，还有global的字段，在初始化完后进入了global里边，当然FrontEnd前端应该也有对应的改动吧，就不能使用原来的指令了，你先出个md文档，然后再 你先评估下 这个方案如何吧
+
 frontend然后再进行优化。
 
 官方第三方库:
@@ -49,6 +51,8 @@ bool 运算
 
 
 sl_aot_skeleton_new_inner这个函数的话，原来的llvm生成的数据，是不是可以在转换的类中 member_data可以复用，然后 这个VMObject不进行gc拖管更合理。
+检查runtime是否能反编译，是否要打包加固
+
 
 优化：
 优化cvm里边的加法的过程
