@@ -26,6 +26,16 @@ namespace SimpleLanguage.IR
         public Dictionary<int, string> IRStringDict = new Dictionary<int,string>();
         public List<IRMetaVariable> globalStaticVariableList => m_GlobalStaticVariableList;
 
+        /* P2 GLOBAL_SLOT（GLOBAL_SLOT_DESIGN.md §5.4）：global id → 登记标记集合，
+         * IRVariable Load/Store 静态分支据此直发 LoadGlobal(26)/StoreGlobal(38)。
+         * AddGlobalMetaMemberVariable 登记（与列表同步）；ResetGlobalStaticVariableList
+         * 由 ProjectManager.Run 编译入口清空——IRManager 单例跨编译驻留，防跨模块累积。 */
+        private HashSet<int> m_GlobalStaticVariableIdSet = new HashSet<int>();
+        public bool IsGlobalStaticMetaVariable(MetaVariable mv)
+        {
+            return mv != null && m_GlobalStaticVariableIdSet.Contains(mv.GetHashCode());
+        }
+
         private List<IRMetaVariable> m_GlobalStaticVariableList = new List<IRMetaVariable>();
 
         private List<IRMetaClass> m_IRMetaClassList = new List<IRMetaClass>();
@@ -557,6 +567,12 @@ namespace SimpleLanguage.IR
         public void AddGlobalMetaMemberVariable( IRMetaVariable irmv )
         {
             m_GlobalStaticVariableList.Add(irmv);
+            m_GlobalStaticVariableIdSet.Add(irmv.id);
+        }
+        public void ResetGlobalStaticVariableList()
+        {
+            m_GlobalStaticVariableList.Clear();
+            m_GlobalStaticVariableIdSet.Clear();
         }
         public int AddStringIRStack( string strMsg )
         {

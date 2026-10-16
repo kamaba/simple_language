@@ -389,21 +389,32 @@ namespace SimpleLanguage.IR
                 var v = staticMetaMemberVariables[i];
 
                 IRMetaVariable irmv = new IRMetaVariable(this, v, i);
-                //bool isProjectLikeClass = OwnerMetaClass != null
-                //    && OwnerMetaClass.name == "Project"
-                //    && !string.IsNullOrEmpty(this.m_SourcePath)
-                //    && this.m_SourcePath.EndsWith(".sp", System.StringComparison.OrdinalIgnoreCase);
-
-                // const 鎴愬憳闇€瑕佽繘鍏?globalStaticVariableList锛岀敱 VM 鍦ㄥ叏灞€闃舵鍒濆鍖栵紙涓庛€岄潪 Project/闈炴ā鏉块潤鎬併€嶈矾寰勪竴鑷达級銆?
-                // 鑻ュ悓鏃舵斁杩?staticIRMetaVariableList锛屼細涓庡叏灞€鍒濆鍖栭噸澶嶃€?
-                //if (v.isConst || isProjectLikeClass )
-                //{
-                //    IRManager.instance.AddGlobalMetaMemberVariable(irmv);
-                //}
-                //else// if ( v.realMetaType.GenTemplateIsIncludeTemplate())
-                //{
-                //}
-
+                /* P2 GLOBAL_SLOT（GLOBAL_SLOT_DESIGN.md §5.4，-O2+ 直发）：const 静态成员 +
+                 * .sp Project 类静态成员（含 jsonc global.data 注入的原始类型字段）登记进
+                 * globalStaticVariableList：① 导出 GLOBAL 段 → C VM 装配期建槽位表（§5.2/§5.3）；
+                 * ② IRVariable Load/Store 静态分支据此直发 LoadGlobal(26)/StoreGlobal(38)
+                 * （payload=global id，装配期改写为槽号 §5.5）。
+                 * 排除模板类（源类 metaTemplateList 非空 + 实例化 MetaGenTemplateClass）静态：
+                 * 实例化集合运行期才闭合，C 侧按 ownerClassId 解析 RuntimeType 会失败，
+                 * 直发指令将无法改写为槽号（§6-1 永久保留类型树路径）；
+                 * ref module 类经 isRefModulePreBuilt 跳过本函数，天然排除。
+                 * 与静态初始化不互斥：C VM 不执行 GLOBAL 段 express（仅调试镜像），
+                 * 静态成员初始化仍由 CreateStaticMetaMetaVariableIRList 的 StoreStaticField
+                 * 唯一驱动（§5.4-4 不双驱动）。 */
+                bool isProjectLikeClass = OwnerMetaClass != null
+                    && OwnerMetaClass.name == "Project"
+                    && !string.IsNullOrEmpty(m_SourcePath)
+                    && m_SourcePath.EndsWith(".sp", System.StringComparison.OrdinalIgnoreCase);
+                bool isTemplateOwnerClass = (mc is MetaGenTemplateClass)
+                    || (mc.metaTemplateList != null && mc.metaTemplateList.Count > 0);
+                if (SimpleLanguage.Project.ProjectManager.optimizeLevel >= 2
+                    && !isTemplateOwnerClass
+                    && (v.isConst || isProjectLikeClass))
+                {
+                    IRManager.instance.AddGlobalMetaMemberVariable(irmv);
+                }
+                /* 静态列表填充保留：静态成员初始化（CreateStaticMetaMetaVariableIRList）与
+                 * -O0/-O1 访问点兜底路径（LoadStaticField/StoreStaticField）都依赖它。 */
                 m_StaticIRMetaVariableList.Add(irmv);
                 AddMetaMemberVariableIndexBindHashCode(v.GetHashCode(), i);
                 if (v is MetaMemberVariable mmv && mmv.sourceMetaMemberVariable != null)

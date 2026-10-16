@@ -120,22 +120,20 @@ namespace SimpleLanguage.IR
                         return constLoadVar;
                     }
 
-                    //if (mv.realMetaType.GenTemplateIsIncludeTemplate())
-                    //{
-                    //    if (index == -1)
-                    //    {
-                    //        Log.AddIRLog(LID.IRVariableIndex, "没有找到对应成员变量的Index");
-                    //        return null;
-                    //    }
-                    //    IRLoadVariable irVar = new IRLoadVariable(irmt, _irMethod, index, IRMetaVariableFrom.Static);
-                    //    return irVar;
-                    //}
-                    //else
-                    //{
-                    //    IRLoadVariable irVar = new IRLoadVariable(irmt, _irMethod, mv.GetHashCode(), IRMetaVariableFrom.Global );
-                    //    return irVar;
-                    //}
-                    //
+                    // P2 GLOBAL_SLOT（GLOBAL_SLOT_DESIGN.md §5.4，-O2+）：已登记全局槽位的
+                    // 静态成员（const / .sp Project 全局 / jsonc global.data，登记见
+                    // IRMetaClass.CreateMemberData）直发 LoadGlobal(26)，payload=global id，
+                    // C VM 装配期改写为槽号（§5.5）；未登记（模板 / ref module / -O0/-O1）
+                    // 保持原 LoadStaticField(25) 类型树路径。
+                    // 哈希源与上方 index 解析同源（gmv 二跳）：global.xxx 发射侧可能拿到
+                    // 带 sourceMetaVariable 的代理副本，须归一到登记原实例的哈希。
+                    MetaVariable gmvSrc = mv.sourceMetaVariable ?? mv;
+                    if (IRManager.instance.IsGlobalStaticMetaVariable(gmvSrc))
+                    {
+                        IRLoadVariable irVarGlobal = new IRLoadVariable(irmt, _irMethod, gmvSrc.GetHashCode(), IRMetaVariableFrom.Global);
+                        return irVarGlobal;
+                    }
+
                     if (index == -1)
                     {
                         Log.AddIRLog(LID.IRMethodNotFoundVariable, mv.token, "in const member index = -1", _irMethod.id, mv.name);
@@ -192,22 +190,17 @@ namespace SimpleLanguage.IR
                         return constLoadVar;
                     }
 
-                    //if (mv.realMetaType.GenTemplateIsIncludeTemplate())
-                    //{
-                    //    if (index == -1)
-                    //    {
-                    //        Log.AddIRLog(LID.IRVariableIndex2, "没有找到对应成员变量的Index");
-                    //        return null;
-                    //    }
-                    //    IRLoadVariable irVar = new IRLoadVariable(irmt, _irMethod, index, IRMetaVariableFrom.Static);
-                    //    return irVar;
-                    //}
-                    //else
-                    //{
-                    //    IRLoadVariable irVar = new IRLoadVariable(irmt, _irMethod, mv.GetHashCode(), IRMetaVariableFrom.Global );
-                    //    return irVar;
-                    //}
-                    //
+                    // P2 GLOBAL_SLOT（§5.4，-O2+）：已登记全局槽位的静态成员直发
+                    // LoadGlobal(26)，payload=global id（装配期改写为槽号）；
+                    // 未登记（模板 / ref module / -O0/-O1）保持原 LoadStaticField(25) 路径。
+                    // 哈希源与上方 index 解析同源（gmv 二跳）。
+                    MetaVariable gmvSrc = mv.sourceMetaVariable ?? mv;
+                    if (IRManager.instance.IsGlobalStaticMetaVariable(gmvSrc))
+                    {
+                        IRLoadVariable irVarGlobal = new IRLoadVariable(irmt, _irMethod, gmvSrc.GetHashCode(), IRMetaVariableFrom.Global);
+                        return irVarGlobal;
+                    }
+
                     if (index == -1)
                     {
                         Log.AddIRLog(LID.IRMethodNotFoundVariable, mv.token, "in const member index = -1", _irMethod.id, mv.name);
@@ -499,19 +492,17 @@ namespace SimpleLanguage.IR
                 }
                 if (gmv.isStatic)
                 {
+                    // P2 GLOBAL_SLOT（GLOBAL_SLOT_DESIGN.md §5.4，-O2+）：已登记全局槽位的
+                    // 静态成员直发 StoreGlobal(38)，payload=global id（C VM 装配期改写为
+                    // 槽号 §5.5）；未登记（模板 / ref module / -O0/-O1）保持原
+                    // StoreStaticField(37) 类型树路径。哈希源与上方 index 解析同源（gmv 二跳）。
+                    if (IRManager.instance.IsGlobalStaticMetaVariable(gmv))
+                    {
+                        IRStoreVariable irsvg = new IRStoreVariable(irmt, _irMethod, gmv.GetHashCode(), IRMetaVariableFrom.Global);
+                        return irsvg;
+                    }
                     IRStoreVariable irsv = new IRStoreVariable(irmt, _irMethod, index, IRMetaVariableFrom.Static);
                     return irsv;
-
-                    //if ( mv.realMetaType.GenTemplateIsIncludeTemplate() )
-                    //{
-                    //    IRStoreVariable irsv = new IRStoreVariable(irmt, _irMethod, index, IRMetaVariableFrom.Static);
-                    //    return irsv;
-                    //}
-                    //else
-                    //{
-                    //    IRStoreVariable irsv = new IRStoreVariable(irmt, _irMethod, mv.GetHashCode(), IRMetaVariableFrom.Global);
-                    //    return irsv;
-                    //}
                 }
                 else
                 {
@@ -540,19 +531,17 @@ namespace SimpleLanguage.IR
                 }
                 if (gmv.isStatic)
                 {
+                    // P2 GLOBAL_SLOT（§5.4，-O2+）：已登记全局槽位的静态成员直发
+                    // StoreGlobal(38)，payload=global id（装配期改写为槽号）；
+                    // 未登记（模板 / ref module / -O0/-O1）保持原 StoreStaticField(37) 路径。
+                    // 哈希源与上方 index 解析同源（gmv 二跳）。
+                    if (IRManager.instance.IsGlobalStaticMetaVariable(gmv))
+                    {
+                        IRStoreVariable irsvg = new IRStoreVariable(irmt, _irMethod, gmv.GetHashCode(), IRMetaVariableFrom.Global);
+                        return irsvg;
+                    }
                     IRStoreVariable irsv = new IRStoreVariable(irmt, _irMethod, index, IRMetaVariableFrom.Static);
                     return irsv;
-
-                    //if ( mv.realMetaType.GenTemplateIsIncludeTemplate() )
-                    //{
-                    //    IRStoreVariable irsv = new IRStoreVariable(irmt, _irMethod, index, IRMetaVariableFrom.Static);
-                    //    return irsv;
-                    //}
-                    //else
-                    //{
-                    //    IRStoreVariable irsv = new IRStoreVariable(irmt, _irMethod, mv.GetHashCode(), IRMetaVariableFrom.Global);
-                    //    return irsv;
-                    //}
                 }
                 else
                 {

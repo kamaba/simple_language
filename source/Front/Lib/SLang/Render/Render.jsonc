@@ -1,7 +1,7 @@
 {
   "project":
   {
-    "name": "Render",
+    "name": "SLang.Render",
     "desc": "Render library - scene/math helpers, meshes, materials, camera/light, render pipeline (Float32-based, backed by Math lib)",
     "mainVersion": 0,
     "subVersion": 1,

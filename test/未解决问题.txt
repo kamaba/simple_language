@@ -8,7 +8,21 @@ TankGame.sl 引入Math类。把一些 二维的都使用Int32_2 Int32_3
 写更多的使用用例，测试cvm的功能点。
 jsonc整体，增加 AOT, Mix, PureCVM,
 
-如果开了o2+ 需要把静态字段，还有全局进行优化 现在的SOpCode_LoadGlobal,OpCode_StoreGlobal 这两还没有用起来，这两我的想法是，把const的字段，还有全局global的字段，都存到这里边去，  是全局的global,所以 s_global_entries 要变成一个动态的    然后使用 const的静态字段，还有global的字段，在初始化完后进入了global里边，当然FrontEnd前端应该也有对应的改动吧，就不能使用原来的指令了，你先出个md文档，然后再 你先评估下 这个方案如何吧
+[2026-10-16] for-in 遍历枚举时成员 name 读取非确定（既有 bug，与 GLOBAL_SLOT P1/P2 无关）：BaseTest ForTest.forInEnumAttrHandleType 中 `$v.name.toString()` 输出不稳定——同一份二进制下有时输出 `Member{name=...}`、有时为空，偶发串值（如 `Member{name=, index=6, value=111}`，明显是别的对象行）。2026-10-16 GSProbe 最小探针实证：无直发、装配改写关闭（SL_ENABLE_GLOBAL_SLOT_REWRITE=0）下同样复现；且 P2 改动前的 -O1 基线输出本就是混合形态（首成员 name 有值、其余空）。根因疑在枚举成员 Member 包装的 name 字段填充或 LoadNotStaticField 读取（嫌疑字段序偏移/值数组构造），待专项排查；期间勿把该用例输出差异误判为静态字段优化回归。
+
+接完nodejs后，看看能不能贴合到nodejs里边 然后他们的服务
+但编译的时候，我这边用我自己的代码，写一个逻辑
+
+find_global_entry 查找global的全局变量，需要优化成O(1)的查找速度
+
+如果在FrontEnd层o2+ 需要把静态字段，还有全局进行优化 现在的SOpCode_LoadGlobal,OpCode_StoreGlobal 这两还没有用起来，这两我的想法是，把const的字段，还有全局global的字段，都存到这里边去，  是全局的global,所以 s_global_entries 要变成一个动态的    然后使用 const的静态字段，还有global的字段，在初始化完后进入了global里边，当然FrontEnd前端应该也有对应的改动吧，就不能使用原来的指令了，你先出个md文档，然后再 你先评估下 这个方案如何吧
+
+我现在怕cvm的工程被反编译，你先分析下被反编译的难度 然后给我一个优化方案，让别人尽量不好反编译，并且不降低运行速度。
+
+现在对函数的代码，都有遍历过程，但我看到是N个这样的遍历，能不能合到一个遍历里边，然后使用if判断，具体的逻辑处理呀。
+
+
+https://github.com/kamaba/SlangAllInOne这个地址 制作一个slang_release(0.0.1)的版本包 使用package/release现在的路径去构建  把这个过程最好整理成脚本，方便 我一键发布
 
 frontend然后再进行优化。
 
@@ -67,10 +81,10 @@ sl_aot_skeleton_new_inner这个函数的话，原来的llvm生成的数据，是
 制作http server相关的逻辑
 然后使用http server 写一个若依平台
 然后做一个网站  包括，首页，下载，运行，关于
-制作结合SpQT的工程
+制作结合SLangQT的工程
 制作自己的渲染底层
 制作自己的渲染UI/图形
-spTorch 的制作
+SLangTorch 的制作
 
 
 MLIR把结构体，也就是我设计 的class/data/enum 要转化成对应的 llvm.struct   在变的过程，最好还能在这个结构里边带上一些其它的信息，比较类的id, 名称, 如果模板类，需要把模板的成员也变成一个指针（Int64)放在里边 最好还有一个字段去描述这个指针的，这样，不可以使用llvm.struct 去对应我的class/data/enum 了 

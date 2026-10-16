@@ -285,8 +285,21 @@ namespace SimpleLanguage.IR
                         hashcode = mv.GetHashCode();
                     }
                     int index = irmt.irMetaClass.GetMetaMemberVariableIndexByHashCode(hashcode);
-                    IRStoreVariable irsv = new IRStoreVariable(irmt, irMethod, index, IRMetaVariableFrom.Static);
-                    m_IRStatements.Add(irsv);
+                    /* P2 GLOBAL_SLOT（GLOBAL_SLOT_DESIGN.md §5.4，-O2+）：已登记全局槽位的
+                     * 静态成员（global.xxx = 赋值经此路径）直发 StoreGlobal(38)，payload=
+                     * global id，C VM 装配期改写为槽号；未登记保持 StoreStaticField(37)。
+                     * 哈希源与上方 hashcode 解析同源（二跳）。 */
+                    MetaVariable gmvGlb = mv.sourceMetaVariable ?? mv;
+                    if (IRManager.instance.IsGlobalStaticMetaVariable(gmvGlb))
+                    {
+                        IRStoreVariable irsvg = new IRStoreVariable(irmt, irMethod, gmvGlb.GetHashCode(), IRMetaVariableFrom.Global);
+                        m_IRStatements.Add(irsvg);
+                    }
+                    else
+                    {
+                        IRStoreVariable irsv = new IRStoreVariable(irmt, irMethod, index, IRMetaVariableFrom.Static);
+                        m_IRStatements.Add(irsv);
+                    }
                 }
             }
             else

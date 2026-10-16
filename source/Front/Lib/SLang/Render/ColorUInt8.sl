@@ -7,14 +7,14 @@
 # 注意：浮点转整数统一走 SystemConvertInt32（显式、可读、不依赖隐式截断）。
 # =========================================================================
 
-namespace Image
+namespace SLang.Render
 {
-    public class Color
+    public class ColorUInt8
     {
-        public Int32 r = 0
-        public Int32 g = 0
-        public Int32 b = 0
-        public Int32 a = 255
+        public UInt8 r = 0
+        public UInt8 g = 0
+        public UInt8 b = 0
+        public UInt8 a = 255
 
         _init_()
         {
@@ -24,7 +24,7 @@ namespace Image
             this.a = 255
         }
 
-        _init_( Int32 _r, Int32 _g, Int32 _b )
+        _init_( UInt8 _r, UInt8 _g, UInt8 _b )
         {
             this.r = _r
             this.g = _g
@@ -33,7 +33,7 @@ namespace Image
             this.clamp()
         }
 
-        _init_( Int32 _r, Int32 _g, Int32 _b, Int32 _a )
+        _init_( UInt8 _r, UInt8 _g, UInt8 _b, UInt8 _a )
         {
             this.r = _r
             this.g = _g
@@ -43,12 +43,12 @@ namespace Image
         }
 
         # ── 构造 ─────────────────────────────────────────────
-        public static Color fromRgb( Int32 r, Int32 g, Int32 b )
+        public static Color fromRgb( UInt8 r, UInt8 g, UInt8 b )
         {
             ret Color( r, g, b )
         }
 
-        public static Color fromRgba( Int32 r, Int32 g, Int32 b, Int32 a )
+        public static Color fromRgba( UInt8 r, UInt8 g, UInt8 b, UInt8 a )
         {
             ret Color( r, g, b, a )
         }
@@ -56,20 +56,20 @@ namespace Image
         # 0xRRGGBBAA
         public static Color fromPackedRgba( Int32 packed )
         {
-            Int32 rr = ( packed >> 24 ) & 0xFF
-            Int32 gg = ( packed >> 16 ) & 0xFF
-            Int32 bb = ( packed >> 8 ) & 0xFF
-            Int32 aa = packed & 0xFF
+            UInt8 rr = ( packed >> 24 ) & 0xFF
+            UInt8 gg = ( packed >> 16 ) & 0xFF
+            UInt8 bb = ( packed >> 8 ) & 0xFF
+            UInt8 aa = packed & 0xFF
             ret Color( rr, gg, bb, aa )
         }
 
         # 0xAARRGGBB
         public static Color fromPackedArgb( Int32 packed )
         {
-            Int32 aa = ( packed >> 24 ) & 0xFF
-            Int32 rr = ( packed >> 16 ) & 0xFF
-            Int32 gg = ( packed >> 8 ) & 0xFF
-            Int32 bb = packed & 0xFF
+            UInt8 aa = ( packed >> 24 ) & 0xFF
+            UInt8 rr = ( packed >> 16 ) & 0xFF
+            UInt8 gg = ( packed >> 8 ) & 0xFF
+            UInt8 bb = packed & 0xFF
             ret Color( rr, gg, bb, aa )
         }
 
@@ -104,7 +104,7 @@ namespace Image
         # ── 属性 ─────────────────────────────────────────────
         public get bool isOpaque()
         {
-            ret this.a >= 255
+            ret this.a >= 255b
         }
 
         public get bool isTransparent()
@@ -134,7 +134,7 @@ namespace Image
             if this.a > 255 { this.a = 255 }
         }
 
-        public Color withAlpha( Int32 alpha )
+        public Color withAlpha( UInt8 alpha )
         {
             ret Color( this.r, this.g, this.b, alpha )
         }
@@ -153,6 +153,7 @@ namespace Image
         public Color lerp( Color other, Float32 t )
         {
             if t < 0.0f { t = 0.0f }
+            
             if t > 1.0f { t = 1.0f }
             Int32 nr = this.r + Color.toInt( ( 1.0f * other.r - this.r ) * t )
             Int32 ng = this.g + Color.toInt( ( 1.0f * other.g - this.g ) * t )

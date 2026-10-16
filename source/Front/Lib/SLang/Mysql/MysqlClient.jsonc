@@ -47,7 +47,7 @@
   },
   "compileFiles": {
     "files": [
-      { "path": "SLangMysql.sl", "group": "mysql", "tag": "db", "ignore": false, "priority": 0 }
+      { "path": "MysqlClient.sl", "group": "mysql", "tag": "db", "ignore": false, "priority": 0 }
     ]
   },
   "compileFilter": {

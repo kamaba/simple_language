@@ -216,7 +216,20 @@ namespace SimpleLanguage.Core.IR
                         irmt = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(cnode.callMetaType, owirmc);
 
                         int index = irmt.irMetaClass.GetMetaMemberVariableIndexByHashCode(mv.GetHashCode());
+                    /* P2 GLOBAL_SLOT（GLOBAL_SLOT_DESIGN.md §5.4，-O2+）：已登记全局槽位的
+                     * 静态成员（global.xxx 标识符链读取常经此路径）直发 LoadGlobal(26)，
+                     * payload=global id，C VM 装配期改写为槽号（§5.5）；未登记（模板 /
+                     * ref module / -O0/-O1）保持 LoadStaticField(25) 类型树路径。
+                     * 哈希源与 index 解析同源（二跳归一到登记原实例）。 */
+                    MetaVariable gmvGlb = mv.sourceMetaVariable ?? mv;
+                    if (IRManager.instance.IsGlobalStaticMetaVariable(gmvGlb))
+                    {
+                        irVar = new IRLoadVariable(irmt, _irMethod, gmvGlb.GetHashCode(), IRMetaVariableFrom.Global);
+                    }
+                    else
+                    {
                         irVar = new IRLoadVariable(irmt, _irMethod, index, IRMetaVariableFrom.Static);
+                    }
                     }
                     else
                     {

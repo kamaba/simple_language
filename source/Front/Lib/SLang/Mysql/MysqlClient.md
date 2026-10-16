@@ -1,7 +1,7 @@
 ﻿# SLMysqlPro Project Guide
 
-- Project Entry File: `SLMysqlPro.sp`
-- Project Config File: `SLMysqlPro.jsonc`
+- Project Entry File: `MysqlClient.sp`
+- Project Config File: `MysqlClient.jsonc`
 
 ## Project Entry Conventions
 

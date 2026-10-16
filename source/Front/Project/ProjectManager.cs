@@ -67,6 +67,10 @@ namespace SimpleLanguage.Project
             // （已迁 SimpleLanguage.Core; 本文件同时 using Compile/Core 两个命名空间, 非限定名会 CS0104 歧义）
             SimpleLanguage.Core.AtSignLabelBlockCollector.Clear();
 
+            // P2 GLOBAL_SLOT：IRManager 单例跨编译驻留，globalStaticVariableList/
+            // 登记集合须在每次编译入口清空，防上一模块的登记泄漏到本次导出与直发判定
+            SimpleLanguage.IR.IRManager.instance.ResetGlobalStaticVariableList();
+
             // apply CLI optimize level before any IR generation happens
             if (cinputArgs != null)
             {
