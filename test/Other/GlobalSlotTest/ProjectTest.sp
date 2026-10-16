@@ -1,7 +1,7 @@
 Project
 {
-    static Int32 gx = 100
-    static Float64 gy = 1.5
+    Int32 gx = 100
+    Float64 gy = 1.5
     println( txt )
     {
         SystemPrintln( txt )
