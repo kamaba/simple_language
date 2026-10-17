@@ -1,0 +1,7 @@
+﻿dotnet : 提供的文件路径不存在: source\Front\SimpleLanguageFront.csproj。
+At line:15 char:6487
++ ... pgrep\bin'; dotnet run --project source\Front\SimpleLanguageFront.csp ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (提供的文件路径不存在: sou...geFront.csproj。:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 

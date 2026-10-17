@@ -16,7 +16,7 @@
 
 | 目录 | 文档 | 入口类 |
 |------|------|--------|
-| `01_BaseRectangle/` | `md/syntax/base.md` | `MdEx01BaseRectangle.Run` |
+| `01_BaseRectangle/` | `md/syntax/introduction.md` | `MdEx01BaseRectangle.Run` |
 | `02_StringInterpolation/` | `md/syntax/string.md` | `MdEx02StringInterpolation.Run` |
 | `03_GlobalJsonc/` | `md/syntax/global.md` | `MdEx03GlobalJsonc.Run` |
 | `04_RangeFor/` | `md/syntax/range.md` | `MdEx04RangeFor.Run` |

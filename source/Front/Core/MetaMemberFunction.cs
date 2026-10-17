@@ -777,6 +777,11 @@ namespace SimpleLanguage.Core
         //如果是模板函数，需要在实例化类后，进行新的实体函数的解析
         public MetaGenTemplateFunction AddGenTemplateMemberFunctionByMetaTypeList(MetaClass mc, List<MetaType> list)
         {
+            if (mc == null)
+            {
+                // 归属类不可得（极端链路兜底）：跳过物化，由调用方保留模板函数原样解析
+                return null;
+            }
             if (mc.isTemplateClass && !mc.isGenTemplate )
             {
                 // 如果模板参数本身是模板类型（如函数级T绑定到类级T），允许实例化

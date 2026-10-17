@@ -430,6 +430,25 @@ namespace Text
     }
 
     # ===============================================================
+    # RegExpCompiled - 编译产物缓存条目（P4-D 模式缓存）
+    # ===============================================================
+    public class RegExpCompiled
+    {
+        public Array<Int32> prog = null
+        public Array<Int32> cs = null
+        public Int32 groupCount = 0
+        public Int32 guardCount = 0
+
+        _init_( Array<Int32> progArr, Array<Int32> csArr, Int32 gc, Int32 guardN )
+        {
+            this.prog = progArr
+            this.cs = csArr
+            this.groupCount = gc
+            this.guardCount = guardN
+        }
+    }
+
+    # ===============================================================
     # RegExp - 正则表达式主类
     # 模式编译为指令链（List<RegExpInst>，x/y/z/w/v 字段含义见各操作码），
     # 匹配时经 _run 递归回溯执行；每次匹配新建 RegExpState，实例可复用。
@@ -470,6 +489,66 @@ namespace Text
         Array<Int32> _flatProgCache = null   # 展平指令链缓存（C 下沉用）
         Array<Int32> _flatCsCache = null     # 展平字符集段表缓存（C 下沉用）
 
+        # ---- P4-D 模式缓存（CPython sre._cache 同款）----
+        # 相同 pattern+flags 的编译产物全局共享（只读：flat 数组仅作
+        # SystemRegExp* 入参，运行期 state 独立）。上限 512 条轮转淘汰。
+        static Map<string, RegExpCompiled> _cache = null
+        static Array<string> _cacheKeys = null
+        static Int32 _cacheNext = 0
+
+        static RegExpCompiled _cacheGet( string key )
+        {
+            Map<string, RegExpCompiled> m = RegExp._cache
+            if m == null
+            {
+                ret null
+            }
+            ret m[key]
+        }
+
+        static void _cachePut( string key, RegExpCompiled c )
+        {
+            Map<string, RegExpCompiled> m = RegExp._cache
+            if m == null
+            {
+                m = Map<string, RegExpCompiled>()
+                RegExp._cache = m
+                Int32 cap = 512
+                RegExp._cacheKeys = Array<string>( cap )
+            }
+            Array<string> keys = RegExp._cacheKeys
+            Int32 slot = RegExp._cacheNext
+            string oldKey = keys[slot]
+            if oldKey != null && oldKey != ""
+            {
+                # 轮转淘汰最旧条目
+                m.remove( oldKey )
+            }
+            keys[slot] = key
+            slot = slot + 1
+            if slot >= 512
+            {
+                slot = 0
+            }
+            RegExp._cacheNext = slot
+            m[key] = c
+        }
+
+        #缓存键：flags 前缀 + pattern（唯一区分编译语境）
+        static string _cacheKey( string pattern, bool ignoreCase, bool multiline )
+        {
+            string f = "0"
+            if ignoreCase
+            {
+                f = "1"
+            }
+            if multiline
+            {
+                f = f + "m"
+            }
+            ret f + ":" + pattern
+        }
+
         _init_( string pattern ) throws
         {
             this._commonInit( pattern, false, false )
@@ -500,6 +579,130 @@ namespace Text
             this._guardCount = 0
             this._patPos = 0
             this._patLen = SystemStringLength( pattern )
+
+            # ---- P4-D 编译链：模式缓存 → C 编译直写 → 旧路径 ----
+            # 1) 模式缓存命中：flat 产物直接共享（只读），零编译零拷贝；
+            # 2) 未命中：SL 预分配上限尺寸 prog/cs，SystemRegExpCompileInto
+            #    一次编译直写 + SystemArrayResize 截断，入缓存；
+            # 3) 超限/旧 VM/null：SystemRegExpCompile 旧路径（cpack+拷贝）；
+            # 4) 仍 null：SL 本地编译器（_compile）。
+            string ckey = RegExp._cacheKey( pattern, ignoreCase, multiline )
+            RegExpCompiled cached = RegExp._cacheGet( ckey )
+
+            Int32 plen = SystemStringLength( pattern )
+            Array<Int32> progDst = Array<Int32>( plen * 900 + 64 )
+            Array<Int32> csDst = Array<Int32>( plen * 140 + 64 )
+            var meta = SystemRegExpCompileInto( pattern, this._flags( false ), progDst, csDst )
+            if meta != null
+            {
+                Int32 errCode = meta[0]
+                if errCode == 0
+                {
+                    Int32 progLen = meta[1]
+                    Int32 csLen = meta[2]
+                    this._groupCount = meta[3]
+                    this._guardCount = meta[4]
+                    if progLen < progDst.length
+                    {
+                        progDst = SystemArrayResize( progDst, progLen )
+                    }
+                    if csLen < csDst.length
+                    {
+                        csDst = SystemArrayResize( csDst, csLen )
+                    }
+                    this._flatProgCache = progDst
+                    this._flatCsCache = csDst
+                    ret
+                }
+                if errCode > 0
+                {
+                    if errCode == 1
+                    {
+                        throw RegExpError.PatternSyntax
+                    }
+                    elif errCode == 2
+                    {
+                        throw RegExpError.InvalidRepeat
+                    }
+                    elif errCode == 3
+                    {
+                        throw RegExpError.InvalidEscape
+                    }
+                    elif errCode == 4
+                    {
+                        throw RegExpError.InvalidCharClass
+                    }
+                    elif errCode == 5
+                    {
+                        throw RegExpError.InvalidGroupRef
+                    }
+                    elif errCode == 6
+                    {
+                        throw RegExpError.UnbalancedParen
+                    }
+                    elif errCode == 7
+                    {
+                        throw RegExpError.InvalidRepeatTarget
+                    }
+                }
+                # -1 = 超预分配上限：落回旧 Compile 路径
+            }
+
+            # 旧路径（旧 VM / 超限 / null）：C 编译返回 cpack + SL 拷贝
+            var cpack = SystemRegExpCompile( pattern, this._flags( false ) )
+            if cpack != null
+            {
+                Int32 errCode = cpack[0]
+                if errCode == 1
+                {
+                    throw RegExpError.PatternSyntax
+                }
+                elif errCode == 2
+                {
+                    throw RegExpError.InvalidRepeat
+                }
+                elif errCode == 3
+                {
+                    throw RegExpError.InvalidEscape
+                }
+                elif errCode == 4
+                {
+                    throw RegExpError.InvalidCharClass
+                }
+                elif errCode == 5
+                {
+                    throw RegExpError.InvalidGroupRef
+                }
+                elif errCode == 6
+                {
+                    throw RegExpError.UnbalancedParen
+                }
+                elif errCode == 7
+                {
+                    throw RegExpError.InvalidRepeatTarget
+                }
+                this._groupCount = cpack[1]
+                this._guardCount = cpack[2]
+                Int32 progLen = cpack[3]
+                Array<Int32> prog = Array<Int32>( progLen )
+                Int32 i = 0
+                while i < progLen
+                {
+                    prog[i] = cpack[4 + i]
+                    i = i + 1
+                }
+                Array<Int32> cs = Array<Int32>( cpack.length - 4 - progLen )
+                i = 0
+                while i < cs.length
+                {
+                    cs[i] = cpack[4 + progLen + i]
+                    i = i + 1
+                }
+                this._flatProgCache = prog
+                this._flatCsCache = cs
+                ret
+            }
+
             this._compile()
         }
 
@@ -2040,6 +2243,57 @@ namespace Text
             ret RegExpMatch( text, slots[0], slots[1], slots, gc )
         }
 
+        # ---- P4-A 批量下沉（RUNTIME_OPTIMIZATION_PLAN.md §10）----
+        #SystemRegExpFindAll 一次返回全部匹配的扁平结果（每匹配 2+gc*2 个
+        #int32：[start,end,g1s,g1e,...]），null = 无匹配/旧 VM。装配为
+        #List<RegExpMatch>；失败（null）时调用方回退 SL 驱动循环。
+        List<RegExpMatch> _findAllOnCvm( string text, Int32 from )
+        {
+            List<RegExpMatch> res = List<RegExpMatch>()
+
+            # P4-D 装配下沉：原型 = 一个 _text 已指向 text 的 RegExpMatch
+            # （C 侧从其 _text 取 text 对象指针、取 RuntimeType），一次
+            # 调用返回整装好的 List<RegExpMatch>；null（无匹配/旧 VM）
+            # 落回 FindAll + 本方法装配的旧路径。
+            Array<Int32> protoSlots = Array<Int32>( ( this._groupCount + 1 ) * 2 )
+            RegExpMatch proto = RegExpMatch( text, 0, 0, protoSlots, this._groupCount )
+            var whole = SystemRegExpFindMatches( this._flatProg(), this._flatCs(), text, from, this._flags( false ), this._groupCount, this._guardCount, proto, res )
+            if whole != null
+            {
+                ret whole
+            }
+
+            var flat = SystemRegExpFindAll( this._flatProg(), this._flatCs(), text, from, this._flags( false ), this._groupCount, this._guardCount )
+            if flat == null
+            {
+                ret null
+            }
+            Int32 per = 2 + this._groupCount * 2
+            Int32 n = flat.length / per
+            Int32 i = 0
+            while i < n
+            {
+                Int32 b = i * per
+                Array<Int32> slots = Array<Int32>( ( this._groupCount + 1 ) * 2 )
+                Int32 k = 0
+                while k < ( this._groupCount + 1 ) * 2
+                {
+                    slots[k] = flat[b + k]
+                    k = k + 1
+                }
+                res.add( RegExpMatch( text, slots[0], slots[1], slots, this._groupCount ) )
+                i = i + 1
+            }
+            ret res
+        }
+
+        #SystemRegExpReplace：整段驱动 + 模板展开全在 C 侧；返回 null =
+        #旧 VM（未注册）→ 调用方回退 SL 实现。
+        string _replaceOnCvm( string text, string rep )
+        {
+            ret SystemRegExpReplace( this._flatProg(), this._flatCs(), text, 0, this._flags( false ), this._groupCount, this._guardCount, rep )
+        }
+
         #经 SL 解释器执行（性能基线对照；驱动语义与 C 下沉版一致：逐起点尝试 + 每起点新建状态）
         RegExpMatch _runOnSl( string text, Int32 from, bool anchored )
         {
@@ -2106,12 +2360,18 @@ namespace Text
         }
 
         #所有非重叠匹配（含零宽匹配，按 finditer 语义推进游标）
+        #P4-A：优先批量下沉（一次调用全收集）；null（旧 VM/无注册）回退 SL 循环
         public List<RegExpMatch> matchAll( string text )
         {
             List<RegExpMatch> res = List<RegExpMatch>()
             if text == null
             {
                 ret res
+            }
+            List<RegExpMatch> cvm = this._findAllOnCvm( text, 0 )
+            if cvm != null
+            {
+                ret cvm
             }
             Int32 len = SystemStringLength( text )
             Int32 pos = 0
@@ -2177,6 +2437,7 @@ namespace Text
         }
 
         #替换所有匹配（rep 支持 $& $1..$9 $$）；零宽匹配保留原字符
+        #P4-A：优先批量下沉（驱动 + 模板展开全在 C 侧）；无注册（旧 VM）回退 SL 实现
         public string replace( string text, string rep )
         {
             if text == null
@@ -2186,6 +2447,11 @@ namespace Text
             if rep == null
             {
                 rep = ""
+            }
+            string cvm = this._replaceOnCvm( text, rep )
+            if cvm != null
+            {
+                ret cvm
             }
             Int32 len = SystemStringLength( text )
             Int32 last = 0

@@ -11,7 +11,7 @@
 | [syntax/introduction.md](./syntax/introduction.md) | 语法文档集总述：覆盖范围、IR 关系、示例约定 |
 | [project/project-config-jsonc-guide.md](./project/project-config-jsonc-guide.md) | **当前**工程配置：`*.sp` + 同名 `*.jsonc`、主要 JSONC 字段、CLI 联动 |
 | [project/project_sp-guide.md](./project/project_sp-guide.md) | 入口 `Core.sp` 约定：`_main_` / `_test_`、`global` 与 `Project{}`、`global.data` 注入规则 |
-| [ai/故障排查流程.md](./ai/故障排查流程.md) | 问题定位主文档（与 `DEBUG_WORKFLOW.md` 等互补） |
+| [ai/故障排查流程.md](./ai/故障排查流程.md) | 问题定位主文档 + 复盘分片路由索引（复盘正文在 [ai/troubleshooting/](./ai/troubleshooting/) 8 个分片，与 `DEBUG_WORKFLOW.md` 等互补） |
 | [ai/DEBUG_WORKFLOW.md](./ai/DEBUG_WORKFLOW.md) | 调试产物目录、`DebugCode` 流水线说明 |
 | [ai/EXPORT_PATHS.md](./ai/EXPORT_PATHS.md) | 导出目录、环境变量、模块 JSON 形态 |
 | [ai/PROJECT_MAP.md](./ai/PROJECT_MAP.md) | 解决方案结构、`Front` / `VM` 职责与路径书签 |
@@ -43,9 +43,8 @@
 
 | 文档 | 说明 |
 |------|------|
-| [syntax/introduction.md](./syntax/introduction.md) | 简介与文档约定 |
+| [syntax/introduction.md](./syntax/introduction.md) | **简介与语言基础**：文档约定、工程三件套（`.sp`/`.jsonc`/`.sl`）、`global` 与配置的关系、注释、标识符与关键字、最小串联示例 |
 | [syntax/keywords.md](./syntax/keywords.md) | **关键字与语法糖总表**：全量关键字分类表（词法器实测）、运算符与特殊符号、语法糖对照（ret/next/yield/await/spawn/$插值/小写容器构造糖/static if 已废弃）、类成员保留名规则、Core 引用后直接可用类型清单、Core / Environment / Platform 命名空间 |
-| [syntax/base.md](./syntax/base.md) | 基本语法 |
 | [syntax/namespace.md](./syntax/namespace.md) | 命名空间 |
 | [syntax/variable.md](./syntax/variable.md) | 变量（含 `const` 只读变量/形参与传参约束） |
 | [syntax/local.md](./syntax/local.md) | 局部与作用域相关 |

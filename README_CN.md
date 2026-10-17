@@ -84,7 +84,7 @@ Project
 #### 基本使用
 
 1. [命名空间](md/syntax/namespace.md)  
-2. [基本语法](md/syntax/base.md)  
+2. [基本语法](md/syntax/introduction.md)  
 3. [数字](md/syntax/number.md)  
 4. [字符串](md/syntax/string.md)  
 5. [变量](md/syntax/variable.md)  

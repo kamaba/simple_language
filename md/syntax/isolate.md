@@ -1,7 +1,7 @@
 # 隔离岛（Isolate）与端口（Port）
 
 > **本文档以「当前实现」为准**，对应 `source/Front/Lib/Std/Isolate/*.sl`
-> 与 `test/ExpendTest/IsolateTest.sl`（A–I + T 共 10 组验收用例）。
+> 与 `test/ExpendTest/IsolateTest.sl`（A–I + T/P/IO 共 12 组验收用例）。
 > 设计规格见 `csimple_lang/md/design/ISOLATE_DESIGN.md`——**该设计档部分内容尚未实现**，差异清单见 §14。
 > 相关文档：`md/syntax/coroutine.md`（协程）、`csimple_lang/md/design/COROUTINE_DESIGN.md`。
 
@@ -69,7 +69,7 @@ Created ──► Ready ──► Running ──┬──► Paused ──resume
 
 | 层 | 文件 |
 |---|---|
-| SL API | `source/Front/Lib/Std/Isolate/`（`Isolate.sl`、`SendPort.sl`、`ReceivePort.sl`、`RawReceivePort.sl`、`Capability.sl`、`TransferableData.sl`、`IsolateGroup.sl`、`IsolateStatus.sl`、`IsolateError.sl`） |
+| SL API | `source/Front/Lib/Std/Isolate/`（`Isolate.sl`、`SendPort.sl`、`ReceivePort.sl`、`RawReceivePort.sl`、`Capability.sl`、`TransferableData.sl`、`IsolateGroup.sl`、`IsolateStatus.sl`、`IsolateError.sl`、`StreamBridge.sl`） |
 | 系统调用注册 | `source/Front/Lib/Std/Std.jsonc` → `files[]` + `systemCalls[]` |
 | C VM isolate 核心 | `csimple_lang/src/vm/runtime/isolate/`（`vm_isolate`、`vm_message`、`vm_static_shadow`、`vm_transfer`） |
 | C VM 系统调用 | `csimple_lang/src/vm/system_method_call/isolate_system_method.c/.h` |

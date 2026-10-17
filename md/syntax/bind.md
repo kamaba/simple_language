@@ -23,12 +23,12 @@ data DataB
 }
 class ClassName bind DataA, DataB
 {
-    // class body
+    # class body
 }
 
 interface InterfaceName bind DataA, DataB
 {
-    // interface body
+    # interface body
 }
 
 const data ConfigData

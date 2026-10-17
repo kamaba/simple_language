@@ -1,0 +1,104 @@
+﻿从 source\Front\Properties\launchSettings.json 使用启动设置...
+SimpleLanguage Frontend Compiler v1.0.0
+
+Compiling: D:\project\lang\simple_language\test\Other\NetTest\ProjectTest.sp
+[11:55:17 165] [Info] [Project]  [ProjectShowConfigPath]  Info:[加载配置文件[D:\project\lang\simple_language\test\Other\NetTest\ProjectTest.jsonc]!]
+[FrontLog] OutputPath: D:\project\lang\simple_language\out\export\NetTest\Logs\Front.txt
+[11:55:17 180] [Info] [Process]  [ProcessPhaseStart]  Info:[开始编译阶段: RefModule]
+[11:55:17 858] [Info] [Project]  [ProjectReferenceModuleReferenceModuleLoaded]  Info:[Reference module loaded (compiled): name={}, path={}] Extend:[Reference module loaded (compiled): name=Core, path=D:\project\lang\simple_language\out\export\Core\Core.module.json]
+[Reference] Module loaded (compiled): name=Core, path=D:\project\lang\simple_language\out\export\Core\Core.module.json
+[11:55:18 298] [Warning] [ParseMeta]  [MetaCoreRepeatDefineFunction]  Info:[重复定义了函数 原来函数位置: 新函数位置:] Extend:[AddMetaMemberFunction]
+[11:55:18 299] [Warning] [ParseMeta]  [MetaCoreRepeatDefineFunction]  Info:[重复定义了函数 原来函数位置: 新函数位置:] Extend:[AddMetaMemberFunction]
+[11:55:18 300] [Warning] [ParseMeta]  [MetaCoreRepeatDefineFunction]  Info:[重复定义了函数 原来函数位置: 新函数位置:] Extend:[AddMetaMemberFunction]
+[11:55:18 300] [Warning] [ParseMeta]  [MetaCoreRepeatDefineFunction]  Info:[重复定义了函数 原来函数位置: 新函数位置:] Extend:[AddMetaMemberFunction]
+[11:55:18 318] [Warning] [ParseMeta]  [MetaCoreRepeatDefineFunction]  Info:[重复定义了函数 原来函数位置: 新函数位置:] Extend:[AddMetaMemberFunction]
+[11:55:18 319] [Warning] [ParseMeta]  [MetaCoreRepeatDefineFunction]  Info:[重复定义了函数 原来函数位置: 新函数位置:] Extend:[AddMetaMemberFunction]
+[11:55:18 320] [Warning] [ParseMeta]  [MetaCoreRepeatDefineFunction]  Info:[重复定义了函数 原来函数位置: 新函数位置:] Extend:[AddMetaMemberFunction]
+[11:55:18 320] [Warning] [ParseMeta]  [MetaCoreRepeatDefineFunction]  Info:[重复定义了函数 原来函数位置: 新函数位置:] Extend:[AddMetaMemberFunction]
+[11:55:18 321] [Warning] [ParseMeta]  [MetaCoreRepeatDefineFunction]  Info:[重复定义了函数 原来函数位置: 新函数位置:] Extend:[AddMetaMemberFunction]
+[11:55:18 333] [Info] [Project]  [ProjectReferenceModuleReferenceModuleLoaded]  Info:[Reference module loaded (compiled): name={}, path={}] Extend:[Reference module loaded (compiled): name=Std, path=D:\project\lang\simple_language\out\export\Std\Std.module.json]
+[Reference] Module loaded (compiled): name=Std, path=D:\project\lang\simple_language\out\export\Std\Std.module.json
+[11:55:18 509] [Info] [Project]  [ProjectReferenceModuleReferenceModuleLoaded]  Info:[Reference module loaded (compiled): name={}, path={}] Extend:[Reference module loaded (compiled): name=SLangServer, path=D:\project\lang\simple_language\out\export\SLangServer\SLangServer.module.json]
+[Reference] Module loaded (compiled): name=SLangServer, path=D:\project\lang\simple_language\out\export\SLangServer\SLangServer.module.json
+[11:55:18 510] [Info] [Process]  [ProcessPhaseEnd]  Info:[编译阶段[RefModule]完成]
+[11:55:18 510] [Info] [Process]  [ProcessPhaseStart]  Info:[开始编译阶段: File]
+[11:55:18 512] [Info] [Project]  [ProjectShowCompileFiles]  Info:[要编译的文件数量:13]
+[11:55:18 514] [Info] [Process]  [ProcessCompileFileStart]  Info:[开始编译:ProjectTest.sp]
+[11:55:18 521] [Info] [Process]  [ProcessCompileFileStart]  Info:[开始编译:TcpBasicTest.sl]
+[11:55:18 525] [Info] [Process]  [ProcessCompileFileStart]  Info:[开始编译:NetFrameTest.sl]
+[11:55:18 527] [Info] [Process]  [ProcessCompileFileStart]  Info:[开始编译:UdpEchoTest.sl]
+[11:55:18 529] [Info] [Process]  [ProcessCompileFileStart]  Info:[开始编译:NetStreamComposeTest.sl]
+[11:55:18 530] [Info] [Process]  [ProcessCompileFileStart]  Info:[开始编译:NetConcurrentTest.sl]
+[11:55:18 531] [Info] [Process]  [ProcessCompileFileStart]  Info:[开始编译:NetCloseTest.sl]
+[11:55:18 533] [Info] [Process]  [ProcessCompileFileStart]  Info:[开始编译:NetIsolateTest.sl]
+[11:55:18 534] [Info] [Process]  [ProcessCompileFileStart]  Info:[开始编译:NetTimeoutTest.sl]
+[11:55:18 535] [Info] [Process]  [ProcessCompileFileStart]  Info:[开始编译:NetSuspendTest.sl]
+[11:55:18 537] [Info] [Process]  [ProcessCompileFileStart]  Info:[开始编译:TlsTest.sl]
+[11:55:18 538] [Info] [Process]  [ProcessCompileFileStart]  Info:[开始编译:HttpTest.sl]
+[11:55:18 540] [Info] [Process]  [ProcessCompileFileStart]  Info:[开始编译:ServerProbeTest.sl]
+[11:55:18 542] [Info] [Process]  [ProcessCompileFileStart]  Info:[开始编译:ServerCoreTest.sl]
+[11:55:18 629] [Info] [Process]  [ProcessCompileFileCompleted]  Info:[文件[ProjectTest.sp]编译File层完成]
+[11:55:18 648] [Info] [Process]  [ProcessCompileFileCompleted]  Info:[文件[TcpBasicTest.sl]编译File层完成]
+[11:55:18 650] [Info] [Process]  [ProcessCompileFileCompleted]  Info:[文件[NetFrameTest.sl]编译File层完成]
+[11:55:18 651] [Info] [Process]  [ProcessCompileFileCompleted]  Info:[文件[UdpEchoTest.sl]编译File层完成]
+[11:55:18 653] [Info] [Process]  [ProcessCompileFileCompleted]  Info:[文件[NetStreamComposeTest.sl]编译File层完成]
+[11:55:18 655] [Info] [Process]  [ProcessCompileFileCompleted]  Info:[文件[NetConcurrentTest.sl]编译File层完成]
+[11:55:18 656] [Info] [Process]  [ProcessCompileFileCompleted]  Info:[文件[NetCloseTest.sl]编译File层完成]
+[11:55:18 659] [Info] [Process]  [ProcessCompileFileCompleted]  Info:[文件[NetIsolateTest.sl]编译File层完成]
+[11:55:18 661] [Info] [Process]  [ProcessCompileFileCompleted]  Info:[文件[NetTimeoutTest.sl]编译File层完成]
+[11:55:18 682] [Info] [Process]  [ProcessCompileFileCompleted]  Info:[文件[NetSuspendTest.sl]编译File层完成]
+[11:55:18 684] [Info] [Process]  [ProcessCompileFileCompleted]  Info:[文件[TlsTest.sl]编译File层完成]
+[11:55:18 685] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[HttpTest.sl_60_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[11:55:18 687] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[HttpTest.sl_152_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[11:55:18 690] [Info] [Process]  [ProcessCompileFileCompleted]  Info:[文件[HttpTest.sl]编译File层完成]
+[11:55:18 692] [Info] [Process]  [ProcessCompileFileCompleted]  Info:[文件[ServerProbeTest.sl]编译File层完成]
+[11:55:18 693] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[ServerCoreTest.sl_45_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[11:55:18 693] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[ServerCoreTest.sl_134_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[11:55:18 695] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[ServerCoreTest.sl_320_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[11:55:18 697] [Info] [Process]  [ProcessCompileFileCompleted]  Info:[文件[ServerCoreTest.sl]编译File层完成]
+[11:55:18 697] [Info] [Process]  [ProcessPhaseEnd]  Info:[编译阶段[File]完成]
+[11:55:18 697] [Info] [Process]  [ProcessPhaseStart]  Info:[开始编译阶段: MetaCore]
+[11:55:18 732] [Info] [ParseMeta]  [MetaCoreAttributeAttributeManagerProcessCompileTimeCompile]  Info:[AttributeManager.ProcessCompileTime: compile={}, runtime={}] Extend:[AttributeManager.ProcessCompileTime: compile=0, runtime=0]
+[11:55:18 843] [Info] [Process]  [ProcessPhaseEnd]  Info:[编译阶段[MetaCore]完成]
+[11:55:18 844] [Info] [Process]  [ProcessPhaseStart]  Info:[开始编译阶段: IR]
+[11:55:18 845] [Info] [GenIR]  [IRManagerStartTranslatingIR]  Info:[Start translating IR...] Extend:[Start translating IR...]
+[11:55:18 846] [Info] [GenIR]  [IRManagerStartTranslatingIRMetaClass]  Info:[Start translating IRMetaClass...] Extend:[Start translating IRMetaClass...]
+[11:55:18 857] [Info] [GenIR]  [IRManagerEndTranslatingIRMetaClass]  Info:[End translating IRMetaClass...] Extend:[End translating IRMetaClass...]
+[11:55:18 930] [Info] [GenIR]  [IRManagerStartExportingIR]  Info:[Start exporting IR debug data...] Extend:[Start exporting IR debug data...]
+[11:55:19 012] [Info] [GenIR]  [IRManagerEndExportingIR]  Info:[End exporting IR debug data...] Extend:[End exporting IR debug data...]
+[11:55:19 013] [Info] [GenIR]  [IRManagerEndTranslatingIR]  Info:[End translating IR...] Extend:[End translating IR...]
+[11:55:19 013] [Info] [Process]  [ProcessPhaseEnd]  Info:[编译阶段[IR]完成]
+[11:55:19 014] [Info] [Process]  [ProcessSummary]  Info:[编译过程汇总: [Completed] RefModule
+  [Completed] LoadRefModules
+[Completed] File
+  [Completed] PrepareFiles
+  [Completed] Token
+  [Completed] Node
+  [Completed] File
+[Completed] MetaCore
+  [Completed] ExpandBind
+  [Completed] InjectDllImportHolder
+  [Completed] CreateNamespace
+  [Completed] CombineFileMeta
+  [Completed] ParseMetaClassLink
+  [Completed] ParseAttributes
+  [Completed] ParseMemberExpress
+  [Completed] InjectProjectData
+  [Completed] ValidatePlatformConfig
+  [Completed] BuildLocalClass
+  [Completed] ParseStatements
+  [Completed] InjectInitCall
+  [Completed] ExportMetaDebug
+  [Completed] AddGlobalData
+  [Completed] ProjectCompileAfter
+  [Completed] AutoInlineMark
+[Completed] IR
+  [Completed] TranslateIR
+[Pending] Export
+  [Pending] ExportModule
+]
+[11:55:19 015] [Info] [Process]  [ProcessPhaseStart]  Info:[开始编译阶段: Export]
+[11:55:19 093] [Info] [GenIR]  [ExportSLModulePackageExportModuleSuccess]  Info:[export module success:] Extend:[export module success (binary): D:\project\lang\simple_language\out\export\NetTest\NetTest.module.slb]
+[11:55:19 222] [Info] [GenIR]  [ExportSLModulePackageExportModuleSuccess]  Info:[export module success:] Extend:[export module success: D:\project\lang\simple_language\out\export\NetTest\NetTest.module.json]
+[11:55:19 222] [Info] [Process]  [ProcessPhaseEnd]  Info:[编译阶段[Export]完成]
+Compile completed.

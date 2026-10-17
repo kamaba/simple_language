@@ -175,14 +175,14 @@ data ComplexProfile
 data MetaInfo
 {
     level = 1
-    passed = False
+    passed = false
 }
 
 data StudentRecord
 {
     sid = 0
     name = ""
-    meta = MetaInfo(){ level = 2, passed = True }
+    meta = MetaInfo(){ level = 2, passed = true }
 }
 ```
 
@@ -275,7 +275,7 @@ data FullStudentRecord
         { name = "Math", year = 2024 },
         { name = "Physics", year = 2025 }
     ]
-    meta = MetaInfo(){ level = 2, passed = True }
+    meta = MetaInfo(){ level = 2, passed = true }
 }
 ```
 
@@ -325,7 +325,7 @@ FullStudentRecord c = FullStudentRecord()
         grade = 4
         rank = 2
     }
-    meta = MetaInfo(){ level = 3, passed = True }
+    meta = MetaInfo(){ level = 3, passed = true }
 }
 ```
 
@@ -424,15 +424,13 @@ srclone = sr.clone()   #对sr的克隆，数据在底层直接进行复制
 srcclone2 = StudentRecord.clone()  # 对静态StudentRecord的直接复制
 ```
 
-### 4.2.2 toString()
+### 4.2.2 toString() / toJson() / toJsonPretty()
 ```sl
 StudentRecord sr = new(){ srcoe = 100 }
-srstr = sr.toString()   #对sr的格式化输出 类似于json格式
+srstr = sr.toString()        #对sr的格式化输出（SystemBuildDataString，类似json格式）
 srcstr3 = StudentRecord.toString()  # 对静态StudentRecord的直接输出
-str4 = sr.toString(DataType.json)  # 输出json格式
-str5 = sr.toString(DataType.trim)  # 输出不带换行与空格的
-str6 = sr.toString(DataType.jsonTrim)  #输出json格式不带换行相关
-json1 = sr.toJson()  #输出一个json格式
+json1 = sr.toJson()          #输出紧凑json格式
+json2 = sr.toJsonPretty()    #输出2空格缩进美化的json格式
 ```
 
 ### 4.2.3 toJson() / toJsonPretty()（data -> JSON 正向）
@@ -519,7 +517,7 @@ data DataMemberShape
     i1 = 10
     arr = [1, 2, 3]
     anon = { x = 1, y = 2 }
-    meta = MetaInfo(){ level = 2, passed = True }
+    meta = MetaInfo(){ level = 2, passed = true }
     holder = DataHolder(){ value = 7 }
     kind = DataKind.Base
 }
@@ -593,7 +591,7 @@ data typedProfile = {
 data profile = {
     a2 = 10
     string a = "333"
-    metainfo = MetaInfo(){ level = 8, passed = True }
+    metainfo = MetaInfo(){ level = 8, passed = true }
     holder = DataHolder(){ value = 11 }
     kind = DataKind.Advanced
     anon = {
@@ -616,7 +614,7 @@ data profile = {
 当两个 `data` 使用 `==` 进行比较时，规则应为：
 
 1. 先比较两边的结构是否相同
-2. 结构相同后，再比较内部成员数据缓冲区 `m_MemberDataBuffer` 是否一致
+2. 结构相同后，再比较内部成员数据缓冲区（C VM `member_data_buffer`，见 `csimple_lang/src/vm/vm_object.h`）是否一致
 
 也就是说，`data == data` 不是单纯比较引用，而是以“结构 + 数据内容”为基础进行比较。
 
@@ -654,7 +652,7 @@ data ScoreData
 - 无函数、无行为，只负责承载数据
 - 支持常数、数组、匿名对象、匿名 `data`、具名 `class`、具名 `data`、`enum`
 - 支持多层嵌套
-- `==` 按结构 + `m_MemberDataBuffer` 内容比较
+- `==` 按结构 + 成员数据缓冲区（C VM `member_data_buffer`）内容比较
 - 打印输出结构化 `data` 内容
 
 ## 6. 约束
@@ -681,7 +679,7 @@ data ScoreData
 
 `bind` 可以把一个或多个 `data` 结构绑定到 `class` / `interface` 上。示例可参考：
 
-- [test/ExpendTest/BindDataTest.sl](../../test/ExpendTest/BindDataTest.sl)
+- [test/BaseTest/BindDataTest.sl](../../test/BaseTest/BindDataTest.sl)
 
 如果多个被绑定的 `data` 中存在同名字段，应当在目标类型中显式消除歧义，而不要依赖隐式推断。
 

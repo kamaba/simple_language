@@ -433,6 +433,28 @@ namespace Net
             ret WebSocketStream( s, recvBuf, false, protocol, opt )
         }
 
+        # 带预读残留的接入重载（SERVER_DESIGN.md §6.8 / §2.2 缺口 9）：
+        # HTTP 层已消费请求行+头（经 readLine 推进 readerIndex）之后，缓冲里
+        # 可能残留客户端提前发来的帧字节——本重载把 preRead 的可读字节
+        # （readerIndex 起）先行灌入握手缓冲再解析，残留帧不丢失。
+        # 纯增量重载，不影响既有两参形式；消费方：SLangServer HTTP 同端口
+        # WS 升级分流。preRead 归调用方所有（本方法只读其可读区）。
+        public static WebSocketStream accept( TcpStream raw, ByteBuffer preRead, WsOptions opt ) throws
+        {
+            if opt == null
+            {
+                opt = WsOptions()
+            }
+            NetStream s = raw
+            ByteBuffer recvBuf = ByteBuffer()
+            if preRead != null && preRead.readableBytes > 0
+            {
+                recvBuf.writeBytes( preRead )
+            }
+            string protocol = WebSocketStream._acceptHandshake( s, recvBuf, opt )
+            ret WebSocketStream( s, recvBuf, false, protocol, opt )
+        }
+
         # 服务端握手应答：请求行 + 头校验 -> 101 + Accept 回填
         static string _acceptHandshake( NetStream s, ByteBuffer buf, WsOptions opt ) throws
         {

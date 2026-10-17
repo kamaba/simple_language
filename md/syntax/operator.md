@@ -21,7 +21,7 @@ S 语言提供常见的算术、位运算和逻辑运算符。运算符在编译
 var a = 1 + 2 * 3;
 var b = (a >> 2) & 0xFF;
 if (a == b) { }
-if (a === b) { } // 严格值相等
+if (a === b) { } # 严格值相等
 ```
 
 ## 运算符重载
@@ -80,19 +80,19 @@ class Vector2
         y = _y;
     }
 
-    // 重载 + 运算符
+    # 重载 + 运算符
     static Vector2 _add_(Vector2 a, Vector2 b)
     {
         return new Vector2(a.x + b.x, a.y + b.y);
     }
 
-    // 重载 == 运算符
+    # 重载 == 运算符
     static bool _eq_(Vector2 a, Vector2 b)
     {
         return a.x == b.x && a.y == b.y;
     }
 
-    // 重载 += 运算符
+    # 重载 += 运算符
     static Vector2 _iadd_(Vector2 a, Vector2 b)
     {
         a.x += b.x;
@@ -108,9 +108,9 @@ class Vector2
 
 var v1 = new Vector2(1.0, 2.0);
 var v2 = new Vector2(3.0, 4.0);
-var v3 = v1 + v2;       // 调用 _add_
-var eq = (v1 == v2);    // 调用 _eq_
-v1 += v2;               // 调用 _iadd_
+var v3 = v1 + v2;       # 调用 _add_
+var eq = (v1 == v2);    # 调用 _eq_
+v1 += v2;               # 调用 _iadd_
 ```
 
 ## 索引器（下标访问）
@@ -153,13 +153,13 @@ class IntArray
         _data = new Array<int>(capacity);
     }
 
-    // 下标读取
+    # 下标读取
     int _getItem_(int _index)
     {
         return _data._getItem_(_index);
     }
 
-    // 下标写入
+    # 下标写入
     void _setItem_(int _index, int _value)
     {
         _data._setItem_(_index, _value);
@@ -167,8 +167,8 @@ class IntArray
 }
 
 var arr = new IntArray(10);
-arr[0] = 42;        // 调用 _setItem_(0, 42)
-var v = arr[0];     // 调用 _getItem_(0)
+arr[0] = 42;        # 调用 _setItem_(0, 42)
+var v = arr[0];     # 调用 _getItem_(0)
 ```
 
 ### 标准库中的索引器
@@ -181,8 +181,8 @@ list.add(10);
 list.add(20);
 list.add(30);
 
-list[0] = 100;          // _setItem_(0, 100)
-Console.println(list[1]); // _getItem_(1) -> 20
+list[0] = 100;          # _setItem_(0, 100)
+Console.println(list[1]); # _getItem_(1) -> 20
 ```
 
 ## Object 约定方法
@@ -196,7 +196,6 @@ Console.println(list[1]); // _getItem_(1) -> 20
 | `hashCode` | `Int32 get hashCode()` | 返回对象哈希码（getter 属性） |
 | `refEquals()` | `static bool refEquals(object a, object b)` | 静态引用相等比较（null 安全） |
 | `type` | `Type get type()` | 获取对象运行时类型（getter 属性） |
-| `release()` | `void release()` | 释放资源（`while` 语句结束时自动调用） |
 
 ```s
 class Point
@@ -221,29 +220,25 @@ class Point
 
 var p1 = new Point(1, 2);
 var p2 = new Point(1, 2);
-Console.println(p1);           // 自动调用 toString() -> (1, 2)
-Console.println(p1 == p2);    // false（引用比较，除非重载 _eq_）
-Console.println(p1.equals(p2)); // true（逻辑相等）
+Console.println(p1);           # 自动调用 toString() -> (1, 2)
+Console.println(p1 == p2);    # false（引用比较，除非重载 _eq_）
+Console.println(p1.equals(p2)); # true（逻辑相等）
 ```
 
 > **`==` 与 `equals` 的区别**：`==` 走 `_eq_` 运算符重载（未定义时为引用比较），`equals` 是普通方法调用。
 
 ## 类型转换
 
-### `cast<T>()` - 显式类型转换
+### `Cast<T>()` - 历史转换方法
 
-```s
-var obj = someValue as object;
-var str = obj.cast<string>();  // 显式转换为 string
-```
+所有类继承自 `Object`，历史上通过 `Cast<T>()` / `_cast_<T>()` 系统方法完成转换；若类定义了 `_cast_<T>()` 自定义转换方法，转换时优先走该方法（预留设计）。
 
-- 所有类继承自 `Object`，因此都可用 `cast<T>()`
-- 数字类型已内置常用重载
+- 现行推荐写法是 `as` / `is` / `isnot`，详见 cast 章节
 
 ### `as` - 类型检查与转换
 
 ```s
-var p = obj as Point;  // 若 obj 不是 Point 类型则返回 null
+var p = obj as Point;  # 若 obj 不是 Point 类型则返回 null
 if (p != null) { ... }
 ```
 
@@ -258,12 +253,12 @@ if (p != null) { ... }
 | `_after_` | Project 类 | 编译后钩子（导出 IR 前） |
 
 ```s
-project MyApp
+Project
 {
     _before_() { #! 编译前钩子 !# }
     _after_()  { #! 编译后钩子（导出 IR 前） !# }
 
-    static void _main_()
+    _main_()
     {
         Console.println("Hello, World!");
     }
@@ -293,8 +288,8 @@ project MyApp
 | `_ne_` | 运算符重载 | `!=` |
 | `_and_` | 运算符重载 | `&&` |
 | `_or_` | 运算符重载 | `\|\|` |
-| `_enter_` | attribute的进入 | ` |
-| `_exit_` | attribute的退出 | ` |
+| `_enter_` | attribute 钩子 | 进入（attribute/with 语义） |
+| `_exit_` | attribute 钩子 | 退出（attribute/with 语义） |
 | `toString()` | Object 约定 | 字符串表示 |
 | `equals()` | Object 约定 | 逻辑相等 |
 | `hashCode` | Object 约定 | 哈希码 |

@@ -1,6 +1,6 @@
 # SLang Server — HTTP / WebSocket 服务框架设计
 
-> 状态：**设计稿 v2（待评审）** · v1 2026-10-14 · v2 2026-10-14（评审修订）
+> 状态：**v2 · P0 已落地（2026-10-17）** · v1 2026-10-14 · v2 2026-10-14（评审修订） · P0 2026-10-17（引擎+探针全绿，见 §8 P0 行与文末「P0 落地实录」）
 > 落位：`source/Front/Lib/SLang/Server/`（模块名 `SLangServer`，命名空间 `SLang`）
 > 参照系：Python FastAPI（路由注册/自动文档）、Java Spring Boot（控制器/插件生态）、Node Express（Request/Response 双参签名）
 > 关联：`md/lib/Std/net/Http.md`（Route 未接线说明）、`csimple_lang/md/design/ATTRIBUTE_DESIGN.md` §6.6（Route 另立项）、`csimple_lang/md/design/NETSTREAM_DESIGN.md`（Tcp 挂起协议）
@@ -1407,7 +1407,7 @@ User u = await persistUser( b ) as User;     # 而非：Task t = spawn persistUs
 
 | 阶段 | 范围 | 产出 | 验收 |
 |------|------|------|------|
-| **P0** 引擎 | `HttpServerCore` + `_HttpParser` + 响应编码 + keep-alive；`WebSocketStream.acceptBuffered` 重载（Std 增量）；**前置探针：CallClosure 多参直调（双参/三参闭包变量调用）+ handler 协程派发语义（§6.1：`awaitTask` 对已 cancel/已死 Task 的返回路径、`waitTimeout` 返回方向）** | 无路由的裸 HTTP 服务 + `test/Other/NetTest/` 旁路探针 | curl 往返 200/404/413/431；HttpClient 同进程回环；多参闭包探针通过；协程派发探针通过（死 Task 不永久挂起、waitTimeout 方向符合文档）；`md/lib/Std/net/Websocket.md` 同步 |
+| **P0** 引擎 | `HttpServerCore` + `_HttpParser` + 响应编码 + keep-alive；`WebSocketStream.acceptBuffered` 重载（Std 增量）；**前置探针：CallClosure 多参直调（双参/三参闭包变量调用）+ handler 协程派发语义（§6.1：`awaitTask` 对已 cancel/已死 Task 的返回路径、`waitTimeout` 返回方向）** | 无路由的裸 HTTP 服务 + `test/Other/NetTest/` 旁路探针 | ✅ **2026-10-17 全绿**：ServerProbeTest A1–B6（多参闭包/带值返回/死 Task awaitTask 不挂起/waitTimeout 双向/cancel）+ ServerCoreTest S1a–S4b（回环 200·404·405+Allow·413·431·504·keep-alive·HEAD·WS 预读残留帧 echo:hello），NetTest 全套 FAIL=0；落地偏差见文末「P0 落地实录」（静态单例化 / 三坑复盘 / HttpServerCore 含 P0 精确路由） |
 | **P1** 路由与封装 | `Router/RouteInfo/RouteGroup` + `Request/Response/Next` 全表 + `ApiResult` + **BodyParser（json/form/bin）** + `app.run/start/stop` + WS 路由升级 + `WsSession` + `WebSocketServer` 独立形态 | §4.1–§4.4 与 §4.6 全部示例可运行 | ExpendTest 新增 `Server/` 子目录用例（各动词/路径参数/查询/json·form·bin body/keep-alive/WS echo/广播）全绿 |
 | **P1.5** 上传 | multipart 解析器 + `UploadedFile`（saveAs/saveInto/安全剥离）+ `maxUploadBytes/maxFileBytes` | §4.4 文件上传全部示例可运行 | multipart 混合（文件+普通字段）/多文件同字段/路径穿越攻击用例（`../../evil.txt` → 剥离为 `evil.txt`）/超限 413 |
 | **P2** 管道插件与流式 | 中间件管道（Next.go）+ `ServerPlugin` + `logger/cors/staticFiles` + **流式三件套（`StreamWriter` chunked / `SseWriter` SSE / `sendFile` 流式下载）** + `wsEvents` 糖 + 通配路由 | §4.5 与 §4.7 全部示例可运行 | 中间件短路/后置/传值用例；静态目录含 MIME 判定；curl 分块接收 chunked 往返 / SSE 浏览器 EventSource / 大文件流式下载内存峰值用例 |
@@ -1429,7 +1429,7 @@ User u = await persistUser( b ) as User;     # 而非：Task t = spawn persistUs
 | 文档（用户侧） | `md/lib/` 新增 `Server.md`（用法文档，本文档 §4 收敛而成）+ `md/INDEX.md` §4 挂链（R13） |
 | 文档（Std 侧） | `md/lib/Std/net/Websocket.md` 补 `acceptBuffered` 重载；`md/lib/Std/net/Net.md` L34"不含 HTTP 服务端"措辞更新为指向 SLangServer |
 | AGENTS.md | §1 表格 `simple_language/` 行与 §3 路由表补 `SLang/Server` 条目 |
-| 故障排查 | C VM 侧改动（仅 P4）按 R12 先插桩后修复；复盘按 R10 进 `md/ai/故障排查流程.md` §6 |
+| 故障排查 | C VM 侧改动（仅 P4）按 R12 先插桩后修复；复盘按 R10 写入 `md/ai/troubleshooting/` 对应分片（路由见 故障排查流程.md §6） |
 | 构建脚本 | 无需改 `scripts/compile-stdlib.ps1`（其编译三件套 Core/Math/Std）；SLangServer 由用例集 jsonc references 拉入编译链，必要时评估加入批量脚本 `-Tests` 矩阵 |
 | 依赖边界守护 | 评审/提交时核对 jsonc `references` 仅 Core/Std（G8）；SL 源文件 import 只允许 `SLangServer` 自身 + `Std` + `Core` |
 
@@ -1502,3 +1502,21 @@ html → text/html · js → application/javascript · css → text/css · json 
 ---
 
 > **评审通过后的第一步**：按 §8 P0 开工——先建 `Server.jsonc` / `Server.sp` / 空骨架文件与本文档落位，再写 **CallClosure 多参直调探针**（风险 #1 前置排雷）与 **handler 协程派发探针**（风险 #15 前置排雷），然后实现 `HttpServerCore` 探针用例（`test/Other/NetTest/` 旁路），跑通 curl 往返后进入 P1。
+
+---
+
+## §12 P0 落地实录（2026-10-17，代码实况与设计的差异记录）
+
+**产物**：`Server.sl`（ServerConfig/ServerError P0 子集）+ `HttpServerCore.sl`（解析/编码/keep-alive/超时守护/P0 精确路由）+ `Request.sl`/`Response.sl`（P0 子集）+ `Server.jsonc`/`Server.sp`；Std 增量 `Websocket.sl` 三参 `accept(raw, preRead, opt)` 重载；验收用例 `test/Other/NetTest/{ServerProbeTest,ServerCoreTest}.sl`（S 组端口 19371–19374）。
+
+**探针结论（风险 #1/#15/#19 ② 全部排雷通过）**：CallClosure 双参/三参直调、object 传参带值返回、Function 字段拷局部调用全部可用；`waitTimeout` 完成→true / 超时→false 方向正确；`awaitTask` 对已死/已 cancel Task 安全返回不挂起；`spawnClosure2` 双参派发 + await 可用——P1 起按双参签名推进，无需启用 §10 风险 1 的单参降级路径。
+
+**与设计的偏差（均为实现细节，不改变 P1+ 设计）**：
+1. **HttpServerCore 为模块级静态单例**（`configure(cfg)/reset()/start()/stop()/awaitStop()/onGet/onPost/onAny/on`），非 §3 的实例形态——C VM 对跨模块引用类多实例化的实例态隔离不可靠（连续 new 多实例时 S2 连接读到 S1 的路由表，闭包零捕获 + 实参传值亦无法规避；详复盘 [2026-10-17]）；v1 单服务器语义下无功能损失，P1 门面 `SLang.Server` 按单实例收口。
+2. **HttpServerCore 内置 P0 精确路由**（提前于 P1 Router 落地了 method+path 精确匹配 + ANY + HEAD 视同 GET + 404/405+Allow），因引擎验收需要路由才能测 404/405；P1 Router（`{param}`/分组/优先级）替换该内部表。
+3. **413/431/504/500 走优雅断连** `_gracefulClose`（closeWrite FIN → delay 50ms → 丢弃式收尾读 → close）——直接 close 在入站 body 未读完时触发 RST，HttpClient 收不到响应（设计 §6.11 未提，经验补充）。
+4. **`ServerConfig.host` 空值兜底 `"0.0.0.0"`**（跨模块 string 字段默认值消费侧丢失，Int32 正常）；用户工程写 `SLang.ServerConfig()` 后应显式 `cfg.host/cfg.port`（HttpClient 显式字段先例同款纪律）。
+5. **`List<object>` + as 转型替代 `List<Net.TcpStream>`**（泛型参数位禁点分类型）；`ApiResult` 类未落地前错误体由 `_errorBody()` 手工组包（键序 code→message→data 与 §6.7 一致）。
+6. jsonc 路径基准 = .sp 所在目录（`Lib/SLang/Server/` 深度 5 → `outputDir` 5 个 `..`、references `../../Core`/`../../Std`）；G8 白名单生效。
+
+**下一步（P1）**：`SLang.Server` 门面（包装静态 HttpServerCore）+ `Router/RouteInfo/RouteGroup`（`{param}` 提取/优先级/冲突检测/DuplicateRoute）+ Request/Response 全表（pathParam/query 族 + json/jsonOk/jsonFail/redirect）+ `ApiResult` + BodyParser（json/form/bin 分流）+ WS 路由升级（`app.websocket` + `WebSocketStream.accept(c, preRead, opt)` 接线）+ `WsSession`/`WebSocketServer`；用例迁入 `test/ExpendTest/Server/`（§9）。

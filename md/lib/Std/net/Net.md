@@ -31,7 +31,7 @@
 
 ## 1. 模型概述
 
-网络层提供 **TCP / UDP 裸 socket**、**TLS 加密流** 与 **HTTP/1.1 客户端**（`Uri` / `HttpClient`；不含 DNS 解析服务与 HTTP 服务端），全部 IO 走**协程化挂起**——
+网络层提供 **TCP / UDP 裸 socket**、**TLS 加密流** 与 **HTTP/1.1 客户端**（`Uri` / `HttpClient`；不含 DNS 解析服务；HTTP 服务端由 **SLangServer** 模块承载——`source/Front/Lib/SLang/Server/`，见其 `SERVER_DESIGN.md`，P0 连接引擎 `SLang.HttpServerCore` 已落地），全部 IO 走**协程化挂起**——
 未就绪时挂起当前协程、让出调度，fd 就绪后由 IO 线程唤醒续跑；**不阻塞 VM 线程**。
 
 | 特性 | 说明 |

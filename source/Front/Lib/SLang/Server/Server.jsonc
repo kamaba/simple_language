@@ -1,0 +1,91 @@
+{
+  "project":
+  {
+    "name": "SLangServer",
+    "desc": "HTTP + WebSocket application server framework (namespace SLang; depends on Core/Std only)",
+    "mainVersion": 0,
+    "subVersion": 1,
+    "buildVersion": 0,
+    "buildSubVersion": 0
+  },
+  "source": {
+    "root": "."
+  },
+  "compile": {
+    "optimize": false,
+    "target": "x64",
+    "debug": true,
+    "isUseForceSemiColonInLineEnd": true,
+    "isForceUseClassKey": false,
+    "isSupportDoublePlus": false,
+    "requireSameNumericTypes": false
+  },
+  // P0+P1 已实现文件；SERVER_DESIGN.md §5.1 余量（Upload/StreamIo/Plugin/
+  // Plugins/OpenApi/Auth）随 P1.5..P3 各阶段落地时增补（compileFiles 为显式
+  // 清单，勿提前登记空文件）。
+  "compileFiles": {
+    "files": [
+      { "path": "Server.sl",         "group": "server", "tag": "core", "ignore": false, "priority": 0 },
+      { "path": "HttpServerCore.sl", "group": "server", "tag": "net",  "ignore": false, "priority": 0 },
+      { "path": "Router.sl",         "group": "server", "tag": "core", "ignore": false, "priority": 0 },
+      { "path": "Request.sl",        "group": "server", "tag": "core", "ignore": false, "priority": 0 },
+      { "path": "Response.sl",       "group": "server", "tag": "core", "ignore": false, "priority": 0 },
+      { "path": "BodyParser.sl",     "group": "server", "tag": "core", "ignore": false, "priority": 0 },
+      { "path": "ApiResult.sl",      "group": "server", "tag": "core", "ignore": false, "priority": 0 },
+      { "path": "WebSocketServer.sl", "group": "server", "tag": "net", "ignore": false, "priority": 0 }
+    ]
+  },
+  "compileFilter": {
+    "isAllGroup": true,
+    "isAllTag": true
+  },
+  "global": {
+    "imports": [
+      "Std.Console"
+    ],
+    "replace": {
+      "DEBUG": "true"
+    }
+  },
+  // G8 依赖边界（SERVER_DESIGN.md §1.1）：references 白名单仅 Core / Std；
+  // 禁引 Math / Render / Tensora / SLMysql / 插件体系 / 任何 native DLL。
+  // references 用源码目录形态（../../Core，Std.jsonc 同款）；P0 已验证可编译可运行。
+  "references": [
+    { "path": "../../Core", "name": "Core" },
+    { "path": "../../Std",  "name": "Std" }
+  ],
+  "struct": [ { "namespace": "SLang", "children": [
+      { "class": "ServerConfig" },
+      { "enum": "ServerError" },
+      { "class": "Server" },
+      { "class": "HttpServerCore" },
+      { "class": "Router" },
+      { "class": "RouteInfo" },
+      { "class": "RouteGroup" },
+      { "class": "Request" },
+      { "class": "Response" },
+      { "class": "ApiResult" },
+      { "class": "BodyParser" },
+      { "enum": "EBodyFormat" },
+      { "class": "WsSession" },
+      { "class": "WebSocketServer" }
+  ]}],
+  "systemCalls": [],
+  "export": {
+    "moduleName": "SLangServer",
+    "outputDir": "..\\..\\..\\..\\..\\out\\export",
+    "versionMain": 0,
+    "versionSub": 1,
+    "versionPatch": 0,
+    "includeMetadata": true,
+    "debugText": {
+      "outputDir": "",
+      "code": true,
+      "token": true,
+      "node": true,
+      "file": true,
+      "meta": true,
+      "ir": true
+    }
+  }
+}

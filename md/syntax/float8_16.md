@@ -222,8 +222,8 @@ global.println(5.9604644775390625e-8h.toString())  # 5.96046e-08
 
 | 环节         | 位置 / 说明 |
 |--------------|-------------|
-| 词法后缀     | `LexerParse.cs`：识别 `fe4` / `fe5` / `h` / `hb` 数字后缀 |
-| EType        | `EType.Float8_E4M3` / `Float8_E5M2` / `Float16` / `Float16_Brain` |
+| 词法后缀     | `Parse/LexerParseToToken.cs`：识别 `fe4` / `fe5` / `h` / `hb` 数字后缀 |
+| EType        | `EType.Float8`（`@Nickname("Float8_E4M3")`）/ `Float8_E5M2` / `Float16` / `Float16_Brain` |
 | 类型提升     | `MetaTypeFactory.CalcETypeByLeftAndRight`：低精度参与的二元运算类型分支 |
 | 常量编码     | 字面量编译期完成十进制 → 位模式的 RNE 编码 |
 | IR 常量指令  | `LoadConstFloat8_E4M3` / `LoadConstFloat8_E5M2` / `LoadConstFloat16` / `LoadConstFloat16_Brain`（操作数为原始位模式） |
@@ -242,7 +242,7 @@ global.println(5.9604644775390625e-8h.toString())  # 5.96046e-08
 | Convert 指令     | `vm_runtime.c` Convert opcode 分发：`Convert_F8E4M3` 等六种指令的 etype 映射 |
 | toString         | `convert_system_method.c` `vm_sys_convert_string`：按栈槽 kind 解码后 `%g` 输出 |
 | 局部/成员存储    | `runtime_object.c`：按 `runtime_type` 位宽读写 data slice（float8=1 字节、float16=2 字节位模式） |
-| 类型标记         | `runtime_class_manager.c` `class_name_hint_e_type`：`Core.Float8*` / `Core.Float16*` 类名 → EVMType 映射 |
+| 类型标记         | `runtime_type_manager.c` `vm_runtime_type_manager_class_name_hint_e_type`：`Core.Float8*` / `Core.Float16*` 类名 → EVMType 映射 |
 
 **存储不变式**：从 `LoadConst` 压栈、`StoreLocal/LoadLocal`、方法传参到成员读写，float8/16 全程以**原始位模式**流动；任何需要数值语义的出口（计算/比较/转换/格式化）都基于栈槽 kind 或 etype 解码。栈上 pop/peek 辅助函数（`vm_try_pop_i32` 等）对低精度槽按位模式镜像 `UInt8`/`UInt16` 处理。
 

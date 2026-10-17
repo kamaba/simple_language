@@ -225,6 +225,11 @@
     { "name": "SystemStringRange",       "returnType": "string",    "params": ["string", "Int32", "Int32"], "isVariadic": false, "cvmFunction": "vm_sys_string_range" },
     { "name": "SystemStringCharCodeAt",  "returnType": "Int32",     "params": ["string", "Int32"], "isVariadic": false, "cvmFunction": "vm_sys_string_char_code" },
     { "name": "SystemRegExpRun",         "returnType": "Int32",     "params": ["Array<object>", "Array<object>", "string", "Int32", "Int32", "Array<object>", "Int32"], "isVariadic": false, "cvmFunction": "vm_sys_regexp_run" },
+    { "name": "SystemRegExpFindAll",     "returnType": "Array<object>", "params": ["Array<object>", "Array<object>", "string", "Int32", "Int32", "Int32", "Int32"], "isVariadic": false, "cvmFunction": "vm_sys_regexp_find_all" },
+    { "name": "SystemRegExpFindMatches", "returnType": "object",  "params": ["Array<object>", "Array<object>", "string", "Int32", "Int32", "Int32", "Int32", "object", "object"], "isVariadic": false, "cvmFunction": "vm_sys_regexp_find_matches" },
+    { "name": "SystemRegExpReplace",     "returnType": "string",    "params": ["Array<object>", "Array<object>", "string", "Int32", "Int32", "Int32", "Int32", "string"], "isVariadic": false, "cvmFunction": "vm_sys_regexp_replace" },
+    { "name": "SystemRegExpCompile",     "returnType": "Array<object>", "params": ["string", "Int32"], "isVariadic": false, "cvmFunction": "vm_sys_regexp_compile" },
+    { "name": "SystemRegExpCompileInto", "returnType": "Array<object>", "params": ["string", "Int32", "Array<object>", "Array<object>"], "isVariadic": false, "cvmFunction": "vm_sys_regexp_compile_into" },
     { "name": "SystemStringToUInt8Array","returnType": "UInt8Array","params": ["string"], "isVariadic": false, "cvmFunction": "vm_sys_string_to_uint8_array" },
     { "name": "SystemStringLength",       "returnType": "Int32",     "params": ["string"], "isVariadic": false, "cvmFunction": "vm_sys_string_length" },
 

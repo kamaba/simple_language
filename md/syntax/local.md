@@ -250,6 +250,7 @@ class LocalTest2
 
 - 位置错误：`Error local can only be used at first position` — `local` 必须在调用链首位
 - 位置错误：`Error current file does not define local{}, cannot use local.xxx` — 当前文件没有定义 `local{}` 却使用了 `local.xxx`
-- 函数后出现语句：`Error local{} 中出现函数定义后，后边只允许继续定义函数`
+- 重复定义：`Error local被定义了两次，在一个文件中，只允许在前排放置1个local` — 同一文件只允许一个 `local{}`
+- 语法错误：`Error local后边应该有{}的语法` — `local` 后必须跟 `{}`
 - local 函数使用 static：`Error local{} functions cannot use static keyword`
 - 生成的类名冲突：`Error local{} generated class name conflict: <FileName>_Local`

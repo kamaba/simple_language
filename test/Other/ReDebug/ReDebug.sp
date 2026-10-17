@@ -1,0 +1,17 @@
+Project
+{
+    _main_()
+    {
+        ReDebug.fun()
+    }
+    _test_()
+    {
+        ReDebug.fun()
+    }
+    _before_()
+    {
+    }
+    _after_()
+    {
+    }
+}

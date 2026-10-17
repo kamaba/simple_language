@@ -34,6 +34,8 @@ Project
         AttributeExcludeTest.fun()
         AttributeRuntimeTest.fun()
         MqttTest.fun()
+        # SLangServer P1 验收（T1-T8，端口 19401-19408；前置 SLangServer 模块编译）
+        ServerP1Test.fun()
     }
     _before_()
     {

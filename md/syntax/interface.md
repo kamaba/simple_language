@@ -6,10 +6,10 @@
 
 ```s
 interface IPrintable {
-    void print();
+    void print()
 }
 
-class Document implements IPrintable {
+class Document interface IPrintable {
     override void print() {
         Console.print("Document print");
     }
@@ -18,21 +18,21 @@ class Document implements IPrintable {
 
 说明：
 - 接口只能包含方法签名（以及可选的默认实现，若语言扩展支持）。
-- 使用 `implements` 关键字声明实现关系：`class C implements I1, I2 {}`。
+- 在类头用 `interface` 标记声明实现关系（写在 `extends` 之后，可逗号分隔多个）：`class C extends P interface I1, I2 {}`。语言没有 `implements` 关键字。
 - 若类实现接口但未实现接口中所有方法，则该类必须声明为 `abstract`。
-- 接口可用于多态和依赖注入：`IPrintable p = new Document(); p.print();`。
+- 接口可用于多态和依赖注入：`IPrintable p = Document(); p.print();`。
+- 接口之间可用 `extends` 继承其它接口：`interface ILInstList<T> extends IList<object> {}`（见 test/BaseTest/GenFunction.sl）。
 
 示例（接口泛型）：
 
 ```s
 interface IList<T> {
-    void add(T item);
-    T get(Int32 index);
+    void add(T item)
+    T get(Int32 index)
 }
 
-class ArrayList<T> implements IList<T> {
+class ArrayList<T> interface IList<T> {
     override void add(T item) { /* ... */ }
-    override T get(Int32 index) { /* ... */ ret default; }
+    override T get(Int32 index) { /* ... */ ret T.default; }
 }
 ```
-

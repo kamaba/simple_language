@@ -8,6 +8,7 @@ Project
         #   B=19303-19305        H=19325        T=19341-19344
         #   K=19351-19353（TlsTest，STREAM Phase 3 Stage A）
         #   L=19361-19363（HttpTest，STREAM Phase 3 Stage B）
+        #   S=19371-19374（SLangServer P0：ServerProbeTest / ServerCoreTest）
         TcpBasicTest.fun()
         NetFrameTest.fun()
         UdpEchoTest.fun()
@@ -18,6 +19,10 @@ Project
         NetTimeoutTest.fun()
         TlsTest.fun()
         HttpTest.fun()
+        # SLangServer P0 旁路（SERVER_DESIGN.md §8 P0）：探针 + 引擎验收；
+        # 端口 S 组 19371-19374，全部 stop 后无在途 socket
+        ServerProbeTest.fun()
+        ServerCoreTest.fun()
         # NetSuspendTest 必须最后：B3 守卫用例依赖 root 返回后
         # vm_net_outstanding_count()>0 维持 VM 存活（NET_DESIGN.md ADR-7），
         # 需此前各组协程均已结束，避免在途协程干扰守卫判定

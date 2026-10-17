@@ -1,0 +1,159 @@
+﻿从 source\Front\Properties\launchSettings.json 使用启动设置...
+SimpleLanguage Frontend Compiler v1.0.0
+
+Compiling: D:\project\lang\simple_language\test\ExpendTest\ProjectTest.sp
+[02:10:19 520] [Info] [Project]  [ProjectShowConfigPath]  Info:[加载配置文件[D:\project\lang\simple_language\test\ExpendTest\ProjectTest.jsonc]!]
+[FrontLog] OutputPath: D:\project\lang\simple_language\out\export\ProjectTest2\Logs\Front.txt
+[02:10:19 535] [Info] [Process]  [ProcessPhaseStart]  Info:[开始编译阶段: RefModule]
+[02:10:20 173] [Info] [Project]  [ProjectReferenceModuleReferenceModuleLoaded]  Info:[Reference module loaded (compiled): name={}, path={}] Extend:[Reference module loaded (compiled): name=Core, path=D:\project\lang\simple_language\out\export\Core\Core.module.json]
+[Reference] Module loaded (compiled): name=Core, path=D:\project\lang\simple_language\out\export\Core\Core.module.json
+[02:10:20 629] [Warning] [ParseMeta]  [MetaCoreRepeatDefineFunction]  Info:[重复定义了函数 原来函数位置: 新函数位置:] Extend:[AddMetaMemberFunction]
+[02:10:20 630] [Warning] [ParseMeta]  [MetaCoreRepeatDefineFunction]  Info:[重复定义了函数 原来函数位置: 新函数位置:] Extend:[AddMetaMemberFunction]
+[02:10:20 630] [Warning] [ParseMeta]  [MetaCoreRepeatDefineFunction]  Info:[重复定义了函数 原来函数位置: 新函数位置:] Extend:[AddMetaMemberFunction]
+[02:10:20 631] [Warning] [ParseMeta]  [MetaCoreRepeatDefineFunction]  Info:[重复定义了函数 原来函数位置: 新函数位置:] Extend:[AddMetaMemberFunction]
+[02:10:20 647] [Warning] [ParseMeta]  [MetaCoreRepeatDefineFunction]  Info:[重复定义了函数 原来函数位置: 新函数位置:] Extend:[AddMetaMemberFunction]
+[02:10:20 648] [Warning] [ParseMeta]  [MetaCoreRepeatDefineFunction]  Info:[重复定义了函数 原来函数位置: 新函数位置:] Extend:[AddMetaMemberFunction]
+[02:10:20 649] [Warning] [ParseMeta]  [MetaCoreRepeatDefineFunction]  Info:[重复定义了函数 原来函数位置: 新函数位置:] Extend:[AddMetaMemberFunction]
+[02:10:20 650] [Warning] [ParseMeta]  [MetaCoreRepeatDefineFunction]  Info:[重复定义了函数 原来函数位置: 新函数位置:] Extend:[AddMetaMemberFunction]
+[02:10:20 651] [Warning] [ParseMeta]  [MetaCoreRepeatDefineFunction]  Info:[重复定义了函数 原来函数位置: 新函数位置:] Extend:[AddMetaMemberFunction]
+[02:10:20 662] [Info] [Project]  [ProjectReferenceModuleReferenceModuleLoaded]  Info:[Reference module loaded (compiled): name={}, path={}] Extend:[Reference module loaded (compiled): name=Std, path=D:\project\lang\simple_language\out\export\Std\Std.module.json]
+[Reference] Module loaded (compiled): name=Std, path=D:\project\lang\simple_language\out\export\Std\Std.module.json
+[02:10:20 827] [Info] [Project]  [ProjectReferenceModuleReferenceModuleLoaded]  Info:[Reference module loaded (compiled): name={}, path={}] Extend:[Reference module loaded (compiled): name=SLangServer, path=D:\project\lang\simple_language\out\export\SLangServer\SLangServer.module.json]
+[Reference] Module loaded (compiled): name=SLangServer, path=D:\project\lang\simple_language\out\export\SLangServer\SLangServer.module.json
+[02:10:20 828] [Info] [Process]  [ProcessPhaseEnd]  Info:[编译阶段[RefModule]完成]
+[02:10:20 828] [Info] [Process]  [ProcessPhaseStart]  Info:[开始编译阶段: File]
+[02:10:20 829] [Info] [Project]  [ProjectShowCompileFiles]  Info:[要编译的文件数量:28]
+[02:10:20 832] [Info] [Process]  [ProcessCompileFileStart]  Info:[开始编译:ProjectTest.sp]
+[02:10:20 838] [Info] [Process]  [ProcessCompileFileStart]  Info:[开始编译:ListTest.sl]
+[02:10:20 844] [Info] [Process]  [ProcessCompileFileStart]  Info:[开始编译:MapTest.sl]
+[02:10:20 846] [Info] [Process]  [ProcessCompileFileStart]  Info:[开始编译:FileTest.sl]
+[02:10:20 848] [Info] [Process]  [ProcessCompileFileStart]  Info:[开始编译:CsvTest.sl]
+[02:10:20 849] [Info] [Process]  [ProcessCompileFileStart]  Info:[开始编译:DirectoryTest.sl]
+[02:10:20 850] [Info] [Process]  [ProcessCompileFileStart]  Info:[开始编译:ConsoleTest.sl]
+[02:10:20 852] [Info] [Process]  [ProcessCompileFileStart]  Info:[开始编译:DateTimeTest.sl]
+[02:10:20 854] [Info] [Process]  [ProcessCompileFileStart]  Info:[开始编译:LinkedListTest.sl]
+[02:10:20 863] [Info] [Process]  [ProcessCompileFileStart]  Info:[开始编译:Sqlite3Test.sl]
+[02:10:20 864] [Info] [Process]  [ProcessCompileFileStart]  Info:[开始编译:ModuleGlobalTest.sl]
+[02:10:20 884] [Info] [Process]  [ProcessCompileFileStart]  Info:[开始编译:IsolateTest.sl]
+[02:10:20 919] [Info] [Process]  [ProcessCompileFileStart]  Info:[开始编译:ComponentTest.sl]
+[02:10:20 921] [Info] [Process]  [ProcessCompileFileStart]  Info:[开始编译:StreamFileTest.sl]
+[02:10:20 923] [Info] [Process]  [ProcessCompileFileStart]  Info:[开始编译:SerializeTest.sl]
+[02:10:20 925] [Info] [Process]  [ProcessCompileFileStart]  Info:[开始编译:ZlibTest.sl]
+[02:10:20 926] [Info] [Process]  [ProcessCompileFileStart]  Info:[开始编译:GZipTest.sl]
+[02:10:20 928] [Info] [Process]  [ProcessCompileFileStart]  Info:[开始编译:Base64Test.sl]
+[02:10:20 929] [Info] [Process]  [ProcessCompileFileStart]  Info:[开始编译:RegExpTest.sl]
+[02:10:20 931] [Info] [Process]  [ProcessCompileFileStart]  Info:[开始编译:LogTest.sl]
+[02:10:20 933] [Info] [Process]  [ProcessCompileFileStart]  Info:[开始编译:MiTest.sl]
+[02:10:20 934] [Info] [Process]  [ProcessCompileFileStart]  Info:[开始编译:LogFatalTest.sl]
+[02:10:20 935] [Info] [Process]  [ProcessCompileFileStart]  Info:[开始编译:AttributeExcludeTest.sl]
+[02:10:20 936] [Info] [Process]  [ProcessCompileFileStart]  Info:[开始编译:AttributeNicknameTest.sl]
+[02:10:20 937] [Info] [Process]  [ProcessCompileFileStart]  Info:[开始编译:AttributeRuntimeTest.sl]
+[02:10:20 939] [Info] [Process]  [ProcessCompileFileStart]  Info:[开始编译:AttributeTest.sl]
+[02:10:20 940] [Info] [Process]  [ProcessCompileFileStart]  Info:[开始编译:MqttTest.sl]
+[02:10:20 942] [Info] [Process]  [ProcessCompileFileStart]  Info:[开始编译:Server/ServerP1Test.sl]
+[02:10:21 036] [Info] [Process]  [ProcessCompileFileCompleted]  Info:[文件[ProjectTest.sp]编译File层完成]
+[02:10:21 059] [Info] [Process]  [ProcessCompileFileCompleted]  Info:[文件[ListTest.sl]编译File层完成]
+[02:10:21 066] [Info] [Process]  [ProcessCompileFileCompleted]  Info:[文件[MapTest.sl]编译File层完成]
+[02:10:21 067] [Info] [Process]  [ProcessCompileFileCompleted]  Info:[文件[FileTest.sl]编译File层完成]
+[02:10:21 068] [Info] [Process]  [ProcessCompileFileCompleted]  Info:[文件[CsvTest.sl]编译File层完成]
+[02:10:21 081] [Info] [Process]  [ProcessCompileFileCompleted]  Info:[文件[DirectoryTest.sl]编译File层完成]
+[02:10:21 084] [Info] [Process]  [ProcessCompileFileCompleted]  Info:[文件[ConsoleTest.sl]编译File层完成]
+[02:10:21 087] [Info] [Process]  [ProcessCompileFileCompleted]  Info:[文件[DateTimeTest.sl]编译File层完成]
+[02:10:21 108] [Info] [Process]  [ProcessCompileFileCompleted]  Info:[文件[LinkedListTest.sl]编译File层完成]
+[02:10:21 110] [Info] [Process]  [ProcessCompileFileCompleted]  Info:[文件[Sqlite3Test.sl]编译File层完成]
+[02:10:21 111] [Info] [Process]  [ProcessCompileFileCompleted]  Info:[文件[ModuleGlobalTest.sl]编译File层完成]
+[02:10:21 124] [Info] [Process]  [ProcessCompileFileCompleted]  Info:[文件[IsolateTest.sl]编译File层完成]
+[02:10:21 130] [Info] [Process]  [ProcessCompileFileCompleted]  Info:[文件[ComponentTest.sl]编译File层完成]
+[02:10:21 133] [Info] [Process]  [ProcessCompileFileCompleted]  Info:[文件[StreamFileTest.sl]编译File层完成]
+[02:10:21 137] [Info] [Process]  [ProcessCompileFileCompleted]  Info:[文件[SerializeTest.sl]编译File层完成]
+[02:10:21 139] [Info] [Process]  [ProcessCompileFileCompleted]  Info:[文件[ZlibTest.sl]编译File层完成]
+[02:10:21 140] [Info] [Process]  [ProcessCompileFileCompleted]  Info:[文件[GZipTest.sl]编译File层完成]
+[02:10:21 142] [Info] [Process]  [ProcessCompileFileCompleted]  Info:[文件[Base64Test.sl]编译File层完成]
+[02:10:21 144] [Info] [Process]  [ProcessCompileFileCompleted]  Info:[文件[RegExpTest.sl]编译File层完成]
+[02:10:21 145] [Info] [Process]  [ProcessCompileFileCompleted]  Info:[文件[LogTest.sl]编译File层完成]
+[02:10:21 146] [Info] [Process]  [ProcessCompileFileCompleted]  Info:[文件[MiTest.sl]编译File层完成]
+[02:10:21 147] [Info] [Process]  [ProcessCompileFileCompleted]  Info:[文件[LogFatalTest.sl]编译File层完成]
+[02:10:21 148] [Info] [Process]  [ProcessCompileFileCompleted]  Info:[文件[AttributeExcludeTest.sl]编译File层完成]
+[02:10:21 148] [Info] [Process]  [ProcessCompileFileCompleted]  Info:[文件[AttributeNicknameTest.sl]编译File层完成]
+[02:10:21 155] [Info] [Process]  [ProcessCompileFileCompleted]  Info:[文件[AttributeRuntimeTest.sl]编译File层完成]
+[02:10:21 156] [Info] [Process]  [ProcessCompileFileCompleted]  Info:[文件[AttributeTest.sl]编译File层完成]
+[02:10:21 157] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[MqttTest.sl_90_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[02:10:21 160] [Info] [Process]  [ProcessCompileFileCompleted]  Info:[文件[MqttTest.sl]编译File层完成]
+[02:10:21 161] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[Server/ServerP1Test.sl_69_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[02:10:21 161] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[Server/ServerP1Test.sl_119_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[02:10:21 165] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[Server/ServerP1Test.sl_897_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[02:10:21 168] [Info] [Process]  [ProcessCompileFileCompleted]  Info:[文件[Server/ServerP1Test.sl]编译File层完成]
+[02:10:21 169] [Info] [Process]  [ProcessPhaseEnd]  Info:[编译阶段[File]完成]
+[02:10:21 169] [Info] [Process]  [ProcessPhaseStart]  Info:[开始编译阶段: MetaCore]
+[02:10:21 190] [Info] [ParseMeta]  [MetaCoreAttributePreCompileSkip] Position:[AttributeExcludeTest.sl_12_0]  Info:[PreCompile attribute '{}' 命中跳过: {} 不进入编译（不进 module.json）] Extend:[PreCompile attribute 命中跳过: class 'HiddenClass' 不进入编译（不进 module.json）] Tips:[设计如此（@Exclude 成员级/类级隔离）；若为误标请移除该 attribute。] 
+
+[02:10:21 191] [Info] [ParseMeta]  [MetaCoreAttributePreCompileSkip] Position:[AttributeExcludeTest.sl_25_0]  Info:[PreCompile attribute '{}' 命中跳过: {} 不进入编译（不进 module.json）] Extend:[PreCompile attribute 命中跳过: 成员变量 'ProjectTest.AttributeExcludeTest.hiddenVar' 不进入编译（不进 module.json）] Tips:[设计如此（@Exclude 成员级/类级隔离）；若为误标请移除该 attribute。] 
+
+[02:10:21 191] [Info] [ParseMeta]  [MetaCoreAttributePreCompileSkip] Position:[AttributeExcludeTest.sl_28_0]  Info:[PreCompile attribute '{}' 命中跳过: {} 不进入编译（不进 module.json）] Extend:[PreCompile attribute 命中跳过: 成员函数 'ProjectTest.AttributeExcludeTest.hiddenStatic' 不进入编译（不进 module.json）] Tips:[设计如此（@Exclude 成员级/类级隔离）；若为误标请移除该 attribute。] 
+
+[02:10:21 206] [Info] [ParseMeta]  [MetaCoreClassIssue4] Position:[AttributeRuntimeTest.sl_130_0]  Info:[Warning 类[] Extend:[Warning 类[ProjectTest.AttrRuntimeDemo] 方法: _init_ 重写了父类方法但未使用 override 标记: Core.Object._init_]
+[02:10:21 206] [Info] [ParseMeta]  [MetaCoreClassIssue4] Position:[AttributeRuntimeTest.sl_141_0]  Info:[Warning 类[] Extend:[Warning 类[ProjectTest.AttrSerDemo] 方法: _init_ 重写了父类方法但未使用 override 标记: Core.Object._init_]
+[02:10:21 207] [Info] [ParseMeta]  [MetaCoreClassIssue4] Position:[Server/ServerP1Test.sl_37_0]  Info:[Warning 类[] Extend:[Warning 类[ProjectTest.P1User] 方法: _init_ 重写了父类方法但未使用 override 标记: Core.Object._init_]
+[02:10:21 207] [Info] [ParseMeta]  [MetaCoreClassIssue4] Position:[SerializeTest.sl_82_0]  Info:[Warning 类[] Extend:[Warning 类[ProjectTest.PlainPoint] 方法: _init_ 重写了父类方法但未使用 override 标记: Core.Object._init_]
+[02:10:21 208] [Info] [ParseMeta]  [MetaCoreClassIssue4] Position:[SerializeTest.sl_71_0]  Info:[Warning 类[] Extend:[Warning 类[ProjectTest.SerOuter] 方法: _init_ 重写了父类方法但未使用 override 标记: Core.Object._init_]
+[02:10:21 209] [Info] [ParseMeta]  [MetaCoreClassIssue4] Position:[SerializeTest.sl_33_0]  Info:[Warning 类[] Extend:[Warning 类[ProjectTest.SerPoint] 方法: _init_ 重写了父类方法但未使用 override 标记: Core.Object._init_]
+[02:10:21 209] [Info] [ParseMeta]  [MetaCoreClassIssue4] Position:[SerializeTest.sl_60_0]  Info:[Warning 类[] Extend:[Warning 类[ProjectTest.SerInner] 方法: _init_ 重写了父类方法但未使用 override 标记: Core.Object._init_]
+[02:10:21 210] [Info] [ParseMeta]  [MetaCoreClassIssue4] Position:[Server/ServerP1Test.sl_791_0]  Info:[Warning 类[] Extend:[Warning 类[ProjectTest.P1WsClient] 方法: _init_ 重写了父类方法但未使用 override 标记: Core.Object._init_]
+[02:10:21 212] [Info] [ParseMeta]  [MetaCoreClassIssue4] Position:[AttributeRuntimeTest.sl_51_0]  Info:[Warning 类[] Extend:[Warning 类[ProjectTest.Meter] 方法: _init_ 重写了父类方法但未使用 override 标记: Core.Attribute._init_]
+[02:10:21 212] [Info] [ParseMeta]  [MetaCoreClassIssue4] Position:[AttributeTest.sl_12_0]  Info:[Warning 类[] Extend:[Warning 类[ProjectTest.webapi] 方法: _init_ 重写了父类方法但未使用 override 标记: Core.Attribute._init_]
+[02:10:21 212] [Info] [ParseMeta]  [MetaCoreClassIssue4] Position:[AttributeTest.sl_27_0]  Info:[Warning 类[] Extend:[Warning 类[ProjectTest.coda] 方法: _init_ 重写了父类方法但未使用 override 标记: Core.Attribute._init_]
+[02:10:21 213] [Info] [ParseMeta]  [MetaCoreClassIssue4] Position:[AttributeRuntimeTest.sl_29_0]  Info:[Warning 类[] Extend:[Warning 类[ProjectTest.LogTrace] 方法: _init_ 重写了父类方法但未使用 override 标记: Core.Attribute._init_]
+[02:10:21 228] [Info] [ParseMeta]  [MetaCoreAttributeNicknameRegisteredAlias]  Info:[Nickname: registered alias '{}' -> '{}' under '{}'] Extend:[Nickname: registered alias 'OKK' -> 'ProjectTest.Class1' under 'ProjectTest']
+[02:10:21 228] [Info] [ParseMeta]  [MetaCoreAttributeNicknameRegisteredAlias]  Info:[Nickname: registered alias '{}' -> '{}' under '{}'] Extend:[Nickname: registered alias 'Prt' -> 'ProjectTest.Class1' under 'ProjectTest']
+[02:10:21 229] [Info] [ParseMeta]  [MetaCoreAttributeNicknameRegisteredAlias]  Info:[Nickname: registered alias '{}' -> '{}' under '{}'] Extend:[Nickname: registered alias '你' -> 'ProjectTest.Class1' under 'ProjectTest']
+[02:10:21 229] [Info] [ParseMeta]  [MetaCoreAttributeCompileHandlerAttribute]  Info:[No compile handler for attribute '{}' on {}] Extend:[No compile handler for attribute 'webapi' on ProjectTest.AttrHost1]
+[02:10:21 229] [Info] [ParseMeta]  [MetaCoreAttributeNicknameRegisteredAlias]  Info:[Nickname: registered alias '{}' -> '{}' under '{}'] Extend:[Nickname: registered alias 'ApiPr' -> 'ProjectTest.AttrHost1' under 'ProjectTest']
+[02:10:21 229] [Info] [ParseMeta]  [MetaCoreAttributeCompileHandlerAttribute]  Info:[No compile handler for attribute '{}' on {}] Extend:[No compile handler for attribute 'coda' on ProjectTest.AttrHost2]
+[02:10:21 230] [Info] [ParseMeta]  [MetaCoreAttributeAttributeManagerProcessCompileTimeCompile]  Info:[AttributeManager.ProcessCompileTime: compile={}, runtime={}] Extend:[AttributeManager.ProcessCompileTime: compile=4, runtime=13]
+[02:10:21 373] [Info] [ParseMeta]  [MetaCoreCallNotAllowNotAllowed2] Position:[ComponentTest.sl_14_0]  Info:[Error this is not allowed in input parameter expression.] Extend:[Error this is not allowed in input parameter expression.Lex: this Path:ComponentTest.sl Line: 14 Pos: 46  ]
+[02:10:21 374] [Info] [ParseMeta]  [MetaCoreCallNotAllowNotAllowed2] Position:[ComponentTest.sl_24_0]  Info:[Error this is not allowed in input parameter expression.] Extend:[Error this is not allowed in input parameter expression.Lex: this Path:ComponentTest.sl Line: 24 Pos: 46  ]
+[02:10:21 557] [Info] [Process]  [ProcessPhaseEnd]  Info:[编译阶段[MetaCore]完成]
+[02:10:21 557] [Info] [Process]  [ProcessPhaseStart]  Info:[开始编译阶段: IR]
+[02:10:21 558] [Info] [GenIR]  [IRManagerStartTranslatingIR]  Info:[Start translating IR...] Extend:[Start translating IR...]
+[02:10:21 559] [Info] [GenIR]  [IRManagerStartTranslatingIRMetaClass]  Info:[Start translating IRMetaClass...] Extend:[Start translating IRMetaClass...]
+[02:10:21 560] [Warning] [ParseMeta]  [MetaCoreIRMetaClassNoSourcePathBinding]  Info:[IRMetaClass 类型无源文件绑定] Extend:[no source path binding: clrType=MetaData allName=___ProjectGlobalData_vardata2___] Tips:[jsonc data 段合成的类型无 boundFileMetaClass 属正常场景、仅提示不阻断编译] 
+
+[02:10:21 577] [Info] [GenIR]  [IRManagerEndTranslatingIRMetaClass]  Info:[End translating IRMetaClass...] Extend:[End translating IRMetaClass...]
+[02:10:22 100] [Info] [GenIR]  [IRManagerStartExportingIR]  Info:[Start exporting IR debug data...] Extend:[Start exporting IR debug data...]
+[02:10:22 204] [Info] [GenIR]  [IRManagerEndExportingIR]  Info:[End exporting IR debug data...] Extend:[End exporting IR debug data...]
+[02:10:22 204] [Info] [GenIR]  [IRManagerEndTranslatingIR]  Info:[End translating IR...] Extend:[End translating IR...]
+[02:10:22 204] [Info] [Process]  [ProcessPhaseEnd]  Info:[编译阶段[IR]完成]
+[02:10:22 205] [Info] [Process]  [ProcessSummary]  Info:[编译过程汇总: [Completed] RefModule
+  [Completed] LoadRefModules
+[Completed] File
+  [Completed] PrepareFiles
+  [Completed] Token
+  [Completed] Node
+  [Completed] File
+[Completed] MetaCore
+  [Completed] ExpandBind
+  [Completed] InjectDllImportHolder
+  [Completed] CreateNamespace
+  [Completed] CombineFileMeta
+  [Completed] ParseMetaClassLink
+  [Completed] ParseAttributes
+  [Completed] ParseMemberExpress
+  [Completed] InjectProjectData
+  [Completed] ValidatePlatformConfig
+  [Completed] BuildLocalClass
+  [Completed] ParseStatements
+  [Completed] InjectInitCall
+  [Completed] ExportMetaDebug
+  [Completed] AddGlobalData
+  [Completed] ProjectCompileAfter
+  [Completed] AutoInlineMark
+[Completed] IR
+  [Completed] TranslateIR
+[Pending] Export
+  [Pending] ExportModule
+]
+[02:10:22 206] [Info] [Process]  [ProcessPhaseStart]  Info:[开始编译阶段: Export]
+[02:10:22 327] [Info] [GenIR]  [ExportSLModulePackageExportModuleSuccess]  Info:[export module success:] Extend:[export module success (binary): D:\project\lang\simple_language\out\export\ProjectTest2\ProjectTest.module.slb]
+[02:10:22 562] [Info] [GenIR]  [ExportSLModulePackageExportModuleSuccess]  Info:[export module success:] Extend:[export module success: D:\project\lang\simple_language\out\export\ProjectTest2\ProjectTest.module.json]
+[02:10:22 563] [Info] [Process]  [ProcessPhaseEnd]  Info:[编译阶段[Export]完成]
+Compile completed.

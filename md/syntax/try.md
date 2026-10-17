@@ -30,8 +30,8 @@
 | `label Name {} catch {}` | 异常捕获块，对代码块内的异常进行模式匹配捕获 |
 | `try` | 表达式前缀，标记可能抛出异常的调用，异常由周围 `catch` 捕获 |
 | `try?` | 表达式前缀，异常时返回 null，不崩溃 |
-| `try!` | 表达式前缀，异常时程序崩溃（不可恢复） |
-| `checked` | 溢出检测块，溢出时抛出可被 `catch` 捕获的异常 |
+| `try!` | 表达式前缀，标注"确信不会出错"；异常不就地吞掉，向周围传播（在 `label{}catch{}` 内由 `catch` 捕获） |
+| `checked` | 溢出检测，溢出时抛出可被 `catch` 捕获的异常；支持 `checked(expr)` 前缀与 `checked label 名字 {}` 块两种形式 |
 
 ### 核心规则
 
@@ -289,7 +289,7 @@ catch MathError e
 **语义**：
 - `try` 标记表达式为"可被捕获"。
 - 如果表达式抛出异常，异常由周围 `label{}catch{}` 的 `catch` 块处理。
-- `try` 只能在 `label{}catch{}` 块内使用。
+- `try` 只能在 `label{}` 或 `checked label{}` 块内使用，否则编译报错（`Error: try 表达式只能在 label{} 或 checked label{} 块内使用`，见 `source/Front/Core/MetaExpressNode/MetaExpressTry.cs`）。
 
 ### 6.2 try? - 可空返回
 
@@ -313,17 +313,18 @@ else
 - 异常发生时，表达式求值为 `null`，不抛出、不崩溃。
 - 可在任何地方使用，不依赖 `label{}catch{}`。
 
-### 6.3 try! - 强制解包
+### 6.3 try! - 强制语义标注
 
 ```sl
-# 异常时程序直接崩溃
+# 异常不就地吞掉，向周围传播
 Int32 result = try! divide(10, 0)
-# divide 抛出异常 -> try! 检测到 -> 程序崩溃
+# divide 抛出异常 -> 异常向周围传播（在 label{}catch{} 内由 catch 捕获，见下）
 ```
 
 **语义**：
-- `try!` 表示"确信不会出错"，如果异常发生则程序直接崩溃。
-- 可在任何地方使用，不依赖 `label{}catch{}`。
+- `try!` 表示"确信不会出错"的意图标注。
+- **当前实现中 `try!` 的异常处理与 `try` 相同**：异常不会就地吞掉，而是向周围传播——在 `label{}catch{}` 块内由 `catch` 捕获，无周围 `catch` 时按未捕获异常继续向调用栈上层传播（见 `source/Front/IR/IRExpress.cs` 中 `TryExclamation` 分支注释 "Same tryCatch marking as try - both are caught by enclosing catch"，以及 `test/BaseTest/TryTest.sl` 用例 19）。
+- 与 `try`/`try?` 一样，不要求必须在 `label{}catch{}` 块内书写。
 
 ### 6.4 链式调用
 
@@ -348,9 +349,9 @@ catch MathError e
 
 | 模式 | 异常时行为 | 返回类型 | 依赖 label{}catch{} | 适用场景 |
 |------|-----------|----------|---------------------|----------|
-| `try` | 异常由 catch 捕获 | 原始类型 | 是 | 在 catch 块内精确处理 |
+| `try` | 异常由 catch 捕获 | 原始类型 | 是（只能在 label{}/checked label{} 块内使用） | 在 catch 块内精确处理 |
 | `try?` | 返回 null，不崩溃 | `T?`（可空） | 否 | 错误是预期内的，可降级 |
-| `try!` | 程序直接崩溃 | 原始类型 | 否 | 确信不会出错，出错即 bug |
+| `try!` | 异常向周围传播（当前实现与 try 相同，在 label{}catch{} 内由 catch 捕获） | 原始类型 | 否 | 意图标注"确信不会出错" |
 
 ---
 
@@ -359,31 +360,48 @@ catch MathError e
 ### 概念
 
 - **unchecked（默认）**：表达式计算不检测溢出，溢出时按底层类型回绕。
-- **checked**：在 `checked` 块内，算术运算溢出时抛出可被 `catch` 捕获的异常。
+- **checked**：开启整数算术（+、-、*、/、%）溢出检测，溢出时抛出可被 `catch` 捕获的异常（OverflowException）。
+- **unchecked 块**：只能在 checked 上下文（`checked label{}` 或 `checked{}`）内使用，用于局部关闭溢出检测（`Error: unchecked{} 只能在 checked 上下文中使用`，LID 21297）。
 
-### 语法
+### 两种形式
+
+`checked` 有两种使用形式：
+
+1. **表达式前缀** `checked(expr)`：
 
 ```sl
-checked
+label calcBlock
 {
-    // 受溢出检测保护的计算
-    // 也可以在这里边使用 try
+    Int32 result = checked(max + 1)    # 溢出时抛出异常
 }
 catch
 {
-    // 溢出时的处理
+    # 溢出时的处理
 }
 ```
 
-> `checked` 块与 `label{}catch{}` 类似，`checked` 后跟 `catch` 进行异常捕获。`checked` 块内也可以使用 `try` 标记表达式。
+2. **块形式** `checked label 名字 { }`（可接 catch/finally，与 label{}catch{} 规则一致）：
+
+```sl
+checked label calcBlock
+{
+    Int32 result = checked(a * b)      # 受溢出检测保护的计算
+}
+catch
+{
+    # 溢出时的处理
+}
+```
+
+> 纯 `checked { }` 块（不带 label）也存在，但要接 `catch` 捕获溢出异常，请使用 `checked label 名字 { }` 形式（见 `test/BaseTest/CheckedCalcTest.sl`）。
 
 ### 示例
 
 ```sl
 Int32 a = 0
-checked
+checked label overflowBlock
 {
-    a = 1111111111111111 + 1    # 溢出！抛出异常
+    a = checked(1111111111111111 + 1)    # 溢出！抛出异常
 }
 catch
 {
@@ -395,10 +413,10 @@ catch
 ### checked 内使用 try
 
 ```sl
-checked
+checked label calcBlock
 {
     Int32 big = try riskyCompute()
-    big = big + 1111111111111111
+    big = checked(big + 1111111111111111)
 }
 catch MathError e
 {
@@ -412,8 +430,8 @@ catch
 
 ### 作用域规则
 
-- `checked` / `unchecked` 块仅影响块内的算术运算。
-- 嵌套时内层覆盖外层。
+- `checked` / `unchecked` 块仅影响块内的整数算术运算；浮点与位运算不受 checked 影响（见 `test/BaseTest/CheckedCalcTest.sl` 用例 11/12）。
+- `unchecked{}` 只能出现在 checked 上下文内，用于局部关闭检测。
 
 ---
 
@@ -428,7 +446,7 @@ throws 函数内异常发生
   调用方捕获
   ├── try  -> 异常由周围 catch 捕获
   ├── try? -> 返回 null
-  ├── try! -> 崩溃
+  ├── try! -> 异常向周围传播（当前实现与 try 相同，在 label{}catch{} 内由 catch 捕获）
   ├── 未使用 try -> 异常继续传播
   └── 未捕获 -> 继续向外层调用栈传播
 ```
@@ -441,11 +459,11 @@ label myBlock
     try funcA()       # funcA 抛出异常 -> 被 catch 捕获
     funcB()           # funcB 抛出异常 -> 不被捕获，直接传播
     try? funcC()      # funcC 抛出异常 -> 返回 null
-    try! funcD()      # funcD 抛出异常 -> 崩溃
+    try! funcD()      # funcD 抛出异常 -> 向周围传播（与 try 相同，被 catch 捕获）
 }
 catch MathError e
 {
-    # 捕获 try funcA() 的异常
+    # 捕获 try funcA() / try! funcD() 的异常
 }
 ```
 
@@ -455,8 +473,8 @@ catch MathError e
 |------|----------|------|-------------|
 | `try` | label{}catch{} 块内 | 标记表达式，异常由 catch 捕获 | 是（由 catch 处理） |
 | `try?` | 表达式级 | 异常转 null | 是（转为 null） |
-| `try!` | 表达式级 | 异常则崩溃 | 否（崩溃） |
-| `checked{}` | 块级 | 溢出检测 -> 抛异常 | 否（需 catch 捕获） |
+| `try!` | 表达式级 | 意图标注；异常向周围传播（当前实现与 try 相同） | 否（传播） |
+| `checked(expr)` / `checked label{}` | 表达式级/块级 | 溢出检测 -> 抛异常 | 否（需 catch 捕获） |
 
 ---
 
@@ -501,7 +519,7 @@ catch
 Int32? r2 = try? safeDivide(10, 0)
 # r2 = null
 
-# 方式3：try! 强制解包
+# 方式3：try! 意图标注（异常向周围传播，当前实现与 try 相同）
 Int32 r3 = try! safeDivide(10, 2)
 # r3 = 5（正常）
 
@@ -517,7 +535,7 @@ catch MathError e
 
 # 方式5：checked 溢出检测
 Int32 r5 = 0
-checked
+checked label overflowBlock
 {
     r5 = 1111111111111111 + 1
 }
@@ -568,7 +586,7 @@ label Name
 {
     try expr                       # 标记表达式，异常由 catch 捕获
     try? expr                      # 异常 -> null
-    try! expr                      # 异常 -> 崩溃
+    try! expr                      # 意图标注，异常向周围传播（与 try 相同）
 }
 catch EnumType e { ... }          # 匹配 EnumType，绑定到 e
 catch EnumType { ... }             # 匹配 EnumType，不绑定
@@ -577,12 +595,12 @@ catch { ... }                      # 兜底，不绑定
 finally { ... }                    # 总是执行
 
 # 溢出检测
-checked { ... } catch { ... }      # 溢出时抛出异常
-unchecked { ... }                   # 显式不检测
+checked(expr) / checked label Name { ... } catch { ... }   # 溢出时抛出异常
+unchecked { ... }                   # 显式不检测（仅限 checked 上下文）
 
-# try 表达式（在 label{}catch{} 块内使用）
+# try 表达式（try 仅限 label{} / checked label{} 块内）
 try funcThatMayThrow()              # 异常 -> 需 catch 捕获
 try? expr                           # 异常 -> null（任何地方可用）
-try! expr                           # 异常 -> 崩溃（任何地方可用）
+try! expr                           # 意图标注，异常向周围传播（当前实现与 try 相同）
 try a.b().c()                       # 链式调用
 ```

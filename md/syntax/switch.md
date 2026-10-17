@@ -6,10 +6,11 @@
 
 与传统的 C 风格 switch 不同，S 语言的 switch：
 - **不需要 break**：默认情况下不会贯穿到下一个 case
-- **支持多种匹配模式**：值、类型、枚举等
-- **支持值绑定**：在匹配时可以声明变量
-- **可作为表达式**：可以返回值并赋值给变量
+- **支持多种匹配模式**：值、类型（`case is`）、枚举等
+- **支持值绑定**：类型匹配时可以声明变量
 - **显式贯穿**：使用 `next` 关键字可以继续执行下一个 case
+
+> 注：switch 作为表达式返回值（`tr`）与范围匹配（`case 90..100`）**暂不实现**，见下文说明。
 
 ---
 
@@ -48,17 +49,19 @@ switch day
 
 ### 多值匹配
 
-一个 case 可以匹配多个值，用逗号分隔：
+一个 case 可以匹配多个值，逗号或 `|` 分隔（两者等价）：
 
 ```ruby
 switch score
 {
     case 1, 2, 3 { Console.print("低分"); }
-    case 4, 5, 6 { Console.print("中分"); }
+    case 4|5|6 { Console.print("中分"); }
     case 7, 8, 9, 10 { Console.print("高分"); }
     default { Console.print("无效分数"); }
 }
 ```
+
+> 多值分割仅允许 number、string、bool 常量，且各值类型必须相同（解析器校验，见 `source/Front/Parse/StructParseToSyntax.cs` 的 `ParseCaseHeader`）。
 
 ---
 
@@ -66,14 +69,14 @@ switch score
 
 ### 类型模式匹配
 
-switch 可以检查值的类型，并根据类型执行不同的代码：
+switch 可以检查值的类型，并根据类型执行不同的代码。类型模式使用 `case is 类型名` 形式（参考 C# 的 `is` 用法）：
 
 ```ruby
 switch classObject
 {
-    case Int32 { statement(); }
-    case Int64 { statement(); }
-    case String { statement(); }
+    case is Int32 { statement(); }
+    case is Int64 { statement(); }
+    case is String { statement(); }
     default { statement(); }
 }
 ```
@@ -87,24 +90,26 @@ switch classObject
 ```ruby
 switch classObject
 {
-    case Class1 obj1 
+    case is Class1 obj1
     {
         statement(obj1);  # obj1 是 Class1 类型
     }
-    case Class2 obj2 
+    case is Class2 obj2
     {
         statement(obj2);  # obj2 是 Class2 类型
     }
-    case Class3 obj3 
+    case is Class3 obj3
     {
         statement(obj3);  # obj3 是 Class3 类型
     }
-    default 
+    default
     {
         Console.print("未知类型");
     }
 }
 ```
+
+> 规范格式为 `case is ClassName [变量名]`；绑定变量在 case 体内可用，支持继承关系匹配（基类 case 可命中子类实例）。完整用例见 `test/BaseTest/SwitchTest.sl` 的 `typePatternIsTest`。
 
 ---
 
@@ -133,24 +138,21 @@ switch currentStatus
 }
 ```
 
-### 枚举值绑定
+### 枚举 case 不支持值绑定
+
+枚举 case 只支持成员匹配，**不支持**在 case 后声明绑定变量（如 `case Book.name n` 会编译报错——枚举匹配分支不注册绑定变量，见 `source/Front/Core/Statements/MetaSwitchStatements.cs` 的 `Parse()`）：
 
 ```ruby
 enum Book
 {
     name = "Book Title";
-    mut price = 20;
+    price = 20;
 }
-Book.price = 30;   #必须有mut标签，才可以使用赋值 否则报错
 let book = Book.price;
 switch book
 {
-    case Book.name n {
-        Console.print("书名: $n.toString()");
-    }
-    case Book.price p {
-        Console.print("价格: $p ");
-    }
+    case Book.name { Console.print("是书名"); }
+    case Book.price { Console.print("是价格"); }
 }
 ```
 
@@ -158,7 +160,7 @@ switch book
 
 ## Switch 表达式（返回值）  该部分的暂不实现
 
-switch 可以作为表达式使用，返回一个值：
+switch 可以作为表达式使用，返回一个值（**暂不实现**：`a = switch {}` 形式当前编译器直接报错 "暂不支持 a = if/switch{}语法"，见 `source/Front/Parse/StructParseToSyntax.cs`；示例中的 `case 90..100` 范围匹配同样暂不支持）：
 
 ```ruby
 let result = switch value
@@ -256,21 +258,22 @@ switch classObject
 2. **Case 数量**：可以有任意数量的 case 语句
 3. **Case 语法**：每个 case 后跟匹配模式，然后是 `{}` 包裹的语句块
 4. **无自动贯穿**：默认情况下，执行完一个 case 后自动退出
-5. **显式贯穿**：使用 `next` 关键字可以继续执行下一个 case
+5. **显式贯穿**：使用 `next` 关键字可以继续执行下一个 case（仅允许在循环体或 switch case 体内使用）
 6. **Default 子句**：可选的 `default` 用于处理所有未匹配的情况
-7. **表达式模式**：使用 `tr value;` 返回值，使 switch 可以作为表达式使用
+7. **表达式模式**：`tr value;` 返回值（使 switch 可作为表达式使用）**暂不实现**，保留为计划语法
 
 ### 最佳实践：
 
-- 使用多值匹配简化代码
+- 使用多值匹配（`,` 或 `|`）简化代码
 - 合理使用 `default` 处理边界情况
-- 类型匹配时使用值绑定获得类型安全
+- 类型匹配时使用 `case is 类型名 变量名` 获得类型安全
 - 仅在必要时使用 `next` 实现贯穿
-- 使用 switch 表达式让代码更简洁
 
 ---
 
 ## 完整示例
+
+> ⚠ 下面的示例为综合示意：其中示例 1、示例 4 使用了 switch 表达式与 `tr` 返回值，示例 3 使用了枚举 case 值绑定（`case Book.name n`）与枚举构造调用，这些均为**暂不实现**的计划语法，当前编译器不支持；类型匹配请使用 `case is` 形式。
 
 ```ruby
 import CSharp.System;
@@ -409,10 +412,10 @@ x = 10, ok = 1000
 |------|--------|-------|-------|
 | 默认贯穿 | 否 | 否 | 是 |
 | 显式贯穿 | `next` | `fallthrough` | 默认行为 |
-| 类型匹配 | ✓ | ✓ | ✗ |
-| 值绑定 | ✓ | ✓ | ✗ |
-| 返回值 | ✓ | ✓ | ✗ |
-| 多值匹配 | ✓ | ✓ | ✗ |
+| 类型匹配 | ✓（`case is`） | ✓ | ✗ |
+| 值绑定 | ✓（类型匹配） | ✓ | ✗ |
+| 返回值 | ✗（暂不实现） | ✓ | ✗ |
+| 多值匹配 | ✓（`,` / `|`） | ✓ | ✗ |
 | 枚举匹配 | ✓ | ✓ | 部分 |
 
 ---
@@ -420,10 +423,10 @@ x = 10, ok = 1000
 ## 注意事项
 
 1. **类型安全**：使用类型匹配时，编译器会确保类型安全
-2. **穷尽性**：建议添加 `default` 子句以处理所有可能的情况
-3. **性能**：switch 通常比多个 if-else 语句性能更好
+2. **穷尽性**：建议添加 `default` 子句以处理所有可能的情况；无 `default` 且无匹配时直接穿过 switch 继续执行后续语句
+3. **性能**：switch 通常比多个 if-else 语句性能更好（匹配逻辑下沉到 C VM 单条 Switch 指令 + 跳转表 payload）
 4. **可读性**：使用 switch 可以让代码更清晰、更易维护
-5. **返回值**：当作为表达式使用时，所有分支都应该返回相同类型的值     
+5. **返回值**：switch 作为表达式使用（`tr` 返回值）暂不实现，规划中要求所有分支返回相同类型的值
 
 
 

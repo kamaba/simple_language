@@ -70,6 +70,7 @@ Net.WebSocketStream a = r1 as Net.WebSocketStream
 | connectAsync | `static Task connectAsync( string url, WsOptions opt )` | 带选项异步连接 |
 | accept | `static WebSocketStream accept( TcpStream raw ) throws` | 服务端：在已 accept 的 TCP 连接上应答握手 |
 | accept | `static WebSocketStream accept( TcpStream raw, WsOptions opt ) throws` | 同上，带选项 |
+| accept | `static WebSocketStream accept( TcpStream raw, ByteBuffer preRead, WsOptions opt ) throws` | 带预读残留的接入重载（2026-10-17 新增）：HTTP 层已预读请求头之后，`preRead` 可读区可能残留客户端提前发来的帧字节——本重载先灌入残留再解析，帧不丢失。消费方：SLangServer HTTP 同端口 WS 升级分流（SERVER_DESIGN.md §6.8）；`preRead` 归调用方所有（只读可读区） |
 
 - 握手内容：`Sec-WebSocket-Key`（随机 16 字节 Base64）+ `Sec-WebSocket-Accept` = Base64(SHA-1(key + `258EAFA5-E914-47DA-95CA-C5AB0DC85B11`))，**比对大小写敏感**。
 - 非 ws/wss scheme 抛 `HttpError.UnsupportedScheme`；握手失败自动关连接后抛 `WsError.Handshake`。

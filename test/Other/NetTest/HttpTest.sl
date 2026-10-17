@@ -365,7 +365,7 @@ HttpTest
         Net.HttpClient c4 = Net.HttpClient()
         c4.caPem = certPem
         Net.HttpRequest req4 = Net.HttpRequest()
-        req4.method = 0   # 0 = GET
+        req4.method = Net.HttpMethod.Get   # Get = 0（Front 严格化：枚举字段不再收 Int32 字面量直赋）
         req4.url = "https://localhost:19363/secure"
         req4.headers.setHeader( "X-Test", "abc" )
         req4.headers.setHeader( "x-TEST", "xyz" )

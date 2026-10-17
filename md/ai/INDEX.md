@@ -4,7 +4,7 @@
 
 | 文件 | 用途 |
 |------|------|
-| `故障排查流程.md` | **默认首选（统一主文档）**：整项目问题定位顺序 + Front 代码解析流程 + 语法规则备忘 + 复盘模板 |
+| `故障排查流程.md` | **默认首选（统一主文档）**：整项目问题定位顺序 + Front 代码解析流程 + 语法规则备忘 + 复盘分片路由索引与追加模板（复盘正文在 [troubleshooting/](./troubleshooting/) 8 个分片） |
 | `EXPORT_PATHS.md` | **默认 SLIR 导出目录**（`out/export/module.package.json`）与根 JSON 形态（`entryModule` + `moduleList`） |
 | `PROJECT_MAP.md` | **推荐首选**：解决方案工程、数据流、`Front`/`VM` 目录职责表、按任务书签、与测试/文档路径对照 |
 | `CODEBASE_OVERVIEW.md` | 英文简版总览，与 `PROJECT_MAP.md` 互补 |

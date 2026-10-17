@@ -58,72 +58,44 @@ else
 ```
 如果boolean_expression1表达式为 true，则执行 if 块内的代码。如果boolean_expression2表达式为true 则执行elif( boolean_expression2 )后边的内容,后续可以跟多个，一但符合布尔条件，则执行。
 
-### SLang中使用next字段
-在if语句与elif多级联用时，如果elif执行通过后，想继承再检查后边的elif可以在语句中使用next字段，可以让下边的语句继承检查
-```ruby
-if false
-{
-    #语句1
-}
-elif true
-{
-    #语句2
-    next
-}
-elif false
-{
-    #语句3
-}
-elif true
-{
-    #语句4
-}
-else
-{
-    #语句5
-}
-```
-在该实例中，我们因为elif true第一个是true执行语句2，但因为有next关键字，下一个elif还会继承检查，但语句3的条件是false,则再检查下一个elif，发现该个elif为true,则执行语句4
+### if/elif 中不支持 next 字段
+`next` **不能**出现在 if/elif 分支中，否则编译报错（LID 21384：`Error next 只能出现在 for/while/dowhile 循环体内或 switch case 体内`，见 `source/Front/Core/Statements/MetaBreakContinueGoStatements.cs`）。
 
+if/elif 链的语义是：命中第一个为真的分支后，整条链结束，不再检查后续 elif（测试 `test/BaseTest/IfelseTest.sl` 的 `multiElifChainTest` 验证了 "only first match evaluated"）。若需要命中后继续向下匹配，请使用 `switch` 的 `next`（见 [switch.md](./switch.md)）。
+
+> 注：`next` 仅允许出现在 for/while/dowhile 循环体内或 switch case 体内。
 
 ### 实例
 ```ruby
-import CSharp.System;
-ProjectEnter
+Project
 {
-    static Main( x )
+    _main_()
     {
+        x = 20
         if x > 1
         {
-            Console.print("执行x>1的内容");
+            global.println("执行x>1的内容");
         }
         elif x > 3
         {
-            Console.print("执行x>3的内容");
+            global.println("执行x>3的内容");
         }
         elif x > 14
         {
-            Console.print("执行x>14的内容");
+            global.println("执行x>14的内容");
         }
         else
         {
-            Console.print("执行else的内容");
+            global.println("执行else的内容");
         }
     }
 }
 ```
-$ projectrun 20
 执行以上代码，输出结果为:
 执行x>1的内容
-执行x>3的内容
-执行x>14的内容
 
-$ projectrun 0
+若 `x = 0`，则输出:
 执行else的内容
-
-## 与 `elif` 链配合的 `next`
-
-在 `if` / `elif` 多级联用时，若在某个已匹配的分支末尾书写 `next`，控制流会继续向下尝试匹配后续 `elif`（而不是像常见语言那样在第一个真分支后必定结束整条链）。典型用法与语义见上文「SLang中使用next字段」示例。
 
 ## 计划中或部分实现的扩展（以测试文件中的注释为准）
 

@@ -32,39 +32,43 @@ Main()
 规则: 在使用类的变量时，不允许有任何重名，包括父类与子类中的名称， 如果父类定义了name,则在子类中不允再重新定义该名称，所以在定义的时候，尽量只歧义的名称， 在新建对象时，子类对象会继承父类对象的非静态成员，并且计算大小。 静态成员，只能通过原类名.静态成员名称的方式访问。 类成员变量声明必须初始化：不支持 `int v;` 无初始化声明，必须写 `int v = 1;`（2026-10-08 起违反报 Error 21472 MetaCoreMemberVariableRequireInit，明确提示并附修复指引；此前误报 MetaCoreExpressIsNull 且 extend 拼接"传入参数与要求参数不对应"兜底文案）。local{} 块合成成员等无源初始化场景不受影响。
 
 ------------------
-## 全局变量 是指通过ProjectConfig配置，然后在代码中通过global关键字，直接访问
+## 全局变量 是指工程级配置注入与工程入口暴露的数据，在代码中通过 global 关键字，直接访问
 
-# 类/对象变量的语法
+# 全局变量的语法
 
-```python
-file:test_project.sp
+```jsonc
+file:ProjectTest.jsonc（节选）
 
-ProjectEnter
-{
-    static Main()
-    {    
-        pi = global.pi;
-        h1 = global.minInt;
-    }
-    static SetMaxInt( int a )
-    {
-        global.maxInt = a;
-    }
-}
-
-
-const data ProjectConfig{
-    name = "test project";
-    globalVariable
-    {
-        pi = 3.1415f;
-        minInt = -1i;
-        maxInt = 10000i;
+"global": {
+    "imports": [ "Std.Console" ],
+    // 数据注入面（根->global->data，唯一位置）：编译期注入为 Project 静态成员，
+    // SL 运行期经 global.<name> 读取
+    "data": {
+        "var1": 12,
+        "vardata2": { "a": 10, "b": 20.1 }
     }
 }
 ```
 
-### 规则，在全局变量使用中，只有在globalVariable定义后，代码中才可以引用，不允许其它方式创建，在设置global变量时，只能在Project函数中，或者是DllExpore中，或者是Compile中进行设置，不允许在其它类中进行设置。
+```python
+file:ProjectTest.sp（节选）
+
+Project
+{
+    println( txt )
+    {
+        SystemPrintln( txt )
+    }
+    _main_()
+    {
+        gv = global.var1;
+        aa = global.vardata2.a;
+        global.println( aa );
+    }
+}
+```
+
+### 规则，全局数据在编译期由工程 `.jsonc` 的 `global.data` 注入（编译后成为 Project 静态成员），`.sp` 中 `Project{}` 内声明的静态成员与函数同样映射为 `global.成员`；业务代码通过 `global.<名称>` 读取，不允许在业务类中自行声明新的全局变量。
 
 ## 函数内变量 指在函数内定义的临时变量，可以通过{}的区域，定义变量的使用范围。
 # 函数内变量的语法
@@ -72,26 +76,15 @@ const data ProjectConfig{
 ```python
 file:test_project.sp
 
-ProjectEnter
+Project
 {
-    static Main()
-    {    
+    _main_()
+    {
         var1 = 20;
         {
             var2 = "aaa";
         }
         var1 = 30;
-    }
-}
-
-
-const data ProjectConfig{
-    name = "test project";
-    globalVariable
-    {
-        pi = 3.1415f;
-        minInt = -1i;
-        maxInt = 10000i;
     }
 }
 ```

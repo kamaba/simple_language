@@ -1,0 +1,12 @@
+Project
+{
+    _main_()
+    {
+    }
+    _before_()
+    {
+    }
+    _after_()
+    {
+    }
+}

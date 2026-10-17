@@ -1161,8 +1161,22 @@ namespace SimpleLanguage.Core
                             }
                             else if (m_FrontCallNode.m_MetaVariable != null)
                             {
-                                mcagm = m_FrontCallNode.m_MetaVariable.realMetaType.metaClass;
+                                // 闭包形参在闭包体构造期 realMetaType 可能为空
+                                // （如 req.body<T>() 泛型调用），此时回退默认
+                                // mcagm = m_MetaClass（声明侧类），勿直接 NRE
+                                MetaType fvRealMt = m_FrontCallNode.m_MetaVariable.realMetaType;
+                                if (fvRealMt != null)
+                                {
+                                    mcagm = fvRealMt.metaClass;
+                                }
                             }
+                        }
+                        // 闭包形参作调用对象（如 req.body<T>()）时 m_MetaClass 与
+                        // 形参 realMetaType 均可能为空，回退模板函数归属类
+                        // （Request.body 的 owner 即 Request，语义等价）
+                        if (mcagm == null)
+                        {
+                            mcagm = mmf.ownerMetaClass;
                         }
                         MetaGenTemplateFunction mgtfind = mmf.AddGenTemplateMemberFunctionByMetaTypeList(mcagm, m_MetaTemplateParamsList);
                         if (mgtfind != null)
@@ -2956,6 +2970,36 @@ namespace SimpleLanguage.Core
                     mmf = mc.GetMetaDefineGetSetMemberFunctionByName(inputname, m_MetaInputParamCollection,
                         m_AllowUseSettings.getterFunction,
                         m_AllowUseSettings.setterFunction);
+                }
+            }
+
+            if (mmv == null && mmf == null)
+            {
+                // 泛型物化实例（MetaGenTemplateClass）回退：gen 实例的成员表是
+                // 一次性快照拷贝（ParseGenMemberVarible，受 m_GenTemplateMemberFlag
+                // 保护永不重放）——若物化发生在引用模块方法装载完成前（库模块
+                // struct 登记类方法体内的局部/形参位泛型容器），快照为空表，
+                // 局部变量链（mtt.metaClass 直接取 gen 实例、无回退）即报
+                // 「节点[xxx] 没有在类[Core.List<Core.String>]」。字段链因
+                // GetFinalTemplateMetaClass 有 gen→原始类回退而幸免（2026-10-17
+                // SLangServer P1 实测）。此处对齐该既有回退语义：gen 实例
+                // 未命中时回退原始模板类（方法已由 AddClassMethodsFromIR 全量
+                // 装入原始类字典）再查一次。
+                if (mc is MetaGenTemplateClass genMc && genMc.metaTemplateClass != null)
+                {
+                    if (m_IsFunction)
+                    {
+                        mmf = genMc.metaTemplateClass.GetMetaMemberFunctionByNameAndInputTemplateInputParamCount(
+                            inputname, this.m_FileMetaCallNode.inputTemplateNodeList.Count, m_MetaInputParamCollection, true);
+                        if (mmf == null)
+                        {
+                            mmv = genMc.metaTemplateClass.GetMetaMemberVariableByName(inputname);
+                        }
+                    }
+                    else
+                    {
+                        mmv = genMc.metaTemplateClass.GetMetaMemberVariableByName(inputname);
+                    }
                 }
             }
 

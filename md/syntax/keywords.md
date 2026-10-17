@@ -25,7 +25,7 @@
 | `dynamic` | 动态类型 | [type.md](./type.md) |
 | `void` | 无返回 | [function.md](./function.md) |
 | `extern` | 外部声明（FFI 体系）；类级显式导出标记（`extern class/data/enum`，恒导出） | [../project/ffi.md](../project/ffi.md)、[class.md](./class.md) §1.5.1 |
-| `bind` | 绑定 | [base.md](./base.md) |
+| `bind` | 绑定 | [bind.md](./bind.md) |
 | `label` | 标签 | [labelgoto.md](./labelgoto.md) |
 
 ### 1.2 修饰符
@@ -37,9 +37,9 @@
 | `mut` | 可变标注 |
 | `final` | 终态（不可继承/覆盖） |
 | `static` | 静态（也是编译期条件前缀，见 §3.3） |
+| `inline` | 内联标记（函数修饰符） |
 | `partial` | 分部类 |
 | `override` | 覆写 |
-| `operator` | 运算符重载 |
 | `params` | 变长参数（如 `waitAll(params Array<Task>)`） |
 | `tr` | Transience（保留字；当前无文档与测试用例，同样禁止作标识符） |
 

@@ -1,8 +1,8 @@
 # 协程（Coroutine）与通道（Channel）
 
 > **本文档以「当前实现」为准**，对应 `source/Front/Lib/Core/Coroutine.sl`、`source/Front/Lib/Core/Container/Channel.sl`
-> 与 `test/BaseTest/CoroutineTest.sl`（1249 行，A–N + W 共 14 组验收用例）。
-> 设计规格见 `md/design/COROUTINE_DESIGN.md`——**该设计档部分内容尚未实现**，差异清单见 §13。
+> 与 `test/BaseTest/CoroutineTest.sl`（1583 行，13 组验收用例：A–H、J–L、N、W，I/M 缺号）。
+> 历史设计档 `COROUTINE_DESIGN.md`（原 `simple_language/md/design/` 已删除）现位于 `csimple_lang/md/design/COROUTINE_DESIGN.md`——**该设计档部分内容尚未实现**，差异清单见 §13。
 
 ---
 
@@ -856,8 +856,9 @@ check( g_f3count == 40 )
 
 ---
 
-## 13. 与 COROUTINE_DESIGN.md 的差异（设计档中**未实现**的部分）
+## 13. 与设计档 COROUTINE_DESIGN.md 的差异（设计档中**未实现**的部分）
 
+> 设计档现位于 `csimple_lang/md/design/COROUTINE_DESIGN.md`（原 `simple_language/md/design/` 目录已删除）。
 > 设计档写于实现之前，以下条目**尚未落地**。照设计档写会编译失败。
 
 | 设计档描述 | 实际 |
@@ -1355,10 +1356,10 @@ check( await hp as int == 30 )
 
 | 文件 | 关系 |
 |---|---|
-| `md/design/COROUTINE_DESIGN.md` | 设计规格（部分未实现，见 §13） |
+| `csimple_lang/md/design/COROUTINE_DESIGN.md` | 设计规格（部分未实现，见 §13） |
 | `md/ai/故障排查流程.md` | 项目级排查主文档 |
 | `md/ai/DEBUG_WORKFLOW.md` | `Logs/` 与 `DebugCode/` 产物阅读顺序 |
-| `test/BaseTest/CoroutineTest.sl` | A–N + W 组全量验收用例（本文档示例的可运行版本） |
+| `test/BaseTest/CoroutineTest.sl` | 全量验收用例，13 组（本文档示例的可运行版本） |
 | `csimple_lang/src/vm/runtime/coroutine/vm_coroutine.c` | 协程核心：创建 / 调度器 / 帧链 / 唤醒 / 取消 |
 | `csimple_lang/src/vm/system_method_call/coroutine_system_method.c` | `SystemCoroutine*` 与 `SystemChannel*` 实现 |
 

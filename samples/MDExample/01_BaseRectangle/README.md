@@ -1,6 +1,6 @@
 # 01 — 基础类与插值（Base）
 
-- **文档**：`md/syntax/base.md`
+- **文档**：`md/syntax/introduction.md`
 - **源码**：`Doc01_BaseRectangle.sl`
 
 ## 如何编译运行

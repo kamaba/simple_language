@@ -83,7 +83,7 @@ The full, grouped list lives in **[`md/INDEX.md`](md/INDEX.md)** (section 3). Co
 #### Basics
 
 1. [Namespaces](md/syntax/namespace.md)  
-2. [Base syntax](md/syntax/base.md)  
+2. [Base syntax](md/syntax/introduction.md)  
 3. [Numbers](md/syntax/number.md)  
 4. [Strings](md/syntax/string.md)  
 5. [Variables](md/syntax/variable.md)  

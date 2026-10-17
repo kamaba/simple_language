@@ -1,0 +1,170 @@
+﻿从 source\Front\Properties\launchSettings.json 使用启动设置...
+SimpleLanguage Frontend Compiler v1.0.0
+
+Compiling: D:\project\lang\simple_language\source\Front\Lib\SLang\Server\Server.sp
+[11:55:13 210] [Info] [Project]  [ProjectShowConfigPath]  Info:[加载配置文件[D:\project\lang\simple_language\source\Front\Lib\SLang\Server\Server.jsonc]!]
+[FrontLog] OutputPath: D:\project\lang\simple_language\out\export\SLangServer\Logs\Front.txt
+[11:55:13 225] [Info] [Process]  [ProcessPhaseStart]  Info:[开始编译阶段: RefModule]
+[11:55:13 900] [Info] [Project]  [ProjectReferenceModuleReferenceModuleLoaded]  Info:[Reference module loaded (compiled): name={}, path={}] Extend:[Reference module loaded (compiled): name=Core, path=D:\project\lang\simple_language\out\export\Core\Core.module.json]
+[Reference] Module loaded (compiled): name=Core, path=D:\project\lang\simple_language\out\export\Core\Core.module.json
+[11:55:14 334] [Warning] [ParseMeta]  [MetaCoreRepeatDefineFunction]  Info:[重复定义了函数 原来函数位置: 新函数位置:] Extend:[AddMetaMemberFunction]
+[11:55:14 349] [Warning] [ParseMeta]  [MetaCoreRepeatDefineFunction]  Info:[重复定义了函数 原来函数位置: 新函数位置:] Extend:[AddMetaMemberFunction]
+[11:55:14 350] [Warning] [ParseMeta]  [MetaCoreRepeatDefineFunction]  Info:[重复定义了函数 原来函数位置: 新函数位置:] Extend:[AddMetaMemberFunction]
+[11:55:14 351] [Warning] [ParseMeta]  [MetaCoreRepeatDefineFunction]  Info:[重复定义了函数 原来函数位置: 新函数位置:] Extend:[AddMetaMemberFunction]
+[11:55:14 354] [Warning] [ParseMeta]  [MetaCoreRepeatDefineFunction]  Info:[重复定义了函数 原来函数位置: 新函数位置:] Extend:[AddMetaMemberFunction]
+[11:55:14 355] [Warning] [ParseMeta]  [MetaCoreRepeatDefineFunction]  Info:[重复定义了函数 原来函数位置: 新函数位置:] Extend:[AddMetaMemberFunction]
+[11:55:14 356] [Warning] [ParseMeta]  [MetaCoreRepeatDefineFunction]  Info:[重复定义了函数 原来函数位置: 新函数位置:] Extend:[AddMetaMemberFunction]
+[11:55:14 356] [Warning] [ParseMeta]  [MetaCoreRepeatDefineFunction]  Info:[重复定义了函数 原来函数位置: 新函数位置:] Extend:[AddMetaMemberFunction]
+[11:55:14 357] [Warning] [ParseMeta]  [MetaCoreRepeatDefineFunction]  Info:[重复定义了函数 原来函数位置: 新函数位置:] Extend:[AddMetaMemberFunction]
+[11:55:14 369] [Info] [Project]  [ProjectReferenceModuleReferenceModuleLoaded]  Info:[Reference module loaded (compiled): name={}, path={}] Extend:[Reference module loaded (compiled): name=Std, path=D:\project\lang\simple_language\out\export\Std\Std.module.json]
+[Reference] Module loaded (compiled): name=Std, path=D:\project\lang\simple_language\out\export\Std\Std.module.json
+[11:55:14 370] [Info] [Process]  [ProcessPhaseEnd]  Info:[编译阶段[RefModule]完成]
+[11:55:14 370] [Info] [Process]  [ProcessPhaseStart]  Info:[开始编译阶段: File]
+[11:55:14 371] [Info] [Project]  [ProjectShowCompileFiles]  Info:[要编译的文件数量:8]
+[11:55:14 373] [Info] [Process]  [ProcessCompileFileStart]  Info:[开始编译:Server.sp]
+[11:55:14 381] [Info] [Process]  [ProcessCompileFileStart]  Info:[开始编译:Server.sl]
+[11:55:14 386] [Info] [Process]  [ProcessCompileFileStart]  Info:[开始编译:HttpServerCore.sl]
+[11:55:14 390] [Info] [Process]  [ProcessCompileFileStart]  Info:[开始编译:Router.sl]
+[11:55:14 392] [Info] [Process]  [ProcessCompileFileStart]  Info:[开始编译:Request.sl]
+[11:55:14 394] [Info] [Process]  [ProcessCompileFileStart]  Info:[开始编译:Response.sl]
+[11:55:14 396] [Info] [Process]  [ProcessCompileFileStart]  Info:[开始编译:BodyParser.sl]
+[11:55:14 397] [Info] [Process]  [ProcessCompileFileStart]  Info:[开始编译:ApiResult.sl]
+[11:55:14 398] [Info] [Process]  [ProcessCompileFileStart]  Info:[开始编译:WebSocketServer.sl]
+[11:55:14 445] [Info] [Process]  [ProcessCompileFileCompleted]  Info:[文件[Server.sp]编译File层完成]
+[11:55:14 470] [Info] [Process]  [ProcessCompileFileCompleted]  Info:[文件[Server.sl]编译File层完成]
+[11:55:14 472] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[HttpServerCore.sl_153_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[11:55:14 474] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[HttpServerCore.sl_291_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[11:55:14 474] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[HttpServerCore.sl_295_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[11:55:14 474] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[HttpServerCore.sl_385_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[11:55:14 475] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[HttpServerCore.sl_399_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[11:55:14 475] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[HttpServerCore.sl_403_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[11:55:14 476] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[HttpServerCore.sl_452_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[11:55:14 476] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[HttpServerCore.sl_567_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[11:55:14 477] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[HttpServerCore.sl_682_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[11:55:14 477] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[HttpServerCore.sl_686_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[11:55:14 477] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[HttpServerCore.sl_690_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[11:55:14 478] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[HttpServerCore.sl_694_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[11:55:14 478] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[HttpServerCore.sl_698_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[11:55:14 478] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[HttpServerCore.sl_702_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[11:55:14 478] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[HttpServerCore.sl_706_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[11:55:14 478] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[HttpServerCore.sl_710_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[11:55:14 479] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[HttpServerCore.sl_714_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[11:55:14 479] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[HttpServerCore.sl_718_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[11:55:14 479] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[HttpServerCore.sl_722_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[11:55:14 479] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[HttpServerCore.sl_726_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[11:55:14 479] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[HttpServerCore.sl_730_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[11:55:14 480] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[HttpServerCore.sl_734_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[11:55:14 480] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[HttpServerCore.sl_738_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[11:55:14 480] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[HttpServerCore.sl_742_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[11:55:14 480] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[HttpServerCore.sl_746_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[11:55:14 481] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[HttpServerCore.sl_750_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[11:55:14 481] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[HttpServerCore.sl_898_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[11:55:14 482] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[HttpServerCore.sl_921_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[11:55:14 482] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[HttpServerCore.sl_926_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[11:55:14 482] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[HttpServerCore.sl_964_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[11:55:14 482] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[HttpServerCore.sl_974_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[11:55:14 483] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[HttpServerCore.sl_1056_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[11:55:14 483] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[HttpServerCore.sl_1073_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[11:55:14 484] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[HttpServerCore.sl_1168_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[11:55:14 484] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[HttpServerCore.sl_1202_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[11:55:14 488] [Info] [Process]  [ProcessCompileFileCompleted]  Info:[文件[HttpServerCore.sl]编译File层完成]
+[11:55:14 489] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[Router.sl_59_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[11:55:14 489] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[Router.sl_187_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[11:55:14 490] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[Router.sl_349_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[11:55:14 490] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[Router.sl_353_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[11:55:14 490] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[Router.sl_372_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[11:55:14 492] [Info] [Process]  [ProcessCompileFileCompleted]  Info:[文件[Router.sl]编译File层完成]
+[11:55:14 493] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[Request.sl_205_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[11:55:14 493] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[Request.sl_236_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[11:55:14 493] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[Request.sl_291_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[11:55:14 494] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[Request.sl_343_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[11:55:14 494] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[Request.sl_359_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[11:55:14 494] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[Request.sl_390_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[11:55:14 510] [Info] [Process]  [ProcessCompileFileCompleted]  Info:[文件[Request.sl]编译File层完成]
+[11:55:14 512] [Info] [Process]  [ProcessCompileFileCompleted]  Info:[文件[Response.sl]编译File层完成]
+[11:55:14 512] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[BodyParser.sl_97_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[11:55:14 512] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[BodyParser.sl_101_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[11:55:14 515] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[BodyParser.sl_148_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[11:55:14 515] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[BodyParser.sl_152_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[11:55:14 515] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[BodyParser.sl_156_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[11:55:14 516] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[BodyParser.sl_219_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[11:55:14 516] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[BodyParser.sl_241_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[11:55:14 517] [Info] [Process]  [ProcessCompileFileCompleted]  Info:[文件[BodyParser.sl]编译File层完成]
+[11:55:14 531] [Info] [Process]  [ProcessCompileFileCompleted]  Info:[文件[ApiResult.sl]编译File层完成]
+[11:55:14 532] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[WebSocketServer.sl_58_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[11:55:14 532] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[WebSocketServer.sl_89_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[11:55:14 532] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[WebSocketServer.sl_192_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[11:55:14 533] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[WebSocketServer.sl_222_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[11:55:14 546] [Info] [ParseNode]  [NodeStructParseIfNextNoBlankLine] Position:[WebSocketServer.sl_337_0]  Info:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!] Extend:[Error if语句与下一个if语句之间必须空一行(防止读取错误)!!!]
+[11:55:14 548] [Info] [Process]  [ProcessCompileFileCompleted]  Info:[文件[WebSocketServer.sl]编译File层完成]
+[11:55:14 548] [Info] [Process]  [ProcessPhaseEnd]  Info:[编译阶段[File]完成]
+[11:55:14 548] [Info] [Process]  [ProcessPhaseStart]  Info:[开始编译阶段: MetaCore]
+[11:55:14 576] [Info] [ParseMeta]  [MetaCoreClassIssue4] Position:[ApiResult.sl_27_0]  Info:[Warning 类[] Extend:[Warning 类[SLangServer.SLang.ApiResult] 方法: _init_ 重写了父类方法但未使用 override 标记: Core.Object._init_]
+[11:55:14 579] [Info] [ParseMeta]  [MetaCoreClassIssue4] Position:[Server.sl_37_0]  Info:[Warning 类[] Extend:[Warning 类[SLangServer.SLang.ServerConfig] 方法: _init_ 重写了父类方法但未使用 override 标记: Core.Object._init_]
+[11:55:14 602] [Info] [ParseMeta]  [MetaCoreAttributeAttributeManagerProcessCompileTimeCompile]  Info:[AttributeManager.ProcessCompileTime: compile={}, runtime={}] Extend:[AttributeManager.ProcessCompileTime: compile=0, runtime=0]
+[11:55:14 695] [Info] [ParseMeta]  [MetaCoreCallNotAllowNotAllowed2] Position:[Router.sl_381_0]  Info:[Error this is not allowed in input parameter expression.] Extend:[Error this is not allowed in input parameter expression.Lex: this Path:Router.sl Line: 381 Pos: 38  ]
+[11:55:14 695] [Info] [ParseMeta]  [MetaCoreCallNotAllowNotAllowed2] Position:[Router.sl_386_0]  Info:[Error this is not allowed in input parameter expression.] Extend:[Error this is not allowed in input parameter expression.Lex: this Path:Router.sl Line: 386 Pos: 39  ]
+[11:55:14 695] [Info] [ParseMeta]  [MetaCoreCallNotAllowNotAllowed2] Position:[Router.sl_391_0]  Info:[Error this is not allowed in input parameter expression.] Extend:[Error this is not allowed in input parameter expression.Lex: this Path:Router.sl Line: 391 Pos: 38  ]
+[11:55:14 695] [Info] [ParseMeta]  [MetaCoreCallNotAllowNotAllowed2] Position:[Router.sl_396_0]  Info:[Error this is not allowed in input parameter expression.] Extend:[Error this is not allowed in input parameter expression.Lex: this Path:Router.sl Line: 396 Pos: 41  ]
+[11:55:14 696] [Info] [ParseMeta]  [MetaCoreCallNotAllowNotAllowed2] Position:[Router.sl_401_0]  Info:[Error this is not allowed in input parameter expression.] Extend:[Error this is not allowed in input parameter expression.Lex: this Path:Router.sl Line: 401 Pos: 40  ]
+[11:55:14 696] [Info] [ParseMeta]  [MetaCoreCallNotAllowNotAllowed2] Position:[Router.sl_406_0]  Info:[Error this is not allowed in input parameter expression.] Extend:[Error this is not allowed in input parameter expression.Lex: this Path:Router.sl Line: 406 Pos: 38  ]
+[11:55:14 696] [Info] [ParseMeta]  [MetaCoreCallNotAllowNotAllowed2] Position:[Router.sl_412_0]  Info:[Error this is not allowed in input parameter expression.] Extend:[Error this is not allowed in input parameter expression.Lex: this Path:Router.sl Line: 412 Pos: 39  ]
+[11:55:14 697] [Info] [ParseMeta]  [MetaCoreCallNotAllowNotAllowed2] Position:[Router.sl_418_0]  Info:[Error this is not allowed in input parameter expression.] Extend:[Error this is not allowed in input parameter expression.Lex: this Path:Router.sl Line: 418 Pos: 33  ]
+[11:55:14 697] [Info] [ParseMeta]  [MetaCoreCallNotAllowNotAllowed2] Position:[Request.sl_180_0]  Info:[Error this is not allowed in input parameter expression.] Extend:[Error this is not allowed in input parameter expression.Lex: this Path:Request.sl Line: 180 Pos: 44  ]
+[11:55:14 699] [Info] [ParseMeta]  [MetaCoreCallNotAllowNotAllowed2] Position:[Request.sl_192_0]  Info:[Error this is not allowed in input parameter expression.] Extend:[Error this is not allowed in input parameter expression.Lex: this Path:Request.sl Line: 192 Pos: 38  ]
+[11:55:14 700] [Info] [ParseMeta]  [MetaCoreCallNotAllowNotAllowed2] Position:[Request.sl_261_0]  Info:[Error this is not allowed in input parameter expression.] Extend:[Error this is not allowed in input parameter expression.Lex: this Path:Request.sl Line: 261 Pos: 38  ]
+[11:55:14 701] [Info] [ParseMeta]  [MetaCoreCallNotAllowNotAllowed2] Position:[Request.sl_278_0]  Info:[Error this is not allowed in input parameter expression.] Extend:[Error this is not allowed in input parameter expression.Lex: this Path:Request.sl Line: 278 Pos: 56  ]
+[11:55:14 701] [Info] [ParseMeta]  [MetaCoreCallNotAllowNotAllowed2] Position:[Request.sl_278_0]  Info:[Error this is not allowed in input parameter expression.] Extend:[Error this is not allowed in input parameter expression.Lex: this Path:Request.sl Line: 278 Pos: 56  ]
+[11:55:14 701] [Info] [ParseMeta]  [MetaCoreCallNotAllowNotAllowed2] Position:[Request.sl_357_0]  Info:[Error this is not allowed in input parameter expression.] Extend:[Error this is not allowed in input parameter expression.Lex: this Path:Request.sl Line: 357 Pos: 61  ]
+[11:55:14 702] [Info] [ParseMeta]  [MetaCoreCallNotAllowNotAllowed2] Position:[Request.sl_357_0]  Info:[Error this is not allowed in input parameter expression.] Extend:[Error this is not allowed in input parameter expression.Lex: this Path:Request.sl Line: 357 Pos: 61  ]
+[11:55:14 702] [Info] [ParseMeta]  [MetaCoreCallNotAllowNotAllowed2] Position:[Request.sl_401_0]  Info:[Error this is not allowed in input parameter expression.] Extend:[Error this is not allowed in input parameter expression.Lex: this Path:Request.sl Line: 401 Pos: 61  ]
+[11:55:14 702] [Info] [ParseMeta]  [MetaCoreCallNotAllowNotAllowed2] Position:[Request.sl_401_0]  Info:[Error this is not allowed in input parameter expression.] Extend:[Error this is not allowed in input parameter expression.Lex: this Path:Request.sl Line: 401 Pos: 61  ]
+[11:55:14 703] [Info] [ParseMeta]  [MetaCoreCallNotAllowNotAllowed2] Position:[Request.sl_412_0]  Info:[Error this is not allowed in input parameter expression.] Extend:[Error this is not allowed in input parameter expression.Lex: this Path:Request.sl Line: 412 Pos: 61  ]
+[11:55:14 703] [Info] [ParseMeta]  [MetaCoreCallNotAllowNotAllowed2] Position:[Request.sl_412_0]  Info:[Error this is not allowed in input parameter expression.] Extend:[Error this is not allowed in input parameter expression.Lex: this Path:Request.sl Line: 412 Pos: 61  ]
+[11:55:14 703] [Info] [ParseMeta]  [MetaCoreCallNotAllowNotAllowed2] Position:[Request.sl_414_0]  Info:[Error this is not allowed in input parameter expression.] Extend:[Error this is not allowed in input parameter expression.Lex: this Path:Request.sl Line: 414 Pos: 34  ]
+[11:55:14 708] [Info] [ParseMeta]  [MetaCoreCallNotAllowNotAllowed2] Position:[ApiResult.sl_66_0]  Info:[Error this is not allowed in input parameter expression.] Extend:[Error this is not allowed in input parameter expression.Lex: this Path:ApiResult.sl Line: 66 Pos: 51  ]
+[11:55:14 710] [Info] [ParseMeta]  [MetaCoreCallNotAllowNotAllowed2] Position:[WebSocketServer.sl_220_0]  Info:[Error this is not allowed in input parameter expression.] Extend:[Error this is not allowed in input parameter expression.Lex: this Path:WebSocketServer.sl Line: 220 Pos: 61  ]
+[11:55:14 710] [Info] [ParseMeta]  [MetaCoreCallNotAllowNotAllowed2] Position:[WebSocketServer.sl_220_0]  Info:[Error this is not allowed in input parameter expression.] Extend:[Error this is not allowed in input parameter expression.Lex: this Path:WebSocketServer.sl Line: 220 Pos: 61  ]
+[11:55:14 720] [Info] [Process]  [ProcessPhaseEnd]  Info:[编译阶段[MetaCore]完成]
+[11:55:14 721] [Info] [Process]  [ProcessPhaseStart]  Info:[开始编译阶段: IR]
+[11:55:14 722] [Info] [GenIR]  [IRManagerStartTranslatingIR]  Info:[Start translating IR...] Extend:[Start translating IR...]
+[11:55:14 722] [Info] [GenIR]  [IRManagerStartTranslatingIRMetaClass]  Info:[Start translating IRMetaClass...] Extend:[Start translating IRMetaClass...]
+[11:55:14 760] [Info] [GenIR]  [IRManagerEndTranslatingIRMetaClass]  Info:[End translating IRMetaClass...] Extend:[End translating IRMetaClass...]
+[11:55:14 822] [Info] [GenIR]  [IRManagerStartExportingIR]  Info:[Start exporting IR debug data...] Extend:[Start exporting IR debug data...]
+[11:55:14 901] [Info] [GenIR]  [IRManagerEndExportingIR]  Info:[End exporting IR debug data...] Extend:[End exporting IR debug data...]
+[11:55:14 901] [Info] [GenIR]  [IRManagerEndTranslatingIR]  Info:[End translating IR...] Extend:[End translating IR...]
+[11:55:14 902] [Info] [Process]  [ProcessPhaseEnd]  Info:[编译阶段[IR]完成]
+[11:55:14 903] [Info] [Process]  [ProcessSummary]  Info:[编译过程汇总: [Completed] RefModule
+  [Completed] LoadRefModules
+[Completed] File
+  [Completed] PrepareFiles
+  [Completed] Token
+  [Completed] Node
+  [Completed] File
+[Completed] MetaCore
+  [Completed] ExpandBind
+  [Completed] InjectDllImportHolder
+  [Completed] CreateNamespace
+  [Completed] CombineFileMeta
+  [Completed] ParseMetaClassLink
+  [Completed] ParseAttributes
+  [Completed] ParseMemberExpress
+  [Completed] InjectProjectData
+  [Completed] ValidatePlatformConfig
+  [Completed] BuildLocalClass
+  [Completed] ParseStatements
+  [Completed] InjectInitCall
+  [Completed] ExportMetaDebug
+  [Completed] AddGlobalData
+  [Completed] ProjectCompileAfter
+  [Completed] AutoInlineMark
+[Completed] IR
+  [Completed] TranslateIR
+[Pending] Export
+  [Pending] ExportModule
+]
+[11:55:14 903] [Info] [Process]  [ProcessPhaseStart]  Info:[开始编译阶段: Export]
+[11:55:14 982] [Info] [GenIR]  [ExportSLModulePackageExportModuleSuccess]  Info:[export module success:] Extend:[export module success (binary): D:\project\lang\simple_language\out\export\SLangServer\SLangServer.module.slb]
+[11:55:15 100] [Info] [GenIR]  [ExportSLModulePackageExportModuleSuccess]  Info:[export module success:] Extend:[export module success: D:\project\lang\simple_language\out\export\SLangServer\SLangServer.module.json]
+[11:55:15 100] [Info] [Process]  [ProcessPhaseEnd]  Info:[编译阶段[Export]完成]
+Compile completed.
