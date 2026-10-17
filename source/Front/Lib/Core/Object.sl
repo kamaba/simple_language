@@ -1,7 +1,25 @@
 public class Object
 {
+
+    #static helper: null-safe equality
+    public static bool refEquals(object objA, object objB)
+    {
+        ret SystemEqualObject( objA, objB);
+    }
+
+
     #basic constructor
     void _init_()
+    {
+    }
+
+    #resource management hooks (attribute / with semantics)
+    #_init_ 同款传递模式: 根类真实声明, 子类走普通 override/final 检查流程
+    public Object _enter_()
+    {
+        ret this
+    }
+    public void _exit_()
     {
     }
 
@@ -9,55 +27,15 @@ public class Object
     {
         ret SystemObjectGetType(this)
     }
-
-    #static helper: null-safe equality
-    public static bool objectEquals(object objA, object objB)
-    {
-        ret SystemEqualObject( objA, objB);
-    }
-
-    #reference equality
-    public static bool refEquals(object objA, object objB)
-    {
-        ret SystemEqualObject( objA, objB);
-    }
     #hashCode getter - delegated to runtime helper
     public Int32 get hashCode()
     {
         ret SystemObjectGetHashCode(this)
     }
-
     #equality: default delegates to runtime equality helper which may compare by reference
     public bool equals(object obj)
     {
         ret SystemEqualObject(this, obj)
-    }
-    #runtime internal reference (object identity)
-    final object get ref()
-    {
-        ret SystemObjectRef(this)
-    }
-
-    #weak reference getter
-    final object get refWeak()
-    {
-        ret SystemObjectRefWeak(this)
-    }
-
-    #reference count (for debugging)
-    final public Int32 get refCount()
-    {
-        ret SystemObjectRefCount(this)
-    }
-
-    #free/release placeholders - runtime manages lifecycle, expose for API completeness
-    final public void free()
-    {
-        SystemObjectFree(this)
-    }
-    final public void release()
-    {
-        SystemObjectRelease(this)
     }
     #string representation
     public string toString()

@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      ProjectManager.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -6,6 +6,7 @@
 //  Description:  manager project enter and compile 
 //****************************************************************************
 
+using SimpleLanguage.Compile;
 using SimpleLanguage.Core;
 
 
@@ -45,6 +46,16 @@ namespace SimpleLanguage.Project
         public static MetaData globalData = new MetaData( "global", false, true, false );
         internal static string currentProject;
 
+        // IR optimization level (set from CLI -O0..-O3; >= 3 enables const-fused stores)
+        public static int optimizeLevel { get; set; } = 1;
+
+        /// <summary>
+        /// 项目向导 Markdown 三态覆盖：CLI --guide / --no-guide 注入。
+        /// null = 不覆盖，走 jsonc "export"."guide"（缺省 false 不生成）。
+        /// 每次 Run 重置，供 ProjectCompile.LoadProject 门控读取。
+        /// </summary>
+        public static bool? guideOverride { get; set; } = null;
+
         public static void SetConfig(ProjectConfig cfg)
         {
             m_Config = cfg ?? new ProjectConfig();
@@ -52,6 +63,35 @@ namespace SimpleLanguage.Project
 
         public static void Run( string path, CommandInputArgs cinputArgs )
          {
+            // 每个项目编译开始时重置 @<tag>(){} 内联块收集器
+            // （已迁 SimpleLanguage.Core; 本文件同时 using Compile/Core 两个命名空间, 非限定名会 CS0104 歧义）
+            SimpleLanguage.Core.AtSignLabelBlockCollector.Clear();
+
+            // P2 GLOBAL_SLOT：IRManager 单例跨编译驻留，globalStaticVariableList/
+            // 登记集合须在每次编译入口清空，防上一模块的登记泄漏到本次导出与直发判定
+            SimpleLanguage.IR.IRManager.instance.ResetGlobalStaticVariableList();
+
+            // apply CLI optimize level before any IR generation happens
+            if (cinputArgs != null)
+            {
+                optimizeLevel = cinputArgs.optimizeLevel;
+                // 项目向导 Markdown 覆盖：--guide / --no-guide（null = 走 jsonc export.guide）
+                guideOverride = cinputArgs.exportGuide;
+                // 外部宏：CLI --macro name=value 在编译前注入 global.macro
+                // 优先级高于 jsonc global.macro 初值，低于 _before_() 钩子（编译期仍可再修改）
+                CompileBeforeManager.ClearExternalMacros();
+                if (cinputArgs.macroDefines != null)
+                {
+                    foreach (var kv in cinputArgs.macroDefines)
+                    {
+                        CompileBeforeManager.SetExternalMacro(kv.Key, kv.Value);
+                    }
+                }
+            }
+            else
+            {
+                guideOverride = null;
+            }
             int index = path.LastIndexOf("\\");
             if (index != -1)
             {

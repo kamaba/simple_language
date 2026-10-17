@@ -84,8 +84,6 @@ namespace SimpleLanguage.Export.SLIR
         public sealed class InstructionInfo
         {
             public EIROpCode OpCode { get; set; }
-            public int Index { get; set; }
-            public int Offset { get; set; }
             public byte[] Payload { get; set; } = Array.Empty<byte>();
         }
 
@@ -188,8 +186,6 @@ namespace SimpleLanguage.Export.SLIR
                     var ins = new InstructionInfo
                     {
                         OpCode = (EIROpCode)br.ReadByte(),
-                        Index = br.ReadInt32(),
-                        Offset = br.ReadInt32(),
                     };
 
                     int payloadLen = br.ReadInt32();
@@ -334,8 +330,6 @@ namespace SimpleLanguage.Export.SLIR
                     var ins = new InstructionInfo
                     {
                         OpCode = (EIROpCode)br.ReadByte(),
-                        Index = br.ReadInt32(),
-                        Offset = br.ReadInt32(),
                     };
 
                     int payloadLen = br.ReadInt32();

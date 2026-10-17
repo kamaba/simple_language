@@ -4,7 +4,7 @@ S 语言支持模板（泛型）用于类和函数，允许在定义时参数化
 
 主要特性：
 - 模板类（`class<T>`）在实例化时替换类型参数生成具体类。
-- 模板函数（`fun<T>`）在调用时根据类型参数生成具体函数实例。
+- 模板函数（`RetType Name<T>(...)`，类型参数表跟在函数名后）在调用时根据类型参数生成具体函数实例。
 - 支持模板约束（`extends` / `in` 样式），用于限制模板参数必须满足的基类或接口。
 
 模板类示例：
@@ -35,7 +35,7 @@ var pl = PairList<Int32>();
 模板函数示例：
 
 ```s
-fun<T> identity(T x) { ret x; }
+T identity<T>(T x) { ret x; }
 
 var a = identity<Int32>(10);
 ```
@@ -43,7 +43,7 @@ var a = identity<Int32>(10);
 模板约束：
 
 ```s
-fun<T extends Number> sumAll(List<T> vals) { /* ... */ }
+T sumAll<T extends Number>(List<T> vals) { /* ... */ }
 ```
 
 实现细节（元模型相关）：

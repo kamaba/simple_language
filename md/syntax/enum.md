@@ -36,6 +36,7 @@ enum Book
 |------|------|
 | **内置整数族** | 语言映射到 VM 的 `byte`/`sbyte`/`short`/`ushort`/`int`/`uint`/`long`/`ulong` 等整型底层 |
 | **`string`** | 每项为字符串常量 |
+| **`Error`** | `extends Error` 定义错误枚举，成员为 `{ code = ..., message = "..." }` 结构化错误值（供 `throw` 使用） |
 | **`data`（具名）** | `extends` 某个已定义的 `data` 名，例如 `extends AA`（`data AA { ... }`） |
 | **`data`（泛型写法）** | 如 `extends data`：表示底层为「任意 `data` 实例」的联合语义（实现上绑定到动态 data），成员可为多种已定义 `data` 的 `new` 表达式 |
 
@@ -204,7 +205,8 @@ const enum ConstColor
 ## 限制规则
 
 - **不允许**在 enum 内部嵌套 `enum` 或 `class`
-- **`extends` 只能是**：内置整型族、`string`、**`data`**（关键字或具体 `data` 名）；**禁止** `extends` 普通 `class`、**禁止** `extends` 另一个 `enum`
+- **`extends` 只能是**：内置整型族、`string`、**`data`**（关键字或具体 `data` 名）、`Error`（错误枚举）；**禁止** `extends` 普通 `class`、**禁止** `extends` 另一个 `enum`
+- 枚举值参与运算目前**只允许 `==` / `!=`**（LID 21258），位或（`|`）等位运算暂不支持
 - 使用整数类 `extends` 时，枚举项可省略 `=`，自动从上一个值递增
 - **`extends` 具体 `data` 名时**：成员右侧**仅允许**该 `data` 类型的构造表达式
 - **`extends data`（关键字）时**：成员须为**已定义**的 `data` 构造，但**可以**混用多种 `data` 类型
@@ -257,13 +259,13 @@ EShape.cd = CircleShape(){ x = 100, y = 100, r = 1000 }
 ```ruby
 for b in Season
 {
-    Core.print(b.name + " = " + b.ToString())
+    global.println(b.name + " = " + b.toString())
 }
 
 # 也可以遍历 .values 获取值集合
 for v in Season.values
 {
-    Core.print(v)
+    global.println(v)
 }
 ```
 
@@ -278,9 +280,9 @@ GameState state = GameState.Begin
 
 switch state
 {
-    case GameState.Init  { Core.print("初始化"); }
-    case GameState.Begin { Core.print("游戏开始"); }
-    case GameState.End   { Core.print("游戏结束"); }
+    case GameState.Init  { Console.print("初始化"); }
+    case GameState.Begin { Console.print("游戏开始"); }
+    case GameState.End   { Console.print("游戏结束"); }
 }
 ```
 
@@ -289,7 +291,7 @@ switch state
 ```ruby
 if state == GameState.Begin
 {
-    Core.print(state.toString())
+    Console.print(state.toString())
 }
 ```
 
@@ -298,8 +300,6 @@ if state == GameState.Begin
 ## 完整示例
 
 ```ruby
-import CSharp.System;
-
 data RectShape { x = 0; y = 0; width = 0; height = 0; }
 data CircleShape { x = 0; y = 0; r = 1.0f; }
 
@@ -337,19 +337,19 @@ enum GameState
 
 EnumTest
 {
-    static func()
+    static fun()
     {
         # 遍历 string 枚举
         for s in Season.values
         {
-            Console.print("季节: " + s)
+            Console.println("季节: " + s)
         }
 
         # 类型为 data 的枚举，mut 字段动态修改
         EShape shape = EShape.r1
         if shape == EShape.r1
         {
-            Console.print("当前是 r1")
+            Console.println("当前是 r1")
         }
         elif shape == EShape.cd
         {
@@ -360,9 +360,9 @@ EnumTest
         GameState gs = GameState.Begin
         switch gs
         {
-            case GameState.Init  { Console.print("初始化"); }
-            case GameState.Begin { Console.print("游戏开始"); }
-            case GameState.End   { Console.print("游戏结束"); }
+            case GameState.Init  { Console.println("初始化"); }
+            case GameState.Begin { Console.println("游戏开始"); }
+            case GameState.End   { Console.println("游戏结束"); }
         }
     }
 }

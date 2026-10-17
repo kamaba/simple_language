@@ -1,5 +1,3 @@
-import Std
-
 AssignStatement
 {
     AssignBox

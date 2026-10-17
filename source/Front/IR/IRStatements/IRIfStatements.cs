@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      IRIfStatements.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -32,12 +32,11 @@ namespace SimpleLanguage.IR
             public void ParseIRStatements( IRMethod _irMethod, MetaIfStatements.MetaElseIfStatements mires )
             {
                 startNop = new IRNop( _irMethod );
+                startNop.data.SetDebugInfoByToken(GetBranchKeyToken(mires), "if/elif/else branch start");
                 conditionStatList.Add(startNop);
 
                 if (mires.ifElseState == MetaIfStatements.IfElseState.If || mires.ifElseState == MetaIfStatements.IfElseState.ElseIf)
                 {
-                    //startNop.data.SetDebugInfoByToken(mires.finalExpress.GetToken());
-
                     m_IrExpress = IRExpressManager.CreateExpress(_irMethod, mires.finalExpress);
                     conditionStatList.Add(m_IrExpress);
 
@@ -45,17 +44,17 @@ namespace SimpleLanguage.IR
                     {
                         IRMetaClass irmc = _irMethod.irManager.GetIRMetaClassByName("S.Core.Bool");
                         IRStoreVariable storeLocal = IRStoreVariable.CreateIRStoreVariable( new IRMetaType(irmc, null ), irmc, _irMethod, mires.boolConditionVariable );
-                        //storeLocal.data.SetDebugInfoByToken(mires.boolConditionVariable.pingToken);
+                        SetIRDataListDebugInfo(storeLocal, GetMetaVariableToken(mires.boolConditionVariable), "if/elif store condition var");
                         conditionStatList.Add(storeLocal);
 
                         IRMetaType irmt = new IRMetaType(irmc, null);
                         IRLoadVariable loadLocal = IRLoadVariable.CreateLoadVariable(irmt, irmc, _irMethod, mires.boolConditionVariable );
-                        //loadLocal.data.SetDebugInfoByToken(mires.boolConditionVariable.pingToken);
+                        SetIRDataListDebugInfo(loadLocal, GetMetaVariableToken(mires.boolConditionVariable), "if/elif load condition var");
                         conditionStatList.Add(loadLocal);
                     }
 
                     ifFalseBreach = new IRBranch(_irMethod, EIROpCode.BrFalse, null);
-                    //ifFalseBreach.SetDebugInfoByToken(mires.m_IfOrElseIfKeySyntax.token);
+                    ifFalseBreach.SetDebugInfoByToken(mires.ifOrElseIfKeySyntax?.token, "if/elif BrFalse");
                     conditionStatList.Add(ifFalseBreach);
                 }
 
@@ -65,12 +64,8 @@ namespace SimpleLanguage.IR
 
                 //{}代码执行结束后的位置
                 ifEndBrach = new IRBranch(_irMethod, EIROpCode.Br, null);
+                ifEndBrach.SetDebugInfoByToken(GetBranchEndBlockToken(mires), "if/elif/else block end Br");
                 thenStatList.Add(ifEndBrach);
-
-                //if (m_IfOrElseIfKeySyntax != null)
-                //{
-                //    ifEndBrach.data.SetDebugInfoByToken(m_IfOrElseIfKeySyntax?.executeBlockSyntax?.endBlock);
-                //}
             }
 
             public string ToIRString()
@@ -96,10 +91,7 @@ namespace SimpleLanguage.IR
         public void ParseIRStatements( MetaIfStatements ifstatements )
         {
             IRNop ifEndIRNop = new IRNop(irMethod);
-            //if (m_FileMetaKeyIfSyntax != null)
-            //{
-            //    ifEndIRNop.data.SetDebugInfoByToken(m_FileMetaKeyIfSyntax.ifExpressSyntax.executeBlockSyntax?.endBlock);
-            //}
+            ifEndIRNop.data.SetDebugInfoByToken(GetIfStatementsEndBlockToken(ifstatements), "if end");
             List<MetaIRElseIfStatements> mirList = new List<MetaIRElseIfStatements>();
             for (int i = 0; i < ifstatements.metaElseIfStatements.Count; i++)
             {
@@ -139,6 +131,59 @@ namespace SimpleLanguage.IR
                         mire.ifFalseBreach.data.opValue = ifEndIRNop.data;
                     }
                 }
+            }
+        }
+
+        /// <summary>取分支入口的关键字 token（if/elif/else），用于标记分支起点。</summary>
+        private static Token GetBranchKeyToken( MetaIfStatements.MetaElseIfStatements mires )
+        {
+            if (mires == null)
+                return null;
+            return mires.ifElseState == MetaIfStatements.IfElseState.Else
+                ? mires.elseKeySyntax?.token
+                : mires.ifOrElseIfKeySyntax?.token;
+        }
+
+        /// <summary>取分支代码块的结束 token（'}'），用于标记块结束跳转。</summary>
+        private static Token GetBranchEndBlockToken( MetaIfStatements.MetaElseIfStatements mires )
+        {
+            if (mires == null)
+                return null;
+            return mires.ifOrElseIfKeySyntax?.executeBlockSyntax?.endBlock
+                ?? mires.elseKeySyntax?.executeBlockSyntax?.endBlock;
+        }
+
+        /// <summary>取整个 if/elif/else 链的结束 token：优先取最后一个分支块的结束 token。</summary>
+        private static Token GetIfStatementsEndBlockToken( MetaIfStatements ifstatements )
+        {
+            var meisList = ifstatements?.metaElseIfStatements;
+            if (meisList != null && meisList.Count > 0)
+            {
+                var endToken = GetBranchEndBlockToken(meisList[meisList.Count - 1]);
+                if (endToken != null)
+                    return endToken;
+            }
+            return ifstatements?.fileMetaKeyIfSyntax?.ifExpressSyntax?.executeBlockSyntax?.endBlock;
+        }
+
+        /// <summary>取 MetaVariable 的定位 token：优先定义 token，回退 pingTokenList 首个。</summary>
+        private static Token GetMetaVariableToken( MetaVariable mv )
+        {
+            if (mv == null)
+                return null;
+            if (mv.token != null)
+                return mv.token;
+            return (mv.pingTokenList != null && mv.pingTokenList.Count > 0) ? mv.pingTokenList[0] : null;
+        }
+
+        /// <summary>对 IRBase 的全部 IRData 设置 debugInfo（IRStoreVariable/IRLoadVariable 的 data 为私有，经 IRDataList 统一设置）。</summary>
+        private static void SetIRDataListDebugInfo( IRBase irBase, Token token, string info )
+        {
+            if (irBase == null)
+                return;
+            for (int i = 0; i < irBase.IRDataList.Count; i++)
+            {
+                irBase.IRDataList[i].SetDebugInfoByToken(token, info);
             }
         }
     }

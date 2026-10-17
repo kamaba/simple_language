@@ -1,16 +1,23 @@
 # 系统内置方法（System methods）
 
-VM 通过 `EIROpCode.CallSystemMethod` 调用；`systemMethodKind` 与 Front 中 `SimpleLanguage.ESystemMethodCall`（`Define.cs`）枚举顺序一致，需保持同步。
+VM 通过 `EIROpCode.CallSystemMethod` 调用；系统方法由工程 `.jsonc` 的 `systemCalls[]` 声明注册（`name` / `returnType` / `params` / `isVariadic` / `cvmFunction`），Front 导出时按名称哈希生成 `id` 并携带 `cvmFunction` 符号名，C VM 装载期按符号名解析实现（不再有枚举顺序约定）。
+
+## 调用限制（compile.isAllowSystemMethodCall）
+
+工程 jsonc `compile` 段的 `isAllowSystemMethodCall`（缺省 `true`）控制系统方法是否可用：
+
+- `false` 时，Front 语义解析层（`MetaCallNode` 的全局裸调用与类路径回退两处解析点）拒绝解析到 `systemCalls` 注册表声明的调用，报编译错误 **21473**；仅约束当前工程自身源码，不影响引用模块与 `@tag{}` 内部机制
+- **类型转换映射不受限**：`int()` / `Int32()` / `sbyte()` / `float()` 等 C 型别名写法（及其 `SystemConvert*` 目标声明的全名写法）属语言级纯值转换，恒可用
+- 判定实现：`SystemMethodCallDeclarationRegistry.IsTypeConvertDecl`（别名映射目标名集合）
 
 ---
 
-## 桥接 / 互操作（已实现）
+## 桥接 / 互操作
 
-| 名称 | 说明 |
-|------|------|
-| `SystemCallCLRMethod` | 调用 C# / CLR 方法（由桥接注册表解析） |
-| `SystemCallNativeMethod` | 调用 C/C++ 原生方法 |
-| `SystemCallJVMMethod` | 调用 JVM 方法 |
+早期的 `SystemCallCLRMethod` / `SystemCallNativeMethod` / `SystemCallJVMMethod` 已移除。现行互操作方式：
+
+- FFI / native 内存：声明式 systemCalls（如 `SystemMemoryNative*` 系列，见 `md/project/ffi.md`）
+- 插件 / 内联标签：`AtSignLabelCall` / `AtSignLabelCallVoid`（`@<tag>(){...}` 语法，经 C VM `atsign:label`）
 
 ---
 
@@ -20,7 +27,7 @@ VM 通过 `EIROpCode.CallSystemMethod` 调用；`systemMethodKind` 与 Front 中
 |------|------|--------|
 | `SystemPrint` | 向标准输出打印 | 弹出 `paramCount` 个参数；约定第一个为要输出的文本（`ToString`） |
 | `SystemReadLine` | 从标准输入读取一行（`Console.ReadLine`） | 弹出 `paramCount` 个参数（一般为 0）；**压入**一行 `string` |
-| `SystemReadKey` | 读取一次按键（`Console.ReadKey(true)`，不回显） | 弹出 `paramCount` 个参数（一般为 0）；**压入**单字符 `string`（`KeyChar`） |
+| `SystemReadKey` | 读取一个字符（stdin） | 弹出 `paramCount` 个参数（一般为 0）；**压入**单字符 `string` |
 
 ---
 
@@ -33,38 +40,40 @@ VM 通过 `EIROpCode.CallSystemMethod` 调用；`systemMethodKind` 与 Front 中
 | `DataNameAndTypeEqual` | 字段名与各字段**类型签名**相同（含模板实参） | 同上 |
 | `DataDataEqual` | 字段名对齐后**数据值**相同；数值可按宽化规则兼容（如 `int8` 与 `int32`） | 同上 |
 
-运行时仅接受 `metaClassKind == Data` 的 `ClassObject` 实例（含匿名 `data`）；否则返回 `false`。Front 侧注册返回 `bool`、参数为 `object`；具体比较在 VM `DataSystemMethodCall` 中实现。
+运行时仅接受 `metaClassKind == Data` 的 `ClassObject` 实例（含匿名 `data`）；否则返回 `false`。Front 侧注册返回 `bool`、参数为 `object`；具体比较在 C VM `data_system_method.c`（`vm_sys_data_all_equal` 等）中实现。
 
 ## 类型强制转换（SystemConvert*）
 
-从当前栈顶按调用约定弹出操作数（通常为 **1 个**：待转换的值），在 VM 内先**解包**为 CLR 可用的对象（数值、`SObject` 包装类型、字符串等），再按 **BCL `Convert`** 与 `CultureInfo.InvariantCulture` 转为目标类型，最后把结果 **压回栈**。
+从当前栈顶弹出 **1 个**操作数（待转换的值），在 C VM 内转换后把结果**压回栈**（实现：`csimple_lang/src/vm/system_method_call/convert_system_method.c`）：
 
-`SystemConvertInt8` 与 `SystemConvertUInt8` 例外：可带 **第二个 `int32` 参数**（从栈上先于第一个值压入，与实例方法其它双参系统调用一致）。`index == -1` 时与原先单参行为相同（`Int8`：`Convert.ToByte`；`UInt8`：同样走 legacy `Convert.ToByte` 路径，含字符串解析）；`index >= 0` 时在数值的**无符号位模式**上，从**最低位**起取连续 **4 位**：`index` 为窗口最低位下标（例如 `0` 取最低 4 位，`4` 取第 4–7 位，`2` 取第 2–5 位）。须满足 `index + 4 <=` 该类型的存储位宽；字符串在 `index >= 0` 时结果为 null。兼容旧 IR 仍可出现 **仅 1 个参数**，等价于 `index == -1`。
+- 字符串实参：按目标类别用 `strtol` / `strtod` 解析；解析失败结果为 `null`
+- 装箱数值对象（PTR 槽）：先解包取出标量值再转换
+- 其余标量：按目标整数/浮点槽位截断取值
 
-若转换失败或输入为 null，结果可为 null 值（`SValue` 置空）。
-
-| 名称 | 目标类型 |
+| 名称 | 目标类型（Front 声明） |
 |------|----------|
-| `SystemConvertInt8` | `byte`（可选第二参 `int32`：`index`，见上文） |
-| `SystemConvertUInt8` | `byte`（与 `SystemConvertInt8` 相同的第二参 `index` 约定；单参等价 `index == -1`） |
-| `SystemConvertSInt8` | `sbyte`（第二参 `index` 与 `SystemConvertInt8` 相同：`-1` 为 `Convert.ToSByte` / 含字符串；`≥0` 为低起算 4 位窗口） |
-| `SystemConvertInt16` | `short` |
-| `SystemConvertUInt16` | `ushort` |
-| `SystemConvertInt32` | `int` |
-| `SystemConvertUInt32` | `uint` |
-| `SystemConvertInt64` | `long` |
-| `SystemConvertUInt64` | `ulong` |
-| `SystemConvertFloat32` | `float` |
-| `SystemConvertFloat64` | `double` |
+| `SystemConvertInt8` | `Int8` |
+| `SystemConvertUInt8` | `UInt8` |
+| `SystemConvertSInt8` | `Int8`（有符号语义） |
+| `SystemConvertInt16` | `Int16` |
+| `SystemConvertUInt16` | `UInt16` |
+| `SystemConvertInt32` | `Int32` |
+| `SystemConvertUInt32` | `UInt32` |
+| `SystemConvertInt64` | `Int64` |
+| `SystemConvertUInt64` | `UInt64` |
+| `SystemConvertFloat32` | `Float32` |
+| `SystemConvertFloat64` | `Float64` |
 | `SystemConvertString` | `string`（`ToString`） |
+
+C 型别名（`byte`/`sbyte`/`int`/`float` 等）在 `SystemMethodCallDeclarationRegistry` 中映射到对应 `SystemConvert*` 调用。
 
 ---
 
 ## 参考代码位置
 
-- 枚举：`source/Front/Define.cs` — `ESystemMethodCall`
-- VM 分发：`source/VM/InnerCLRRuntime/RuntimeVM.cs` — `EIROpCode.CallSystemMethod` 分支
-- IR 生成：`source/Front/IR/IRCall.cs` — `ParseSystemCall`，`systemMethodKind = (int)sysEnum`
+- 声明注册：`source/Front/Project/SystemMethodCallDeclaration.cs` — `SystemMethodCallDeclarationRegistry`（从 jsonc `systemCalls` 加载；`GetIndex()` 按名称哈希生成 `id`）
+- IR 生成：`source/Front/IR/IRCall.cs` — `ParseSystemCall`，`CallSystemMethod` payload 携带 `name` / `id` / `paramCount`
+- VM 注册/分发：`csimple_lang/src/vm/system_method_call/system_method_registry.c`（按 `cvmFunction` 符号名解析，支持扩展 DLL `dll:func` 形式）+ 同目录各域 `*_system_method.c`
 
 
 # SLang 的系统函数
@@ -72,23 +81,21 @@ VM 通过 `EIROpCode.CallSystemMethod` 调用；`systemMethodKind` 与 Front 中
 
 —————————————————————————————————————————————————————————
 
-## 重载类函数 init
-说明: 在类中使用 _init_函数 可以重载函数， 通过不同参数，重载，比如 _init_( int a ){} _init_( int a, int b ){}  
+## 重载类函数 _init_
+说明: 在类中使用 _init_ 函数可以重载构造，通过不同参数重载，比如 _init_( int a ){} _init_( int a, int b ){}
 
-## 重载符号 reloadsign
-说明: 在类中，如果要重载符号比如 类的相关 类的相除 类的位移等 
-1. 比如 Class1 _reloadsign_( Class1 c, Class1 c2, "+" ){} 可以重载+法
+## 运算符重载（约定方法名）
+说明: 在类中通过约定方法名重载运算符（+ - * / % 与比较、逻辑等）
+1. 比如 static Class1 _add_( Class1 a, Class1 b ){} 可以重载+法；完整约定方法名表见 operator.md
 
-## 重载通过$获取 
-说明: 可以重载该方法，快速获取 比如在一个自动写的数组类，可以通过重载快速获取下标的某个值
+## 重载通过$获取（_getItem_ / _setItem_）
+说明: 在类中定义下标约定方法，快速获取/赋值下标元素
+1. T _getItem_( int index ){} 读取下标，variable.$0 与 variable[0] 等价
+2. void _setItem_( int index, T value ){} 写入下标，variable[0] = v
 
-1. _getIndex_( int index ){} 获取该下载的返回值 ，也可以返回某个定义值 array_variable.$0 或者是使用 array_variable[0] 有同样的方法
-2. _getKey_( string key ){} 类似于上边的方法，可以重载后，通过 variable.$"nb" 的方式获取 
-
-## 类型变化 cast
-说明： 可以通过该方法，对类进行转换，
-1. 比如 var v = intvalue.cast<string>()  对某个int值，转为string, v 是一个string类型
-2. Class1{} Class2 extends Class1{}  Class2 class2Value  Class1 c = Class2Value.cast<Class2>()
+## 类型转换 as
+说明： 运行时类型转换用 as 关键字完成（详见 cast.md）
+1. 比如 Level2 v = level1 as Level2  转换失败得 null
 
 
 

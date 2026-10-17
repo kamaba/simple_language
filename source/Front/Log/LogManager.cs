@@ -66,7 +66,9 @@ namespace SimpleLanguage.Logging
             {
                 Assembly.GetExecutingAssembly(),
                 Assembly.GetEntryAssembly(),
-                Assembly.GetCallingAssembly(),
+                // Native AOT（SlangAllInOne -p:PublishAot）不支持 Assembly.GetCallingAssembly()
+                // （运行期栈回溯 → PlatformNotSupportedException，2026-10-17 实测）；嵌入资源
+                // 固定在本程序集内，GetExecutingAssembly 已覆盖，不再探测调用方程序集。
             }
             .Where(a => a != null)
             .Distinct()
@@ -135,17 +137,18 @@ namespace SimpleLanguage.Logging
                 bool.TryParse(parts[2], out var ac);
                 def.EnableAssert = ac;
                 bool.TryParse(parts[3], out var al);
-                def.BlockOnErrorAssert = al;
+                def.Pass = al;
                 if (!int.TryParse(parts[4], out var pc)) pc = 0;
                 def.ParamCount = pc;
 
                 def.Demo = parts[5];
 
-                def.MessageTemplateArray[0] = parts[6];
-                def.FixedTipArray[0] = parts[7];
-
-                def.MessageTemplateArray[1] = parts[8];
-                def.FixedTipArray[1] = parts[9];
+                // 标头: id,logType,enableAssert,pass,paramCount,domesticTips,zhMessage,,zhFixedTips,enMessage,enFixedTips
+                // index 7 为空列，zhFixedTips 位于 index 8
+                def.MessageTemplateArray[0] = parts[6];                       // zhMessage
+                def.FixedTipArray[0] = parts.Length > 8 ? parts[8] : "";       // zhFixedTips
+                def.MessageTemplateArray[1] = parts.Length > 9 ? parts[9] : ""; // enMessage
+                def.FixedTipArray[1] = parts.Length > 10 ? parts[10] : "";      // enFixedTips
 
 
                 _dict[def.Id] = def;

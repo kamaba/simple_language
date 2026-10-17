@@ -6,7 +6,7 @@
 
 ## 1. 内置类型与词法（Lexer）
 
-扫描参考：`source/Front/Compile/Parse/LexerParse.cs`
+扫描参考：`source/Front/Parse/LexerParseToToken.cs`
 
 ### 1.1 词法中的类型关键字（小写）
 
@@ -44,7 +44,8 @@
 
 扫描参考：`FileMetatUtil.cs`、`TypeManager.cs`、`CoreMetaClassManager.cs`、`Define.cs` 等。
 
-- 核心运行时类型枚举为规范 **PascalCase**：`Byte`, `SByte`, `Int16`, `UInt16`, `Int32`, `UInt32`, `Int64`, `UInt64`, `Float32`, `Float64`, `Boolean`, `String`, `Num`。
+- 核心运行时类型枚举（`EType`，见 `source/Front/Define.cs`）为规范 **PascalCase**：`UInt8`, `Int8`, `Int16`, `UInt16`, `Int32`, `UInt32`, `Int64`, `UInt64`, `Float32`, `Float64`, `Boolean`, `String`, `Num`。
+- 源码中的 `Byte` / `SByte` 是 `UInt8` / `Int8` 的别名写法（`CoreMetaClassManager.GetSelfMetaName` 中映射）。
 - `FileMeta` 阶段通过 meta/class 解析类型引用，不仅限于小写别名。
 - 源码中可使用 **PascalCase 核心类型名**（如 `Int16`、`Byte`）作为类风格类型名。
 
@@ -93,23 +94,22 @@ var b1 = 0b0011_1100;
 ### 3.1 概述
 
 - `Num` 表示任意数值（整数或浮点场景的通用容器）。
-- 运行时原始 `Num` 在 `SValue` 中常以 **`double`（Float64）** 存储；需要对象语义时使用 **`NumObject`**（方法、虚调用等）。
+- 运行时原始 `Num` 在 C VM 的 `VMRuntimeValue` 中以 **8 字节 `double`（Float64）槽** 存储（标量槽长 8）。
 - 内部枚举对应 **`EVMType.Num`**。
 
 ### 3.2 运行时表示
 
-- **原始 `Num`**：存于 `SValue.doubleValue`，`SValue.eType == EVMType.Num`；快速计算路径中按浮点参与运算；在 `RawSValue` 中与 `Float64` 分支对应。
-- **`NumObject`**：字段、模板实例或显式对象包装时使用；若运算一侧为 `NumObject`，优先走 **`NumObject.Operate(...)`**。
+- **原始 `Num`**：存于 `VMRuntimeValue` 的 `f64` 槽（`EVMType_Num`）；计算/比较出口按 `double` 取值（`runtime_value_get_as_double` 中 `Num` 与 `Float64` 同分支，见 `csimple_lang/src/vm/runtime/runtime_value/runtime_value_compute.c`）。
 
 ### 3.3 赋值与类型兼容
 
 - 赋给声明为 `Num` 的变量时，来源须为数值类型（`Byte` … `Float64` 及 `Num`）；`String`、`Boolean`、自定义类等不可隐式赋给 `Num`（实现中常用 `Debug.Assert` 提示不兼容）。
-- `RuntimeVM` 的 `SetObjectByValue` / `SetValue` 等路径会检查 `SValue` 与目标类型兼容性。
+- C VM 的装载/赋值路径会检查来源值与目标类型的兼容性（`runtime_value.h` 的 `runtime_value_try_get_*` / `runtime_value_is_narrowing_conversion` 等辅助）。
 
 ### 3.4 计算与提升
 
-1. 任一侧为 **`NumObject`**：优先 `Operate`；另一侧为原始值时可转为临时 `NumObject`。
-2. 否则走原始路径：`RawSValue` / `ComputeValueInlineRaw` 等；**`Num` 按 Float64 处理**。
+1. 运算走 C VM `runtime_value_compute`：操作数先做标量归一化（`runtime_value_try_normalize_object_scalar_in_place`），再进入字符串/数值分支。
+2. 原始路径中 **`Num` 按 Float64 处理**（`Num` 参与的运算结果仍写入 `Num` 的 `f64` 槽）。
 3. **提升**：任一侧为 `Float32`/`Float64` 或 `Num` 时走双精度浮点路径；否则整数路径（有符号 `long` 语义 / 无符号 `ulong` 语义由标志决定）。
 4. **`Num` 不支持位运算**（`& | ^ << >>`），需在整数类型上运算或先显式转换为整数类型。
 
@@ -131,14 +131,14 @@ Int32 x = 1
 Num y = x + 1
 
 Num no = 10
-var res = no + 5   // 可能走 NumObject.Operate
+var res = no + 5   // 走 C VM 浮点路径
 
 # Num n = "abc"   # 错误：不可隐式转换
 ```
 
 ### 3.7 实现注意与边界
 
-- `SValueCompute`、`RawSValue`、`SValueCompare` 等将 **`Num` 按浮点** 纳入路径。
+- `runtime_value_compute.c`、`runtime_value_compare.c` 等将 **`Num` 按浮点** 纳入路径。
 - **精度**：`double` 无法精确表示所有极大无符号整数。
 - **除零**：当前浮点除零可能返回 `0`（避免抛异常），可按产品需求改为错误或 `Infinity/NaN`。
 

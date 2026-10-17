@@ -1,7 +1,7 @@
 # SLang Array 语法与安全实践（按当前实现）
 
 本文档按当前 Front 行为整理，目标是：**写法清楚、边界清楚、容易排错**。  
-核心参考：`MetaExpressNewObject`、`MetaAssignStatements`（赋值第二轮数组字面量纠正）、`MetaCallNode`、`TypeManager` 与 `test/BaseTest/ArrayTest.sl`。
+核心参考：`MetaExpressNewObject`、`ExpressManager.ConvertNewExpress`、`NumberManager`（数组字面量数值统一）、`TypeManager`、`MetaCallNode` 与 `test/BaseTest/ArrayTest.sl`。
 
 ## 1) Array 的定义方式
 
@@ -95,8 +95,9 @@ for-in 需要对象满足可迭代接口语义（`IIterable` / `IIterator` 路�
 ### 5.2 接口侧允许受控协变（只读视角）
 
 当前保留的接口协变：
-1. `IIterator<Num> <- concrete.iterator`
+1. `IIterator<Num> <- concrete.iterator`（具体数值数组 → 数值抽象迭代器，只读遍历）
 2. `IIterable<Object> <- Int32[]`（元素可赋值时）
+3. `const Array<Num>` 数值抽象数组（测试尾注与 `arrayNumberIteratorFromConcreteArrayTest` 印证）
 
 它的目的：便于遍历/读，不代表右侧可当作可写的 `Array<目标元素>` 使用。
 
@@ -133,46 +134,38 @@ for-in 需要对象满足可迭代接口语义（`IIterable` / `IIterator` 路�
 
 ## 8) 相关测试样例
 
-参考 `test/BaseTest/ArrayTest.sl`：
-- `arrayBasicApiTest`
-- `arrayCovariantAndLiteralForInTest`
-- `arrayNumberIteratorFromConcreteArrayTest`
-- `arrayJagged2DAssignTest`
-- `arrayConstructorsMultidimAndArrClassBulkTest`
+参考 `test/BaseTest/ArrayTest.sl`（按 `arrayXxxTest` 命名分类，入口 `fun()` 顺序调用）：
 
-## 9) 赋值解析顺序与数组字面量类型纠正（编译期）
+- 基础 API：`arrayBasicApiTest`（create/index/current/fill/setValue/length）
+- 泛型与构造：`arrayGenericElementTest`、`arrayCreateInstanceIndexLoopTest`
+- 协变与遍历：`arrayCovariantAndLiteralForInTest`（ObjectArray 装箱）、`arrayNumberIteratorFromConcreteArrayTest`（`IIterator<Num> <- Int32[]`）、`arrayNestedObjectTreeTest`
+- 锯齿/多维：`arrayJagged2DAssignTest`（`object[2][]` 逐行赋行数组）、`arrayRank2SparseJaggedTest`
+- 字面量与下标：`arrayIntLiteralReadTest`、`arrayMixedLiteralDollarIndexTest`（混合字面量 + `$` 链）、`arrayLevelMatrixTest`、`arrayStringAndLevelVectorTest`、`arrayHeterogeneousObject2DTest`
+- 构造器形态（原 `arrayConstructorsMultidimAndArrClassBulkTest` 已拆分）：`arrayCtorPrimitiveAndAliasTest`、`arrayCtorMultidimClassShapeTest`、`arrayCtorLiteralMixTypeTest`、`arrayCtorFloatOverloadTest`
+- ArrClass 写入与游标：`arrayArrClassIndexAndCurrentTest`、`arrayArrClassForInAssignTest`、`arrayForInLiteralIndexTest`、`arrayArrClassCountLoopWriteTest`
 
-### 9.1 为什么要「先右后左」
+## 9) 数组字面量的类型统一（编译期）
 
-常见赋值形如 `a = expr` 或 `obj.prop = expr`。若左值是 **setter / 方法调用**（`set void f(T v)`），编译器需要先把 **右值表达式** 放进参数列表，再解析 **左值调用链** 才能拿到 **参数/成员** 的精确定义类型。因此 **右值往往先于左值完成第一轮 Parse/CalcReturnType**，此时 `CreateExpressNode` 侧拿不到左值数组的 `Array<Int32>` 等模板，字面量 `[1,2,100]` 只能按字面量自身做数值升阶推断（例如 `Array<Int16>`），与左侧已声明的 `Int32[]` 可能不一致。
+### 9.1 现行机制总览
 
-### 9.2 纠正时机（第二轮）
+数组字面量（`[...]` / `{...}` / `T[n]{...}`）在 Front 的处理入口是 `MetaNewObjectExpressNode`（数组字面量最终都物化为该节点）。当左值类型已知、右值需要按左值类型重建时，由 `ExpressManager.ConvertNewExpress`（见 `Core/ExpressManager.cs`）完成：对带 `convertNewExpressNode` 标记的调用链、`MetaArrayExpressNode`（`[]` 字面量）、匿名 data 初始化器三类右值，用左值目标 MetaType 重新构造 `MetaNewObjectExpressNode`，随后依次执行 `Parse` → `CalcReturnType` → `CheckDefineVariableMetaTypeAndContentMetaType()`。
 
-在 `MetaAssignStatements.Parse` 中，当 **左值变量** 已解析并得到 `GetFinalMetaType()` 后，在 `CheckLeftAndRightExpress` 之前会调用 **`TryCoerceRightArrayLiteralToLeftArrayTypeAfterLeftResolved()`**（见 `MetaAssignStatements.cs`）。其意图是：在左值类型已确定的前提下，对 **「模糊」右值数组字面量** 做一次类型对齐。
+### 9.2 元素类型统一（CheckDefineVariableMetaTypeAndContentMetaType）
 
-### 9.3 何时纠正、何时不纠正
+`MetaNewObjectExpressNode.CheckDefineVariableMetaTypeAndContentMetaType()`（见 `Core/MetaExpressNode/MetaExpressNewObject.cs`）做两件事：
 
-**会纠正**（满足全部条件时）：
+1. 调 `NumberManager.TryUnifyNumericArrayLiteralMembersToDeclaredArrayType`（见 `Core/NumberManager.cs`）：当声明的元素类型 `T` 是**具体数值类型**（非 `Object`）时，把字面量常量统一强转对齐到 `T`——混合整型按声明类型强转；嵌套数组字面量按内层数组类型递归处理。整数目标 + 非整值浮点字面量、或无法转换的数值组合 → 记录错误（`MetaCoreExpressNewObjectIssue12`）。元素类型为 `Object` 或非数值类型时直接放行。
+2. 逐条对初始化赋值调 `ValidateDefineAgainstDeclaredMetaType()`，校验初始值与声明类型一致。
 
-- 非 setter 赋值（`m_IsSettings` 为假，且不是仅左值 method call 而无普通赋值右值）；
-- 右值是 **`MetaNewObjectExpressNode` 且为数组字面量**（`newType == ArrayClass`）；
-- 右值 **未** 在语法上使用显式元素类型构造（即 **不是** `Array<Int16>(n){ ... }` 那种由调用链标明的模板；此类由 `usesExplicitArrayElementTypeSyntax` 标记，**不由左值覆盖**，避免与程序员显式选择冲突）；
-- 左值 `GetFinalMetaType()` 为 **数组**，且元素类型 **不是** `Object`（避免把任意字面量强行绑到过宽语义）；
-- 右值当前推断的 **元素类型** 与左值 **不一致**（已一致则不再调用 `CalcReturnType`，减少重复工作）。
+### 9.3 元素可赋值性判断
 
-**不纠正**：
-
-- Setter / 仅设置调用、右值为 null；
-- 右值已 **显式** `Array<T>(...){ ... }`；
-- 左值非数组、或元素为 `Object`；
-- 左右元素类型已相同。
-
-纠正动作为：对右值节点 **`SetAssignmentTargetArrayMetaType(左值数组 MetaType)`** 后 **`CalcReturnType()`**，内部与 **`MetaExpressNewObject.CalcReturnType`**、**`NumberManager.TryUnifyNumericArrayLiteralMembersToDeclaredArrayType`** 等配合，完成 **define/real 合并、字面量常量强转到左值元素类型** 等（详见源码注释）。
+- `TypeManager.IsArrayLiteralElementAssignableToTarget`（见 `Core/TypeManager.cs`）：数组字面量元素对目标元素类型的可赋值性判断（含嵌套模板递归），字面量解析期间用于校验元素与首选元素类型的关系。
+- `TypeManager.TryForceConvertArrayLiteralElements`：私有递归，把字面量元素强制转换到目标元素类型（嵌套数组逐层下钻，失败带 errorAnchor 报错）。
 
 ### 9.4 与文档其它条的关系
 
-- 与 **§5.1「数组实体不协变」** 不矛盾：这里针对的是 **字面量** 在编译期 **重写推断与常量表示**，不是把 `Array<Int16>` 变量引用当成 `Array<Int32>` 使用。
-- 仍建议 **§6 建议 1**：能写清左值类型时，右值也尽量显式，减少仅靠第二轮纠正的路径。
+- 与 **§5.1「数组实体不协变」** 不矛盾：本节针对的是**字面量**在编译期的**推断重写与常量表示对齐**，不是把 `Array<Int16>` 变量引用当成 `Array<Int32>` 使用。
+- 仍建议 **§6 建议 1**：能写清左值类型时，右值也尽量显式，减少依赖字面量统一路径。
 
 ## 10) ArrayTest 语法总表（用于解析逻辑对照）
 
@@ -184,8 +177,8 @@ for-in 需要对象满足可迭代接口语义（`IIterable` / `IIterator` 路�
 Int32[] nums = Array<Int32>.create(3)
 Int32[] a = Int32[5]
 ObjectArray boxed = object[2]
-Level<Int32>[] levels = new(3) { Level<Int32>(10), Level<Int32>(100), Level<Int32>(30) }
-ArrClass[] arr1 = new(3)
+Level<Int32>[] levels = new(3) { Level<Int32>(10), Level<int>(){ t = 120 }, Level<Int32>(30) }
+ArrClass[] arr1 = new(1001)
 ```
 
 要点：
@@ -198,7 +191,7 @@ ArrClass[] arr1 = new(3)
 arr2 = [1000,2000,3000,1005]
 int[] a33 = {1,2,3,4}
 int[] a332 = new(4){21,22,23,24}
-int[4][] a335 = {[11,22,33], int[3]{871,872,873}, int[20]}
+int[3][] a335 = {[11,22,33], int[3]{871,872,873}, int[20]}
 float[] floatsFromLiteral = {1.2,1.3,1.5}
 mixedObj = object[8]{"aa", 1, "232", 1.0f}
 ```
@@ -302,20 +295,20 @@ concrete.iterator
 ```sl
 IIterator<Num> it = concrete.iterator
 IIterable<Object> it2 = concrete
-forObject(arr2)           # 预期报错：不支持数组实体协变
-#ObjectArray oaa = arr2   # 预期报错
+forObject(arr2)           # 不报错：形参本身是 object，仅遍历
+#ObjectArray oaa = arr2   # 报错（负例，测试中注释保留）：数组实体不协变
 ```
 
 要点：
-- 数组实体默认不协变（`Int32[]` 不能当 `Object[]`）。
-- 接口视角存在受控协变路径（用于遍历语义）。
+- 数组实体默认不协变（`Int32[]` 不能当 `Object[]` 赋值）。
+- 数值抽象存在受控协变路径（**遍历语义**）：`IIterator<Num> <- 具体数值数组`、`const Array<Num>`（见测试尾注）。
 
 ## 11) 解析实现建议（后续改动时建议同步维护）
 
 - 若新增数组语法，请在 `ArrayTest.sl` 增加“正例 + 负例注释”，并在本文件第 10 节补一条最小示例。
-- 若调整 `MetaAssignStatements` / `MetaExpressNewObject` 的数组推断逻辑，优先检查：
-  - 字面量二次纠正是否被绕过；
-  - 显式 `Array<T>(...){...}` 是否仍保持“显式优先”；
-  - `Object` 元素类型是否被错误强制窄化。
+- 若调整 `ExpressManager.ConvertNewExpress` / `MetaExpressNewObject` / `NumberManager` 的数组字面量推断逻辑，优先检查：
+  - 左值类型已知语境下的字面量重建（`ConvertNewExpress`）是否仍被触发；
+  - 数值统一（`TryUnifyNumericArrayLiteralMembersToDeclaredArrayType`）对嵌套数组的递归是否完整；
+  - `Object` 元素类型是否被错误强制窄化（统一逻辑对 `Object` 元素应直接放行）。
 - 建议把“语法支持”与“语义限制（暂不支持）”分开记录，避免把负例误当成可用写法。
 

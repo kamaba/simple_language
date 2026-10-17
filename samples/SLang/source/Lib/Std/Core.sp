@@ -13,11 +13,11 @@ ProjectEnter
 }
 Compile
 {
-    CompileBefore()
+    _before_()
     {
         
     }
-    CompileAfter()
+    _after_()
     {
         
     }

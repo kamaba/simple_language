@@ -40,6 +40,8 @@ namespace SimpleLanguage.Logging
         public string demo { get; set; }
         public string advan { get; set; }
         public string extendMessage { get; set; }
+        //pass=true: 该错误不参与 errorCount 统计，编译过程不因它中断
+        public bool pass { get; set; } = false;
         public DateTime time { get; set; }
         public LogData()
         {
@@ -82,8 +84,12 @@ namespace SimpleLanguage.Logging
     }
     public class Log
     {
-        /// <summary>未设置 <c>SIMPLELANG_LOGS_DIR</c> 时的 Front 日志路径（与 Core 默认导出树一致）。</summary>
-        public const string FrontLogDefaultPath = @"F:\project\lang\simple_language\out\export\Core\Logs\Front.txt";
+        /// <summary>未定位到工程 Logs 目录（jsonc 未加载或未配置 <c>export.outputDir</c>，且未外部设置 <c>SIMPLELANG_LOGS_DIR</c> 覆盖）时的 Front 日志兜底路径。
+        /// 早期日志（jsonc 尚未加载时，如 .sp 路径解析失败）
+        /// 会走本路径：使用临时目录，避免硬编码仓库绝对路径在机器间迁移后
+        /// 抛 DirectoryNotFoundException 掩盖原始错误。</summary>
+        public static string FrontLogDefaultPath { get; } =
+            Path.Combine(Path.GetTempPath(), "SimpleLanguage", "Front.txt");
 
         /// <summary>Front 编译器文本日志路径；加载 jsonc 后为 <c>{export.outputDir}/{moduleName}/Logs/Front.txt</c>。</summary>
         public static string FrontLogFilePath =>
@@ -91,9 +97,11 @@ namespace SimpleLanguage.Logging
 
         static string ResolveUnderLogsDir(string fileName)
         {
-            var dir = Environment.GetEnvironmentVariable(ProjectOutputEnvironment.LogsDirEnv);
+            /* Logs 目录由 jsonc 派生并保存在 ProjectOutputEnvironment 进程内状态；
+             * SIMPLELANG_LOGS_DIR 仅作为外部手动覆盖入口（只读）。 */
+            var dir = ProjectOutputEnvironment.GetEffectiveLogsDir();
             if (!string.IsNullOrWhiteSpace(dir))
-                return Path.Combine(Path.GetFullPath(dir.Trim()), fileName);
+                return Path.Combine(dir, fileName);
             return FrontLogDefaultPath;
         }
 
@@ -102,6 +110,14 @@ namespace SimpleLanguage.Logging
         static bool m_LogFilePathPrinted = false;
         static bool m_ResetFileBeforeNextWrite = true;
         static string s_LastResolvedFrontLogPath = string.Empty;
+
+        static int s_ErrorCount = 0;
+        static int s_WarningCount = 0;
+
+        /// <summary>本次会话累计的 Error/Assert 日志条数（过程管理用于阶段错误判定）。</summary>
+        public static int errorCount => s_ErrorCount;
+        /// <summary>本次会话累计的 Warning 日志条数。</summary>
+        public static int warningCount => s_WarningCount;
 
         /// <summary>在每次完整 Front 编译开始前调用，清空当前 <see cref="FrontLogFilePath"/> 并重新记录本会话。</summary>
         public static void ResetFixedLogFileForNewSession()
@@ -121,7 +137,7 @@ namespace SimpleLanguage.Logging
             {
                 var path = FrontLogFilePath;
                 var dir = Path.GetDirectoryName(path);
-                if (!string.IsNullOrEmpty(dir) && Directory.Exists( dir ) )
+                if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
                 {
                     Directory.CreateDirectory(dir);
                 }
@@ -145,6 +161,18 @@ namespace SimpleLanguage.Logging
         public static void AddLog( LogData data )
         {
             m_LogDataList.Enqueue(data);
+            if (data.logType == LogType.Error || data.logType == LogType.Assert)
+            {
+                //pass=true 的错误不计入失败统计（编译过程不因此中断）
+                if (!data.pass)
+                {
+                    System.Threading.Interlocked.Increment(ref s_ErrorCount);
+                }
+            }
+            else if (data.logType == LogType.Warning)
+            {
+                System.Threading.Interlocked.Increment(ref s_WarningCount);
+            }
             var line = data.ToString();
             Console.WriteLine(line);
             WriteLineToFile(line);
@@ -157,7 +185,7 @@ namespace SimpleLanguage.Logging
 
         public static LogData AddProjectLog(LID lid, string msg, Token token, string extendMessage = null)
         {
-            return WriteCoreByToken(lid, EErrorType.Project, token, null, ""); ;
+            return WriteCoreByToken(lid, EErrorType.Project, token, null, CombineExtendMessage(msg, extendMessage));
         }
         //--------------------------------Process----------------------------------------------
         public static LogData AddProcessLog(LID lid, string msg, params object[] par)
@@ -166,12 +194,13 @@ namespace SimpleLanguage.Logging
         }
         public static LogData AddProcessLog(LID lid, string msg, Token token, string extendMessage = null)
         {
-            return WriteCoreByToken(lid, EErrorType.Process, token, null, ""); ;
+            return WriteCoreByToken(lid, EErrorType.Process, token, null, CombineExtendMessage(msg, extendMessage));
         }
         //--------------------------------Token----------------------------------------------
         public static LogData AddTokenByString( LID lid, string path, int sLine, int sChar, int eLine, int eChar, string msg)
         {
-            var token = new Token(path, ETokenType.None, sLine, sChar, eLine, eChar);
+            var token = new Token(path, ETokenType.None, "", sLine, sChar );
+            token.SetSrouceEnd(eLine, eChar);
             return WriteCoreByToken(lid, EErrorType.ParseToken, token, null, msg); ;
         }
         public static LogData AddTokenLog(LID lid, string msg)
@@ -180,7 +209,7 @@ namespace SimpleLanguage.Logging
         }
         public static LogData AddTokenLog(LID lid, string msg, Token token, string extendMessage = null)
         {
-            return WriteCoreByToken(lid, EErrorType.ParseToken, token, null, ""); 
+            return WriteCoreByToken(lid, EErrorType.ParseToken, token, null, CombineExtendMessage(msg, extendMessage));
         }
 
         //--------------------------------Node----------------------------------------------
@@ -237,6 +266,20 @@ namespace SimpleLanguage.Logging
             return WriteCoreByToken(lid, EErrorType.GenIR, token, objs, msg);
         }
 
+        /// <summary>合并 msg 与 extendMessage 为扩展消息（与 params 重载中 msg→extendMessage 的语义对齐）。</summary>
+        static string CombineExtendMessage(string msg, string extendMessage)
+        {
+            if (string.IsNullOrEmpty(msg))
+            {
+                return extendMessage;
+            }
+            if (string.IsNullOrEmpty(extendMessage))
+            {
+                return msg;
+            }
+            return msg + " " + extendMessage;
+        }
+
         private static LogData WriteCoreByToken(
             LID lid,
             EErrorType errorType,
@@ -254,6 +297,7 @@ namespace SimpleLanguage.Logging
                 error = lid,
                 errorType = errorType,
                 logType = errorDefine.LogType,
+                pass = errorDefine.Pass,
                 time = DateTime.Now
             };
             if (token != null)
@@ -320,12 +364,10 @@ namespace SimpleLanguage.Logging
                 return;
             }
 
-            bool shouldBlockCurrent = def.BlockOnErrorAssert
-                || (isAssert && LogManager.Options.BlockOnAssert)
+            bool shouldBlockCurrent = (isAssert && LogManager.Options.BlockOnAssert)
                 || (isError && LogManager.Options.BlockOnError);
 
-            bool shouldAbortCompilation = def.AbortCompilation
-                || (isAssert && LogManager.Options.AbortCompilationOnAssert)
+            bool shouldAbortCompilation =  (isAssert && LogManager.Options.AbortCompilationOnAssert)
                 || (isError && LogManager.Options.AbortCompilationOnError);
 
             if (shouldBlockCurrent || shouldAbortCompilation)

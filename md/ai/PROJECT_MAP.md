@@ -26,7 +26,7 @@
   → IR（IR*、IRStatements）
   → Export（SLIRWriter / SLModulePackageWriter 等）→ JSON / package
   → VM：Load（SLIRAssemblyData、SLIRJsonModuleLoader）→ Parse（SLIRModuleParse、SLRuntimeModuleRegistry）
-  → InnerCLRRuntime / LocalRuntime / Object / NativeBridge
+  → InnerCLRRuntime / LocalRuntime / Object
 ```
 
 ## 3. `source/Front` 子目录职责
@@ -40,7 +40,6 @@
 | `IR` | 中间表示：`IRData`、`IRManager`、`IRStatements/*`、`IR/Core/*`、`IR/Lib/*` |
 | `Export/SLIR` | SLIR 读写与打包（如 `SLIRWriter`、`SLIRReader`、`SLModulePackageWriter`、`SLIRTypes`） |
 | `Export/CSharp`、`Export/Java`、`Export/AOT`、`Export/MLIR`、`Export/Local` | 各目标或实验性后端 |
-| `External/Native` | 原生库加载、FFI manifest（如 `NativeBindingManager`、`NativeExportManifestReader`） |
 | `OtherLanguage/CSharp` | 与 C# 互操作/IR 侧集成 |
 | `Project` | 工程与配置（如 `ProjectConfig.cs`） |
 | `Wrapper` | CLR 包装表达式/调用（`Wrapper*`） |
@@ -56,7 +55,6 @@
 | `Object` | 运行时对象模型（`SObject` 族） |
 | `LocalRuntime` | 本地 VM 与内存 |
 | `NewObject` | 对象分配头/策略 |
-| `NativeBridge` | 动态库与 C#/Java 等桥接 |
 | `Runtime` | 运行时类型与 VM 门面（如 `CLRVM`、`EVMType`） |
 | `OtherLanuage/CSharp` | VM 侧 C# 相关指令/调用 |
 | `Lib` | VM 侧辅助（如 `Lib/Core` 与导出 JSON） |
@@ -85,7 +83,7 @@
 | 改 IR 或 lowering | `IR/*` |
 | 改 SLIR 序列化/包格式 | `Export/SLIR/*`、`VM/Load/*`、`VM/Parse/*` |
 | 改 VM 执行或指令 | `InnerCLRRuntime/*`、`Runtime/CLRVM`（按实际类型名搜索） |
-| Native / FFI | `Front/External/Native/*`、`VM/NativeBridge/*`、`*.slffi.json` |
+| Native / FFI | Front：`@DllStaticImport` 属性与 `CallFFIStatic` 发射（`IR/*`）；VM：`csimple_lang/src/lib/ffi/*` + `system_method_call/ffi_system_method.c`（旧 `External/Native/*` 已移入 `nouse/`，全仓无引用） |
 
 ## 8. 相关现有文档
 

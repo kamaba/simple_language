@@ -16,10 +16,6 @@ for init_express, end_condition_express, change_variable_express
     #语句
 }
 
-for
-{
-    #可选无参数
-}
 for i = 10
 {
     #可选默认定义参数
@@ -39,6 +35,7 @@ for i = 10, i < 100, i++
 #可选
 ```
 其中init_express, end_condition_express, change_variable_express都是可选，但顺序不能变，只能从后边向前省略，与函数传参类似。
+> 注意：`for { }`（三段全部省略）当前**不支持**，解析器要求 for 后至少一段表达式（见 `test/BaseTest/ForTest.sl` 尾注「for{} 无条件循环 —— 当前不支持」）。
 
 for的遍历Array示例
 ```python
@@ -80,21 +77,21 @@ for v in 1..10
     {
         break
     }
-    #输出当前遍历值与它的索引
-    # v是当前遍历的对象，如果是List,Set则直接就是对象本身，如果是Map则Map的遍历节点
-    # v.value = v[v.index]的值 如果是Map的话，就是value值，如果是List则v与v.value一样的
-    # v.index是遍历时，当前数组或者是遍历迭代的当前索引，如果数组是0则index=-1, index总在可遍历的范围之内，也可以对index赋值，但如果在for遍历时，v.SetIndex(int) 或者是 v.index = int是被锁上的
-    Console.print( "v=$v v.value = &v.value index=$v.index ");
+    #输出当前遍历值
+    # v是当前遍历的对象，直接识别为当前元素值
+    # 注意：for-in 迭代器自带的 index/value 属性当前未实现（解析器中 indexVariable 已注释，
+    # 见 test/BaseTest/ForTest.sl 尾注「文档1.2.1: x.index 索引访问 —— 当前未实现」）。
+    # 若 v 本身是带 index 游标成员的对象（如 Array，初值 -1，可读写），v.index 访问的是该对象自身的游标。
+    global.println( "v=$v");
 }
 ```
-上边示例中，v是遍历的迭代器， 使用v则，直接识别当前v的值，如果使用v.index则表达，当前的索引值,
-如果v小于4 则使用continue,在continue之前的语句执行，后边的则跳过，如果v == 8则break，相当于跳出循环执行。
+上边示例中，v是遍历的迭代值，如果v小于4 则使用continue,在continue之前的语句执行，后边的则跳过，如果v == 8则break，相当于跳出循环执行。
 
 ### for 语句必须遵循下面的规则：
 - for{}语句，可以配合break/continue等使用
-- for 后边的表达示都为可选表达式，但如果省略只能从后往前依次略，一般结束条件可用break结束。
-- for in表达式，可以对enum,和迭代表达式配合使用，必须迭代变量，自带一些属性index,是当前的索引
-- for in表达式，后边的迭代表达式如果使用了自带游标，即 arr.index的变化 例: for v in arr{ a = arr.index; }这个时候，arr.index就是它的游标，游标这种情况是只读的，在其它情况，可以设置游标值，然后进行读取。
+- for 后边的表达示都为可选表达式，但如果省略只能从后往前依次略（三段全省的 `for { }` 暂不支持），一般结束条件可用break结束。
+- for in表达式，支持数组、Range（含 `1..100` 快捷写法与 `range()` 函数）与 enum 的遍历；List/Map/Set/Queue/LinkedList 的 for-in 暂不支持（见 `test/BaseTest/ForTest.sl` 尾注）。
+- for-in 迭代器自带的 index/value 属性当前未实现（indexVariable 已注释）；若迭代对象自身带 index 游标成员（如 Array），可按成员方式访问。
 -------
 ### while的语法
 1. 使用while语句执行，相当于每次语句结束后，通过while判断是否返回的是布尔表达式，如果是true,则继续执行
@@ -122,69 +119,60 @@ dowhile boolean_express
 
 #### 实例
 ```ruby
-import CSharp.System;
-
-const enum ArrEnum
+enum ArrEnum
 {
     a = 1;
     b = 2;
     c = 3;
 }
-ProjectEnter
+Project
 {
-    static Main()
+    _main_()
     {
         #for enum
         for v in ArrEnum
         {
-            Console.print("V=$v");
+            global.println("V=" + v.name.toString());
         }
         #输入结果
-        #>>v=a
-        #>>v=b
-        #>>v=c
+        #>>V=a
+        #>>V=b
+        #>>V=c
 
-        #for 数组
+        #for 数组(range 快捷写法)
         for v in 1..3
         {
-            Console.print("v=$v index=$v.index");
+            global.println("v=$v");
         }
         #输入结果
-        #>>v=1 index=0
-        #>>v=2 index=1
-        #>>v=3 index=2
-        Array<string> arrString = {"a","b","c","d","e"};
+        #>>v=1
+        #>>v=2
+        #>>v=3
+
+        #for 数组(遍历中修改元素/continue/break，索引用局部变量计数)
+        arrString = ["a","b","c","d","e"];
+        idx = 0
         for v in arrString
         {
-            if v.index > 4
+            if idx == 0
             {
-                break;
-            }
-            if v.index == 0 
-            {
-                arrString[v.index] = "mc";
-                Console.print("v[0]=mc");
+                arrString[0] = "mc";
+                global.println("arrString[0]=mc");
+                idx++
                 continue;
             }
-            if v == "b" 
+            if v == "b"
             {
-                Console.print( "v=$v" );
+                global.println( "v=$v" );
             }
-            Console.print("index=$v.index");
+            global.println("idx=$idx");
+            idx++
         }
-        #输入结果
-        #>>v[0]=mc
-        #>>index=0
-        #>>v=b
-        #>>index=1
-        #>>index=2
-        #>>index=3
-        #>>index=4
 
         #for 条件
         for i = 0, i < 2, i++
         {
-            Console.print("v=$i");  #条件迭代没有index值
+            global.println("v=$i");  #条件迭代没有index值
         }
         #输入结果
         #>>v=0
@@ -197,17 +185,17 @@ ProjectEnter
                 break;
             }
             i2 += 2;
-            Console.print("i2=$i2");
+            global.println("i2=$i2");
         }
-        #输入结果
-        #>>i2=10
+        #输入结果(先自增再输出)
         #>>i2=12
+        #>>i2=14
 
         #while
         bool flag1 = true;
         while flag1
         {
-            Console.print("while" );
+            global.println("while" );
             flag1 = false;
         }
         #输入结果
@@ -216,11 +204,11 @@ ProjectEnter
         #dowhile
         dowhile false
         {
-            Console.print("dowhile");
+            global.println("dowhile");
             #输出一次dowhile
         }
         #输入结果
-        #>>dowhile  
+        #>>dowhile
     }
 }
 ```

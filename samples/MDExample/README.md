@@ -4,7 +4,7 @@
 
 ## 为何并入 `Core` 而不是单独 `.sp`
 
-当前编译器在一次进程内对**多工程/二次加载**的支持有限；单独小工程若缺少与 **`source/Front/Lib/Core`** 相同的依赖图，容易出现 Meta/IR 阶段缺失类型（如 `NativeBridge`、`BridgeKind` 等）。因此推荐：**把示例 `.sl` 登记进 `Core.jsonc` 的 `compileFiles.files`，并在 `Core.sp` 的 `_main_` 里调用对应 `Run()`**。
+当前编译器在一次进程内对**多工程/二次加载**的支持有限；单独小工程若缺少与 **`source/Front/Lib/Core`** 相同的依赖图，容易出现 Meta/IR 阶段缺失类型（如 `Nickname`、`Error` 等）。因此推荐：**把示例 `.sl` 登记进 `Core.jsonc` 的 `compileFiles.files`，并在 `Core.sp` 的 `_main_` 里调用对应 `Run()`**。
 
 仓库主线里 **已在 `source/Front/Lib/Core/Core.jsonc` 中登记** 下列五个 `Doc*.sl`（`group`: `mdex`）。调试时在 `Core.sp` 的 `_main_` 里调用对应 `Run()` 即可；若不需要参与编译，可将对应条目的 **`ignore`** 改为 `true` 或删除该行。
 
@@ -16,7 +16,7 @@
 
 | 目录 | 文档 | 入口类 |
 |------|------|--------|
-| `01_BaseRectangle/` | `md/syntax/base.md` | `MdEx01BaseRectangle.Run` |
+| `01_BaseRectangle/` | `md/syntax/introduction.md` | `MdEx01BaseRectangle.Run` |
 | `02_StringInterpolation/` | `md/syntax/string.md` | `MdEx02StringInterpolation.Run` |
 | `03_GlobalJsonc/` | `md/syntax/global.md` | `MdEx03GlobalJsonc.Run` |
 | `04_RangeFor/` | `md/syntax/range.md` | `MdEx04RangeFor.Run` |

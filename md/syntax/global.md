@@ -7,16 +7,18 @@
 
 ## 1. `.sp` 中 `Project{}` 成员调用
 
-示例（`Core.sp`）：
+示例（`test/BaseTest/ProjectTest.sp`）：
 
 ```s
 Project
 {
-    float Pi = 3.14f
-
-    print(object str)
+    println( txt )
     {
-        SystemPrint(str)
+        SystemPrintln( txt )
+    }
+    print( text )
+    {
+        SystemPrint( text )
     }
 }
 ```
@@ -28,7 +30,7 @@ GlobalTest
 {
     static fun()
     {
-        global.println("Pi -> " + global.Pi.toString())
+        global.println("========== GlobalTest (start) ==========")
         global.print("hello from global.print")
     }
 }
@@ -36,7 +38,7 @@ GlobalTest
 
 ## 2. `jsonc` 的 `global.data` 注入
 
-示例（`Core.jsonc`）：
+示例（`test/BaseTest/ProjectTest.jsonc`）：
 
 ```jsonc
 "global": {
@@ -61,10 +63,11 @@ GlobalTest
 
 仓库内已提供 `test/BaseTest/GlobalTest.sl`，覆盖：
 
-- `.sp Project{}` 暴露成员：`global.Pi`、`global.print`、`global.println`
+- `.sp Project{}` 暴露成员：`global.print`、`global.println`
 - `jsonc global.data` 基础值：`global.var1`
-- `jsonc global.data` 数组：`global.arrvar1[0]`、`global.arrvar1[4]`
+- `jsonc global.data` 数组：`global.arrvar1`
 - `jsonc global.data` 对象：`global.vardata2.a`、`global.vardata2.b`
+- `global._inputArgs`：系统集成的 CLI 程序入参（`Array<Object>`）
 
 ## 4. 常见注意点
 

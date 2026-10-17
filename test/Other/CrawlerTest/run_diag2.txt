@@ -1,0 +1,59 @@
+﻿SimpleLanguage VM 0.0.01 (C Runtime)
+===== Crawler start =====
+
+diag uri: scheme="https" isHttps=True host=example.com
+
+csimple_lang.exe : [NETDIAG] ConnectEx launch rc=0 wsaerr=997
+At line:15 char:5528
++ ... pgrep\bin'; & "e:\project\lang\csimple_lang\build\Debug\bin\csimple_l ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([NETDIAG] Conne...rc=0 wsaerr=997:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[NETDIAG] connect_poll done=0 win_err=0
+[NETDIAG] pump CONNECT done err=0
+[NETDIAG] connect_poll done=1 win_err=0
+diag tcp example.com:443 ok
+
+[NETDIAG] ConnectEx launch rc=0 wsaerr=997
+[NETDIAG] connect_poll done=0 win_err=0
+[NETDIAG] pump CONNECT done err=0
+[NETDIAG] connect_poll done=1 win_err=0
+diag tcp ipv4-literal 104.20.23.154:443 ok
+
+[NETDIAG] ConnectEx launch rc=0 wsaerr=997
+[NETDIAG] connect_poll done=0 win_err=0
+[NETDIAG] pump CONNECT done err=1225
+[NETDIAG] connect_poll done=1 win_err=1225
+diag tcp 127.0.0.1:19399 failed: code 2
+
+fetching: https://example.com/
+
+[NETDIAG] ConnectEx launch rc=0 wsaerr=997
+[NETDIAG] connect_poll done=0 win_err=0
+[NETDIAG] pump CONNECT done err=0
+[NETDIAG] connect_poll done=1 win_err=0
+  -> failed (code 6 )
+
+fetching: https://www.httpbin.org/html
+
+[NETDIAG] ConnectEx launch rc=0 wsaerr=997
+[NETDIAG] connect_poll done=0 win_err=0
+[NETDIAG] pump CONNECT done err=0
+[NETDIAG] connect_poll done=1 win_err=0
+  -> status=200 title="" links=0
+
+fetching: https://quotes.toscrape.com/
+
+[NETDIAG] ConnectEx launch rc=0 wsaerr=997
+[NETDIAG] connect_poll done=0 win_err=0
+[NETDIAG] pump CONNECT done err=0
+[NETDIAG] connect_poll done=1 win_err=0
+  -> status=200 title="Quotes to Scrape" links=50
+
+saved: crawl_result.json = True
+
+pages=3 durationMs=22791
+
+===== Crawler end =====
+

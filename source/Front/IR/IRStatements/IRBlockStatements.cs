@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      IRBlockStatements.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -9,7 +9,7 @@
 
 using SimpleLanguage.Core;
 using SimpleLanguage.IR.Statements;
-using System.Diagnostics;
+using SimpleLanguage.Logging;
 
 namespace SimpleLanguage.IR
 {
@@ -42,8 +42,11 @@ namespace SimpleLanguage.IR
                 {
                     case MetaBlockStatements mbs:
                         {
+                            // 嵌套块的内容已经 splice 进外层语句链 (见 MetaMemberFunction.HandleMetaSyntax
+                            // 的 FileMetaBlockSyntax 分支: beforeStatements.SetNextStatements(block) 且
+                            // beforeStatements = 块内最后一条语句)。这里只发块起始 Nop 标记，
+                            // 内容由循环继续走链解析, 否则会把块内容重复生成两遍 (嵌套时指数级放大)。
                             IRBlockStatements ibs = new IRBlockStatements(irMethod);
-                            ibs.ParseIRStatements(mbs);
                             m_IRStatements.AddRange(ibs.m_IRStatements);
                         }
                         break;
@@ -73,6 +76,27 @@ namespace SimpleLanguage.IR
                             IRContinueStatements mircs = new IRContinueStatements(irMethod);
                             mircs.ParseIRStatements(mcs);
                             m_IRStatements.AddRange(mircs.irStatements);
+                        }
+                        break;
+                    case MetaNextStatements mnexts:
+                        {
+                            /* next：两语义（keywords.md）——
+                             * ① switch case 体内无外围循环：纯贯穿标记，IR 不发射指令，
+                             *   fall-through 由 IRSwitchStatements 按 metaCase.isContinueNext
+                             *   在 case 体后发射分发（MetaSwitchStatements 注释约定）。
+                             * ② 循环体内（或 case 体内有外围循环，"循环优先"绑定）：
+                             *   等价 continue —— 跳回最近循环的 continue 目标。
+                             * 无 continue 目标即 ①，有即 ②，与 Meta 层绑定语义一致。 */
+                            var nextTarget = irMethod?.GetCurrentContinueTarget();
+                            if (nextTarget != null)
+                            {
+                                IRBranch nextBranch = new IRBranch(irMethod, EIROpCode.Br, nextTarget);
+                                if (mnexts.token != null)
+                                {
+                                    nextBranch.SetDebugInfoByToken(mnexts.token);
+                                }
+                                m_IRStatements.Add(nextBranch);
+                            }
                         }
                         break;
                     case MetaGotoLabelStatements mgls:
@@ -124,15 +148,77 @@ namespace SimpleLanguage.IR
                             m_IRStatements.AddRange(ircs.irStatements);
                         }
                         break;
-                    case MetaOtherPlatformStatements mops:
+                    case MetaClosureDefineStatements mcds:
                         {
-                            Debug.Write("------------------没有解析IR的语句类型------------");
+                            IRClosureDefineStatements ircds = new IRClosureDefineStatements(irMethod);
+                            ircds.ParseIRStatements(mcds);
+                            m_IRStatements.AddRange(ircds.irStatements);
+                        }
+                        break;
+                    case MetaTryStatements mts:
+                        {
+                            IRTryStatements irts = new IRTryStatements(irMethod);
+                            irts.ParseIRStatements(mts);
+                            m_IRStatements.AddRange(irts.irStatements);
+                        }
+                        break;
+                    case MetaThrowStatements mthrows:
+                        {
+                            IRThrowStatements irthrows = new IRThrowStatements(irMethod);
+                            irthrows.ParseIRStatements(mthrows);
+                            m_IRStatements.AddRange(irthrows.irStatements);
+                        }
+                        break;
+                    case MetaCheckedStatements mcs:
+                        {
+                            // Emit BeginChecked, block body, EndChecked
+                            IRData beginChecked = new IRData();
+                            beginChecked.opCode = EIROpCode.BeginChecked;
+                            m_IRStatements.Add(new IRRawData(irMethod, beginChecked));
+
+                            if (mcs.checkedBlockStatements != null)
+                            {
+                                IRBlockStatements irChecked = new IRBlockStatements(irMethod);
+                                irChecked.ParseIRStatements(mcs.checkedBlockStatements);
+                                m_IRStatements.AddRange(irChecked.irStatements);
+                            }
+
+                            IRData endChecked = new IRData();
+                            endChecked.opCode = EIROpCode.EndChecked;
+                            m_IRStatements.Add(new IRRawData(irMethod, endChecked));
+                        }
+                        break;
+                    case MetaUncheckedStatements mus:
+                        {
+                            // Emit BeginUnchecked, block body, EndUnchecked
+                            IRData beginUnchecked = new IRData();
+                            beginUnchecked.opCode = EIROpCode.BeginUnchecked;
+                            m_IRStatements.Add(new IRRawData(irMethod, beginUnchecked));
+
+                            if (mus.uncheckedBlockStatements != null)
+                            {
+                                IRBlockStatements irUnchecked = new IRBlockStatements(irMethod);
+                                irUnchecked.ParseIRStatements(mus.uncheckedBlockStatements);
+                                m_IRStatements.AddRange(irUnchecked.irStatements);
+                            }
+
+                            IRData endUnchecked = new IRData();
+                            endUnchecked.opCode = EIROpCode.EndUnchecked;
+                            m_IRStatements.Add(new IRRawData(irMethod, endUnchecked));
+                        }
+                        break;
+                    case MetaAtSignLabelStatements mops:
+                        {
+                            Log.AddIRLog(LID.IRMethodNotFoundVariable, mops.token, null, "------------------没有解析IR的语句类型------------");
                             //MetaIRCSharpCallStatements mcsharpcsinst = new MetaCSharpCallStatements(mcsharpcs, )
                         }
                         break;
                     default:
                         {
-                            Debug.Write("------------------没有解析IR的语句类型------------");
+                            /* 插桩：打出具体语句类型名（可观测性；正常语句类型应全部有显式 case） */
+                            Log.AddIRLog(LID.IRMethodNotFoundVariable, nextmbs?.token, null,
+                                "------------------没有解析IR的语句类型------------ type=" +
+                                ((nextmbs != null) ? nextmbs.GetType().Name : "<null>"));
                         }
                         break;
                 }

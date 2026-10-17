@@ -1,5 +1,4 @@
-import CSharp.System;
-import Core;
+import Std;
 
 JJ
 {

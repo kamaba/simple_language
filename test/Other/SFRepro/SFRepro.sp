@@ -1,0 +1,13 @@
+Project
+{
+    _main_()
+    {
+        SFReproTest.fun()
+    }
+    _before_()
+    {
+    }
+    _after_()
+    {
+    }
+}

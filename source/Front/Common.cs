@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using SimpleLanguage.Project;
@@ -29,10 +29,12 @@ namespace SimpleLanguage
 
         public static string GetDebugCodeRootDir()
         {
-            var envRoot = Environment.GetEnvironmentVariable(ProjectOutputEnvironment.DebugCodeRootEnv);
-            if (!string.IsNullOrWhiteSpace(envRoot))
+            /* DebugCode 根目录由 jsonc 派生并保存在 ProjectOutputEnvironment 进程内状态；
+             * SIMPLELANG_DEBUGCODE_ROOT 仅作为外部手动覆盖入口（只读）。 */
+            var stateRoot = ProjectOutputEnvironment.GetEffectiveDebugCodeRoot();
+            if (!string.IsNullOrWhiteSpace(stateRoot))
             {
-                var full = Path.GetFullPath(envRoot.Trim());
+                var full = Path.GetFullPath(stateRoot.Trim());
                 if (!Directory.Exists(full))
                     Directory.CreateDirectory(full);
                 return full;
@@ -80,12 +82,6 @@ namespace SimpleLanguage
             }
             return rootDir;
         }
-
-        public static string SetDebugCode(string path)
-        {
-            return GetDebugCodeDir(path);
-        }
-
         public static string GetDebugCodeDir(string path)
         {
             var rootDir = GetDebugCodeRootDir();

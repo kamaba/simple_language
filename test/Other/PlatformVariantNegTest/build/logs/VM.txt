@@ -1,0 +1,5 @@
+[07:55:23] [Info] [Project] [LID=10002] Resolved input path: F:\project\lang\simple_language\out\export\PlatformVariantNegTest\PlatformVariantNegTest.module.json
+[07:55:23] [Info] [Project] [LID=10002] Runtime load success. root=F:\project\lang\simple_language\out\export\PlatformVariantNegTest\PlatformVariantNegTest.module.json packageCount=2
+[07:55:23] [Error] [Runtime] [LID=10025] Module 'PlatformVariantNegTest' rejected: no platform variant matched.
+[07:55:23] [Error] [Runtime] [LID=10025] Platform requirements not met, load rejected: F:\project\lang\simple_language\out\export\PlatformVariantNegTest\PlatformVariantNegTest.module.json
+[07:55:23] [Error] [Runtime] [LID=10010] Load SLIR packages failed: F:\project\lang\simple_language\out\export\PlatformVariantNegTest\PlatformVariantNegTest.module.json

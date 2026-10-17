@@ -32,7 +32,7 @@ ClassName
 ```s
 Class1
 {
-    Class1(Int32 p1)
+    _init_(Int32 p1)
     {
         m1 = p1
     }
@@ -80,7 +80,7 @@ Front 侧对上述规则在以下场景统一生效：
 
 ### 4.3 允许的接口模板协变示例
 
-以下语句为正确语法（来自 `test/BaseTest/ArrayTest.sl` 149/150）：
+以下语句为正确语法（来自 `test/BaseTest/ArrayTest.sl` 181/182）：
 
 ```s
 IIterator<Num> it = concrete.iterator

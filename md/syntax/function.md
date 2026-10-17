@@ -4,7 +4,7 @@
 - 显式返回类型或省略（视为动态/void）
 - 参数默认值与可变参数（`params`）
 - 模板（泛型）函数
-- 方法修饰符：`public` / `private` / `projected` / `extern` / `static` / `final` / `override` / `abstract`
+- 方法修饰符：`public` / `private` / `protected` / `extern` / `static` / `final` / `override` / `abstract`
 - 属性访问器：`get` / `set`
 - 构造函数：使用特殊方法名 `_init_`
 
@@ -14,22 +14,23 @@
 
 ## 基本语法
 
-顶级或成员函数的一般形式：
+成员函数的一般形式（函数定义在类内；文件顶层仅允许 namespace/class/data/enum 等类型声明）：
 
 ```s
 // 带返回类型的函数
-fun add(Int32 a, Int32 b) {
+Int32 add(Int32 a, Int32 b) {
     ret a + b;
 }
 
-// 成员方法（在 class 内）
+// 成员方法（在 class 内，返回类型可省略）
 public Int32 sum(Int32 x, Int32 y) {
     ret x + y;
 }
 ```
 
-- `ret` 用作返回语句关键字（也可使用 `return` 的别名，视实现）。
+- `ret` 是唯一的返回语句关键字（`ret;` 或 `ret 表达式;`）。`return` **不是**本语言的关键字：词法层即报 Error 20118（`TokenLexerReturnNotSupported`）并阻断编译，报错信息指引改用 `ret`（LID 文案 2026-10-08 预留，词法接线 2026-10-11 落地）；此前 `return` 会作为普通标识符流入语义层，产生 `Name:return not found!` 等误导性报错。`foreach`/`using`/`struct` 等其他语言关键字的统一拦截见 [keywords.md](./keywords.md) §1.8。
 - 若函数标注返回类型则编译器在类型检查阶段会校验返回值；若未显式返回类型，则采用 `dynamic`/`object` 或根据上下文推断。
+- 匿名闭包使用 `function` 关键字：`var f = function(Int32 a) { ret a * 2; };`（`fun` 不是本语言关键字）。
 
 ---
 
@@ -43,11 +44,11 @@ public Int32 sum(Int32 x, Int32 y) {
 示例：
 
 ```s
-fun greet(String name = "Guest") {
+greet(String name = "Guest") {
     Console.print("Hello " + name);
 }
 
-fun sum(params Int32 nums) {
+sum(params Int32 nums) {
     Int32 r = 0;
     for v in nums { r += v; }
     ret r;
@@ -62,13 +63,15 @@ fun sum(params Int32 nums) {
 
 ## 模板 / 泛型函数（Templates / Generics）
 
-函数可以声明模板类型参数，允许在调用时以具体类型实例化。模板也可以带约束（`where` / `in` 风格的语法），编译器在解析阶段会检查约束。
+函数可以声明模板类型参数，类型参数表跟在**函数名之后**（不是 `fun<T>` 前缀），允许在调用时以具体类型实例化。模板也可以带约束（`extends` / `in` 风格的语法），编译器在解析阶段会检查约束。
 
 ```s
-fun<T> identity(T x) { ret x; }
+T identity<T>(T x) { ret x; }
 
-fun<T extends Number> sumAll(List<T> values) { /* ... */ }
+T sumAll<T extends Number>(List<T> values) { /* ... */ }
 ```
+
+调用时可显式给出类型实参：`obj.GetComponent<string>()`、`Level1<float32>.min<float32>(1.3, 2.5)`（见 test/BaseTest/GenFunction.sl）。
 
 实现细节：模板参数可在函数体内作为类型使用；如果函数被声明为模板函数，模板实例化发生在编译/元模型阶段。
 
@@ -79,8 +82,8 @@ fun<T extends Number> sumAll(List<T> values) { /* ... */ }
 - `static`：声明为类级别函数，不需要实例即可调用。
 - `override`：用于子类方法，表示显式重写父类或接口中的方法；若父方法是 `abstract`，子类必须 `override` 并提供实现（否则子类必须声明为 `abstract`）。
 - `abstract`：在类内声明抽象方法（无方法体）。编译器不会对抽象方法进行函数体解析。
-- `final`：标记方法或字段为不可重写。
-- 访问权限：`public` / `private` / `projected` / `extern` 等，用于控制可见性与链接方式。
+- `final`：标记方法为不可重写；子类 `override` 父类 final 方法会在 MetaCore 阶段报 12274 MetaCoreFinalFunctionCannotOverride。final 也可用于类表示禁止继承（见 md/syntax/class.md 1.6 节）。
+- 访问权限：`public` / `private` / `protected` / `extern` 等，用于控制可见性与链接方式。
 
 示例：
 
@@ -105,28 +108,23 @@ class Point {
 var p = Point(1, 2);
 ```
 
-注意：构造函数不能声明返回类型，也不应显式返回值；构造过程先分配内存再执行 `_init_`。
+注意：构造函数不能声明返回类型，也不应显式返回值；构造过程先分配内存再执行 `_init_`。子类构造中通过 `base._init_(args)` 调用父类构造。
 
 ---
 
 ## 属性访问器（get / set）
 
-语言支持把 getter/setter 作为特殊成员来定义（解析器将 `get` / `set` 标记为特殊函数）。具体语法可采用显式访问器或独立的 get/set 方法，示例：
+`get` / `set` 是保留关键字（不能用作成员名），属性以特殊函数形式声明：getter 为「返回类型 + `get` + 属性名」、setter 为「`set` + 属性名(参数)」（见 Lib/Core/Object.sl、test/BaseTest/GenFunction.sl）：
 
 ```s
-// 示例：作为单独成员的访问器（语法示例）
-public Int32 Count get() { ret this._count; }
-public void Count set(Int32 v) { this._count = v; }
+// getter：返回类型后跟 get，再跟属性名
+public Int32 get Count() { ret this._count; }
+
+// setter：set 后跟属性名，可声明 void 返回类型
+public void set Count(Int32 v) { this._count = v; }
 ```
 
-或（若语法支持属性块）：
-
-```s
-public Int32 Count {
-    get { ret this._count; }
-    set { this._count = value; }
-}
-```
+只读属性可省略 setter；抽象属性可声明为 `abstract get int size();`（见 Lib/Core/Num.sl）。C# 风格的属性块（`Int32 Count { get {...} set {...} }`）不受支持。
 
 编译器将在元模型中把 get/set 标记为对应的访问器函数（`isGet` / `isSet` 标志）。
 
@@ -134,7 +132,7 @@ public Int32 Count {
 
 ## 接口与重写规则
 
-- 类实现接口（`implements`）时必须提供接口中所有非默认实现的方法；否则类需声明为 `abstract`。
+- 类实现接口（类头 `interface` 标记，非 `implements`）时必须提供接口中所有非默认实现的方法；否则类需声明为 `abstract`。
 - 当继承父类时：
   - 如果父方法是非抽象且子类未声明 `override`，则子类继承父实现；
   - 如果父方法是 `abstract`，子类必须 `override` 并实现该方法，或声明自己为 `abstract`。
@@ -145,17 +143,17 @@ public Int32 Count {
 
 ## 示例集合
 
-完整示例展示顶层函数、类方法、模板与构造：
+完整示例展示类方法、模板与构造：
 
 ```s
 import CSharp.System;
 
-// 顶层函数
-fun max(Int32 a, Int32 b) { ret a > b ? a : b; }
+// 成员函数（返回类型可省略）
+max(Int32 a, Int32 b) { ret a > b ? a : b; }
 
-// 模板函数
-fun<T> swap(ref T a, ref T b) {
-    T tmp = a; a = b; b = tmp;
+// 模板函数：类型参数跟在函数名后
+static T2 min<T2>(T2 t1, T2 t2) {
+    ret t2;
 }
 
 class Base {
@@ -185,6 +183,4 @@ class Example {
 
 ---
 
-以上为 S 语言中函数与方法的详尽说明与示例；如果需要我可以把同等详细程度的改进应用到类、模板、集合或控制流章节。
-
-
+以上为 S 语言中函数与方法的详尽说明与示例。

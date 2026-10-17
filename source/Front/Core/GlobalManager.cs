@@ -9,6 +9,7 @@ using SimpleLanguage.Project;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using SimpleLanguage.Logging;
 
 namespace SimpleLanguage.Core
 {
@@ -68,6 +69,15 @@ namespace SimpleLanguage.Core
                     var fmmf = fnList[j];
                     if (fmmf == null) continue;
                     if (fmmf.staticToken != null) continue;
+                    // PreCompile 送检（ATTRIBUTE_DESIGN §4.1）：@Exclude 命中 →
+                    // 该全局函数整体跳过编译（不进 Meta/IR/module.json），
+                    // 引用点由符号解析报编译 Error（Q2）。
+                    if (AttributeManager.ShouldExcludeByPreCompileAttribute(fmmf.attributeList))
+                    {
+                        Log.AddMetaCoreLog(LID.MetaCoreAttributePreCompileSkip, fmmf.token,
+                            $"PreCompile attribute 命中跳过: 全局函数 '{fmmf.name}' 不进入编译（不进 module.json）");
+                        continue;
+                    }
                     var mmf = new MetaMemberFunction(m_GlobalClass, fmmf);
                     m_GlobalClass.AddMetaMemberFunction(mmf);
                 }

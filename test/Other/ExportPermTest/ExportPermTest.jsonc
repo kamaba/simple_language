@@ -1,0 +1,60 @@
+{
+  "project":
+  {
+    "name": "ExportPermTest",
+    "desc": "export.publicExport three-tier class export threshold probe (none/public/extern)",
+    "mainVersion": 0,
+    "subVersion": 0,
+    "buildVersion": 1,
+    "buildSubVersion": 0
+  },
+  "source": {
+    "root": "."
+  },
+  "compile": {
+    "optimize": false,
+    "target": "x64",
+    "debug": true,
+    "isUseForceSemiColonInLineEnd": true,
+    "isForceUseClassKey": false,
+    "isSupportDoublePlus": false,
+    "requireSameNumericTypes": false
+  },
+  "compileFiles": {
+    "files": [
+      { "path": "ExportPermTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 }
+    ]
+  },
+  "compileFilter": {
+    "isAllGroup": true,
+    "isAllTag": true
+  },
+  "global": {
+    "imports": [
+    ]
+  },
+  "references": [
+    { "path": "../../../out/export/Core", "uuid":"123123123213", "name": "Core.module.json" }
+  ],
+  "struct": [
+      { "namespace": "ExportPermTest", "children": [] }
+  ],
+  "export": {
+    "moduleName": "ExportPermTest",
+    "outputDir": "..\\..\\..\\out\\export",
+    "publicExport": "none",
+    "versionMain": 0,
+    "versionSub": 0,
+    "versionPatch": 1,
+    "includeMetadata": true,
+    "debugText": {
+      "outputDir": "",
+      "code": false,
+      "token": false,
+      "node": false,
+      "file": false,
+      "meta": false,
+      "ir": false
+    }
+  }
+}

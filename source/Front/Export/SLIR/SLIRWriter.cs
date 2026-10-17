@@ -208,12 +208,6 @@ namespace SimpleLanguage.Export.SLIR
 
                 bw.Write((byte)ins.opCode);
 
-                // index field: used by branches/locals/args
-                bw.Write(ins.index);
-
-                // debug offset (serialized stream offset) if present
-                bw.Write(ins.offset);
-
                 var payload = ins.Payload;
                 bw.Write(payload?.Length ?? 0);
                 if (payload != null && payload.Length > 0)
