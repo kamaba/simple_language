@@ -47,7 +47,8 @@
     "isUseForceSemiColonInLineEnd": true,   // ⚠ 已解析未消费
     "isForceUseClassKey": false,            // ⚠ 已解析未消费
     "isSupportDoublePlus": false,           // ⚠ 已解析未消费
-    "requireSameNumericTypes": false       // true=混合数值运算报错（byte+Int32 等）
+    "requireSameNumericTypes": false,       // true=混合数值运算报错（byte+Int32 等）
+    "isAllowSystemMethodCall": true         // false=禁止调用系统方法（println 等；int()/Int32() 等类型转换映射不受限），见 §4.3
   },
   "compileFiles": {
     "files": [                        // 显式编译文件清单
@@ -227,6 +228,7 @@
 | `isForceUseClassKey` | bool | false | 已解析未消费（键名含 "Class"，属性名是 `IsForceUseKeyClass`） |
 | `isSupportDoublePlus` | bool | false | 已解析未消费 |
 | `requireSameNumericTypes` | bool | false | 数值类型严格检查：true 时 `byte + Int32` 等混合数值运算报错（消费于 `MetaExpressOperator.cs`） |
+| `isAllowSystemMethodCall` | bool | true | 系统方法调用开关：false 时 Front 语义解析层拒绝解析到 `systemCalls` 注册表声明的调用（Error 21473），仅约束当前工程自身源码；类型转换映射族（`int()`/`Int32()`/`sbyte()` 等别名写法及对应 `SystemConvert*` 目标声明）属语言级纯值转换，恒可用（消费于 `MetaCallNode.cs` 两处 systemCall 解析点） |
 
 ### 4.4 `compileFiles.files[]` —— 显式编译文件清单
 

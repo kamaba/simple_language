@@ -123,7 +123,7 @@ namespace SimpleLanguage.Export
             CollectBuildExtras(request, label);
 
             var build = SimpleLanguage.Compile.PluginFrontendParser.Build(
-                label, blocks[0].FilePath, JsonSerializer.Serialize(request));
+                label, blocks[0].FilePath, JsonSerializer.Serialize(request, FrontJsonOptions.Plain));
             if (build == null)
             {
                 // 无构建入口（builder 未声明/程序集未加载成功，宿主已报）：

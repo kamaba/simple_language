@@ -8,24 +8,12 @@ TankGame.sl 引入Math类。把一些 二维的都使用Int32_2 Int32_3
 写更多的使用用例，测试cvm的功能点。
 jsonc整体，增加 AOT, Mix, PureCVM,
 
-
-把runtime_value_compute 优化下，现在这个的判断和操作太复杂，太多了，导致时间 变长。
-
 现在还少一个function的类型，就像 csharp里连的Action 这个function可以 传入任意的method的方式， 比如 静态函数，比如 实体的动态函数，比如匿名函数
 
-vm_try_compare_equal_int32 这个也需要进行优化，而且比较大幅度的优化。
-
-再增加一条限制，就是是否允许使用systemmethodcall 如果允许，则在代码里连可以使用这些，如果不允许，则不能使用，在jsonc里边一个开关去决定   只在FrontEnd层去判断就可以,而且只是在FrontEnd解析当前的代码层去判断，像int32() 这种的映射是不算的，是可以正常使用的。
-
-在release的测试中，JIT要直接默认打开
-
-[2026-10-16] for-in 遍历枚举时成员 name 读取非确定（既有 bug，与 GLOBAL_SLOT P1/P2 无关）：BaseTest ForTest.forInEnumAttrHandleType 中 `$v.name.toString()` 输出不稳定——同一份二进制下有时输出 `Member{name=...}`、有时为空，偶发串值（如 `Member{name=, index=6, value=111}`，明显是别的对象行）。2026-10-16 GSProbe 最小探针实证：无直发、装配改写关闭（SL_ENABLE_GLOBAL_SLOT_REWRITE=0）下同样复现；且 P2 改动前的 -O1 基线输出本就是混合形态（首成员 name 有值、其余空）。根因疑在枚举成员 Member 包装的 name 字段填充或 LoadNotStaticField 读取（嫌疑字段序偏移/值数组构造），待专项排查；期间勿把该用例输出差异误判为静态字段优化回归。
-
 接完nodejs后，看看能不能贴合到nodejs里边 然后他们的服务
-但编译的时候，我这边用我自己的代码，写一个逻辑
+我的虚拟机跑在nodejs里边 只针对nodejs但编译的时候，我这边用我自己的代码，写一个逻辑
 
-现在对函数的代码，都有遍历过程，但我看到是N个这样的遍历，能不能合到一个遍历里边，然后使用if判断，具体的逻辑处理呀。
-
+现在对cvm解析运行的代码  都要选遍历所有的执行代码 遍历过程，但我看到是N个这样的遍历，能不能合到一个遍历里边，然后使用if判断，具体的逻辑处理呀。
 
 https://github.com/kamaba/SlangAllInOne这个地址 制作一个slang_release(0.0.1)的版本包 使用package/release现在的路径去构建  把这个过程最好整理成脚本，方便 我一键发布
 
@@ -37,6 +25,8 @@ libcurl
 ffmpeg的dll 引入
 找一个轻量级的 webview一类的，做成 dll
 
+在普通的代码中，增加x86的判断，然后把加法 还有比较的过程，直接使用汇编进行操作，然后看看是否能提高速度
+
 
 优化FrontEnd层
 
@@ -46,33 +36,13 @@ ffmpeg的dll 引入
 2. 循环引用 问题
 6. 以cvm里边 数据类型的创建
 
-1. 优化vm层，类型的处理   计算   比较  
-混合类型运算
-6.0x
-while 循环迭代
-6.3x
-整数加法
-6.4x
-for 循环迭代
-8.1x
-bool 运算
-8.2x
-字符串比较
-11.7x
-函数调用
-20.6x
-字符串插值
-37.5x
-字符串拼接
+1. 优化vm层，类型的处理
 
 
 在aot的中，处理llvm内置的一些结构，在生成这个数据后，要有一个id的概念，也就是定义这个对象的hashCode 虽然是在llvm里边生成的，也要有这个概念，因为这个在 llvm的.struct转成VMObject一类的时候，要先检查vm里边有没有这个，如果没有，再去创建VMObject 而且这个不受内存gc管理，因为这个还属于llvm  所以Object.sl 你看下是不是要增加一个int _hashCode这样的概念呀，是不是这样更合理  你确定下，原来好像我看着是用的指针进行hash运算的，这种方式确定可以吗？
 
 
 sl_aot_skeleton_new_inner这个函数的话，原来的llvm生成的数据，是不是可以在转换的类中 member_data可以复用，然后 这个VMObject不进行gc拖管更合理。
-检查runtime是否能反编译，是否要打包加固
-
-编码默认使用utf8的编码
 
 
 优化：
@@ -80,8 +50,6 @@ sl_aot_skeleton_new_inner这个函数的话，原来的llvm生成的数据，是
 检查使用第三方库，是否有协议的法律问题
 
 增加Jit的支持，起码实现x86的平台
-
-发布一个release版本然后跑起来。把slb集成进去
 
 制作vscode插件
 

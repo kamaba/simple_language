@@ -431,11 +431,15 @@ namespace SLang
         static void _runSession( Net.TcpStream client )
         {
             string key = WebSocketServer._key()
+            # ws/s 提到 label 块外声明：catch 收尾路径须可见（stop() 强制
+            # 关闭会令 receive 抛异常走 catch，漏注销则 sessions 不清零）
+            Net.WebSocketStream ws = null
+            WsSession s = null
             label sessBlock
             {
                 # 独立形态无 HTTP 预读 → 两参 accept（无 preRead）
-                Net.WebSocketStream ws = Net.WebSocketStream.accept( client, null )
-                WsSession s = WsSession( ws, key, null, "" )
+                ws = Net.WebSocketStream.accept( client, null )
+                s = WsSession( ws, key, null, "" )
                 _WsSessions.register( key, s )
                 # Function 字段先拷局部再传参/调用（HttpHeaders 头注记纪律）
                 function hMsg = _onMessage
@@ -472,9 +476,27 @@ namespace SLang
             }
             catch
             {
-                # 握手失败 / IO 异常：静默收尾
+                # 握手失败 / IO 异常（含 stop() 强制关闭）：已注册会话
+                # 仍须注销 + 通知 onClose，再静默收尾
+                if s != null
+                {
+                    _WsSessions.unregister( key, s )
+                    function hClose2 = _onClose
+                    if hClose2 != null
+                    {
+                        label closeCb2
+                        {
+                            hClose2( s )
+                        }
+                        catch { }
+                    }
+                }
                 label rawClose
                 {
+                    if ws != null
+                    {
+                        ws.close()
+                    }
                     client.close()
                 }
                 catch { }

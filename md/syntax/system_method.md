@@ -2,6 +2,14 @@
 
 VM 通过 `EIROpCode.CallSystemMethod` 调用；系统方法由工程 `.jsonc` 的 `systemCalls[]` 声明注册（`name` / `returnType` / `params` / `isVariadic` / `cvmFunction`），Front 导出时按名称哈希生成 `id` 并携带 `cvmFunction` 符号名，C VM 装载期按符号名解析实现（不再有枚举顺序约定）。
 
+## 调用限制（compile.isAllowSystemMethodCall）
+
+工程 jsonc `compile` 段的 `isAllowSystemMethodCall`（缺省 `true`）控制系统方法是否可用：
+
+- `false` 时，Front 语义解析层（`MetaCallNode` 的全局裸调用与类路径回退两处解析点）拒绝解析到 `systemCalls` 注册表声明的调用，报编译错误 **21473**；仅约束当前工程自身源码，不影响引用模块与 `@tag{}` 内部机制
+- **类型转换映射不受限**：`int()` / `Int32()` / `sbyte()` / `float()` 等 C 型别名写法（及其 `SystemConvert*` 目标声明的全名写法）属语言级纯值转换，恒可用
+- 判定实现：`SystemMethodCallDeclarationRegistry.IsTypeConvertDecl`（别名映射目标名集合）
+
 ---
 
 ## 桥接 / 互操作

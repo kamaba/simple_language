@@ -28,7 +28,10 @@ import SLangServer;
 # 编写约定同 ServerCoreTest.sl（原始 HTTP / 手搓 WS 客户端助手同款实现）。
 # ============================================================================
 
-# JSON DTO（body<P1User>() / jsonOk 序列化用；字段名与 json 键一一对应）
+# JSON DTO（body<P1User>() / jsonOk 序列化用；字段名与 json 键一一对应）。
+# @Serializable 必备：SystemJsonFromData/toData 对未标注 class 走 toString
+# 嫁接（SerializeTest 用例类型 5），不参与成员展开。
+@Serializable()
 class P1User
 {
     public string name = ""
@@ -317,7 +320,6 @@ ServerP1Test
         SLang.Server.start( 19402 )
 
         Net.HttpResponse r1 = Net.HttpClient.httpGet( "http://127.0.0.1:19402/user/42" )
-        Console.println( "[dbg-t2a] " + r1.statusCode.toString() + " [" + r1.body + "]" )
         ServerP1Test.check( "T2a pathParam + pathInt", r1.statusCode == 200 && r1.body == "id=42,n=42" )
         Net.HttpResponse r2 = Net.HttpClient.httpGet( "http://127.0.0.1:19402/user/profile" )
         ServerP1Test.check( "T2b static beats param", r2.statusCode == 200 && r2.body == "profile" )
@@ -464,7 +466,6 @@ ServerP1Test
 
         # T4a json：DTO toData + bodyJson 回显
         Net.HttpResponse r1 = Net.HttpClient.httpPost( "http://127.0.0.1:19404/json1", "{\"name\":\"tom\",\"age\":18}", "application/json" )
-        Console.println( "[dbg-t4a] " + r1.statusCode.toString() + " [" + r1.body + "]" )
         ServerP1Test.check( "T4a json DTO + bodyJson",
             r1.statusCode == 200 && sfFind( r1.body, "json|u=tom,18" ) == 0
             && sfFind( r1.body, "\"name\":\"tom\"" ) >= 0 && sfFind( r1.body, "\"age\":18" ) >= 0 )
@@ -561,7 +562,6 @@ ServerP1Test
 
         # T5b jsonOk（ApiResult 封装）
         Net.HttpResponse r2 = Net.HttpClient.httpGet( "http://127.0.0.1:19405/ok" )
-        Console.println( "[dbg-t5b] " + r2.statusCode.toString() + " [" + r2.body + "]" )
         ServerP1Test.check( "T5b jsonOk",
             r2.statusCode == 200 && sfFind( r2.body, "\"code\":0" ) >= 0
             && sfFind( r2.body, "\"message\":\"ok\"" ) >= 0 && sfFind( r2.body, "\"name\":\"tom\"" ) >= 0 )
@@ -582,10 +582,11 @@ ServerP1Test
         Net.HttpResponse r6 = Net.HttpClient.httpGet( "http://127.0.0.1:19405/html" )
         ServerP1Test.check( "T5f html", r6.statusCode == 200 && r6.body == "<p>hi</p>" && sfFind( r6.headers.getHeader( "Content-Type" ), "text/html" ) == 0 )
 
-        # T5g 终端方法二次调用 → handler 异常 → 引擎兜底 500
+        # T5g 终端方法二次调用：首个响应已暂存（isResponded=true）→ handler
+        # 抛 AlreadyResponded → 引擎按"已响应照常写出"契约输出暂存响应
+        #（200 "first"）；未响应才 500（§6.1 响应写出分支）
         Net.HttpResponse r7 = Net.HttpClient.httpGet( "http://127.0.0.1:19405/twice" )
-        Console.println( "[dbg-t5g] " + r7.statusCode.toString() + " [" + r7.body + "]" )
-        ServerP1Test.check( "T5g double terminal 500", r7.statusCode == 500 )
+        ServerP1Test.check( "T5g double terminal -> staged 200", r7.statusCode == 200 && r7.body == "first" )
 
         SLang.Server.stop()
     }
@@ -618,7 +619,7 @@ ServerP1Test
                     }
                     elif t == "id"
                     {
-                        s.sendText( "idlen:" + s.id.length.toString() )
+                        s.sendText( "id:" + s.id )
                     }
                     elif t == "bcast"
                     {
@@ -636,13 +637,13 @@ ServerP1Test
         SLang.Server.websocket( "/ws/{room}", hWs )
         SLang.Server.start( 19406 )
 
-        # T6a 未注册路径升级 → 400
-        P1WsClient bad = P1WsClient.connect( 19406, "/ws/none" )
+        # T6a 未注册路径升级 → 400（注意 /ws/none 会命中 {room} 通配，
+        # 须用 /ws 前缀之外的真实未注册路径）
+        P1WsClient bad = P1WsClient.connect( 19406, "/other" )
         ServerP1Test.check( "T6a ws unknown path 400", sfFind( bad.head, "400" ) >= 0 )
         bad.close()
 
         P1WsClient a = P1WsClient.connect( 19406, "/ws/alpha?name=alpha" )
-        Console.println( "[dbg-t6b] head=[" + a.head + "]" )
         ServerP1Test.check( "T6b upgrade 101", sfFind( a.head, "101" ) >= 0 )
         P1WsClient b = P1WsClient.connect( 19406, "/ws/beta?name=beta" )
 
@@ -659,7 +660,8 @@ ServerP1Test
         ServerP1Test.check( "T6e ws pathParam 2nd", b.readText() == "beta:beta" )
         a.sendText( "id" )
         string idr = a.readText()
-        ServerP1Test.check( "T6f session id", sfFind( idr, "idlen:" ) == 0 && SystemStringLength( idr ) > 10 )
+        # 会话 id = GUID（36 字符）；空 id（3 字符）必不过
+        ServerP1Test.check( "T6f session id", sfFind( idr, "id:" ) == 0 && SystemStringLength( idr ) > 36 )
         a.sendText( "bcast" )
         ServerP1Test.check( "T6g broadcast both", a.readText() == "room-msg" && a.readText() == "sent:2" && b.readText() == "room-msg" )
         a.sendText( "hi" )

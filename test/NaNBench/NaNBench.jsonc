@@ -1,0 +1,65 @@
+{
+  "project":
+  {
+    "name": "NaNBench",
+    "desc": "NaNBench project - NaN/Inf semantics probe for eq/add fast paths (X86_ASM_FASTPATH P-A)",
+    "mainVersion": 0,
+    "subVersion": 0,
+    "buildVersion": 1,
+    "buildSubVersion": 0
+  },
+  "source": {
+    "root": "."
+  },
+  "compile": {
+    "optimize": false,
+    "target": "x64",
+    "debug": true,
+    "isUseForceSemiColonInLineEnd": true,
+    "isForceUseClassKey": false,
+    "isSupportDoublePlus": false,
+    "requireSameNumericTypes": false
+  },
+  "compileFiles": {
+    "files": [
+      { "path": "NaNBench.sl", "group": "core", "tag": "probe", "ignore": false, "priority": 0 }
+    ]
+  },
+  "compileFilter": {
+    "isAllGroup": true,
+    "isAllTag": true
+  },
+  "global": {
+    "imports": [
+      "Std"
+    ],
+    "replace": {
+      "DEBUG": "true"
+    },
+    "data": {
+    }
+  },
+  "references": [
+    { "path": "../../out/export/Core", "uuid":"123123123214", "name": "Core.module.json" },
+    { "path": "../../out/export/Std", "uuid":"456456456457", "name": "Std.module.json" }
+  ],
+  "struct": [
+  ],
+  "export": {
+    "moduleName": "NaNBench",
+    "outputDir": "..\\..\\out\\export",
+    "versionMain": 0,
+    "versionSub": 0,
+    "versionPatch": 1,
+    "includeMetadata": true,
+    "debugText": {
+      "outputDir": "",
+      "code": true,
+      "token": true,
+      "node": true,
+      "file": true,
+      "meta": true,
+      "ir": true
+    }
+  }
+}

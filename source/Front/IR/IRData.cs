@@ -256,7 +256,9 @@ namespace SimpleLanguage.IR
             public bool tryCatch { get; set; }
         }
 
-        private sealed class RuntimeDefTypeExport
+        /* 可见性 internal（原 private，2026-10-17）：FrontJsonContext 的 source-gen
+           需跨类型登记本类型（AOT 兼容 JSON 反序列化，IRData 遗留 JSON payload 回退路径）。 */
+        internal sealed class RuntimeDefTypeExport
         {
             public int classId { get; set; }
             public string className { get; set; } = string.Empty;
@@ -772,7 +774,7 @@ namespace SimpleLanguage.IR
                 }
                 var text = Encoding.UTF8.GetString(Payload);
                 if (string.IsNullOrWhiteSpace(text) || text[0] != '{') return false;
-                pkg = JsonSerializer.Deserialize<SLSystemMethodCallPackage>(text);
+                pkg = JsonSerializer.Deserialize<SLSystemMethodCallPackage>(text, FrontJsonOptions.Plain);
                 return pkg != null;
             }
             catch
@@ -1029,7 +1031,7 @@ namespace SimpleLanguage.IR
                     return false;
                 }
 
-                var pkg = JsonSerializer.Deserialize<RuntimeDefTypeExport>(json);
+                var pkg = JsonSerializer.Deserialize<RuntimeDefTypeExport>(json, FrontJsonOptions.Plain);
                 if (pkg == null)
                 {
                     return false;

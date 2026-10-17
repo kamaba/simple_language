@@ -194,6 +194,9 @@ namespace SimpleLanguage.Export.SLIR.Types
     {
         public int id { get; set; }
         public byte opCode { get; set; }
+        /* Latin1 字符串编码契约（同 SLModulePackageWriter 的 JSON options 注册；
+           AOT source-gen 经属性级 [JsonConverter] 生效，2026-10-17） */
+        [JsonConverter(typeof(InstructionPayloadByteArrayJsonConverter))]
         public byte[]? payload { get; set; }
         public int byteLength { get; set; }
         public SLInstructionDebugInfo? debugInfo { get; set; }

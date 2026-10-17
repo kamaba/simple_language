@@ -206,7 +206,7 @@ namespace SimpleLanguage.Core
                     SlType = ch.Length > 2 ? ch[2] : null,
                 });
             }
-            var parse = PluginFrontendParser.Parse(label, filePath, JsonSerializer.Serialize(request));
+            var parse = PluginFrontendParser.Parse(label, filePath, JsonSerializer.Serialize(request, FrontJsonOptions.Plain));
             if (parse == null)
                 return;   // 基础设施失败：已报 LID 20057，块降级丢弃
 

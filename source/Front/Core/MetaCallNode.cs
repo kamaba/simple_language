@@ -7,6 +7,7 @@
 //****************************************************************************
 using SimpleLanguage.Compile;
 using SimpleLanguage.Logging;
+using SimpleLanguage.Project;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -2548,6 +2549,29 @@ namespace SimpleLanguage.Core
             }
         }
 
+        /// <summary>
+        /// 系统方法调用限制检查（jsonc "compile"."isAllowSystemMethodCall"，缺省 true）：
+        /// false 时拒绝解析到 systemCalls 注册表声明的调用并报编译错误（LID 21473）；
+        /// 类型转换映射族（int()/Int32()/sbyte() 等别名及其 SystemConvert* 目标声明）
+        /// 属语言级纯值转换，恒放行。仅在 FrontEnd 语义解析当前工程代码的
+        /// 两处 systemCall 解析点（全局裸调用 GetFirstNode / 类路径回退
+        /// GetFunctionOrVariableByOwnerClass）调用，不影响引用模块与 @tag{} 内部机制。
+        /// </summary>
+        private bool CheckSystemMethodCallAllowed( string inputname, SystemMethodCallDeclaration decl )
+        {
+            if (ProjectManager.config?.Compile?.IsAllowSystemMethodCall != false)
+            {
+                return true;
+            }
+            if (SystemMethodCallDeclarationRegistry.IsTypeConvertDecl(decl))
+            {
+                return true;
+            }
+            Log.AddMetaCoreLog(LID.MetaCoreCallSystemMethodCallNotAllowed, m_Token,
+                "Error system method call is not allowed in this project: " + inputname);
+            return false;
+        }
+
         public bool GetFirstNode(string inputname, MetaBase mb , int count)
         {
             MetaVariable mv = m_OwnerMetaFunctionBlock?.GetMetaVariableByName(inputname);
@@ -2570,6 +2594,10 @@ namespace SimpleLanguage.Core
 
                 if( SystemMethodCallDeclarationRegistry.TryGetDeclaration( inputname, out SystemMethodCallDeclaration decl ) )
                 {
+                    if (!CheckSystemMethodCallAllowed(inputname, decl))
+                    {
+                        return false;
+                    }
                     m_MetaFunction = new MetaMemberFunction.MetaBuiltinFunction(mc, decl);
                     var retMt = m_MetaFunction.GetFinalMetaType();
                     m_MetaType = retMt != null ? new MetaType(retMt) : null;
@@ -2915,6 +2943,10 @@ namespace SimpleLanguage.Core
                     var ownerClassPath = mc.metaNode != null ? mc.metaNode.allName : mc.allName;
                     if (SystemMethodCallDeclarationRegistry.TryGetDeclarationByClass(ownerClassPath, inputname, out var ownerClassDecl))
                     {
+                        if (!CheckSystemMethodCallAllowed(inputname, ownerClassDecl))
+                        {
+                            return false;
+                        }
                         m_MetaFunction = new MetaMemberFunction.MetaBuiltinFunction(mc, ownerClassDecl);
                         var retMt = m_MetaFunction.GetFinalMetaType();
                         m_MetaType = retMt != null ? new MetaType(retMt) : null;

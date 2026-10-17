@@ -397,7 +397,10 @@ namespace SimpleLanguage.Project
             }
 
             // 最终宏值 → 匿名 MetaData（成员格式与 data 定义一致）
-            var macroObj = JsonSerializer.SerializeToElement(macroValues);
+            /* AOT 兼容（2026-10-17）：原 JsonSerializer.SerializeToElement(字典)
+               走反射序列化（Native AOT 下运行期泛型展开失败）；宏值本身已是
+               JsonElement，手工经 Utf8JsonWriter 拼装等价 JSON 对象，零反射。 */
+            var macroObj = BuildMacroJsonElement(macroValues);
             var macroData = CreateMetaDataByJsonObject("___ProjectGlobalMacro___", macroObj, 0);
 
             var mmv = new MetaMemberVariable(projectMc, "macro");
@@ -408,6 +411,28 @@ namespace SimpleLanguage.Project
             mmv.SetRealMetaType(new MetaType(macroData));
             mmv.SetExpress(new MetaNewObjectExpressNode(new MetaType(macroData), projectMc, null));
             FinalizeInjectedProjectGlobalMember(projectMc, mmv);
+        }
+
+        /// <summary>
+        /// 宏值字典 → JsonElement（AOT 兼容，2026-10-17）：值本身已是 JsonElement，
+        /// 手工经 Utf8JsonWriter 拼装对象再解析回 JsonElement（Clone 脱离文档生命周期），
+        /// 与原 JsonSerializer.SerializeToElement 产物逐字节等价，零反射序列化。
+        /// </summary>
+        private static JsonElement BuildMacroJsonElement(IReadOnlyDictionary<string, JsonElement> macroValues)
+        {
+            using var ms = new MemoryStream();
+            using (var writer = new Utf8JsonWriter(ms))
+            {
+                writer.WriteStartObject();
+                foreach (var kv in macroValues)
+                {
+                    writer.WritePropertyName(kv.Key);
+                    kv.Value.WriteTo(writer);
+                }
+                writer.WriteEndObject();
+            }
+            using var doc = JsonDocument.Parse(ms.ToArray());
+            return doc.RootElement.Clone();
         }
 
         /// <summary>

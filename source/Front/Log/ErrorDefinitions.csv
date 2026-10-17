@@ -1323,6 +1323,7 @@ id,logType,enableAssert,pass,paramCount,domesticTips,zhMessage,,zhFixedTips,enMe
 21470,Error,TRUE,FALSE,0,,"Error final 标记只允许使用在 class 定义上: '{}' 不是 class 定义",,将 final 移到 class 定义上（data/enum/interface 不支持 final）。,,
 21471,Error,TRUE,FALSE,0,,"Error abstract 与 final 不允许同时使用: abstract 类必须被继承，final 类禁止被继承",,去掉 abstract 或 final 其一。,,
 21472,Error,TRUE,FALSE,0,,"Error 类成员变量声明必须初始化: SL 成员变量不支持无初始化声明，必须要有等号及初始值表达式（如 int v = 1;）!!",,给该成员变量补上 = 初始值表达式（如 int v = 1;）。,,
+21473,Error,TRUE,FALSE,0,,"Error 当前工程禁止调用系统方法: '{}'（本工程 jsonc compile.isAllowSystemMethodCall=false；类型转换映射如 int()/Int32() 不受限制）",,移除该系统方法调用，或在工程 jsonc 的 compile 段设置 isAllowSystemMethodCall=true。,,
 21391,Error,TRUE,FALSE,0,,名称{}与{} 有重复,,,,
 21392,Error,TRUE,FALSE,0,,call node list is not count equal 1,,,,
 21393,Error,TRUE,FALSE,0,,名称{}与{} 有重复,,,,

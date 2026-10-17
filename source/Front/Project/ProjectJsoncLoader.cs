@@ -48,6 +48,7 @@ namespace SimpleLanguage.Project
                 cfg.Compile.IsForceUseKeyClass = GetBool(compile, "isForceUseClassKey", cfg.Compile.IsForceUseKeyClass);
                 cfg.Compile.IsSupportDoublePlus = GetBool(compile, "isSupportDoublePlus", cfg.Compile.IsSupportDoublePlus);
                 cfg.Compile.RequireSameNumericTypes = GetBool(compile, "requireSameNumericTypes", cfg.Compile.RequireSameNumericTypes);
+                cfg.Compile.IsAllowSystemMethodCall = GetBool(compile, "isAllowSystemMethodCall", cfg.Compile.IsAllowSystemMethodCall);
             }
 
             if (TryGetObj(root, "compileFiles", out var compileFiles)

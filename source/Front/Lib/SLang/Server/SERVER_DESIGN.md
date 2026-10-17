@@ -1408,7 +1408,7 @@ User u = await persistUser( b ) as User;     # 而非：Task t = spawn persistUs
 | 阶段 | 范围 | 产出 | 验收 |
 |------|------|------|------|
 | **P0** 引擎 | `HttpServerCore` + `_HttpParser` + 响应编码 + keep-alive；`WebSocketStream.acceptBuffered` 重载（Std 增量）；**前置探针：CallClosure 多参直调（双参/三参闭包变量调用）+ handler 协程派发语义（§6.1：`awaitTask` 对已 cancel/已死 Task 的返回路径、`waitTimeout` 返回方向）** | 无路由的裸 HTTP 服务 + `test/Other/NetTest/` 旁路探针 | ✅ **2026-10-17 全绿**：ServerProbeTest A1–B6（多参闭包/带值返回/死 Task awaitTask 不挂起/waitTimeout 双向/cancel）+ ServerCoreTest S1a–S4b（回环 200·404·405+Allow·413·431·504·keep-alive·HEAD·WS 预读残留帧 echo:hello），NetTest 全套 FAIL=0；落地偏差见文末「P0 落地实录」（静态单例化 / 三坑复盘 / HttpServerCore 含 P0 精确路由） |
-| **P1** 路由与封装 | `Router/RouteInfo/RouteGroup` + `Request/Response/Next` 全表 + `ApiResult` + **BodyParser（json/form/bin）** + `app.run/start/stop` + WS 路由升级 + `WsSession` + `WebSocketServer` 独立形态 | §4.1–§4.4 与 §4.6 全部示例可运行 | ExpendTest 新增 `Server/` 子目录用例（各动词/路径参数/查询/json·form·bin body/keep-alive/WS echo/广播）全绿 |
+| **P1** 路由与封装 | `Router/RouteInfo/RouteGroup` + `Request/Response/Next` 全表 + `ApiResult` + **BodyParser（json/form/bin）** + `app.run/start/stop` + WS 路由升级 + `WsSession` + `WebSocketServer` 独立形态 | §4.1–§4.4 与 §4.6 全部示例可运行 | ✅ **2026-10-17 全绿**：`test/ExpendTest/Server/ServerP1Test.sl` T1–T8 共 42 项（动词家族+405+keep-alive / 路径参数+RouteGroup / 查询参数 / json·form·bin body / Response 链式 / WS 两形态 / WebSocketServer 独立端口 / DuplicateRoute fail-fast）全 OK；ExpendTest 293/293、NetTest 104/104 回归全绿；落地偏差见文末「P1 落地实录」 |
 | **P1.5** 上传 | multipart 解析器 + `UploadedFile`（saveAs/saveInto/安全剥离）+ `maxUploadBytes/maxFileBytes` | §4.4 文件上传全部示例可运行 | multipart 混合（文件+普通字段）/多文件同字段/路径穿越攻击用例（`../../evil.txt` → 剥离为 `evil.txt`）/超限 413 |
 | **P2** 管道插件与流式 | 中间件管道（Next.go）+ `ServerPlugin` + `logger/cors/staticFiles` + **流式三件套（`StreamWriter` chunked / `SseWriter` SSE / `sendFile` 流式下载）** + `wsEvents` 糖 + 通配路由 | §4.5 与 §4.7 全部示例可运行 | 中间件短路/后置/传值用例；静态目录含 MIME 判定；curl 分块接收 chunked 往返 / SSE 浏览器 EventSource / 大文件流式下载内存峰值用例 |
 | **P3** 文档+认证 | `OpenApiBuilder` + `/docs` + `/openapi.json` + `importOpenApi` + `bodyLimit/requestId/auth` 插件 + `SLang.Jwt.decode` + `maxConnections` | §4.8 全部能力 + §4.11 auth 三挂法 / `.skip` 白名单 / WS token 两落点 | **openapi.json 经 Apifox 实际导入验证**（接口/分组/schema/example 齐全；含 form/multipart 文档；**securitySchemes + operation 级 security → 导入后 Auth 自动配好**）；嵌套 DTO schema 正确；auth 回调 `ret 身份/ret null` 带值返回通路实测（P0 闭包带值返回探针结论兑现）；Bearer 缺失/非法 → 401 + `WWW-Authenticate` 头 |
@@ -1520,3 +1520,23 @@ html → text/html · js → application/javascript · css → text/css · json 
 6. jsonc 路径基准 = .sp 所在目录（`Lib/SLang/Server/` 深度 5 → `outputDir` 5 个 `..`、references `../../Core`/`../../Std`）；G8 白名单生效。
 
 **下一步（P1）**：`SLang.Server` 门面（包装静态 HttpServerCore）+ `Router/RouteInfo/RouteGroup`（`{param}` 提取/优先级/冲突检测/DuplicateRoute）+ Request/Response 全表（pathParam/query 族 + json/jsonOk/jsonFail/redirect）+ `ApiResult` + BodyParser（json/form/bin 分流）+ WS 路由升级（`app.websocket` + `WebSocketStream.accept(c, preRead, opt)` 接线）+ `WsSession`/`WebSocketServer`；用例迁入 `test/ExpendTest/Server/`（§9）。
+
+---
+
+## §13 P1 落地实录（2026-10-17，代码实况与设计的差异记录）
+
+**产物**：新增 `Router.sl`（RouteInfo/RouteGroup/Router 匹配引擎）、`ApiResult.sl`、`BodyParser.sl`、`WebSocketServer.sl`（独立形态 + WsSession/_WsSessions 注册表）；扩展 `Server.sl` 门面（on* 动词家族/websocket/use/run/start/stop/checkDuplicate）、`Request.sl`（pathParam 族/query 族/body 三形态/bodyJson）、`Response.sl`（链式 + jsonOk/jsonFail/html/redirect）；验收用例 `test/ExpendTest/Server/ServerP1Test.sl`（T1–T8，端口 19401–19408）+ `ProjectTest.jsonc`/`ProjectTest.sp` 登记（references 增 `out/export/SLangServer`）。
+
+**验收**：ServerP1Test T1a–T8c 共 42 项全 OK；ExpendTest 全量 293/293 OK；NetTest 104/104 OK（C VM 网络层改动 P0 回归）。
+
+**与设计的偏差 / 实况要点**：
+1. **Router 匹配 = best-static 选择**（非设计 §6.2 的"注册序优先"）：同路径下静态段多者优先、同静态段数先注册优先；`{param}` 参数段以 `RouteInfo._paramSegIdx`（参数名→路径段下标对位表）提取，不依赖参数声明序。静态段优先保证 `/user/new` 不被 `/user/{id}` 抢走。
+2. **DTO 序列化契约**：`req.body<T>()` / `SystemJsonFromData` 只展开 `@Serializable()` 标注类的成员——P1 用例 DTO 漏标注时 json 解析走 toString 嫁接（`"Object:92944154"`）假成功形态；文档须明示（`md/lib/Core/ProtocalBuffers.md` 先例）。
+3. **WS 握手交接重建**：HttpServerCore 分流到 WS 路由时 HTTP 解析已消费请求行+头，`WebSocketStream.accept` 无法重读 socket——用已解析值重建最小握手请求（`GET <path>[?query] HTTP/1.1` + Upgrade/Connection/Version/Key 四头）灌 `preRead` 参数（§4.6 形态 A 接线点）。
+4. **WebSocketServer 独立形态会话收尾**：`_runSession` 的 catch 路径（stop 强制关闭 / IO 异常）必须补 unregister + onClose 回调——漏掉则 `sessions` 计数泄漏、`onClose` 不触发（T7e 用例抓出）。
+5. **C VM 修复：net_slot_alloc 单调推进分配**（`csimple_lang/src/lib/os/sys_net.c`）：原实现槽位下标即 sid、close 后立即复用——被 cancel_wait 唤醒的僵尸 accept 协程重执行系统调用时旧 sid 命中复用槽位上的新 socket，抢走新一代监听器连接（T7 连接被抢根因）。修复 = `g_net_slot_hint` 游标单调找空槽、全表满才回收；复盘见 `md/ai/troubleshooting/04-concurrent-net.md` [2026-10-17]。
+6. **Front 修复：闭包形参泛型方法调用 NRE**（`MetaCallNode.cs` / `MetaMemberFunction.cs`）：handler 闭包形参作调用对象调 `req.body<T>()` 时 realMetaType 判空回退 + 泛型展开链 mc 兜底；复盘见 `md/ai/troubleshooting/01-front-compile.md` [2026-10-17]。
+7. **SL 语言约束落地记录**：跨文件类型引用须带 `SLang.` 前缀（RouteGroup/WebSocketServer/Router）；`this.x` 不可直接作方法实参（须先赋局部别名）；`isnot` 关键字已有实现但无用例（本模块未用）。
+8. **响应写出契约补充**：handler 已暂存响应后抛异常 → 引擎照常写出暂存响应（非 500）；未响应才 500（§6.11 语义细化）。
+
+**下一步（P1.5 上传）**：multipart 解析器 + `UploadedFile`（saveAs/saveInto/安全剥离）+ `maxUploadBytes/maxFileBytes`；验收 = §8 P1.5 行。

@@ -365,6 +365,15 @@ namespace SimpleLanguage.Project
             /// ? false??????????? <see cref="MetaTypeFactory.CalcETypeByLeftAndRight"/> ?????????????
             /// </summary>
             public bool RequireSameNumericTypes { get; set; } = false;
+
+            /// <summary>
+            /// 是否允许调用系统方法（jsonc "compile"."isAllowSystemMethodCall"，缺省 true 保持历史行为）。
+            /// false 时 Front 语义解析层（MetaCallNode 全局裸调用 / 类路径回退两处解析点）拒绝
+            /// 解析到 systemCalls 注册表声明的调用并报编译错误；类型转换映射族
+            /// （int()/Int32()/sbyte() 等别名及其 SystemConvert* 目标声明）不受限，恒可用。
+            /// 仅 FrontEnd 解析当前工程代码层判断，不影响引用模块与 @tag{} 内部机制。
+            /// </summary>
+            public bool IsAllowSystemMethodCall { get; set; } = true;
         }
 
         // mirror CompileFileData / CompileFileDataUnit

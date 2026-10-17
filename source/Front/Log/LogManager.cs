@@ -66,7 +66,9 @@ namespace SimpleLanguage.Logging
             {
                 Assembly.GetExecutingAssembly(),
                 Assembly.GetEntryAssembly(),
-                Assembly.GetCallingAssembly(),
+                // Native AOT（SlangAllInOne -p:PublishAot）不支持 Assembly.GetCallingAssembly()
+                // （运行期栈回溯 → PlatformNotSupportedException，2026-10-17 实测）；嵌入资源
+                // 固定在本程序集内，GetExecutingAssembly 已覆盖，不再探测调用方程序集。
             }
             .Where(a => a != null)
             .Distinct()

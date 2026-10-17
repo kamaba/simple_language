@@ -311,6 +311,15 @@
 - 如何快速验证：NetTest 全套 FAIL count = 0（ServerProbeTest A1-B6 + ServerCoreTest S1a-S4b 共 22 项；S2a 413 / S3a 504 / S4b WS 预读残留帧 echo:hello 均过）。
 - 预防建议：① 跨模块库类（SLangServer 消费 Core/Std 同理）**优先静态门面**，实例态字段多实例场景在 C VM 修好隔离前一律回避；② 跨模块消费的配置类 string 默认值一律在**消费点兜底**，不信任定义侧默认值（Int32 默认值实测可靠，string 不可靠）；③ 泛型参数位出现点分类型即改 typealias/object 转型，且每次编译扫一遍「TypeNotFoundTypeParam / NotAllowSign」Info 行——它们不阻断编译但必是运行期雷；④ 排障期终端管道过滤只用完整输出落盘方式，警惕「success 行打印了但产物没刷新」。
 
+### [2026-10-17] SLangServer P1 验收用例编译期 Front NRE 双连跳：闭包形参作调用对象的泛型方法调用（`req.body<T>()`）——CreateCallNode realMetaType 判空缺失 + 泛型展开链 mc 无兜底
+- 现象：ExpendTest/Server/ServerP1Test.sl 编译，Front 直接 NullReferenceException 崩溃（无 LID 报错行）——首发 `MetaCallNode.cs:1164 CreateCallNode`；按栈深修一处后 NRE 挪到 `MetaMemberFunction.AddGenTemplateMemberFunctionByMetaTypeList`（NRE 修复链典型症状：崩点随兜底逐层下移）。
+- 首个异常阶段：Meta（语义分析，CallNode 创建 / 泛型方法展开）。
+- 根因：P1 用例 handler 闭包形参（如 `function( Net.HttpRequest req )`）上调用泛型方法 `req.body<P1User>()`——闭包形参作调用对象时 `realMetaType` 解析为空直接解引用；且泛型方法展开链对传入 `mc == null` 无兜底继续深挖。
+- 修复点（文件/模块）：`source/Front/Core/MetaCallNode.cs` CreateCallNode——闭包形参作调用对象时 realMetaType 判空回退 + `mcagm == null` 时回退 `mmf.ownerMetaClass`；`source/Front/Core/MetaMemberFunction.cs` AddGenTemplateMemberFunctionByMetaTypeList 开头 `if (mc == null) return null` 兜底。
+- 如何快速复现：编译 ExpendTest（含 ServerP1Test.sl，内含闭包形参泛型方法调用）。
+- 如何快速验证：ExpendTest 编译通过 + 全量运行 293/293 OK（BaseTest 同批无回归）。
+- 预防建议：① 闭包形参作调用对象是类型解析弱位（realMetaType 常为空），新增调用形态处理先查空再解引用；② NRE 修复链「修一处挪一处」属正常推进，按栈逐层兜底直到编译通过，但每层兜底须回退到语义正确值（ownerMetaClass）而非吞错返回 null 泄漏到下游。
+
 
 
 

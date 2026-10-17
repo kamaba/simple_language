@@ -62,6 +62,66 @@ namespace SimpleLanguage.Export.SLIR
         }
     }
 
+    /// <summary>
+    /// AOT 兼容的全枚举字符串转换器（2026-10-17）：官方非泛型 JsonStringEnumConverter
+    /// 内部走运行期泛型展开（RequiresDynamicCode），Native AOT 下抛 PlatformNotSupported；
+    /// 本实现改用非泛型 JsonConverter + Enum.Parse/ToObject/ToString 的数据反射
+    /// （枚举类型经 TrimmerRootAssembly 保形后 AOT 可用）。序列化输出与官方默认行为
+    /// 一致（写成员名字符串）；反序列化接受成员名（忽略大小写）或数字。
+    /// 注：SLIR 包模型当前无枚举属性（opCode/stage/slot 等全部 int/byte 编码），
+    /// 本工厂为模型外潜在枚举场景预留（经 FrontJsonOptions 以外的 options 使用）。
+    /// </summary>
+    internal sealed class AotStringEnumConverterFactory : JsonConverterFactory
+    {
+        public override bool CanConvert(Type typeToConvert)
+        {
+            return typeToConvert.IsEnum;
+        }
+
+        public override JsonConverter? CreateConverter(Type typeToConvert, JsonSerializerOptions options)
+        {
+            return new StringEnumConverter(typeToConvert);
+        }
+
+        /* 基类用 JsonConverter<object?>（而非非泛型 JsonConverter：后者无 Read/Write
+           抽象可重写）：工厂返回的转换器不要求 TypeToConvert 匹配目标类型，
+           Read 的 typeToConvert 参数即为真实枚举类型。 */
+        private sealed class StringEnumConverter : JsonConverter<object?>
+        {
+            private readonly Type m_EnumType;
+
+            public StringEnumConverter(Type enumType)
+            {
+                m_EnumType = enumType;
+            }
+
+            public override object? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+            {
+                if (reader.TokenType == JsonTokenType.String)
+                {
+                    return Enum.Parse(m_EnumType, reader.GetString()!, ignoreCase: true);
+                }
+                if (reader.TokenType == JsonTokenType.Number)
+                {
+                    if (reader.TryGetUInt64(out ulong ul))
+                    {
+                        return Enum.ToObject(m_EnumType, ul);
+                    }
+                    if (reader.TryGetInt64(out long l))
+                    {
+                        return Enum.ToObject(m_EnumType, l);
+                    }
+                }
+                throw new JsonException($"Invalid token for enum {m_EnumType.Name}: {reader.TokenType}");
+            }
+
+            public override void Write(Utf8JsonWriter writer, object? value, JsonSerializerOptions options)
+            {
+                writer.WriteStringValue(value?.ToString());
+            }
+        }
+    }
+
     // Physical package: flat SLModulePackage JSON (moduleName, classList, methodList, ...).
     // Reads still support legacy SLPackageRootJson (entryModule + moduleList) for backward compat.
     public static class SLModulePackageWriter
@@ -111,16 +171,11 @@ namespace SimpleLanguage.Export.SLIR
         {
             if (pkg == null) throw new ArgumentNullException(nameof(pkg));
 
-            var options = new JsonSerializerOptions
-            {
-                WriteIndented = true,
-                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-            };
-            options.Converters.Add(new JsonStringEnumConverter());
-            options.Converters.Add(new InstructionPayloadByteArrayJsonConverter());
-
-            return JsonSerializer.Serialize(pkg, options);
+            /* AOT source-gen（2026-10-17）：反射序列化在 Native AOT 下运行期
+               动态泛型展开失败，改走 FrontJsonContext；选项与旧反射配置逐项
+               一致（缩进 + WhenWritingNull + 宽松转义 + payload Latin1 编码
+               经 SLIRTypes 属性级 converter），产物字节级兼容。 */
+            return JsonSerializer.Serialize(pkg, FrontJsonOptions.PackageWrite);
         }
 
         /// <summary>Writes an already-built SLModulePackage to outputPath without re-Build
@@ -141,14 +196,7 @@ namespace SimpleLanguage.Export.SLIR
             if (string.IsNullOrWhiteSpace(inputPath)) throw new ArgumentNullException(nameof(inputPath));
 
             var json = File.ReadAllText(inputPath);
-            var options = new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true,
-                ReadCommentHandling = JsonCommentHandling.Skip,
-                AllowTrailingCommas = true,
-            };
-            options.Converters.Add(new JsonStringEnumConverter());
-            options.Converters.Add(new InstructionPayloadByteArrayJsonConverter());
+            var options = FrontJsonOptions.PackageRead;
 
             var pkg = ReadModulePackageJson(json, options);
             NormalizeFieldFlags(pkg);

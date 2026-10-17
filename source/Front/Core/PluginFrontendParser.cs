@@ -304,7 +304,7 @@ namespace SimpleLanguage.Compile
             }
             try
             {
-                return JsonSerializer.Deserialize<PluginLabelParse>(json);
+                return JsonSerializer.Deserialize<PluginLabelParse>(json, FrontJsonOptions.Plain);
             }
             catch (Exception ex)
             {
@@ -345,7 +345,7 @@ namespace SimpleLanguage.Compile
             }
             try
             {
-                return JsonSerializer.Deserialize<PluginLabelBuild>(json);
+                return JsonSerializer.Deserialize<PluginLabelBuild>(json, FrontJsonOptions.Plain);
             }
             catch (Exception ex)
             {

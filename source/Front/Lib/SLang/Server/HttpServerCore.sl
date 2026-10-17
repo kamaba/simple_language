@@ -541,7 +541,11 @@ namespace SLang
                 string wv = r._headers.getHeader( "Sec-WebSocket-Version" )
                 if wk == null || wv == null
                 {
-                    throw ServerError.BadRequest
+                    # 关键升级头缺失：与握手失败同路（400 + 断连；本方法未
+                    # 声明 throws，不走 throw）
+                    HttpServerCore._writeSimple( client, 400, HttpServerCore._errorBody( 400 ) )
+                    HttpServerCore._gracefulClose( client )
+                    ret
                 }
                 hs = hs + "Upgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Version: " + wv + "\r\nSec-WebSocket-Key: " + wk + "\r\n\r\n"
                 ByteBuffer pre = ByteBuffer.fromString( hs )
@@ -1171,6 +1175,37 @@ namespace SLang
                 {
                     ret -1
                 }
+            }
+            ret v
+        }
+
+        # 全量程十进制解析（真 Int64，溢出判 -1）：pathInt64 专用。
+        # _parseDec64 维持 2e9 上限（Int32 档调用方语义不变）。
+        static Int64 _parseDec64Full( string s )
+        {
+            Int32 len = SystemStringLength( s )
+            if len == 0
+            {
+                ret -1
+            }
+            Int64 v = 0
+            for Int32 i = 0, i < len, i = i + 1
+            {
+                Int32 c = SystemStringCharCodeAt( s, i )
+                if c < 48 || c > 57
+                {
+                    ret -1
+                }
+                # 溢出守卫：v*10+d 不越 Int64 上限（9223372036854775807）
+                if v > 922337203685477580
+                {
+                    ret -1
+                }
+                if v == 922337203685477580 && c > 55
+                {
+                    ret -1
+                }
+                v = v * 10 + ( c - 48 )
             }
             ret v
         }

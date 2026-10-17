@@ -391,7 +391,11 @@ namespace SimpleLanguage.Core
             {
 
                 int i = 0;
-                dynamic indexdynamic = 0;
+                // AOT 兼容（2026-10-17）：dynamic 绑定依赖运行期 CallSite/Microsoft.CSharp，
+                // Native AOT 不支持；改用 object + DynamicEnumAddOne 助手（复刻原 dynamic
+                // 数值提升语义：byte/sbyte/short/ushort+1 → int，uint+1 → long，ulong+1 → ulong，
+                // int/long → 原类型，溢出回绕与 unchecked 一致）。
+                object indexdynamic = 0;
                 foreach (var v in m_MetaMemberEnumDict)
                 {
                     MetaMemberEnum mme = v.Value;
@@ -415,7 +419,7 @@ namespace SimpleLanguage.Core
 
                         UpsertRelationMemberValueAssign(mme, mme.express);
 
-                        dynamic explicitValue = 0;
+                        object explicitValue = 0;
                         if (m_ExtendClass == CoreMetaClassManager.uint8MetaClass)
                         {
                             try
@@ -505,12 +509,14 @@ namespace SimpleLanguage.Core
                                                     }
 
                         // Next implicit member follows explicit value.
-                        indexdynamic = explicitValue + 1;
+                        indexdynamic = DynamicEnumAddOne(explicitValue);
                     }
                     else
                     {
-                        // auto increment when missing '='
-                        var autoConst = new MetaConstExpressNode(m_ExtendClass.eType, indexdynamic++);
+                        // auto increment when missing '='（原 dynamic 的 indexdynamic++ 后缀自增展开）
+                        object autoValue = indexdynamic;
+                        indexdynamic = DynamicEnumAddOne(indexdynamic);
+                        var autoConst = new MetaConstExpressNode(m_ExtendClass.eType, autoValue);
                         mme.SetExpress(autoConst);
                         mme.SetIsExplicitAssign(false);
                         mme.ParseMetaExpress();
@@ -636,6 +642,30 @@ namespace SimpleLanguage.Core
                 }
             }
         }
+
+        /// <summary>
+        /// 枚举成员自增值运算（AOT 兼容助手，2026-10-17）：等价于原 dynamic 写法的
+        /// `value + 1` / `value++` —— 按装箱运行时类型复刻 C# 数值提升与 unchecked
+        /// 溢出回绕语义（窄整数 + 1 → int；uint + 1 → long；ulong + 1 → ulong 回绕；
+        /// int/long → 原类型回绕）。仅覆盖枚举 8 种整数基类型。
+        /// </summary>
+        private static object DynamicEnumAddOne(object value)
+        {
+            switch (value)
+            {
+                case sbyte v: return (int)v + 1;
+                case byte v: return (int)v + 1;
+                case short v: return (int)v + 1;
+                case ushort v: return (int)v + 1;
+                case int v: return unchecked(v + 1);
+                case uint v: return (long)v + 1L;
+                case long v: return unchecked(v + 1L);
+                case ulong v: return unchecked(v + 1UL);
+                default:
+                    return unchecked(Convert.ToInt64(value) + 1L);
+            }
+        }
+
         public void UpdateAllName()
         {
             m_AllName = m_MetaNode?.GetAllName() ?? m_Name;

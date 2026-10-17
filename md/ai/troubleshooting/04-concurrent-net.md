@@ -100,3 +100,12 @@
 - 如何快速验证：WebsocketTest 全量 pass=33 fail=0（握手/echo/分片重组/掩码/关闭协商/错误路径/HttpClient 风格 WebSocketClient 门面四回调）；EnumTest 补 `as` 用例（`First as Int32` = 2 等三组）；StructParseToSyntax 修复后 BaseTest/ExpendTest 回归与基线一致（无新引入失败）。
 - 预防建议：① 调用既有系统方法先读语义注释/实现，警惕"第三参是长度还是结束下标"类半开区间约定；② 按规范实现协议时逐条核对请求/响应各头的方向性与出现条件（101 vs 426），不凭直觉加校验；③ 帧构造字段顺序（帧头→掩码键→载荷）以 RFC 为准不凭记忆；④ follow-key/结构探测类循环对"分隔节点"（LineEnd / Comment）的处理必须对称——新增一种分隔节点即检查所有探测点是否同步跳过；⑤ 状态守卫与副作用顺序敏感的方法（close/flush 类）先完成输出再置终态；⑥ 枚举值在 VM 内统一先经解包 helper 读取，CastClass 类新增转换点先查包装家族前科。
 - 遗留未修：`EBytes eb5 = EBytes.x5` 局部变量声明链报 MetaCoreParseCallLinkFailed（EnumTest 调试中发现，测试改用 EErr.Thrill 绕开，待独立排查）。
+
+### [2026-10-17] SLangServer P1 WebSocketServer T7 连接被抢：net_slot_alloc 槽位下标即 sid、close 后立即复用——僵尸 accept 协程持旧 sid 抢走新一代监听器的连接
+- 现象：ExpendTest/Server/ServerP1Test.sl T7（WebSocketServer 独立端口 19407）——T6 各代 stop 后，T7 的 wss 握手 400、accept 循环 accept-fail；插桩显示 HttpServerCore（另一形态）竟收到 T7 端口的连接（`[dbg-hc-acc] got` + 400 no-ws-route），wss 自己的 accept 报失败——两个 accept 循环争抢同一 socket。
+- 首个异常阶段：VM（csimple_lang/src/lib/os/sys_net.c net_slot_alloc）。
+- 根因：句柄槽位号复用——`net_slot_alloc` 按槽位下标发 sid（`sid = i+1`），close 后槽位立即回池复用；上一代 stop 关监听时 `vm_net_cancel_wait` 唤醒的僵尸 accept 协程重执行系统调用，旧 sid 已映射到复用槽位上的新 socket，`libsys_net_get_fd(sid)` 的 fd<0 失效防线被复用击穿，僵尸"合法"收走新监听器的连接（详细锁序与 cancel 语义见 vm_net_io.c 头注 §5.5）。
+- 修复点（文件/模块）：sys_net.c `net_slot_alloc` 改单调推进分配——新增 `g_net_slot_hint` 游标（g_net_lock 保护），优先从上次分配点向后找空槽不回头，刚 close 的槽位尽量晚复用；僵尸协程的旧 sid 在复用发生前必然命中空槽（fd<0）走错误路径确定性死亡。全表 256 槽满才从头回收（常规负载不触达；Phase 2 generation 计数根治残余窗口）。42 处 `sid-1` 解析点零触碰。
+- 如何快速复现：修复前跑 `test/ExpendTest/Server/ServerP1Test.sl` T6（多代 stop/restart）紧接 T7（独立 WS 端口），T7 握手必 400。
+- 如何快速验证：修复后 ExpendTest 293/293 OK（T7a–T7e 全绿）+ NetTest 104/104 OK（P0 回归）；first-fit 对照实验（临时还原旧分配）证实 T7 必现、单调版必绿。
+- 预防建议：① 协程被 cancel_wait 唤醒后重执行系统调用，句柄必须重查有效性且"失效"判定要经得起句柄号复用（本例 fd<0 防线在复用下失效）；② 句柄分配避免立即复用刚释放的号（单调游标是最小改动，generation 编码是彻底方案）；③ 排障时"两个循环争抢同一连接"类症状优先怀疑句柄复用而非调度竞态——插桩 fd/sid 对号即可实锤。

@@ -238,9 +238,14 @@ namespace SLang
             {
                 string name = route._paramNames[i]
                 Int32 segIdx = route._paramSegIdx[i]
+                string sv = ""
                 if segIdx < sn
                 {
-                    m[name] = segs[segIdx]
+                    sv = segs[segIdx]
+                }
+                if segIdx < sn
+                {
+                    m[name] = sv
                 }
             }
             ret m

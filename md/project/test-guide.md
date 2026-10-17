@@ -97,7 +97,7 @@ dotnet run --project project\CSimpleVMTest\CSimpleVMTest.csproj -- 1
 | 配置 | C VM 运行方式 | Front 导出参数 | 适合场景 |
 |------|---------------|----------------|----------|
 | Debug | **P/Invoke** 进程内加载 `csimple_lang\build\Debug\bin\csimple_lang_dll.dll` | `--format binary --export-json`（`#if DEBUG` 追加，2026-10-12 起）：走 SLB 二进制导出（`.module.slb` 必产物）并附带导出 `module.json` 调试副本；VM 运行链路不变（仍装载 module.json） | C# 与 C 代码可在同一进程断点调试；json 副本便于人工对照排查 |
-| Release | 启动独立进程 `csimple_lang.exe run <module.json>`（优先 `build\Debug\bin`，回退 `build\Release\bin`） | 无追加（缺省 json 导出） | 性能 / 接近真实部署 |
+| Release | 启动独立进程 `csimple_lang.exe run <module.json>`（优先 `build\Debug\bin`，回退 `build\Release\bin`）；**2026-10-17 起 Release 树 JIT 默认编入并默认启用**（`--jit` 无需传参；关闭：`--no-jit` 或环境变量 `SL_JIT=0`，见 `csimple_lang/md/cli.md` JIT 节） | 无追加（缺省 json 导出） | 性能 / 接近真实部署（含热点 JIT） |
 
 ### 常用参数
 

@@ -27,3 +27,12 @@
 - 修复点/决策：同环境背靠背复测 rewrite=1（17187/17187/17292ms）vs rewrite=0（17374/17380ms），净快 ~0.9% 且范围不重叠 → 回退消失、**置 1 保留启用**；装配统计行核验 1266 rewritten / 18 kept（98.6%，kept 为泛型/带 target_def 的预期保留）。数据与决策全文见 `csimple_lang/md/RUNTIME_OPTIMIZATION_PLAN.md` §5.3（§4.4 留有重开指针）。
 - 如何快速验证：同一环境、同一二进制树，`SL_ENABLE_CALL_BINDING_REWRITE` 两个取值各跑 ≥2~3 轮背靠背对比看范围重叠性；装配统计行 `P0-2 call binding rewrite: N rewritten, M kept` 写在进程 cwd 的 `build/logs/VM.txt`（注意不是模块目录 Logs/）。
 - 预防建议：① 性能 A/B 结论只能来自**同环境背靠背**轮次，隔日/隔机数字禁止直接对表下结论；② 观测到「所有用例全段均匀平移」优先怀疑环境漂移而非「改动普遍变慢」；③ 单轮异常值（如首跑 17379ms 高于复测带）补跑一轮即可归位，勿据单轮推翻批次决策。
+
+### [2026-10-17] NetTest TlsTest K1 全套件静默提前退出（TLS 握手失败→VM 收摊）：runner CWD 不对导致 `Resources/cert.pem` 相对路径读空，两轮对照实验白做——先验证测试前置条件再怀疑代码回归
+- 现象：P1 收尾复跑 NetTest 回归，套件跑到 TlsTest K1 即静默终止（exit 0、无 FAIL 无异常输出）；且两次运行停止点不同（H1 / TlsTest banner）疑似非确定性回归。曾高度怀疑当日 C VM 槽位分配改动，做了 first-fit 对照实验（还原旧分配+重编+重跑）——同样失败，实验白做。
+- 首个异常阶段：测试执行环境（非代码）。
+- 根因：TlsTest K1 用 CWD 相对路径 `File.readAllText("Resources/cert.pem")`，规范跑法要求 CWD=`test/Other/NetTest`；本次 runner 以 CWD=`simple_language` 启动（该目录无 Resources/），读证书抛异常被 `try?` 吞掉、服务端协程静默死亡，客户端 TLS 握手无人应答抛 TlsError.Handshake 未捕获 → VM 正常收摊（VM 日志只有 teardown 无 error，stdout 无 FAIL 行）——"全套件静默提前退出"的完整解释。
+- 修复点（文件/模块）：无代码修复；runner 修正为 `Set-Location test\Other\NetTest` + 绝对路径传 module.json（与 2026-09-06 绝对路径纪律同源）。
+- 如何快速复现：CWD=仓库根/simple_language 跑 NetTest module.json → TlsTest 静默死；CWD=test/Other/NetTest 同一 module.json → 104/104 全绿。
+- 如何快速验证：改 CWD 重跑即见分晓；VM 日志（build/logs/VM.txt）确认 teardown 前最后一簇 throw 无 catch 即"前置资源读取失败"指纹。
+- 预防建议：① 复跑既有套件前先确认其 CWD 敏感资产（相对路径证书/数据文件）——查测试源码里的 `File.read*`/相对引用与套件 md 说明；② "静默提前退出且无 FAIL 行"= 主流程未捕获异常特征，先看 VM 日志 teardown 前最后的 throw 簇，别急着怀疑刚改的代码；③ 对照实验前先做零成本环境核对（CWD/路径/环境变量），本项目已有两起同族教训（2026-09-06 相对模块引用、本例相对证书）。

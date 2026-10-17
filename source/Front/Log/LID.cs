@@ -799,6 +799,8 @@ namespace SimpleLanguage.Logging
         FileMetaClassAbstractFinal = 21471,
         // 成员变量必须初始化拦截（源码未写 = 初始值，如 int v;）
         MetaCoreMemberVariableRequireInit = 21472,
+        // 系统方法调用限制拦截（jsonc compile.isAllowSystemMethodCall=false 时拒绝解析 systemCalls 调用）
+        MetaCoreCallSystemMethodCallNotAllowed = 21473,
         // TemplateClass
         MetaCoreTemplateClassDuplicateDefine = 21321,
         MetaCoreTemplateClassNotFoundData = 21322,

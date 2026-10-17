@@ -106,6 +106,13 @@ namespace SimpleLanguage.Core
             { "Float64", "SystemConvertFloat64" },
         };
 
+        /// <summary>
+        /// 类型转换映射族声明名集合（s_Alias 全部目标名的去重集，如 SystemConvertInt32）。
+        /// 这类纯值转换映射（int()/Int32()/sbyte() 等别名写法与对应 SystemConvert* 全名写法）
+        /// 在 compile.isAllowSystemMethodCall=false 时仍恒可用，不受系统方法限制。
+        /// </summary>
+        private static readonly HashSet<string> s_TypeConvertDeclNames = new HashSet<string>(s_Alias.Values);
+
         // MetaType singletons used by ResolveTypeName to map JSON type strings.
         private static readonly MetaType Obj = SystemMethodCallTypes.Of(CoreMetaClassManager.objectMetaClass);
         private static readonly MetaType Void = SystemMethodCallTypes.Of(CoreMetaClassManager.voidMetaClass);
@@ -254,6 +261,16 @@ namespace SimpleLanguage.Core
                 name = aliasName;
             }
             return s_Decl.TryGetValue(name, out decl);
+        }
+
+        /// <summary>
+        /// 判定该声明是否属于类型转换映射族（int()/Int32()/sbyte() 等别名映射的
+        /// SystemConvert* 目标声明）。属于则为语言级纯值转换，不受
+        /// compile.isAllowSystemMethodCall 开关限制；其余系统方法调用受限。
+        /// </summary>
+        public static bool IsTypeConvertDecl(SystemMethodCallDeclaration decl)
+        {
+            return decl != null && s_TypeConvertDeclNames.Contains(decl.name);
         }
 
         /// <summary>

@@ -316,7 +316,7 @@ namespace SLang
             ret this.pathInt( name, 0 )
         }
 
-        # 路径参数 Int64 化；不存在/坏格式用 defVal
+        # 路径参数 Int64 化；不存在/坏格式/溢出用 defVal
         public Int64 pathInt64( string name, Int64 defVal )
         {
             string v = this.pathParam( name )
@@ -324,7 +324,7 @@ namespace SLang
             {
                 ret defVal
             }
-            Int64 n = HttpServerCore._parseDec64( v )
+            Int64 n = HttpServerCore._parseDec64Full( v )
             if n < 0
             {
                 ret defVal

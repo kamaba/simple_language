@@ -161,6 +161,12 @@
 |------|------|
 | [lib/AtSign/CSharp_Mono.md](./lib/AtSign/CSharp_Mono.md) | `@csharp_mono(){}` 内联 C# 块：`<-` 通道（仅块体头区/尾区）、小括号参数占位校验、csharp_mono 插件 frontendLibs 解析器（SLLabelParser）生成 C# `Main`（import 提升 using）、Front 语言无关圈地（AtSignLabelSourceRewriter）+ 脱糖哨兵、IR 拦截发射 `OpCode_CallAtSignLabel(124)`、导出期 `atSignLabel[]` 表 + csc 融合 `SLAtSign.dll`、CVM 装配绑定 + 运行期插件 labelExec（LID 20054-20057 / 22135-22138；CVM -86~-89） |
 
+### 4.6 服务框架（`source/Front/Lib/SLang/Server/`）
+
+| 文档 | 说明 |
+|------|------|
+| [lib/Server.md](./lib/Server.md) | `SLang.Server` HTTP/WS 服务框架用法：路由（on\* 动词家族/`{param}` 路径参数/RouteGroup/DuplicateRoute fail-fast）、Request（path/query/body json·form·bin）、Response 链式 + jsonOk/jsonFail、WebSocket 两形态（进程内升级 / `WebSocketServer` 独立端口）、生命周期与配置；设计与实现实录 `source/Front/Lib/SLang/Server/SERVER_DESIGN.md`，验收 `test/ExpendTest/Server/` |
+
 ---
 
 ## 5. 虚拟机与运行时（`md/vm/`）
@@ -169,6 +175,7 @@
 |------|------|
 | [vm/VM_FileRoles.md](./vm/VM_FileRoles.md) | VM 侧文件角色说明 |
 | [vm/VirtualMachine.md](./vm/VirtualMachine.md) | 虚拟机相关语法与概念（IR 语句） |
+| [../../csimple_lang/md/design/X86_ASM_FASTPATH_DESIGN.md](../../csimple_lang/md/design/X86_ASM_FASTPATH_DESIGN.md) | C VM x86-64 内联汇编快路径（设计评审稿）：加法/比较最热形态整段融合汇编（lib/asm 平台层 + vm 侧 #if 门控）、MSVC/wasm C 兜底矩阵、WSL clang 树 A/B 协议与 kill 判据 |
 
 ---
 
