@@ -1,9 +1,0 @@
-{
-  "profiles": {
-    "CSimpleVMMathTest": {
-      "commandName": "Project",
-      "commandLineArgs": "",
-      "nativeDebugging": true
-    }
-  }
-}

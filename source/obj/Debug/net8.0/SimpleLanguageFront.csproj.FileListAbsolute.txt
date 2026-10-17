@@ -1,0 +1,15 @@
+D:\project\lang\simple_language\source\bin\Debug\net8.0\SimpleLanguageFront.exe
+D:\project\lang\simple_language\source\bin\Debug\net8.0\SimpleLanguageFront.deps.json
+D:\project\lang\simple_language\source\bin\Debug\net8.0\SimpleLanguageFront.runtimeconfig.json
+D:\project\lang\simple_language\source\bin\Debug\net8.0\SimpleLanguageFront.dll
+D:\project\lang\simple_language\source\bin\Debug\net8.0\SimpleLanguageFront.pdb
+D:\project\lang\simple_language\source\obj\Debug\net8.0\SimpleLanguageFront.GeneratedMSBuildEditorConfig.editorconfig
+D:\project\lang\simple_language\source\obj\Debug\net8.0\SimpleLanguageFront.AssemblyInfoInputs.cache
+D:\project\lang\simple_language\source\obj\Debug\net8.0\SimpleLanguageFront.AssemblyInfo.cs
+D:\project\lang\simple_language\source\obj\Debug\net8.0\SimpleLanguageFront.csproj.CoreCompileInputs.cache
+D:\project\lang\simple_language\source\obj\Debug\net8.0\SimpleLanguageFront.sourcelink.json
+D:\project\lang\simple_language\source\obj\Debug\net8.0\SimpleLanguageFront.dll
+D:\project\lang\simple_language\source\obj\Debug\net8.0\refint\SimpleLanguageFront.dll
+D:\project\lang\simple_language\source\obj\Debug\net8.0\SimpleLanguageFront.pdb
+D:\project\lang\simple_language\source\obj\Debug\net8.0\SimpleLanguageFront.genruntimeconfig.cache
+D:\project\lang\simple_language\source\obj\Debug\net8.0\ref\SimpleLanguageFront.dll
